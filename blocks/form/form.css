@@ -1,0 +1,524 @@
+/* Form Block - Beautiful Homes Painting Service */
+
+/* Override section and wrapper inherited styles */
+.section.form-container {
+  background-color: transparent !important;
+  padding: 0 40px;
+}
+
+.section.form-container > .form-wrapper {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Remove any inherited div margins */
+.section.form-container > .form-wrapper > div,
+.section.form-container .form-wrapper {
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+.form.block {
+  background-color: #011c5f;
+  border-radius: 20px;
+  padding: 50px 60px;
+  max-width: 100%;
+  margin: 0;
+}
+
+/* Main form row layout - horizontal with description on left */
+.form.block .form-row {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+/* Description cell - left column */
+.form.block .form-description-cell {
+  flex: 0 0 300px;
+  max-width: 300px;
+  font-family: Manrope, sans-serif;
+}
+
+/* Title parts */
+.form.block .form-title-small {
+  font-size: 20px;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-family: Manrope, sans-serif;
+}
+
+.form.block .form-title-large {
+  font-size: 64px;
+  color: #f47838;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  font-family: Manrope, sans-serif;
+}
+
+.form.block .form-subtitle {
+  font-size: 20px;
+  color: rgb(255 255 255 / 80%);
+  line-height: 1.5;
+  font-family: Manrope, sans-serif;
+}
+
+/* Form fields area - right side */
+.form.block .form-fields-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Input cells container - 2x2 grid */
+.form.block .form-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Input cells */
+.form.block .form-input-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.form.block .form-input {
+  width: 100%;
+  padding: 18px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #E0ECF9;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-family: var(--body-font-family);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form.block .form-input::placeholder {
+  color: #277bd4;
+  opacity: 1;
+}
+
+.form.block .form-input:focus {
+  outline: none;
+  background-color: #d0e0f0;
+  box-shadow: 0 0 0 2px rgb(244 120 56 / 30%);
+}
+
+/* Button cell - aligned to right */
+.form.block .form-button-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.form.block .form-submit {
+  padding: 16px 32px;
+  background: #f5a623;
+  color: #1a1a1a;
+  border: 2px solid #f5a623;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form.block .form-submit::after {
+  content: '→';
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.form.block .form-submit:hover {
+  background: #ffca28;
+  border-color: #ffca28;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgb(245 166 35 / 40%);
+}
+
+/* Empty cells */
+.form.block .form-empty-cell {
+  display: none;
+}
+
+/* Tablet */
+@media (width <= 991px) {
+  .form.block {
+    padding: 40px;
+  }
+
+  .form.block .form-row {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .form.block .form-description-cell {
+    flex: none;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .form.block .form-title-large {
+    font-size: 36px;
+  }
+}
+
+/* Mobile */
+@media (width <= 600px) {
+  .section.form-container {
+    padding: 20px 16px;
+  }
+
+  .form.block {
+    padding: 28px 24px;
+    border-radius: 16px;
+  }
+
+  .form.block .form-row {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .form.block .form-description-cell {
+    text-align: center;
+  }
+
+  .form.block .form-title-small {
+    font-size: 10px;
+  }
+
+  .form.block .form-title-large {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  .form.block .form-subtitle {
+    font-size: 10px;
+  }
+
+  .form.block .form-inputs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form.block .form-input-cell {
+    width: 100%;
+  }
+
+  .form.block .form-button-cell {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form.block .form-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ==========================================
+   CALCULATOR VARIANT - Cream card with horizontal layout
+   ========================================== */
+
+/* Section styling for calculator */
+.section.form-calculator-container {
+  background-color: #fff;
+  padding: 60px 24px;
+}
+
+@media (width >= 900px) {
+  .section.form-calculator-container {
+    padding: 80px 40px;
+  }
+}
+
+.section.form-calculator-container > .form-wrapper {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+/* Calculator form block - Cream card with two columns */
+.form.calculator {
+  background-color: #f5f1eb;
+  border-radius: 20px;
+  padding: 48px 60px;
+  max-width: 100%;
+  margin: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (width >= 900px) {
+  .form.calculator {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 60px;
+  }
+}
+
+@media (width >= 1200px) {
+  .form.calculator {
+    gap: 80px;
+    padding: 56px 80px;
+  }
+}
+
+/* Left column - Title area */
+.form.calculator .form-calc-header {
+  flex: 0 0 auto;
+}
+
+@media (width >= 900px) {
+  .form.calculator .form-calc-header {
+    flex: 0 0 300px;
+    max-width: 300px;
+  }
+}
+
+@media (width >= 1200px) {
+  .form.calculator .form-calc-header {
+    flex: 0 0 340px;
+    max-width: 340px;
+  }
+}
+
+/* Calculator small title */
+.form.calculator .form-calc-title-small {
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+/* Calculator large title - "Get instant budget estimates" */
+.form.calculator .form-calc-title-large {
+  font-family: var(--heading-font-family);
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.15;
+}
+
+@media (width >= 768px) {
+  .form.calculator .form-calc-title-large {
+    font-size: 44px;
+  }
+}
+
+@media (width >= 1200px) {
+  .form.calculator .form-calc-title-large {
+    font-size: 52px;
+  }
+}
+
+/* Right column - Form area (no card, transparent) */
+.form.calculator .form-calc-body {
+  flex: 1;
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Top row - Project Type + Space side by side */
+.form.calculator .form-calc-options-row {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (width >= 768px) {
+  .form.calculator .form-calc-options-row {
+    flex-direction: row;
+    gap: 40px;
+  }
+}
+
+/* Calculator form field group */
+.form.calculator .form-calc-field {
+  flex: 1;
+}
+
+.form.calculator .form-calc-label {
+  font-family: var(--body-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.form.calculator .form-calc-label .required {
+  color: #e53935;
+}
+
+/* Calculator icon-based option buttons */
+.form.calculator .form-calc-options {
+  display: flex;
+  gap: 12px;
+}
+
+.form.calculator .form-calc-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 28px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--body-font-family);
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  min-width: 100px;
+  text-align: center;
+}
+
+.form.calculator .form-calc-option:hover {
+  border-color: #999;
+}
+
+.form.calculator .form-calc-option.selected {
+  border-color: #333;
+  background-color: #fff;
+}
+
+/* Option icon */
+.form.calculator .form-calc-option-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form.calculator .form-calc-option-icon svg {
+  width: 28px;
+  height: 28px;
+  fill: #333;
+}
+
+/* Bottom row - Input + Button side by side */
+.form.calculator .form-calc-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (width >= 768px) {
+  .form.calculator .form-calc-input-row {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 24px;
+  }
+}
+
+.form.calculator .form-calc-input-field {
+  flex: 1;
+  max-width: 100%;
+}
+
+@media (width >= 768px) {
+  .form.calculator .form-calc-input-field {
+    max-width: 320px;
+  }
+}
+
+/* Calculator input field */
+.form.calculator .form-calc-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  font-family: var(--body-font-family);
+  font-size: 15px;
+  color: #333;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form.calculator .form-calc-input:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.form.calculator .form-calc-input::placeholder {
+  color: #999;
+}
+
+/* Calculator submit button - muted yellow pill */
+.form.calculator .form-calc-submit {
+  padding: 16px 32px;
+  background-color: #f0d9a8;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 30px;
+  font-family: var(--body-font-family);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.form.calculator .form-calc-submit:hover {
+  background-color: #e8c88a;
+}
+
+.form.calculator .form-calc-submit::after {
+  content: '→';
+  font-size: 16px;
+}
+
+/* Mobile adjustments */
+@media (width <= 599px) {
+  .form.calculator {
+    padding: 32px 24px;
+  }
+
+  .form.calculator .form-calc-options {
+    flex-direction: column;
+  }
+
+  .form.calculator .form-calc-option {
+    flex-direction: row;
+    min-width: auto;
+    width: 100%;
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .form.calculator .form-calc-submit {
+    width: 100%;
+  }
+}
+

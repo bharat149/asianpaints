@@ -1,0 +1,221 @@
+.designer-collections {
+  background: #F5F0E4;
+  padding: 60px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Hide default table structure until JS processes it */
+.designer-collections > div {
+  display: none;
+}
+
+.designer-collections .designer-collections-carousel {
+  display: block;
+}
+
+.designer-collections .designer-collections-header {
+  display: flex;
+}
+
+/* Header with title and nav */
+.designer-collections-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 30px;
+}
+
+.designer-collections-title {
+  color: #277bd4;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: left;
+}
+
+.designer-collections-nav-wrapper {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.designer-collections-carousel {
+  position: relative;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.designer-collections-track {
+  display: flex;
+  gap: 0;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.designer-collections-card {
+  width: 319px;
+  min-width: 319px;
+  flex-shrink: 0;
+  background: transparent;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  margin-right: 70px;
+}
+
+.designer-collections-logo {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.designer-collections-logo img {
+  height: 60px;
+  width: auto;
+  margin-bottom: 5%;
+  object-fit: contain;
+}
+
+.designer-collections-image {
+  position: relative;
+  width: 65%;
+  max-width: 200px;
+  aspect-ratio: 0.75;
+  margin: 0 auto 20px;
+  transition: all 0.4s ease;
+}
+
+.designer-collections-image::before,
+.designer-collections-image::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  top: 0;
+  left: 0;
+}
+
+/* Back card (furthest) */
+.designer-collections-image::after {
+  background: #c9a992;
+  transform: translate(12px, 12px) rotate(6deg);
+  z-index: -2;
+}
+
+/* Middle card */
+.designer-collections-image::before {
+  background: #ddc8b8;
+  transform: translate(6px, 6px) rotate(3deg);
+  z-index: -1;
+}
+
+.designer-collections-image img,
+.designer-collections-image video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  position: relative;
+  z-index: 1;
+  background: white;
+}
+
+.designer-collections-content {
+  padding: 30px 10px 0;
+}
+
+.designer-collections-content h3 {
+  color: #277bd4;
+  font-size: 1.3rem;
+  margin: 0 0 8px;
+  line-height: 1.3;
+  font-size: 24px;
+  line-height: 24.6px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.designer-collections-content p {
+  color: #425e8e;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.designer-collections-nav {
+  background: white;
+  border: 1px solid #ddd;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-weight: 300;
+}
+
+.designer-collections-nav:hover {
+  background: #000;
+  color: white;
+  border-color: #000;
+}
+
+.designer-collections-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive */
+@media (width < 900px) {
+  .designer-collections {
+    padding: 40px 24px;
+  }
+
+  .designer-collections-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .designer-collections-title {
+    font-size: 1.8rem;
+  }
+
+  .designer-collections-card {
+    width: 280px;
+    min-width: 280px;
+  }
+
+  .designer-collections-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .designer-collections-content p {
+    font-size: 0.85rem;
+  }
+
+  .designer-collections-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
+@media (width < 600px) {
+  .designer-collections-card {
+    width: 260px;
+    min-width: 260px;
+  }
+}

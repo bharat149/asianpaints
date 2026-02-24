@@ -1,20 +1,563 @@
-footer {
-  background-color: var(--light-color);
-  font-size: var(--body-font-size-xs);
+/* Asian Paints Footer - Pixel Perfect Design */
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+.footer {
+  background-color: #1a1a1a;
+  color: #fff;
+  font-family: var(--body-font-family, system-ui, sans-serif);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-footer .footer > div {
-  margin: auto;
-  max-width: 1200px;
-  padding: 40px 24px 24px;
+.footer a {
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
 }
 
-footer .footer p {
+.footer a:hover {
+  opacity: 0.7;
+}
+
+.footer .footer-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 50px 60px 0;
+}
+
+/* ========================================
+   SECTION TITLES
+   ======================================== */
+.footer .footer-section-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 24px;
+  color: #fff;
+}
+
+.footer .footer-subsection-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 16px;
+  color: #fff;
+}
+
+/* ========================================
+   OUR DIVISIONS
+   ======================================== */
+.footer .footer-divisions {
+  margin-bottom: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid #333;
+}
+
+.footer .division-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 40px;
+}
+
+.footer .division-logo {
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.footer .division-logo:hover {
+  transform: translateY(-2px);
+}
+
+.footer .division-logo picture,
+.footer .division-logo img {
+  display: block;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+/* ========================================
+   MAIN GRID (Menus + Right Section)
+   ======================================== */
+.footer .footer-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid #333;
+}
+
+/* ========================================
+   MENU COLUMNS
+   ======================================== */
+.footer .footer-menus {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.footer .footer-menu-column {
+  min-width: 0;
+}
+
+.footer .menu-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 16px;
+  color: #fff;
+}
+
+.footer .menu-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer .menu-links li {
+  margin: 0;
+  padding: 0;
+}
+
+.footer .menu-links a {
+  display: block;
+  padding: 5px 0;
+  font-size: 13px;
+  font-weight: 300;
+  color: #b0b0b0;
+}
+
+.footer .menu-links a:hover {
+  color: #fff;
+  opacity: 1;
+}
+
+/* ========================================
+   RIGHT SECTION
+   ======================================== */
+.footer .footer-right {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px 40px;
+}
+
+/* Logo and Country */
+.footer .footer-logo-country {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer .footer-logo picture,
+.footer .footer-logo img {
+  display: block;
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Country Selector */
+.footer .country-selector {
+  position: relative;
+}
+
+.footer .country-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: #2a2a2a;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  min-width: 180px;
+}
+
+.footer .country-selected:hover {
+  background: #333;
+}
+
+.footer .country-flag {
+  width: 24px;
+  height: 16px;
+  background: linear-gradient(to bottom, #ff9933 33.33%, #fff 33.33%, #fff 66.66%, #138808 66.66%);
+  border-radius: 2px;
+}
+
+.footer .country-name {
+  flex: 1;
+  text-align: left;
+}
+
+.footer .dropdown-icon {
+  transition: transform 0.2s ease;
+}
+
+.footer .country-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #2a2a2a;
+  border-radius: 4px;
+  margin-top: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.footer .country-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.footer .country-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.footer .country-dropdown li {
   margin: 0;
 }
 
-@media (width >= 900px) {
-  footer .footer > div {
-    padding: 40px 32px 24px;
+.footer .country-dropdown a {
+  display: block;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #b0b0b0;
+}
+
+.footer .country-dropdown a:hover {
+  background: #333;
+  color: #fff;
+  opacity: 1;
+}
+
+/* Contact Section */
+.footer .footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer .contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer .contact-item svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.footer .contact-item a {
+  font-size: 14px;
+  color: #fff;
+}
+
+/* Store & Newsletter Forms */
+.footer .footer-store,
+.footer .footer-newsletter {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer .store-form,
+.footer .newsletter-form {
+  display: flex;
+  background: #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.footer .store-form input,
+.footer .newsletter-form input {
+  flex: 1;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.footer .store-form input::placeholder,
+.footer .newsletter-form input::placeholder {
+  color: #888;
+}
+
+.footer .store-form input.error,
+.footer .newsletter-form input.error {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.footer .store-form button,
+.footer .newsletter-form button {
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.footer .store-form button:hover,
+.footer .newsletter-form button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Download App Section */
+.footer .footer-app {
+  grid-column: 1;
+}
+
+.footer .app-downloads {
+  display: flex;
+  gap: 24px;
+}
+
+.footer .app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer .qr-code picture,
+.footer .qr-code img {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.footer .store-button picture,
+.footer .store-button img {
+  display: block;
+  height: 26px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Social Links */
+.footer .footer-social {
+  grid-column: 2;
+}
+
+.footer .social-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer .social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.footer .social-link:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.footer .social-link picture,
+.footer .social-link img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+/* ========================================
+   COLOUR TOOLS
+   ======================================== */
+.footer .footer-colour-tools {
+  padding: 40px 0;
+  border-bottom: 1px solid #333;
+}
+
+.footer .colour-tools-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer .colour-tool-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #fff;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.footer .colour-tool-link:hover {
+  background: #333;
+  border-color: #555;
+  opacity: 1;
+}
+
+/* ========================================
+   COPYRIGHT
+   ======================================== */
+.footer .footer-copyright {
+  padding: 30px 0;
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+}
+
+/* ========================================
+   PUBLIC NOTICE
+   ======================================== */
+.footer .footer-notice {
+  background: #111;
+  margin: 0 -60px;
+  padding: 20px 60px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.footer .notice-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.footer .notice-text {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ========================================
+   TABLET STYLES (768px - 1023px)
+   ======================================== */
+@media (width >= 768px) and (width < 1024px) {
+  .footer .footer-container {
+    padding: 40px 30px 0;
+  }
+
+  .footer .footer-main-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .footer .footer-menus {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .footer .footer-right {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .footer .footer-notice {
+    margin: 0 -30px;
+    padding: 20px 30px;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* ========================================
+   MOBILE STYLES (< 768px)
+   ======================================== */
+@media (width < 768px) {
+  .footer .footer-container {
+    padding: 30px 20px 0;
+  }
+
+  .footer .division-logos {
+    gap: 24px;
+  }
+
+  .footer .division-logo picture,
+  .footer .division-logo img {
+    height: 30px;
+  }
+
+  .footer .footer-main-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer .footer-menus {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .footer .footer-right {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .footer .footer-app {
+    grid-column: 1;
+  }
+
+  .footer .footer-social {
+    grid-column: 1;
+  }
+
+  .footer .colour-tools-grid {
+    gap: 10px;
+  }
+
+  .footer .colour-tool-link {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .footer .footer-notice {
+    margin: 0 -20px;
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+  .footer {
+    background: #fff;
+    color: #000;
+  }
+
+  .footer a {
+    color: #000;
+  }
+
+  .footer .country-selector,
+  .footer .store-form,
+  .footer .newsletter-form,
+  .footer .footer-app,
+  .footer .footer-social {
+    display: none;
   }
 }

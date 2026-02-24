@@ -1,0 +1,148 @@
+/* Fixed Color Partner - BCCI Campaign Sticky Badge */
+
+.fixed-color-partner {
+  position: fixed !important;
+  left: 0 !important;
+  bottom: 50px !important;
+  margin-left: 2.4% !important;
+  width: fit-content !important;
+  z-index: 1036 !important;
+  cursor: pointer;
+  transform: scale(1);
+}
+
+/* Hide wrapper div default styles */
+.fixed-color-partner > div {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Collapsed State - Show only small badge */
+.fixed-color-partner.collapsed p.animate-image,
+.fixed-color-partner.collapsed .animate-image {
+  display: none !important;
+}
+
+.fixed-color-partner.collapsed p.fixed-img,
+.fixed-color-partner.collapsed .fixed-img {
+  display: block !important;
+}
+
+/* Expanded State - Show full promotional image */
+.fixed-color-partner:not(.collapsed) p.animate-image,
+.fixed-color-partner:not(.collapsed) .animate-image {
+  display: block !important;
+}
+
+.fixed-color-partner:not(.collapsed) p.fixed-img,
+.fixed-color-partner:not(.collapsed) .fixed-img {
+  display: none !important;
+}
+
+/* Animate Image (Expanded) */
+.fixed-color-partner p.animate-image,
+.fixed-color-partner .animate-image {
+  margin: 0 !important;
+  box-shadow: 2px 4px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
+}
+
+.fixed-color-partner .animate-image a {
+  display: block;
+  line-height: 0;
+}
+
+.fixed-color-partner .animate-image img {
+  display: block;
+  width: 367px;
+  height: 385px;
+  max-width: 100%;
+}
+
+/* Fixed Image (Collapsed Badge) */
+.fixed-color-partner p.fixed-img,
+.fixed-color-partner .fixed-img {
+  margin: 0 !important;
+  cursor: pointer;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 0 6px 6px 0;
+  background: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fixed-color-partner .fixed-img:hover {
+  transform: translateX(5px);
+  box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.25);
+}
+
+.fixed-color-partner .fixed-img img {
+  display: block;
+  width: 90px;
+  height: 34px;
+}
+
+/* Close Button - appears when expanded */
+.fixed-color-partner .close-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  color: white !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.fixed-color-partner:not(.collapsed) .close-btn {
+  display: flex !important;
+}
+
+.fixed-color-partner .close-btn:hover {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Mobile Styles */
+@media (max-width: 767px) {
+  .fixed-color-partner .animate-image img {
+    width: 280px;
+    height: 294px; /* Maintain aspect ratio: 280/367 * 385 */
+  }
+
+  .fixed-color-partner .fixed-img img {
+    width: 70px;
+    height: 26px; /* Maintain aspect ratio: 70/90 * 34 */
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 768px) and (max-width: 991px) {
+  .fixed-color-partner .animate-image img {
+    width: 320px;
+    height: 336px; /* Maintain aspect ratio: 320/367 * 385 */
+  }
+}
+
+/* Hide on very small screens */
+@media (max-width: 480px) {
+  .fixed-color-partner {
+    display: none !important;
+  }
+}
+
+/* Print - hide overlay */
+@media print {
+  .fixed-color-partner {
+    display: none !important;
+  }
+}

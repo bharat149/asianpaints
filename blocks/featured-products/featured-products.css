@@ -1,0 +1,148 @@
+/* Featured Products - Full Width Banner Carousel */
+
+.section:has(.featured-products) {
+  padding: 50px 40px 50px;
+}
+
+.section:has(.featured-products) > div {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Header with title and navigation */
+.featured-products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.featured-products-title {
+  font-size: 40px;
+  font-weight: 700;
+  color: #277bd4;
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+}
+
+.featured-products-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.featured-products-nav button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 18px;
+  color: #1a1a1a;
+}
+
+.featured-products-nav button:hover:not(:disabled) {
+  border-color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+.featured-products-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Carousel container */
+.featured-products-carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.featured-products-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Each slide - full width banner */
+.featured-products-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  position: relative;
+}
+
+.featured-products-slide a {
+  display: block;
+  width: 100%;
+}
+
+.featured-products-slide picture {
+  display: block;
+  width: 100%;
+}
+
+.featured-products-slide img {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16 / 6;
+  object-fit: cover;
+}
+
+/* Hide the text content overlay - images are self-contained banners */
+.featured-products-slide .featured-products-content {
+  display: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 991px) {
+  .section:has(.featured-products) {
+    padding: 60px 20px 40px;
+  }
+
+  .featured-products-title {
+    font-size: 28px;
+  }
+
+  .featured-products-nav button {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .featured-products-slide img {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 600px) {
+  .section:has(.featured-products) {
+    padding: 40px 16px 30px;
+  }
+
+  .featured-products-header {
+    margin-bottom: 20px;
+  }
+
+  .featured-products-title {
+    font-size: 24px;
+  }
+
+  .featured-products-nav button {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .featured-products-carousel {
+    border-radius: 12px;
+  }
+
+  .featured-products-slide img {
+    aspect-ratio: 4 / 3;
+  }
+}
+

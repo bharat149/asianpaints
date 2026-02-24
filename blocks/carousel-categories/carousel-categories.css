@@ -1,0 +1,184 @@
+/* Carousel Categories Block - Two-column tab layout */
+
+.carousel-categories {
+  padding: 40px 0;
+}
+
+.carousel-categories .carousel-categories-container {
+  display: flex;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Left column - Tabs */
+.carousel-categories .carousel-categories-left {
+  flex: 0 0 280px;
+  max-width: 280px;
+}
+
+.carousel-categories .carousel-categories-heading {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--heading-color, #222);
+  margin: 0 0 24px;
+  font-family: var(--heading-font-family);
+  line-height: 1.2;
+}
+
+.carousel-categories .carousel-categories-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.carousel-categories .carousel-categories-tab {
+  display: block;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-left: 4px solid transparent;
+  background: transparent;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--body-font-family);
+}
+
+.carousel-categories .carousel-categories-tab:hover {
+  background: rgb(0 0 0 / 3%);
+  color: #1a8c1a;
+}
+
+.carousel-categories .carousel-categories-tab.active {
+  border: 2px solid #1a8c1a;
+  border-radius: 8px;
+  color: #1a8c1a;
+  background: transparent;
+  font-weight: 600;
+}
+
+/* Right column - Image display */
+.carousel-categories .carousel-categories-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.carousel-categories .carousel-categories-image-container {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.carousel-categories .carousel-categories-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+}
+
+/* Dot indicators */
+.carousel-categories .carousel-categories-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  padding: 8px 16px;
+  background: rgb(255 255 255 / 90%);
+  border-radius: 20px;
+}
+
+.carousel-categories .carousel-categories-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carousel-categories .carousel-categories-dot:hover {
+  background: #999;
+}
+
+.carousel-categories .carousel-categories-dot.active {
+  background: #1a8c1a;
+}
+
+/* Responsive - Tablet */
+@media (width <= 991px) {
+  .carousel-categories .carousel-categories-container {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .carousel-categories .carousel-categories-left {
+    flex: none;
+    max-width: 100%;
+  }
+
+  .carousel-categories .carousel-categories-heading {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .carousel-categories .carousel-categories-tabs {
+    flex-flow: row wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .carousel-categories .carousel-categories-tab {
+    width: auto;
+    padding: 10px 16px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 8px;
+    background: #f5f5f5;
+    font-size: 14px;
+  }
+
+  .carousel-categories .carousel-categories-tab.active {
+    border: 2px solid #1a8c1a;
+    background: transparent;
+  }
+}
+
+/* Responsive - Mobile */
+@media (width <= 600px) {
+  .carousel-categories {
+    padding: 30px 0;
+  }
+
+  .carousel-categories .carousel-categories-container {
+    padding: 0 16px;
+  }
+
+  .carousel-categories .carousel-categories-heading {
+    font-size: 20px;
+  }
+
+  .carousel-categories .carousel-categories-tab {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .carousel-categories .carousel-categories-dots {
+    bottom: 12px;
+    padding: 6px 12px;
+  }
+
+  .carousel-categories .carousel-categories-dot {
+    width: 8px;
+    height: 8px;
+  }
+}

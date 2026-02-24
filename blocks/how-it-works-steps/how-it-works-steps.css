@@ -1,0 +1,157 @@
+/* How It Works Steps Block - Pixel-perfect styling */
+
+.how-it-works-steps {
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.how-it-works-steps-wrapper {
+  display: flex;
+  gap: 60px;
+  align-items: flex-start;
+}
+
+/* Left column - Heading and Image */
+.how-it-works-steps-left {
+  flex: 0 0 45%;
+  max-width: 45%;
+}
+
+.how-it-works-steps-left h2 {
+  font-size: 48px;
+  font-weight: 800;
+  font-family: Manrope, sans-serif;
+  color: rgb(29 29 31);
+  line-height: 1.2;
+  margin: 0 0 30px;
+}
+
+.how-it-works-steps-left picture {
+  display: block;
+  width: 100%;
+}
+
+.how-it-works-steps-left picture img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Right column - Steps */
+.how-it-works-steps-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Individual step */
+.how-it-works-step {
+  display: flex;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px dashed rgb(200 200 200);
+}
+
+.how-it-works-step:last-child {
+  border-bottom: none;
+}
+
+/* Step number - Orange color */
+.how-it-works-step-number {
+  font-size: 40px;
+  font-weight: 300;
+  font-family: Manrope, sans-serif;
+  color: rgb(232 119 34); /* Orange/coral color */
+  line-height: 1;
+  min-width: 60px;
+}
+
+/* Step content */
+.how-it-works-step-content {
+  flex: 1;
+}
+
+.how-it-works-step-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: Manrope, sans-serif;
+  color: rgb(29 29 31);
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.how-it-works-step-content p {
+  font-size: 16px;
+  font-weight: 400;
+  font-family: Manrope, sans-serif;
+  color: rgb(117 120 123);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsive: tablet */
+@media (width <= 1024px) {
+  .how-it-works-steps-wrapper {
+    gap: 40px;
+  }
+
+  .how-it-works-steps-left {
+    flex: 0 0 40%;
+    max-width: 40%;
+  }
+
+  .how-it-works-steps-left h2 {
+    font-size: 36px;
+  }
+
+  .how-it-works-step-number {
+    font-size: 32px;
+    min-width: 50px;
+  }
+}
+
+/* Responsive: mobile */
+@media (width <= 768px) {
+  .how-it-works-steps {
+    padding: 40px 16px;
+  }
+
+  .how-it-works-steps-wrapper {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .how-it-works-steps-left {
+    flex: none;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .how-it-works-steps-left h2 {
+    font-size: 32px;
+  }
+
+  .how-it-works-steps-left picture img {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .how-it-works-step {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .how-it-works-step-number {
+    font-size: 28px;
+    min-width: 40px;
+  }
+
+  .how-it-works-step-content h3 {
+    font-size: 18px;
+  }
+
+  .how-it-works-step-content p {
+    font-size: 14px;
+  }
+}

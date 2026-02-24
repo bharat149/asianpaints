@@ -11,17 +11,32 @@
  */
 
 :root {
-  /* colors */
-  --background-color: white;
+  /* colors - Asian Paints brand */
+  --background-color: #fff;
   --light-color: #f8f8f8;
-  --dark-color: #505050;
-  --text-color: #131313;
-  --link-color: #3b63fb;
-  --link-hover-color: #1d3ecf;
+  --dark-color: #232426;
+  --text-color: #222;
+  --link-color: #431a80;
+  --link-hover-color: #7345b3;
+
+  /* brand colors */
+  --primary-color: #431a80;
+  --primary-color-light: #7345b3;
+  --accent-color: #fcaf17;
+  --accent-color-hover: #e59d15;
+  --yellow: #fff4cc;
+  --grey: #f5f5f5;
+  --dark-grey: #6b6b6b;
+  --black: #000;
+  --navy-blue: #011c5f;
+  --cream-bg: #f5f0e8;
+  --text-color-muted: #666;
+  --text-color-dark: #1a1a1a;
+  --gradient-brand: linear-gradient(270deg, rgb(248 161 46), rgb(190 42 29) 50.07%, rgb(69 33 108) 98.1%);
 
   /* fonts */
-  --body-font-family: roboto, roboto-fallback, sans-serif;
-  --heading-font-family: roboto-condensed, roboto-condensed-fallback, sans-serif;
+  --body-font-family: manrope, manrope-fallback, sans-serif;
+  --heading-font-family: manrope, manrope-fallback, sans-serif;
 
   /* body sizes */
   --body-font-size-m: 22px;
@@ -36,22 +51,12 @@
   --heading-font-size-s: 24px;
   --heading-font-size-xs: 22px;
 
-  /* nav height */
-  --nav-height: 64px;
+  /* Header height - mobile first: 38px brand bar + 56px main header = 94px */
+  --nav-height: 94px;
+  --header-height: var(--nav-height);
 }
 
-/* fallback fonts */
-@font-face {
-  font-family: roboto-condensed-fallback;
-  size-adjust: 88.82%;
-  src: local('Arial');
-}
-
-@font-face {
-  font-family: roboto-fallback;
-  size-adjust: 99.529%;
-  src: local('Arial');
-}
+/* fallback font defined in fonts.css */
 
 @media (width >= 900px) {
   :root {
@@ -70,6 +75,13 @@
   }
 }
 
+@media (width >= 992px) {
+  :root {
+    /* Desktop header: 48px brand bar + 56px main header + 48px nav bar = 152px */
+    --nav-height: 152px;
+  }
+}
+
 body {
   display: none;
   margin: 0;
@@ -85,10 +97,49 @@ body.appear {
 }
 
 header {
-  height: var(--nav-height);
+  /* Fixed header - all styles here to prevent CLS when block CSS loads */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  /* 48px brand bar + 56px main header + 48px nav bar = 152px */
+  height: 152px;
+
+  /* Prevent header layout changes from affecting main content */
+  contain: strict;
+  overflow: hidden;
 }
 
-header .header,
+@media (width < 992px) {
+  header {
+    /* Mobile: 38px brand bar + 56px main header = 94px (nav bar hidden) */
+    height: 94px;
+  }
+}
+
+/* Push main content down to account for fixed header */
+main {
+  margin-top: var(--header-height);
+}
+
+/* Critical CSS for Fixed Color Partner to prevent CLS */
+.fixed-color-partner {
+  position: fixed !important;
+  left: 0 !important;
+  bottom: 50px !important;
+  z-index: 1036 !important;
+}
+
+header .header {
+  visibility: hidden;
+
+  /* Fixed height to prevent CLS during block decoration */
+  height: 100%;
+  min-height: inherit;
+}
+
 footer .footer {
   visibility: hidden;
 }
@@ -96,6 +147,11 @@ footer .footer {
 header .header[data-block-status="loaded"],
 footer .footer[data-block-status="loaded"] {
   visibility: visible;
+}
+
+/* Reserve minimum footer space to reduce CLS */
+footer {
+  min-height: 200px;
 }
 
 h1,
@@ -165,117 +221,101 @@ a:hover {
   text-decoration: underline;
 }
 
-/* buttons */
-p.button-wrapper {
-  margin: 12px 0;
-}
-
+/* buttons - Asian Paints brand */
 a.button:any-link,
-button.button {
+button {
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   max-width: 100%;
-  margin: 0;
-  border: 2px solid transparent;
-  border-radius: 2.4em;
-  padding: 0.5em 1.2em;
-  font: inherit;
-  font-weight: 500;
+  margin: 12px 0;
+  border: 1px solid var(--primary-color);
+  border-radius: 40px;
+  padding: 15px 24px;
+  font-family: var(--body-font-family);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.86px;
   line-height: 1.25;
+  text-align: center;
   text-decoration: none;
+  text-transform: uppercase;
+  background-color: var(--primary-color);
+  color: var(--background-color);
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-a.button[aria-disabled="true"],
-button.button:disabled {
-  cursor: not-allowed;
-  pointer-events: none;
+a.button:hover,
+a.button:focus,
+button:hover,
+button:focus {
+  background-color: var(--primary-color-light);
+  border-color: var(--primary-color-light);
+  cursor: pointer;
 }
 
-a.button.primary,
-button.button.primary {
-  border-color: var(--text-color);
-  background-color: var(--text-color);
-  color: var(--background-color);
+button:disabled,
+button:disabled:hover {
+  background-color: #ddd;
+  border-color: #ddd;
+  color: #979797;
+  cursor: unset;
 }
 
-a.button.primary:hover,
-a.button.primary:focus-visible,
-button.button.primary:hover,
-button.button.primary:focus-visible {
-  border-color: var(--dark-color);
-  background-color: var(--dark-color);
-  color: var(--light-color);
-}
-
-a.button.primary[aria-disabled="true"],
-a.button.primary[aria-disabled="true"]:hover,
-a.button.primary[aria-disabled="true"]:focus-visible,
-button.button.primary:disabled,
-button.button.primary:disabled:hover,
-button.button.primary:disabled:focus-visible {
-  background-color: var(--light-color);
-  border-color: var(--light-color);
-  color: var(--dark-color);
-}
-
+/* Secondary button - outline style */
 a.button.secondary,
-button.button.secondary {
-  border-color: var(--text-color);
+button.secondary {
   background-color: transparent;
-  color: var(--text-color);
+  border: 1px solid var(--dark-color);
+  color: var(--dark-color);
 }
 
 a.button.secondary:hover,
-a.button.secondary:focus-visible,
-button.button.secondary:hover,
-button.button.secondary:focus-visible {
-  border-color: var(--dark-color);
-  background-color: var(--light-color);
-  color: var(--dark-color);
-}
-
-a.button.secondary[aria-disabled="true"],
-a.button.secondary[aria-disabled="true"]:hover,
-a.button.secondary[aria-disabled="true"]:focus-visible,
-button.button.secondary:disabled,
-button.button.secondary:disabled:hover,
-button.button.secondary:disabled:focus-visible {
-  background-color: var(--light-color);
-  border-color: var(--light-color);
-  color: var(--dark-color);
-}
-
-/* high-impact call-to-action */
-a.button.accent,
-button.button.accent {
-  border-color: var(--link-color);
-  background-color: var(--link-color);
+a.button.secondary:focus,
+button.secondary:hover,
+button.secondary:focus {
+  background-color: var(--dark-color);
   color: var(--background-color);
 }
 
-a.button.accent:hover,
-a.button.accent:focus-visible,
-button.button.accent:hover,
-button.button.accent:focus-visible {
-  border-color: var(--link-hover-color);
-  background-color: var(--link-hover-color);
+/* Accent/Yellow button */
+a.button.accent,
+button.accent {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--dark-color);
 }
 
-a.button.accent[aria-disabled="true"],
-a.button.accent[aria-disabled="true"]:hover,
-a.button.accent[aria-disabled="true"]:focus-visible,
-button.button.accent:disabled,
-button.button.accent:disabled:hover,
-button.button.accent:disabled:focus-visible {
-  background-color: var(--light-color);
-  border-color: var(--light-color);
-  color: var(--dark-color);
+a.button.accent:hover,
+a.button.accent:focus,
+button.accent:hover,
+button.accent:focus {
+  background-color: var(--accent-color-hover);
+  border-color: var(--accent-color-hover);
+}
+
+/* Text link style - for links that should appear as plain links, not buttons */
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--link-color);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-transform: none;
+  letter-spacing: normal;
+  border-radius: 0;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
+  background: none;
+  color: var(--link-hover-color);
 }
 
 main img {
@@ -301,17 +341,24 @@ main > .section {
 }
 
 main > .section > div {
-  max-width: 1200px;
+  max-width: none;
   margin: auto;
-  padding: 0 24px;
+  padding: 0;
 }
 
 main > .section:first-of-type {
   margin-top: 0;
 }
 
+/* Constrained width for default content (text, etc.) */
+main > .section > .default-content-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 24px;
+}
+
 @media (width >= 900px) {
-  main > .section > div {
+  main > .section > .default-content-wrapper {
     padding: 0 32px;
   }
 }
@@ -323,3 +370,238 @@ main .section.highlight {
   margin: 0;
   padding: 40px 0;
 }
+
+/* Hide page metadata block */
+.metadata {
+  display: none;
+}
+
+main .section.dark {
+  background-color: var(--dark-color);
+  color: white;
+  margin: 0;
+  padding: 40px 0;
+}
+
+/* Yellow section - Asian Paints */
+main .section.yellow {
+  background-color: var(--yellow);
+  color: var(--text-color);
+  margin: 0;
+  padding: 60px 0;
+}
+
+/* Grey section - Asian Paints */
+main .section.grey {
+  background-color: var(--grey);
+  color: var(--text-color);
+  margin: 0;
+  padding: 60px 0;
+}
+
+main .section.dark-blue {
+  background-color: var(--navy-blue);
+  color: white;
+  margin: 0;
+  padding: 60px 0;
+}
+
+main .section.dark h2,
+main .section.dark h3,
+main .section.dark-blue h2,
+main .section.dark-blue h3 {
+  color: white;
+}
+
+main .section.dark p,
+main .section.dark-blue p {
+  color: rgb(255 255 255 / 90%);
+}
+
+/* Form styling in dark sections */
+main .section.dark-blue strong,
+main .section.dark strong {
+  color: white;
+  display: block;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+main .section.dark-blue em,
+main .section.dark em {
+  color: rgb(255 255 255 / 70%);
+  font-style: normal;
+  display: block;
+  padding: 12px;
+  background-color: rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  margin-bottom: 16px;
+}
+
+.section.hidden {
+  display: none;
+}
+
+/* Full-width standalone banner images (linked images outside blocks) */
+main > .section > .default-content-wrapper > p > a:only-child {
+  display: block;
+  width: 100%;
+}
+
+main > .section > .default-content-wrapper > p > a:only-child > picture,
+main > .section > .default-content-wrapper > p > a:only-child > picture > img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Remove max-width constraint for sections containing only banner images */
+main > .section > .default-content-wrapper:has(> p > a:only-child > picture) {
+  max-width: none;
+  padding: 0;
+}
+
+/* Full-width standalone images (non-linked images like GIFs) */
+/* stylelint-disable no-descending-specificity */
+main > .section > .default-content-wrapper > p > picture:only-child,
+main > .section > .default-content-wrapper > picture:only-child {
+  display: block;
+  width: 100%;
+}
+
+main > .section > .default-content-wrapper > p > picture:only-child > img,
+main > .section > .default-content-wrapper > picture:only-child > img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Remove max-width constraint for sections containing only standalone images */
+main > .section:has(> .default-content-wrapper:only-child > p:only-child > picture:only-child),
+main > .section:has(> .default-content-wrapper:only-child > picture:only-child) {
+  margin: 0;
+  padding: 0;
+}
+
+main > .section:has(> .default-content-wrapper:only-child > p:only-child > picture:only-child) > .default-content-wrapper,
+main > .section:has(> .default-content-wrapper:only-child > picture:only-child) > .default-content-wrapper {
+  max-width: none;
+  padding: 0;
+}
+/* stylelint-enable no-descending-specificity */
+
+/* SEO/Default content typography - match Asian Paints original */
+main > .section > .default-content-wrapper h2 {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.13;
+  color: #222;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+/*
+ * Use section metadata style=center-heading for centered headings
+ * instead of content-dependent ID selectors
+ */
+main > .section.center-heading > .default-content-wrapper h2 {
+  text-align: center;
+}
+
+main > .section.center-heading > .default-content-wrapper h2 + p {
+  text-align: center;
+}
+
+main > .section > .default-content-wrapper h3 {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #222;
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main > .section > .default-content-wrapper p {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.57;
+  color: #222;
+}
+
+main > .section > .default-content-wrapper ul,
+main > .section > .default-content-wrapper ol {
+  font-size: 14px;
+  line-height: 1.57;
+  color: #222;
+  padding-left: 1.5em;
+}
+
+main > .section > .default-content-wrapper li {
+  margin-bottom: 0.5em;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main > .section > .default-content-wrapper a:any-link {
+  color: #06c;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main > .section > .default-content-wrapper a:hover {
+  text-decoration: underline;
+}
+
+/* Video Section (Kaamyabi ke rang) - Pixel perfect matching Asian Paints */
+/* stylelint-disable-next-line no-descending-specificity */
+main > .section:has(.embed-wrapper) {
+  padding: 40px 20px 60px;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main > .section:has(.embed-wrapper) > .default-content-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Video section title - Pixel perfect */
+main > .section:has(.embed-wrapper) > .default-content-wrapper h2 {
+  font-size: 32px; /* Pixel-perfect */
+  font-weight: 800; /* Pixel-perfect */
+  font-family: Manrope, sans-serif;
+  color: rgb(34 34 34); /* Pixel-perfect */
+  line-height: 40px; /* Pixel-perfect */
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+/* Video section description - Pixel perfect */
+/* stylelint-disable-next-line no-descending-specificity */
+main > .section:has(.embed-wrapper) > .default-content-wrapper:last-of-type p {
+  font-size: 16px; /* Pixel-perfect */
+  font-weight: 400; /* Pixel-perfect */
+  font-family: Manrope, sans-serif;
+  color: rgb(34 34 34); /* Pixel-perfect */
+  line-height: 26px; /* Pixel-perfect */
+  margin: 24px auto 16px;
+  max-width: 900px;
+  text-align: center;
+}
+
+/* Video section CTA link - Pixel perfect */
+main > .section:has(.embed-wrapper) > .default-content-wrapper:last-of-type a {
+  color: rgb(0 0 0); /* Pixel-perfect: black */
+  text-decoration: underline;
+  font-weight: 400;
+}
+
+main > .section:has(.embed-wrapper) > .default-content-wrapper:last-of-type a:hover {
+  color: var(--primary-color);
+}
+

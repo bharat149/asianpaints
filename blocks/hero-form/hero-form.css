@@ -1,0 +1,353 @@
+/* Hero Form Block - Split layout with background image and contact form */
+
+.hero-form-container {
+  max-width: unset !important;
+  padding: 0 !important;
+}
+
+.hero-form-container > .default-content-wrapper,
+.hero-form-container > .hero-form-wrapper {
+  max-width: unset;
+  padding: 0;
+}
+
+.hero-form {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 500px;
+  background-color: #f5f5f5;
+}
+
+@media (width >= 900px) {
+  .hero-form {
+    grid-template-columns: 65% 35%;
+    min-height: 600px;
+  }
+}
+
+/* Background image - spans full width */
+.hero-form-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+@media (width >= 900px) {
+  .hero-form-background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+}
+
+.hero-form-background picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-form-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left center;
+}
+
+/* Content area - text overlay on left */
+.hero-form-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 24px;
+  z-index: 2;
+  background: linear-gradient(to top, rgb(0 0 0 / 80%) 0%, rgb(0 0 0 / 0%) 100%);
+}
+
+@media (width >= 900px) {
+  .hero-form-content {
+    position: absolute;
+    inset: auto auto 60px 40px;
+    max-width: 400px;
+    padding: 0;
+    background: none;
+    z-index: 3;
+  }
+}
+
+.hero-form-heading {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+  margin: 0 0 12px;
+  font-style: italic;
+}
+
+@media (width >= 900px) {
+  .hero-form-heading {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+}
+
+.hero-form-subheading {
+  font-size: 14px;
+  font-weight: 400;
+  color: #fff;
+  margin: 0 0 20px;
+  opacity: 0.9;
+}
+
+@media (width >= 900px) {
+  .hero-form-subheading {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+}
+
+.hero-form-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid #fff;
+  border-radius: 30px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.hero-form-cta:hover {
+  background: #fff;
+  color: #222;
+  text-decoration: none;
+}
+
+.hero-form-cta-arrow {
+  font-size: 18px;
+}
+
+/* Form panel - right side */
+.hero-form-panel-wrapper {
+  position: relative;
+  z-index: 4;
+  padding: 20px;
+}
+
+@media (width >= 900px) {
+  .hero-form-panel-wrapper {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background-color: #f5ede3;
+  }
+}
+
+.hero-form-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 15%);
+  max-width: 500px;
+  width: 100%;
+}
+
+@media (width >= 900px) {
+  .hero-form-panel {
+    padding: 32px;
+  }
+}
+
+.hero-form-panel-heading {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+@media (width >= 900px) {
+  .hero-form-panel-heading {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+}
+
+/* Form layout */
+.hero-form-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-form-field-full {
+  width: 100%;
+}
+
+.hero-form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (width >= 600px) {
+  .hero-form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hero-form-field {
+  position: relative;
+}
+
+.hero-form-field input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.2s ease;
+}
+
+.hero-form-field input:focus {
+  outline: none;
+  border-color: var(--primary-color, #431a80);
+}
+
+.hero-form-field input::placeholder {
+  color: #999;
+}
+
+.hero-form-field.hero-form-field-phone input {
+  padding-left: 50px;
+}
+
+/* Phone field with country code */
+.hero-form-field-phone {
+  position: relative;
+}
+
+.hero-form-country-code {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* WhatsApp toggle */
+.hero-form-options {
+  margin-top: 8px;
+}
+
+.hero-form-whatsapp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.hero-form-whatsapp input[type="checkbox"] {
+  display: none;
+}
+
+.hero-form-toggle {
+  width: 48px;
+  height: 26px;
+  background: #ccc;
+  border-radius: 13px;
+  position: relative;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.hero-form-toggle::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+}
+
+.hero-form-whatsapp input:checked + .hero-form-toggle {
+  background: #25d366;
+}
+
+.hero-form-whatsapp input:checked + .hero-form-toggle::after {
+  transform: translateX(22px);
+}
+
+.hero-form-whatsapp-text {
+  font-size: 14px;
+  color: #222;
+}
+
+.hero-form-disclaimer {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Submit button */
+.hero-form-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--accent-color, #f7a81b);
+  border: none;
+  border-radius: 30px;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.hero-form-submit:hover {
+  background: #e59d15;
+  color: #000;
+}
+
+.hero-form-arrow {
+  font-size: 18px;
+}
+
+/* Mobile adjustments */
+@media (width < 900px) {
+  .hero-form-content {
+    display: none;
+  }
+
+  .hero-form-panel-wrapper {
+    background: linear-gradient(to bottom, transparent 0%, #f5f5f5 30%);
+    padding-top: 350px;
+  }
+
+  .hero-form-background {
+    height: 400px;
+  }
+}
