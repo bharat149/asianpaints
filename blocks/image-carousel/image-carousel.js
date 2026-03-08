@@ -30,7 +30,10 @@ function splitUrls(raw) {
 }
 
 function parseConfig(block) {
-  const rows = qsa(block, 'tr');
+  // supports both:
+  // 1) table-based: <tr><th>key</th><td>value</td></tr>
+  // 2) div-based:   <div><div>key</div><div>value</div></div>
+
   const cfg = {
     autoplay: true,
     interval: 5000,
@@ -43,39 +46,93 @@ function parseConfig(block) {
     debug: { parsed: [] },
   };
 
-  // Skip the header row (block name)
-  rows.slice(1).forEach((tr) => {
-    const tds = qsa(tr, 'th, td');
-    if (tds.length < 2) return;
+  // ---------- helpers ----------
+  const getCellsFromTableRow = (row) => qsa(row, 'th, td');
 
-    const key = cellText(tds[0]).toLowerCase();
-    const valText = cellText(tds[1]);
-    const valHrefOrText = cellHrefOrText(tds[1]);
+  const getDivRows = () => {
+    // EDS commonly wraps block content as:
+    // <div class="block"><div>ROW</div><div>ROW</div>...</div>
+    // Sometimes there’s one wrapper div inside block; handle both.
+    const direct = qsa(block, ':scope > div');
+    const wrapper = (direct.length === 1) ? direct[0] : null;
 
-    cfg.debug.parsed.push({ key, valText, valHrefOrText });
+    const candidates = wrapper ? qsa(wrapper, ':scope > div') : direct;
 
-    if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
-    if (key === 'interval') {
-      const n = Number(valText);
-      if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
-    }
-    if (key === 'fade') cfg.fade = yesNo(valText, false);
-    if (key === 'clickable') cfg.clickable = yesNo(valText, false);
-    if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
-    if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
-    if (key === 'overlaytitle') cfg.overlayTitle = valText;
+    // rows are divs with at least 2 child divs (key/value)
+    return candidates.filter((r) => r.children && r.children.length >= 2);
+  };
 
-    // ✅ Your desired format: image | <one-or-more-urls>
-    // We append so multiple 'image' rows are allowed.
-    if (key === 'image') {
-      const urls = splitUrls(valHrefOrText || valText);
-      cfg.images.push(...urls);
-    }
-  });
+  const getCellsFromDivRow = (row) => [...row.children].slice(0, 2);
 
-  // De-dupe while preserving order
+  // ---------- detect structure ----------
+  let tableRows = qsa(block, 'tr');
+
+  // If no <tr>, we’re in div-based structure
+  const usingTable = tableRows.length > 0;
+
+  if (usingTable) {
+    // skip header row (block name)
+    tableRows.slice(1).forEach((tr) => {
+      const cells = getCellsFromTableRow(tr);
+      if (cells.length < 2) return;
+
+      const key = cellText(cells[0]).toLowerCase();
+      const valText = cellText(cells[1]);
+      const valHrefOrText = cellHrefOrText(cells[1]);
+
+      cfg.debug.parsed.push({ key, valText, valHrefOrText });
+
+      if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
+      if (key === 'interval') {
+        const n = Number(valText);
+        if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
+      }
+      if (key === 'fade') cfg.fade = yesNo(valText, false);
+      if (key === 'clickable') cfg.clickable = yesNo(valText, false);
+      if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
+      if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
+      if (key === 'overlaytitle') cfg.overlayTitle = valText;
+
+      if (key === 'image') {
+        const urls = splitUrls(valHrefOrText || valText);
+        cfg.images.push(...urls);
+      }
+    });
+  } else {
+    const divRows = getDivRows();
+
+    // In some EDS conversions the first "row" might be the header;
+    // but because we’re already inside the block, header row usually isn’t present.
+    divRows.forEach((row) => {
+      const cells = getCellsFromDivRow(row);
+      if (cells.length < 2) return;
+
+      const key = cellText(cells[0]).toLowerCase();
+      const valText = cellText(cells[1]);
+      const valHrefOrText = cellHrefOrText(cells[1]);
+
+      cfg.debug.parsed.push({ key, valText, valHrefOrText });
+
+      if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
+      if (key === 'interval') {
+        const n = Number(valText);
+        if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
+      }
+      if (key === 'fade') cfg.fade = yesNo(valText, false);
+      if (key === 'clickable') cfg.clickable = yesNo(valText, false);
+      if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
+      if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
+      if (key === 'overlaytitle') cfg.overlayTitle = valText;
+
+      if (key === 'image') {
+        const urls = splitUrls(valHrefOrText || valText);
+        cfg.images.push(...urls);
+      }
+    });
+  }
+
+  // de-dupe
   cfg.images = [...new Set(cfg.images)];
-
   return cfg;
 }
 
