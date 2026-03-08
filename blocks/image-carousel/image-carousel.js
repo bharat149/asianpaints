@@ -1,216 +1,219 @@
-function parseDAConfigAndSlides(block) {
-  const rows = [...block.querySelectorAll('tr')];
-  const config = { autoplay: false, interval: 5000 };
+function qsa(el, sel) { return [...el.querySelectorAll(sel)]; }
+function qs(el, sel) { return el.querySelector(sel); }
+
+const CONFIG_KEYS = new Set([
+  'autoplay',
+  'interval',
+  'fade',
+  'clickable',      // yes/no
+  'ctalink',        // fallback link if clickable=yes
+  'overlaysubtitle',
+  'overlaytitle',
+  'overlayhtml'     // optional: full HTML for overlay
+]);
+
+function textOf(cell) {
+  return (cell?.textContent || '').trim();
+}
+
+function htmlOf(cell) {
+  return (cell?.innerHTML || '').trim();
+}
+
+function normalizeBoolYesNo(v, defaultVal = false) {
+  const s = String(v || '').trim().toLowerCase();
+  if (s === 'yes' || s === 'true') return true;
+  if (s === 'no' || s === 'false') return false;
+  return defaultVal;
+}
+
+function extractLink(cell) {
+  // If author pasted a link element, use its href; else use plain text.
+  const a = cell?.querySelector?.('a[href]');
+  if (a?.getAttribute('href')) return a.getAttribute('href').trim();
+  return textOf(cell);
+}
+
+function looksLikeConfigRow(firstCellText) {
+  return CONFIG_KEYS.has(firstCellText.toLowerCase());
+}
+
+function parseBlock(block) {
+  const rows = qsa(block, 'tr');
+  const cfg = {
+    autoplay: true,
+    interval: 5000,
+    fade: false,
+    clickable: false,
+    ctaLink: '',
+    overlaySubtitle: '',
+    overlayTitle: '',
+    overlayHtml: ''
+  };
+
   const slides = [];
 
-  // Determine variant from block class: "carousel (variant)" becomes class "variant"
-  // DA/EDS usually adds the option as a CSS class on the block root already,
-  // but we also support reading it from the first row text.
-  const headerText = rows[0]?.textContent?.trim() || '';
-  const variantMatch = headerText.match(/\(([^)]+)\)/);
-  if (variantMatch?.[1]) config.variant = variantMatch[1].trim();
+  // Skip header row
+  rows.slice(1).forEach((tr) => {
+    const tds = qsa(tr, 'td');
+    if (tds.length < 2) return;
 
-  rows.slice(1).forEach((row) => {
-    const cells = [...row.querySelectorAll('td')].map((c) => c.innerHTML.trim());
-    if (cells.length < 2) return;
+    const k = textOf(tds[0]).toLowerCase();
 
-    const key = cells[0].replace(/<[^>]*>/g, '').trim().toLowerCase();
+    // Config rows must be 2 columns
+    if (looksLikeConfigRow(k) && tds.length === 2) {
+      const vText = textOf(tds[1]);
 
-    // config rows: | autoplay | true |
-    if (key === 'autoplay') config.autoplay = cells[1].replace(/<[^>]*>/g, '').trim() === 'true';
-    else if (key === 'interval') {
-      const n = Number(cells[1].replace(/<[^>]*>/g, '').trim());
-      if (!Number.isNaN(n) && n >= 1000) config.interval = n;
-    }
-    // slide rows: | slide | <img..> | <h2>..</h2>... |
-    else if (key === 'slide') {
-      const media = cells[1] || '';
-      const content = cells[2] || '';
-      slides.push({ media, content });
-    }
-  });
-
-  return { config, slides };
-}
-
-function safeSatelliteTrack(eventName, payload) {
-  try {
-    if (window._satellite && typeof window._satellite.track === 'function') {
-      window._satellite.track(eventName, payload);
-      return true;
-    }
-  } catch (e) {
-    // ignore
-  }
-  return false;
-}
-
-function getText(el) {
-  return (el?.textContent || '').trim();
-}
-
-function initAnalytics(root) {
-  // Replaces your jQuery: $(".trackOverviewVariant").on("click", ...)
-  root.addEventListener('click', (e) => {
-    const overview = e.target.closest('.trackOverviewVariant');
-    if (overview) {
-      const code = getText(overview.querySelector('.track-since-you-like p'));
-      const title = getText(overview.querySelector('.track-since-you-like h3'));
-      if (window.ccAnalytics) {
-        window.ccAnalytics.code = code;
-        window.ccAnalytics.title = title;
+      if (k === 'autoplay') cfg.autoplay = normalizeBoolYesNo(vText, true);
+      if (k === 'interval') {
+        const n = Number(vText);
+        if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
       }
-      // Track if satellite present
-      safeSatelliteTrack('overview_swatch', { code, title });
+      if (k === 'fade') cfg.fade = normalizeBoolYesNo(vText, false);
+      if (k === 'clickable') cfg.clickable = normalizeBoolYesNo(vText, false);
+      if (k === 'ctalink') cfg.ctaLink = vText;
+      if (k === 'overlaysubtitle') cfg.overlaySubtitle = vText;
+      if (k === 'overlaytitle') cfg.overlayTitle = vText;
+      if (k === 'overlayhtml') cfg.overlayHtml = htmlOf(tds[1]); // allow rich HTML
+      return;
     }
 
-    // Replaces: $(".trackBannerCta .bannercta a.trackCTA").on("click", ...)
-    const cta = e.target.closest('a.trackCTA');
-    if (cta) {
-      const bannerTextDesc = cta.closest('.bannerTextDesc');
-      const leftAlign = bannerTextDesc?.querySelector('.leftAlign');
-      const centerAlign = bannerTextDesc?.querySelector('.centerAlign');
-      const rightAlign = bannerTextDesc?.querySelector('.rightAlign');
-      const fallbackTitle = getText(bannerTextDesc?.querySelector('h1,h2,h3,h4,h5'));
-      const title = getText(leftAlign) || getText(centerAlign) || getText(rightAlign) || fallbackTitle;
-      const ctaName = getText(cta);
-
-      safeSatelliteTrack('image_banner_click', {
-        ctaName,
-        title,
-        sectionName: title,
+    // Slide rows: ALWAYS 2 columns now => image | imageLink
+    // Some authors might still have "slide | image | link" older format — support it gracefully:
+    if (k === 'slide' && tds.length >= 3) {
+      slides.push({
+        imageHTML: htmlOf(tds[1]),
+        imageLink: extractLink(tds[2]),
       });
+      return;
     }
+
+    // Normal new format:
+    slides.push({
+      imageHTML: htmlOf(tds[0]),
+      imageLink: extractLink(tds[1]),
+    });
   });
+
+  return { cfg, slides };
 }
 
-function attachFullBannerClickBehavior(root) {
-  // Replaces your legacy: click on .bannerTextDesc navigates to .full-banner-click href
-  root.addEventListener('click', (e) => {
-    const textArea = e.target.closest('.bannerTextDesc');
-    if (!textArea) return;
+function buildOverlay(cfg) {
+  // Priority: overlayHtml (if provided) else subtitle/title.
+  if (cfg.overlayHtml && cfg.overlayHtml.trim()) {
+    return `<div class="bannerTextDesc">${cfg.overlayHtml}</div>`;
+  }
 
-    const slide = textArea.closest('.carousel__slide');
-    const fullBanner = slide?.querySelector('a.full-banner-click');
-    if (fullBanner && fullBanner.href) {
-      window.location.href = fullBanner.href;
-    }
-  });
+  if (!cfg.overlaySubtitle && !cfg.overlayTitle) return '';
 
-  // Replaces: Enter on image goes to full banner href
-  root.addEventListener('keydown', (e) => {
-    const img = e.target.closest('.prodBannerImage img');
-    if (!img) return;
-    if (e.key === 'Enter') {
-      const slide = img.closest('.carousel__slide');
-      const fullBanner = slide?.querySelector('a.full-banner-click');
-      if (fullBanner && fullBanner.href) {
-        window.location.href = fullBanner.href;
-      }
-    }
-  });
-}
-
-function renderCarousel(block, { config, slides }) {
-  const id = `carousel-${Math.random().toString(16).slice(2)}`;
-  block.classList.add('carousel');
-  if (config.variant) block.classList.add(config.variant);
-
-  const dots = slides.map((_, i) => `<button class="carousel__dot" type="button" aria-label="Go to slide ${i + 1}" data-index="${i}"></button>`).join('');
-
-  const slideMarkup = slides.map((s, i) => `
-    <li class="carousel__slide" data-index="${i}">
-      <div class="imagebanner ${config.variant === 'video-banner' ? 'video-banner' : ''}">
-        <div class="bannerImgWithLeftTextComp bannerWithGreybackground">
-          <a class="full-banner-click" href="#" aria-hidden="true" tabindex="-1"></a>
-          <div class="prodBannerImage">${s.media}</div>
-          <div class="bannerTextDesc image-banner trackBannerCta">${s.content}</div>
-        </div>
-      </div>
-    </li>
-  `).join('');
-
-  block.innerHTML = `
-    <div class="carousel__wrap" id="${id}">
-      <button class="carousel__nav carousel__prev" type="button" aria-label="Previous slide">‹</button>
-      <div class="carousel__viewport" role="region" aria-roledescription="carousel" aria-label="Carousel">
-        <ul class="carousel__track">
-          ${slideMarkup}
-        </ul>
-      </div>
-      <button class="carousel__nav carousel__next" type="button" aria-label="Next slide">›</button>
-
-      <div class="carousel__dots" role="tablist" aria-label="Carousel pagination">
-        ${dots}
-      </div>
+  return `
+    <div class="bannerTextDesc">
+      ${cfg.overlaySubtitle ? `<p>${cfg.overlaySubtitle}</p>` : ''}
+      ${cfg.overlayTitle ? `<h2>${cfg.overlayTitle}</h2>` : ''}
     </div>
   `;
-
-  // If a slide contains an <a href="..."> as primary action, use it as full-banner-click target
-  [...block.querySelectorAll('.carousel__slide')].forEach((slideEl) => {
-    const firstLink = slideEl.querySelector('.bannerTextDesc a[href]');
-    const full = slideEl.querySelector('a.full-banner-click');
-    if (firstLink && full) full.href = firstLink.href;
-    const img = slideEl.querySelector('.prodBannerImage img');
-    if (img) img.setAttribute('tabindex', '0');
-  });
-
-  const track = block.querySelector('.carousel__track');
-  const slideEls = [...block.querySelectorAll('.carousel__slide')];
-  const dotEls = [...block.querySelectorAll('.carousel__dot')];
-  const prevBtn = block.querySelector('.carousel__prev');
-  const nextBtn = block.querySelector('.carousel__next');
-
-  let index = 0;
-  let timer = null;
-
-  function update() {
-    const offset = -index * 100;
-    track.style.transform = `translateX(${offset}%)`;
-    dotEls.forEach((d, i) => d.classList.toggle('is-active', i === index));
-    slideEls.forEach((s, i) => s.classList.toggle('is-active', i === index));
-  }
-
-  function goTo(i) {
-    index = (i + slideEls.length) % slideEls.length;
-    update();
-  }
-
-  prevBtn.addEventListener('click', () => goTo(index - 1));
-  nextBtn.addEventListener('click', () => goTo(index + 1));
-
-  dotEls.forEach((d) => {
-    d.addEventListener('click', () => goTo(Number(d.dataset.index)));
-  });
-
-  function startAutoplay() {
-    if (!config.autoplay || slideEls.length < 2) return;
-    stopAutoplay();
-    timer = window.setInterval(() => goTo(index + 1), config.interval);
-  }
-
-  function stopAutoplay() {
-    if (timer) window.clearInterval(timer);
-    timer = null;
-  }
-
-  // Pause autoplay on interaction
-  block.addEventListener('pointerdown', stopAutoplay);
-  block.addEventListener('focusin', stopAutoplay);
-
-  update();
-  startAutoplay();
-
-  // Attach your legacy behaviors
-  attachFullBannerClickBehavior(block);
-  initAnalytics(block);
 }
 
 export default function decorate(block) {
-  const { config, slides } = parseDAConfigAndSlides(block);
+  const { cfg, slides } = parseBlock(block);
+
   if (!slides.length) {
     block.innerHTML = '<p>No slides configured.</p>';
     return;
   }
-  renderCarousel(block, { config, slides });
+
+  block.classList.add('image-carousel');
+  if (cfg.fade) block.classList.add('carousel--fade');
+
+  const overlayHTML = buildOverlay(cfg);
+
+  const dotsHTML = slides.map((_, i) =>
+    `<button class="carousel__dot" type="button" aria-label="Go to slide ${i + 1}" data-i="${i}"></button>`
+  ).join('');
+
+  const slidesHTML = slides.map((s, i) => {
+    // Click target only if clickable=yes
+    const href = cfg.clickable ? (s.imageLink || cfg.ctaLink || '') : '';
+    const wrapperStart = href ? `<a class="full-banner-click" href="${href}">` : `<div class="full-banner-click" role="presentation">`;
+    const wrapperEnd = href ? `</a>` : `</div>`;
+
+    return `
+      <li class="carousel__slide" data-i="${i}">
+        <div class="imagebanner">
+          <div class="bannerImgWithLeftTextComp bannerWithGreybackground">
+            ${wrapperStart}
+              <div class="prodBannerImage">${s.imageHTML}</div>
+              ${overlayHTML}
+            ${wrapperEnd}
+          </div>
+        </div>
+      </li>
+    `;
+  }).join('');
+
+  block.innerHTML = `
+    <div class="carousel__wrap">
+      <button class="carousel__nav carousel__prev" type="button" aria-label="Previous slide">‹</button>
+      <div class="carousel__viewport" role="region" aria-roledescription="carousel" aria-label="Carousel">
+        <ul class="carousel__track">${slidesHTML}</ul>
+      </div>
+      <button class="carousel__nav carousel__next" type="button" aria-label="Next slide">›</button>
+      <div class="carousel__dots">${dotsHTML}</div>
+    </div>
+  `;
+
+  const track = qs(block, '.carousel__track');
+  const slideEls = qsa(block, '.carousel__slide');
+  const dotEls = qsa(block, '.carousel__dot');
+  const prev = qs(block, '.carousel__prev');
+  const next = qs(block, '.carousel__next');
+  const dotsWrap = qs(block, '.carousel__dots');
+
+  if (slideEls.length <= 1) dotsWrap.style.display = 'none';
+
+  // Ensure images focusable for keyboard (if any <img> present)
+  slideEls.forEach((s) => {
+    const img = qs(s, '.prodBannerImage img');
+    if (img) img.setAttribute('tabindex', '0');
+  });
+
+  let idx = 0;
+  let timer = null;
+
+  function setActive(i) {
+    idx = (i + slideEls.length) % slideEls.length;
+
+    if (!cfg.fade) {
+      track.style.transform = `translateX(${-idx * 100}%)`;
+    } else {
+      slideEls.forEach((s, si) => { s.style.display = si === idx ? 'block' : 'none'; });
+    }
+
+    dotEls.forEach((d, di) => d.classList.toggle('is-active', di === idx));
+  }
+
+  function stop() {
+    if (timer) window.clearInterval(timer);
+    timer = null;
+  }
+
+  function start() {
+    if (!cfg.autoplay || slideEls.length <= 1) return;
+    stop();
+    timer = window.setInterval(() => setActive(idx + 1), cfg.interval);
+  }
+
+  prev.addEventListener('click', () => { stop(); setActive(idx - 1); });
+  next.addEventListener('click', () => { stop(); setActive(idx + 1); });
+  dotEls.forEach((d) => d.addEventListener('click', () => { stop(); setActive(Number(d.dataset.i)); }));
+
+  // If clickable=no, do NOT intercept clicks. (No CTA on banner.)
+  // If clickable=yes, navigation is handled by the <a> wrapper.
+
+  block.addEventListener('pointerdown', stop);
+  block.addEventListener('focusin', stop);
+
+  if (cfg.fade) slideEls.forEach((s, si) => { s.style.display = si === 0 ? 'block' : 'none'; });
+  setActive(0);
+  start();
 }
