@@ -45,7 +45,7 @@ function parseConfig(block) {
 
   // Skip the header row (block name)
   rows.slice(1).forEach((tr) => {
-    const tds = qsa(tr, 'td');
+    const tds = qsa(tr, 'th, td');
     if (tds.length < 2) return;
 
     const key = cellText(tds[0]).toLowerCase();
