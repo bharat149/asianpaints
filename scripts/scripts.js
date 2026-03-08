@@ -13,6 +13,15 @@ import {
   loadCSS,
 } from './aem.js';
 
+(function loadCryptoJSGlobally() {
+  if (window.CryptoJS) return;
+
+  const script = document.createElement('script');
+  script.src = '/scripts/crypto.js';
+  script.async = false; // critical: preserve execution order
+  document.head.appendChild(script);
+}());
+
 /**
  * Moves all the attributes from a given element to another given element.
  * @param {Element} from the element to copy attributes from
