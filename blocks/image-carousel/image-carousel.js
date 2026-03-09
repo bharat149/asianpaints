@@ -1,4 +1,4 @@
-const VERSION = 'image-carousel@v3 (image-key, comma-list, clickable flag)';
+const VERSION = 'image-carousel@v4 (desktopImage+mobileImage comma lists, responsive picture)';
 
 function qsa(el, sel) { return [...el.querySelectorAll(sel)]; }
 function qs(el, sel) { return el.querySelector(sel); }
@@ -8,7 +8,6 @@ function cellText(cell) {
 }
 
 function cellHrefOrText(cell) {
-  // DA often renders URLs as links; prefer href if present
   const a = cell?.querySelector?.('a[href]');
   if (a?.getAttribute('href')) return a.getAttribute('href').trim();
   return cellText(cell);
@@ -22,7 +21,6 @@ function yesNo(val, def = false) {
 }
 
 function splitUrls(raw) {
-  // Accept comma-separated URLs; tolerate newline/extra spaces
   return String(raw || '')
     .split(',')
     .map((s) => s.trim())
@@ -30,10 +28,6 @@ function splitUrls(raw) {
 }
 
 function parseConfig(block) {
-  // supports both:
-  // 1) table-based: <tr><th>key</th><td>value</td></tr>
-  // 2) div-based:   <div><div>key</div><div>value</div></div>
-
   const cfg = {
     autoplay: true,
     interval: 5000,
@@ -42,97 +36,70 @@ function parseConfig(block) {
     ctaLink: '',
     overlaySubtitle: '',
     overlayTitle: '',
-    images: [],
+    // new
+    desktopImages: [],
+    mobileImages: [],
+    // optional breakpoint (defaults to 767)
+    mobileMaxWidth: 767,
     debug: { parsed: [] },
   };
 
-  // ---------- helpers ----------
-  const getCellsFromTableRow = (row) => qsa(row, 'th, td');
-
-  const getDivRows = () => {
-    // EDS commonly wraps block content as:
-    // <div class="block"><div>ROW</div><div>ROW</div>...</div>
-    // Sometimes there’s one wrapper div inside block; handle both.
-    const direct = qsa(block, ':scope > div');
-    const wrapper = (direct.length === 1) ? direct[0] : null;
-
-    const candidates = wrapper ? qsa(wrapper, ':scope > div') : direct;
-
-    // rows are divs with at least 2 child divs (key/value)
-    return candidates.filter((r) => r.children && r.children.length >= 2);
-  };
-
-  const getCellsFromDivRow = (row) => [...row.children].slice(0, 2);
-
-  // ---------- detect structure ----------
-  let tableRows = qsa(block, 'tr');
-
-  // If no <tr>, we’re in div-based structure
+  // ---- support both table-based and div-based structures ----
+  const tableRows = qsa(block, 'tr');
   const usingTable = tableRows.length > 0;
 
-  if (usingTable) {
-    // skip header row (block name)
-    tableRows.slice(1).forEach((tr) => {
-      const cells = getCellsFromTableRow(tr);
-      if (cells.length < 2) return;
+  const readRows = () => {
+    if (usingTable) {
+      // Skip header row
+      return tableRows.slice(1).map((tr) => qsa(tr, 'th, td')).filter((cells) => cells.length >= 2);
+    }
 
-      const key = cellText(cells[0]).toLowerCase();
-      const valText = cellText(cells[1]);
-      const valHrefOrText = cellHrefOrText(cells[1]);
+    // div-based (EDS-transformed) structure:
+    const direct = qsa(block, ':scope > div');
+    const wrapper = (direct.length === 1) ? direct[0] : null;
+    const candidates = wrapper ? qsa(wrapper, ':scope > div') : direct;
 
-      cfg.debug.parsed.push({ key, valText, valHrefOrText });
+    return candidates
+      .filter((r) => r.children && r.children.length >= 2)
+      .map((r) => [...r.children].slice(0, 2));
+  };
 
-      if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
-      if (key === 'interval') {
-        const n = Number(valText);
-        if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
-      }
-      if (key === 'fade') cfg.fade = yesNo(valText, false);
-      if (key === 'clickable') cfg.clickable = yesNo(valText, false);
-      if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
-      if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
-      if (key === 'overlaytitle') cfg.overlayTitle = valText;
+  readRows().forEach((cells) => {
+    const key = cellText(cells[0]).toLowerCase();
+    const valText = cellText(cells[1]);
+    const valHrefOrText = cellHrefOrText(cells[1]);
 
-      if (key === 'image') {
-        const urls = splitUrls(valHrefOrText || valText);
-        cfg.images.push(...urls);
-      }
-    });
-  } else {
-    const divRows = getDivRows();
+    cfg.debug.parsed.push({ key, valText, valHrefOrText });
 
-    // In some EDS conversions the first "row" might be the header;
-    // but because we’re already inside the block, header row usually isn’t present.
-    divRows.forEach((row) => {
-      const cells = getCellsFromDivRow(row);
-      if (cells.length < 2) return;
+    if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
+    if (key === 'interval') {
+      const n = Number(valText);
+      if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
+    }
+    if (key === 'fade') cfg.fade = yesNo(valText, false);
+    if (key === 'clickable') cfg.clickable = yesNo(valText, false);
+    if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
+    if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
+    if (key === 'overlaytitle') cfg.overlayTitle = valText;
 
-      const key = cellText(cells[0]).toLowerCase();
-      const valText = cellText(cells[1]);
-      const valHrefOrText = cellHrefOrText(cells[1]);
+    // optional breakpoint override
+    if (key === 'mobilemaxwidth') {
+      const n = Number(valText);
+      if (!Number.isNaN(n) && n >= 320) cfg.mobileMaxWidth = n;
+    }
 
-      cfg.debug.parsed.push({ key, valText, valHrefOrText });
+    // ✅ NEW KEYS
+    if (key === 'desktopimage') cfg.desktopImages.push(...splitUrls(valHrefOrText || valText));
+    if (key === 'mobileimage') cfg.mobileImages.push(...splitUrls(valHrefOrText || valText));
 
-      if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
-      if (key === 'interval') {
-        const n = Number(valText);
-        if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
-      }
-      if (key === 'fade') cfg.fade = yesNo(valText, false);
-      if (key === 'clickable') cfg.clickable = yesNo(valText, false);
-      if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
-      if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
-      if (key === 'overlaytitle') cfg.overlayTitle = valText;
+    // Backward compat: old "image" behaves as desktopImage
+    if (key === 'image') cfg.desktopImages.push(...splitUrls(valHrefOrText || valText));
+  });
 
-      if (key === 'image') {
-        const urls = splitUrls(valHrefOrText || valText);
-        cfg.images.push(...urls);
-      }
-    });
-  }
+  // De-dupe preserving order
+  cfg.desktopImages = [...new Set(cfg.desktopImages)];
+  cfg.mobileImages = [...new Set(cfg.mobileImages)];
 
-  // de-dupe
-  cfg.images = [...new Set(cfg.images)];
   return cfg;
 }
 
@@ -146,11 +113,29 @@ function overlayHTML(cfg) {
   `;
 }
 
+function buildPictureHTML(desktopUrl, mobileUrl, mobileMaxWidth, eager) {
+  // Use <picture> so browser picks correct source automatically
+  // mobileUrl optional; fallback to desktopUrl if missing
+  const mob = mobileUrl || desktopUrl;
+  const load = eager ? 'eager' : 'lazy';
+  return `
+    <picture>
+      <source media="(max-width: ${mobileMaxWidth}px)" srcset="${mob}">
+      <img src="${desktopUrl}" alt="" loading="${load}">
+    </picture>
+  `;
+}
+
 export default function decorate(block) {
   const cfg = parseConfig(block);
 
-  // ✅ DIAGNOSTIC when no images
-  if (!cfg.images.length) {
+  // Compute slides: based on desktopImages list (primary)
+  const slides = cfg.desktopImages.map((d, i) => ({
+    desktop: d,
+    mobile: cfg.mobileImages[i] || '',
+  }));
+
+  if (!slides.length) {
     const parsed = cfg.debug.parsed
       .map((r) => `${r.key}: text="${r.valText}" hrefOrText="${r.valHrefOrText}"`)
       .join('\n');
@@ -158,33 +143,32 @@ export default function decorate(block) {
     block.innerHTML = `
       <pre style="white-space:pre-wrap;background:#fff3cd;padding:12px;border:1px solid #ffeeba;border-radius:8px;">
 ${VERSION}
-No slides configured because I could not read any URLs from the "image" config row.
+No slides configured because I could not read any URLs from "desktopImage" (or legacy "image").
 
 What I parsed from your table rows:
 ${parsed}
 
-Expected at least one row like:
-image | https://.../banner.png
-(or comma-separated: https://...1.png, https://...2.png)
+Expected:
+desktopImage | https://.../banner-desktop.png
+mobileImage  | https://.../banner-mobile.png
+(comma-separated lists allowed)
       </pre>
     `;
     return;
   }
 
-  // Build slides from cfg.images
   block.classList.add('image-carousel');
   if (cfg.fade) block.classList.add('carousel--fade');
 
   const overlay = overlayHTML(cfg);
 
-  const dotsHTML = cfg.images.map((_, i) =>
+  const dotsHTML = slides.map((_, i) =>
     `<button class="carousel__dot" type="button" aria-label="Go to slide ${i + 1}" data-i="${i}"></button>`
   ).join('');
 
-  const slidesHTML = cfg.images.map((url, i) => {
-    const img = `<img src="${url}" alt="" loading="${i === 0 ? 'eager' : 'lazy'}">`;
+  const slidesHTML = slides.map((s, i) => {
+    const pic = buildPictureHTML(s.desktop, s.mobile, cfg.mobileMaxWidth, i === 0);
 
-    // No CTA on banner unless clickable=yes AND ctaLink provided
     const wrapStart = (cfg.clickable && cfg.ctaLink)
       ? `<a class="full-banner-click" href="${cfg.ctaLink}">`
       : `<div class="full-banner-click">`;
@@ -195,7 +179,7 @@ image | https://.../banner.png
       <li class="carousel__slide" data-i="${i}">
         <div class="bannerImgWithLeftTextComp bannerWithGreybackground">
           ${wrapStart}
-            <div class="prodBannerImage">${img}</div>
+            <div class="prodBannerImage">${pic}</div>
             ${overlay}
           ${wrapEnd}
         </div>
@@ -222,7 +206,15 @@ image | https://.../banner.png
   const next = qs(block, '.carousel__next');
   const dotsWrap = qs(block, '.carousel__dots');
 
-  if (slideEls.length <= 1) dotsWrap.style.display = 'none';
+
+  if (slideEls.length <= 1) {
+    if (dotsWrap) dotsWrap.style.display = 'none';
+    if (prev) prev.style.display = 'none';
+    if (next) next.style.display = 'none';
+    // optional: stop autoplay even if enabled
+    // cfg.autoplay = false;
+  }
+
 
   let idx = 0;
   let timer = null;
@@ -247,7 +239,9 @@ image | https://.../banner.png
 
   prev.addEventListener('click', () => { stop(); setActive(idx - 1); });
   next.addEventListener('click', () => { stop(); setActive(idx + 1); });
-  dotEls.forEach((d) => d.addEventListener('click', () => { stop(); setActive(Number(d.dataset.i)); }));
+  dotEls.forEach((d) =>
+    d.addEventListener('click', () => { stop(); setActive(Number(d.dataset.i)); })
+  );
 
   setActive(0);
   start();
