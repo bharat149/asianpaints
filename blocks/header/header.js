@@ -1,146 +1,159 @@
 /**
- * Asian Paints Header Block
- * Fetches nav content and transforms into styled 3-tier layout
- * @param {Element} block The header block element
+ * Header Block
+ * Fetches nav.plain.html and renders a 3-tier header:
+ * Row 0: Brand bar (dark blue)
+ * Row 1: Main header (logo, search, action icons, CTA, hamburger)
+ * Row 2: Navigation bar (home icon, main nav with megamenu, secondary nav)
  */
-export default async function decorate(block) {
-  // Fetch nav content
-  const resp = await fetch('/nav.plain.html');
-  if (!resp.ok) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to load nav:', resp.status);
-    return;
-  }
 
-  const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+import { getMetadata } from '../../scripts/aem.js';
 
-  // Get all divs from nav content
-  const divs = [...doc.body.querySelectorAll(':scope > div')];
-  if (divs.length < 4) return;
+const DESKTOP_BREAKPOINT = 992;
 
-  // Structure:
-  // divs[0] = Brand logos (3 pictures)
-  // divs[1] = Main logo (p), search icon (p), camera icon (p), action icons (ul), CTA button (p)
-  // divs[2] = Home icon (p), Main navigation (ul with dropdowns)
-  // divs[3] = Secondary navigation (ul)
-
-  const brandDiv = divs[0];
-  const mainDiv = divs[1];
-  const navDiv = divs[2];
-  const secondaryNavDiv = divs[3];
-
-  // Clear block
-  block.textContent = '';
-
-  // ========================================
-  // 1. BRAND BAR (Top - Dark Blue)
-  // ========================================
+function buildBrandBar(brandDiv) {
   const brandBar = document.createElement('div');
   brandBar.className = 'header-brands';
 
-  const brandBarInner = document.createElement('div');
-  const brandLogos = brandDiv.querySelectorAll('p');
+  const inner = document.createElement('div');
+  inner.className = 'header-brands-inner';
 
-  brandLogos.forEach((logo, idx) => {
+  const logos = brandDiv.querySelectorAll('p');
+  logos.forEach((p, idx) => {
+    const anchor = p.querySelector('a');
+    const img = p.querySelector('img');
+    if (!anchor && !img) return;
+
     const brandItem = document.createElement('a');
     brandItem.className = 'brand-item';
     if (idx === 0) brandItem.classList.add('active');
+    brandItem.href = anchor ? anchor.getAttribute('href') : '#';
 
-    // Set URLs for each brand
-    const urls = ['/', 'https://www.beautifulhomes.asianpaints.com', 'https://whiteteak.asianpaints.com'];
-    brandItem.href = urls[idx] || '#';
-
-    const picture = logo.querySelector('picture');
-    if (picture) {
-      brandItem.appendChild(picture.cloneNode(true));
+    if (img) {
+      const clonedImg = img.cloneNode(true);
+      brandItem.appendChild(clonedImg);
     }
 
-    brandBarInner.appendChild(brandItem);
+    inner.appendChild(brandItem);
   });
 
-  brandBar.appendChild(brandBarInner);
-  block.appendChild(brandBar);
+  brandBar.appendChild(inner);
+  return brandBar;
+}
 
-  // ========================================
-  // 2. MAIN HEADER (White - Logo, Search, Actions, CTA)
-  // ========================================
+function buildMainHeader(mainDiv) {
   const mainHeader = document.createElement('div');
   mainHeader.className = 'header-main';
 
-  const mainHeaderInner = document.createElement('div');
+  const inner = document.createElement('div');
+  inner.className = 'header-main-inner';
 
-  // Get all paragraphs from mainDiv
-  const mainParagraphs = mainDiv.querySelectorAll('p');
-  // Structure: [0] = main logo, [1] = search icon, [2] = camera icon, [last] = CTA link
+  // Hamburger (mobile)
+  const hamburger = document.createElement('button');
+  hamburger.className = 'nav-hamburger';
+  hamburger.type = 'button';
+  hamburger.setAttribute('aria-controls', 'nav');
+  hamburger.setAttribute('aria-label', 'Open navigation');
+  hamburger.setAttribute('aria-expanded', 'false');
+  hamburger.innerHTML = '<span class="hamburger-icon"></span><span class="hamburger-cross"></span>';
+  inner.appendChild(hamburger);
 
-  // Main Logo (1st paragraph)
-  if (mainParagraphs[0]) {
-    const logoContainer = document.createElement('a');
-    logoContainer.className = 'header-logo';
-    logoContainer.href = '/';
-    const picture = mainParagraphs[0].querySelector('picture');
-    if (picture) {
-      logoContainer.appendChild(picture.cloneNode(true));
+  // Logo — first <p> containing <a><img>
+  const paragraphs = mainDiv.querySelectorAll('p');
+  if (paragraphs[0]) {
+    const logoAnchor = paragraphs[0].querySelector('a');
+    if (logoAnchor) {
+      const logoLink = document.createElement('a');
+      logoLink.className = 'header-logo';
+      logoLink.href = logoAnchor.getAttribute('href');
+      const logoImg = logoAnchor.querySelector('img');
+      if (logoImg) logoLink.appendChild(logoImg.cloneNode(true));
+      inner.appendChild(logoLink);
     }
-    mainHeaderInner.appendChild(logoContainer);
   }
 
-  // Search Bar
+  // Search bar — second <p> containing search icon + camera icon
   const searchBar = document.createElement('div');
   searchBar.className = 'header-search';
 
-  // Search icon (2nd paragraph from mainDiv)
-  const searchIcon = document.createElement('span');
-  searchIcon.className = 'search-icon';
-  if (mainParagraphs[1]) {
-    const searchPic = mainParagraphs[1].querySelector('picture');
-    if (searchPic) {
-      searchIcon.appendChild(searchPic.cloneNode(true));
+  const searchIconSpan = document.createElement('span');
+  searchIconSpan.className = 'search-icon';
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[0]) {
+      searchIconSpan.appendChild(imgs[0].cloneNode(true));
     }
   }
 
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
-  searchInput.placeholder = 'Search for  Colour inspiration';
   searchInput.className = 'search-input';
+  searchInput.setAttribute('aria-label', 'Search');
 
-  // Camera icon (3rd paragraph from mainDiv)
+  // Rotating placeholder
+  const placeholders = [
+    'Search for Colour inspiration',
+    'Search for Budget calculator',
+    'Search for Waterproofing solutions',
+    'Search for Interior design ideas',
+  ];
+  let placeholderIdx = 0;
+  [searchInput.placeholder] = placeholders;
+  setInterval(() => {
+    placeholderIdx = (placeholderIdx + 1) % placeholders.length;
+    searchInput.placeholder = placeholders[placeholderIdx];
+  }, 3000);
+
   const cameraBtn = document.createElement('button');
   cameraBtn.className = 'camera-btn';
   cameraBtn.type = 'button';
   cameraBtn.setAttribute('aria-label', 'Search by image');
-  if (mainParagraphs[2]) {
-    const cameraPic = mainParagraphs[2].querySelector('picture');
-    if (cameraPic) {
-      cameraBtn.appendChild(cameraPic.cloneNode(true));
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[1]) {
+      cameraBtn.appendChild(imgs[1].cloneNode(true));
     }
   }
 
-  searchBar.appendChild(searchIcon);
+  searchBar.appendChild(searchIconSpan);
   searchBar.appendChild(searchInput);
   searchBar.appendChild(cameraBtn);
-  mainHeaderInner.appendChild(searchBar);
+  inner.appendChild(searchBar);
 
-  // Action Icons (from UL in mainDiv)
+  // Mobile search icon (standalone button, shown only on mobile)
+  const mobileSearchBtn = document.createElement('button');
+  mobileSearchBtn.className = 'mobile-search-btn';
+  mobileSearchBtn.type = 'button';
+  mobileSearchBtn.setAttribute('aria-label', 'Search');
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[0]) {
+      mobileSearchBtn.appendChild(imgs[0].cloneNode(true));
+    }
+  }
+  inner.appendChild(mobileSearchBtn);
+
+  // Action icons — from <ul> in mainDiv
   const actionsUl = mainDiv.querySelector('ul');
   if (actionsUl) {
     const actionsContainer = document.createElement('div');
     actionsContainer.className = 'header-actions';
 
-    const actionItems = actionsUl.querySelectorAll('li');
-    const actionUrls = ['/store-locator', '/location', '/profile', '/cart'];
-    const actionLabels = ['Store Locator', 'Location', 'Profile', 'Cart'];
+    actionsUl.querySelectorAll(':scope > li').forEach((li) => {
+      const anchor = li.querySelector('a');
+      if (!anchor) return;
 
-    actionItems.forEach((item, idx) => {
       const actionLink = document.createElement('a');
-      actionLink.href = actionUrls[idx] || '#';
       actionLink.className = 'action-btn';
-      actionLink.setAttribute('aria-label', actionLabels[idx] || 'Action');
+      actionLink.href = anchor.getAttribute('href');
 
-      // Add cart badge for last item
-      if (idx === actionItems.length - 1) {
+      const img = anchor.querySelector('img');
+      if (img) {
+        actionLink.appendChild(img.cloneNode(true));
+        actionLink.setAttribute('aria-label', img.alt || '');
+      }
+
+      // Cart badge
+      if (img && img.alt && img.alt.toLowerCase().includes('cart')) {
         actionLink.classList.add('cart-btn');
         const badge = document.createElement('span');
         badge.className = 'cart-badge';
@@ -148,261 +161,566 @@ export default async function decorate(block) {
         actionLink.appendChild(badge);
       }
 
-      const picture = item.querySelector('picture');
-      if (picture) {
-        actionLink.insertBefore(picture.cloneNode(true), actionLink.firstChild);
-      }
-
       actionsContainer.appendChild(actionLink);
     });
 
-    mainHeaderInner.appendChild(actionsContainer);
+    inner.appendChild(actionsContainer);
   }
 
-  // CTA Button
-  const ctaP = mainDiv.querySelector('p:last-of-type a');
-  if (ctaP) {
-    const ctaContainer = document.createElement('div');
-    ctaContainer.className = 'header-cta';
+  // CTA button — last <p> containing <a> without <img>
+  const lastP = paragraphs[paragraphs.length - 1];
+  if (lastP) {
+    const ctaAnchor = lastP.querySelector('a');
+    if (ctaAnchor && !ctaAnchor.querySelector('img')) {
+      const ctaContainer = document.createElement('div');
+      ctaContainer.className = 'header-cta';
 
-    const ctaLink = document.createElement('a');
-    ctaLink.href = ctaP.getAttribute('href') || '/';
-    ctaLink.className = 'cta-btn';
-    ctaLink.textContent = ctaP.textContent;
+      const ctaLink = document.createElement('a');
+      ctaLink.className = 'cta-btn';
+      ctaLink.href = ctaAnchor.getAttribute('href');
+      ctaLink.textContent = ctaAnchor.textContent.trim();
 
-    ctaContainer.appendChild(ctaLink);
-    mainHeaderInner.appendChild(ctaContainer);
+      const arrow = document.createElement('span');
+      arrow.className = 'cta-arrow';
+      arrow.innerHTML = '&#8594;';
+      ctaLink.appendChild(arrow);
+
+      ctaContainer.appendChild(ctaLink);
+      inner.appendChild(ctaContainer);
+    }
   }
 
-  // Hamburger Menu (for mobile)
-  const hamburger = document.createElement('button');
-  hamburger.className = 'nav-hamburger';
-  hamburger.type = 'button';
-  hamburger.setAttribute('aria-controls', 'nav');
-  hamburger.setAttribute('aria-label', 'Open navigation');
-  hamburger.setAttribute('aria-expanded', 'false');
-  hamburger.innerHTML = '<span class="hamburger-icon"></span>';
-  mainHeaderInner.appendChild(hamburger);
+  mainHeader.appendChild(inner);
+  return mainHeader;
+}
 
-  mainHeader.appendChild(mainHeaderInner);
+function buildMobileSearchPanel(mainDiv) {
+  const panel = document.createElement('div');
+  panel.className = 'mobile-search-panel';
 
-  // Create sticky wrapper for main header and nav bar
-  const stickyWrapper = document.createElement('div');
-  stickyWrapper.className = 'header-sticky';
-  stickyWrapper.appendChild(mainHeader);
+  const paragraphs = mainDiv.querySelectorAll('p');
 
-  // ========================================
-  // 3. NAVIGATION BAR (Main + Secondary Nav)
-  // ========================================
+  // Search icon
+  const searchIcon = document.createElement('span');
+  searchIcon.className = 'search-icon';
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[0]) searchIcon.appendChild(imgs[0].cloneNode(true));
+  }
+
+  // Search input
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'search-input';
+  input.placeholder = 'Search';
+  input.setAttribute('aria-label', 'Search');
+
+  // Camera button (visual search)
+  const cameraBtn = document.createElement('button');
+  cameraBtn.className = 'camera-btn';
+  cameraBtn.type = 'button';
+  cameraBtn.setAttribute('aria-label', 'Search by image');
+
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'mobile-search-close';
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', 'Close search');
+  closeBtn.innerHTML = '&times;';
+
+  panel.append(searchIcon, input, cameraBtn, closeBtn);
+  return panel;
+}
+
+function buildCartModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'cart-modal-overlay';
+
+  const modal = document.createElement('div');
+  modal.className = 'cart-modal';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'cart-modal-close';
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', 'Close cart');
+  closeBtn.innerHTML = '&times;';
+
+  // Empty cart icon (SVG shopping bag)
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'cart-modal-icon';
+
+  const cartTitle = document.createElement('p');
+  cartTitle.className = 'cart-modal-title';
+  cartTitle.textContent = 'Your cart is empty';
+
+  const shopBtn = document.createElement('a');
+  shopBtn.className = 'cart-modal-shop';
+  shopBtn.href = 'https://www.asianpaints.com/products';
+  shopBtn.textContent = 'Shop now';
+
+  modal.append(closeBtn, iconWrap, cartTitle, shopBtn);
+  overlay.appendChild(modal);
+
+  // Close modal
+  const close = () => overlay.classList.remove('active');
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  return overlay;
+}
+
+function buildMegamenuPanel(submenuUl) {
+  const dropdown = document.createElement('div');
+  dropdown.className = 'nav-dropdown';
+
+  const dropdownInner = document.createElement('div');
+  dropdownInner.className = 'dropdown-inner';
+
+  // Each <li> in submenuUl is a column
+  submenuUl.querySelectorAll(':scope > li').forEach((colLi) => {
+    const column = document.createElement('div');
+    column.className = 'dropdown-column';
+
+    // Column heading is the first <a> in this <li>
+    const headingLink = colLi.querySelector(':scope > a, :scope > p > a');
+    if (headingLink) {
+      const heading = document.createElement('h4');
+      heading.className = 'dropdown-title';
+      heading.textContent = headingLink.textContent.trim();
+      column.appendChild(heading);
+    }
+
+    // Column items are in the nested <ul>
+    const itemsUl = colLi.querySelector(':scope > ul');
+    if (itemsUl) {
+      const linkList = document.createElement('ul');
+      linkList.className = 'dropdown-links';
+
+      itemsUl.querySelectorAll(':scope > li').forEach((itemLi) => {
+        const li = document.createElement('li');
+        const a = itemLi.querySelector('a');
+        if (a) {
+          const link = document.createElement('a');
+          link.href = a.getAttribute('href');
+          link.textContent = a.textContent.trim();
+
+          // Check for "New" badge items
+          const text = a.textContent.trim();
+          if (text === 'Textures For You' || text === 'Shade Cards') {
+            const badge = document.createElement('span');
+            badge.className = 'new-badge';
+            badge.textContent = 'New';
+            link.appendChild(badge);
+          }
+
+          li.appendChild(link);
+        }
+        linkList.appendChild(li);
+      });
+
+      column.appendChild(linkList);
+    }
+
+    dropdownInner.appendChild(column);
+  });
+
+  dropdown.appendChild(dropdownInner);
+  return dropdown;
+}
+
+function buildNavBar(navDiv, secondaryDiv) {
   const navBar = document.createElement('div');
   navBar.className = 'header-nav-bar';
+  navBar.id = 'nav';
 
-  const navBarInner = document.createElement('div');
+  const inner = document.createElement('div');
+  inner.className = 'header-nav-inner';
 
-  // Left side: Home icon + Main Navigation
+  // Left: main navigation
   const navLeft = document.createElement('div');
   navLeft.className = 'nav-left';
 
-  // Home icon (first paragraph with picture in navDiv)
-  const homeIconP = navDiv.querySelector('p');
-  if (homeIconP) {
-    const homeLink = document.createElement('a');
-    homeLink.href = '/';
-    homeLink.className = 'nav-home';
-    homeLink.setAttribute('aria-label', 'Home');
-    const homePic = homeIconP.querySelector('picture');
-    if (homePic) {
-      homeLink.appendChild(homePic.cloneNode(true));
-    }
-    navLeft.appendChild(homeLink);
-  }
-
-  // Main Navigation
-  const mainNavUl = navDiv.querySelector('ul');
-  if (mainNavUl) {
+  const mainUl = navDiv.querySelector('ul');
+  if (mainUl) {
     const nav = document.createElement('nav');
     nav.className = 'main-nav';
+    nav.setAttribute('aria-label', 'Main navigation');
 
     const navList = document.createElement('ul');
     navList.className = 'nav-list';
 
-    const mainNavItems = mainNavUl.querySelectorAll(':scope > li');
-    mainNavItems.forEach((item) => {
-      const li = document.createElement('li');
-      li.className = 'nav-item';
+    mainUl.querySelectorAll(':scope > li').forEach((li) => {
+      const navItem = document.createElement('li');
+      navItem.className = 'nav-item';
 
-      const linkP = item.querySelector(':scope > p > a');
-      if (linkP) {
-        const link = document.createElement('a');
-        link.href = linkP.getAttribute('href') || '#';
-        link.className = 'nav-link';
-        link.textContent = linkP.textContent;
+      const anchor = li.querySelector(':scope > a, :scope > p > a');
+      if (!anchor) return;
 
-        // Check for dropdown
-        const submenu = item.querySelector(':scope > ul');
-        if (submenu) {
-          li.classList.add('has-dropdown');
-          link.innerHTML += `<svg class="dropdown-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>`;
+      const link = document.createElement('a');
+      link.className = 'nav-link';
+      link.href = anchor.getAttribute('href');
+      link.textContent = anchor.textContent.trim();
 
-          // Build dropdown
-          const dropdown = document.createElement('div');
-          dropdown.className = 'nav-dropdown';
-
-          const dropdownInner = document.createElement('div');
-          dropdownInner.className = 'dropdown-inner';
-
-          const submenuItems = submenu.querySelectorAll(':scope > li');
-          submenuItems.forEach((subItem) => {
-            const column = document.createElement('div');
-            column.className = 'dropdown-column';
-
-            // Category title
-            const titleStrong = subItem.querySelector(':scope > p > strong');
-            if (titleStrong) {
-              const title = document.createElement('h4');
-              title.className = 'dropdown-title';
-              title.textContent = titleStrong.textContent;
-              column.appendChild(title);
-            }
-
-            // Submenu links
-            const subLinks = subItem.querySelector(':scope > ul');
-            if (subLinks) {
-              const linkList = document.createElement('ul');
-              linkList.className = 'dropdown-links';
-
-              subLinks.querySelectorAll('li').forEach((linkItem) => {
-                const linkLi = document.createElement('li');
-                const linkA = linkItem.querySelector('a');
-                if (linkA) {
-                  const a = document.createElement('a');
-                  a.href = linkA.getAttribute('href') || '#';
-                  a.textContent = linkA.textContent;
-                  linkLi.appendChild(a);
-                }
-                linkList.appendChild(linkLi);
-              });
-
-              column.appendChild(linkList);
-            }
-
-            dropdownInner.appendChild(column);
-          });
-
-          dropdown.appendChild(dropdownInner);
-          li.appendChild(link);
-          li.appendChild(dropdown);
-        } else {
-          li.appendChild(link);
-        }
+      // Home item gets special class
+      if (link.textContent === 'Home') {
+        navItem.classList.add('nav-home');
+        link.setAttribute('aria-label', 'Home');
+        link.textContent = '';
       }
 
-      navList.appendChild(li);
+      // Check for submenu (megamenu)
+      const submenuUl = li.querySelector(':scope > ul');
+      if (submenuUl) {
+        navItem.classList.add('has-dropdown');
+        const chevron = document.createElement('span');
+        chevron.className = 'nav-chevron';
+        link.appendChild(chevron);
+      }
+
+      navItem.appendChild(link);
+
+      if (submenuUl) {
+        navItem.appendChild(buildMegamenuPanel(submenuUl));
+      }
+
+      navList.appendChild(navItem);
     });
 
     nav.appendChild(navList);
     navLeft.appendChild(nav);
   }
 
-  navBarInner.appendChild(navLeft);
+  inner.appendChild(navLeft);
 
-  // Right side: Secondary Navigation
-  const secondaryNavUl = secondaryNavDiv.querySelector('ul');
-  if (secondaryNavUl) {
-    const navRight = document.createElement('div');
-    navRight.className = 'nav-right';
+  // Right: secondary navigation
+  if (secondaryDiv) {
+    const secUl = secondaryDiv.querySelector('ul');
+    if (secUl) {
+      const navRight = document.createElement('div');
+      navRight.className = 'nav-right';
 
-    const secNav = document.createElement('nav');
-    secNav.className = 'secondary-nav';
+      const secNav = document.createElement('nav');
+      secNav.className = 'secondary-nav';
+      secNav.setAttribute('aria-label', 'Secondary navigation');
 
-    const secNavList = document.createElement('ul');
-    secNavList.className = 'secondary-nav-list';
+      const secList = document.createElement('ul');
+      secList.className = 'secondary-nav-list';
 
-    secondaryNavUl.querySelectorAll('li').forEach((item) => {
-      const li = document.createElement('li');
-      const linkA = item.querySelector('a');
-      if (linkA) {
-        const a = document.createElement('a');
-        a.href = linkA.getAttribute('href') || '#';
-        a.textContent = linkA.textContent;
-        li.appendChild(a);
-      }
-      secNavList.appendChild(li);
-    });
+      secUl.querySelectorAll(':scope > li').forEach((li) => {
+        const secItem = document.createElement('li');
+        const a = li.querySelector('a');
+        if (a) {
+          const link = document.createElement('a');
+          link.href = a.getAttribute('href');
+          link.textContent = a.textContent.trim();
+          secItem.appendChild(link);
+        }
+        secList.appendChild(secItem);
+      });
 
-    secNav.appendChild(secNavList);
-    navRight.appendChild(secNav);
-    navBarInner.appendChild(navRight);
+      secNav.appendChild(secList);
+      navRight.appendChild(secNav);
+      inner.appendChild(navRight);
+    }
   }
 
-  navBar.appendChild(navBarInner);
-  stickyWrapper.appendChild(navBar);
-  block.appendChild(stickyWrapper);
+  navBar.appendChild(inner);
+  return navBar;
+}
 
-  // ========================================
-  // INTERACTIONS
-  // ========================================
+/* eslint-disable max-len */
+const DRAG_DROP_GIF = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/drag-drop-gif-desktop.gif';
+const BROWSE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+/* eslint-enable max-len */
 
-  // Mobile menu toggle
-  const hamburgerBtn = block.querySelector('.nav-hamburger');
-  const headerNavBar = block.querySelector('.header-nav-bar');
+function buildVisualSearchModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'vs-modal-overlay';
 
-  if (hamburgerBtn && headerNavBar) {
-    hamburgerBtn.addEventListener('click', () => {
-      const expanded = hamburgerBtn.getAttribute('aria-expanded') === 'true';
-      hamburgerBtn.setAttribute('aria-expanded', String(!expanded));
-      headerNavBar.classList.toggle('mobile-open', !expanded);
-      document.body.style.overflow = expanded ? '' : 'hidden';
+  const modal = document.createElement('div');
+  modal.className = 'vs-modal';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'vs-modal-close';
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', 'Close');
+  closeBtn.innerHTML = '&times;';
+
+  const dropZone = document.createElement('div');
+  dropZone.className = 'vs-dropzone';
+
+  const title = document.createElement('p');
+  title.className = 'vs-title';
+  title.textContent = 'Get recommendations for Colour inspiration, Textures, Wallpapers, Interior Design ideas, etc...';
+
+  const uploadIcon = document.createElement('div');
+  uploadIcon.className = 'vs-upload-icon';
+  uploadIcon.style.setProperty('--drag-image-url', `url('${DRAG_DROP_GIF}')`);
+
+  const dragText = document.createElement('p');
+  dragText.className = 'vs-drag-text';
+  dragText.textContent = 'Drag & drop your image here';
+
+  const orText = document.createElement('p');
+  orText.className = 'vs-or';
+  orText.textContent = 'or';
+
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/jpeg,image/png';
+  fileInput.className = 'vs-file-input';
+  fileInput.setAttribute('aria-label', 'Browse an image');
+
+  const browseBtn = document.createElement('button');
+  browseBtn.className = 'vs-browse-btn';
+  browseBtn.type = 'button';
+  const browseLabel = document.createElement('span');
+  browseLabel.textContent = 'Browse an image';
+  browseBtn.appendChild(browseLabel);
+  const browseIcon = document.createElement('span');
+  browseIcon.className = 'vs-browse-icon';
+  browseIcon.innerHTML = BROWSE_ICON_SVG;
+  browseBtn.appendChild(browseIcon);
+
+  const hint = document.createElement('p');
+  hint.className = 'vs-hint';
+  hint.textContent = 'JPG or PNG. 5MB Maximum';
+
+  dropZone.append(title, uploadIcon, dragText, orText, browseBtn, hint);
+  modal.append(closeBtn, dropZone);
+  overlay.appendChild(modal);
+
+  // Close modal
+  const close = () => overlay.classList.remove('active');
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  // Browse button opens file picker
+  browseBtn.addEventListener('click', () => fileInput.click());
+
+  // Drag & drop visuals
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+  });
+
+  return overlay;
+}
+
+function closeMobilePanel(block) {
+  const navInner = block.querySelector('.header-nav-inner');
+  block.querySelectorAll('.nav-item.has-dropdown.active').forEach((item) => {
+    item.classList.remove('active');
+  });
+  if (navInner) navInner.classList.remove('has-active-panel');
+}
+
+function addInteractions(block) {
+  const hamburger = block.querySelector('.nav-hamburger');
+  const navBar = block.querySelector('.header-nav-bar');
+
+  // Mobile hamburger toggle
+  if (hamburger && navBar) {
+    hamburger.addEventListener('click', () => {
+      const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+      hamburger.setAttribute('aria-expanded', String(!expanded));
+      hamburger.classList.toggle('is-open', !expanded);
+      navBar.classList.toggle('mobile-open', !expanded);
+      document.body.classList.toggle('nav-open', !expanded);
+      // Close any open sub-panel when closing menu
+      if (expanded) closeMobilePanel(block);
     });
   }
 
-  // Desktop dropdown hover
+  // Add back buttons to dropdown panels for mobile slide-in
   block.querySelectorAll('.nav-item.has-dropdown').forEach((item) => {
+    const dropdown = item.querySelector('.nav-dropdown');
+    const link = item.querySelector('.nav-link');
+    if (!dropdown || !link) return;
+
+    const backBtn = document.createElement('div');
+    backBtn.className = 'dropdown-back';
+    const arrow = document.createElement('span');
+    arrow.className = 'back-arrow';
+    arrow.textContent = '\u2039';
+    backBtn.appendChild(arrow);
+    backBtn.appendChild(document.createTextNode(` ${link.textContent.trim()}`));
+    dropdown.insertBefore(backBtn, dropdown.firstChild);
+
+    backBtn.addEventListener('click', () => {
+      closeMobilePanel(block);
+    });
+  });
+
+  // Desktop megamenu hover
+  block.querySelectorAll('.nav-item.has-dropdown').forEach((item) => {
+    let hoverTimeout;
+
     item.addEventListener('mouseenter', () => {
-      if (window.innerWidth >= 992) {
-        item.classList.add('active');
-      }
+      if (window.innerWidth < DESKTOP_BREAKPOINT) return;
+      clearTimeout(hoverTimeout);
+      block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
+        if (other !== item) other.classList.remove('active');
+      });
+      item.classList.add('active');
     });
 
     item.addEventListener('mouseleave', () => {
-      if (window.innerWidth >= 992) {
+      if (window.innerWidth < DESKTOP_BREAKPOINT) return;
+      hoverTimeout = setTimeout(() => {
         item.classList.remove('active');
-      }
+      }, 100);
     });
 
-    // Mobile click toggle
+    // Click: desktop vs mobile behavior
     const link = item.querySelector('.nav-link');
     if (link) {
       link.addEventListener('click', (e) => {
-        if (window.innerWidth < 992) {
+        if (window.innerWidth < DESKTOP_BREAKPOINT) {
           e.preventDefault();
-          item.classList.toggle('active');
+          const navInner = block.querySelector('.header-nav-inner');
+          // Close any other open panels
+          block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
+            if (other !== item) other.classList.remove('active');
+          });
+          item.classList.add('active');
+          if (navInner) navInner.classList.add('has-active-panel');
         }
       });
     }
   });
 
-  // Resize handler
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 992) {
-      hamburgerBtn?.setAttribute('aria-expanded', 'false');
-      headerNavBar?.classList.remove('mobile-open');
-      document.body.style.overflow = '';
-      block.querySelectorAll('.nav-item.active').forEach((li) => li.classList.remove('active'));
+  // Click outside closes megamenu
+  document.addEventListener('click', (e) => {
+    if (!block.contains(e.target)) {
+      block.querySelectorAll('.nav-item.has-dropdown.active').forEach((item) => {
+        item.classList.remove('active');
+      });
     }
   });
 
-  // Search input focus effect
-  const searchInput2 = block.querySelector('.search-input');
-  const searchBar2 = block.querySelector('.header-search');
-  if (searchInput2 && searchBar2) {
-    searchInput2.addEventListener('focus', () => {
-      searchBar2.classList.add('focused');
-    });
-    searchInput2.addEventListener('blur', () => {
-      searchBar2.classList.remove('focused');
+  // Cart modal — open on cart button click
+  const cartBtn = block.querySelector('.cart-btn');
+  const cartModal = block.querySelector('.cart-modal-overlay');
+  if (cartBtn && cartModal) {
+    cartBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      cartModal.classList.add('active');
     });
   }
+
+  // Visual search modal — wire ALL camera buttons (desktop + mobile search panel)
+  const vsModal = block.querySelector('.vs-modal-overlay');
+  if (vsModal) {
+    block.querySelectorAll('.camera-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        vsModal.classList.add('active');
+      });
+    });
+  }
+
+  // Search focus effect (desktop)
+  const searchInput = block.querySelector('.header-search .search-input');
+  const searchBar = block.querySelector('.header-search');
+  if (searchInput && searchBar) {
+    searchInput.addEventListener('focus', () => searchBar.classList.add('focused'));
+    searchInput.addEventListener('blur', () => searchBar.classList.remove('focused'));
+  }
+
+  // Mobile search panel: open/close
+  const mobileSearchBtn = block.querySelector('.mobile-search-btn');
+  const mobileSearchPanel = block.querySelector('.mobile-search-panel');
+  if (mobileSearchBtn && mobileSearchPanel) {
+    const mobileSearchClose = mobileSearchPanel.querySelector('.mobile-search-close');
+    const mobileInput = mobileSearchPanel.querySelector('.search-input');
+
+    mobileSearchBtn.addEventListener('click', () => {
+      mobileSearchPanel.classList.add('active');
+      if (mobileInput) mobileInput.focus();
+    });
+
+    if (mobileSearchClose) {
+      mobileSearchClose.addEventListener('click', () => {
+        mobileSearchPanel.classList.remove('active');
+      });
+    }
+  }
+
+  // Viewport resize handler
+  const mql = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
+  mql.addEventListener('change', (e) => {
+    if (e.matches) {
+      // Switched to desktop
+      if (hamburger) {
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.classList.remove('is-open');
+      }
+      if (navBar) navBar.classList.remove('mobile-open');
+      document.body.classList.remove('nav-open');
+      closeMobilePanel(block);
+      // Close mobile search panel
+      const searchPanel = block.querySelector('.mobile-search-panel');
+      if (searchPanel) searchPanel.classList.remove('active');
+    } else {
+      // Switched to mobile — close any open desktop dropdowns
+      block.querySelectorAll('.nav-item.has-dropdown.active').forEach((li) => li.classList.remove('active'));
+    }
+  });
+}
+
+export default async function decorate(block) {
+  // Standard EDS nav fetch: read path from metadata, fallback to /nav
+  const navMeta = getMetadata('nav');
+  const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
+  const resp = await fetch(`${navPath}.plain.html`);
+  if (!resp.ok) return;
+
+  const html = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const divs = [...doc.body.querySelectorAll(':scope > div')];
+  if (divs.length < 4) return;
+
+  const [brandDiv, mainDiv, navDiv, secondaryDiv] = divs;
+
+  block.textContent = '';
+
+  // Row 0: Brand bar
+  block.appendChild(buildBrandBar(brandDiv));
+
+  // Sticky wrapper for rows 1 + 2
+  const stickyWrapper = document.createElement('div');
+  stickyWrapper.className = 'header-sticky';
+
+  // Row 1: Main header
+  stickyWrapper.appendChild(buildMainHeader(mainDiv));
+
+  // Row 2: Navigation bar
+  stickyWrapper.appendChild(buildNavBar(navDiv, secondaryDiv));
+
+  block.appendChild(stickyWrapper);
+
+  // Mobile search panel
+  block.appendChild(buildMobileSearchPanel(mainDiv));
+
+  // Cart modal
+  block.appendChild(buildCartModal());
+
+  // Visual search modal
+  block.appendChild(buildVisualSearchModal());
+
+  // Wire up all interactions
+  addInteractions(block);
 }
