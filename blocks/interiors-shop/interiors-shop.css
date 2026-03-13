@@ -162,21 +162,42 @@
   }
 
   .interiors-shop {
-    padding: 60px 24px;
-  }
-
-  .interiors-shop-wrapper {
-    grid-template-columns: 1fr;
-    gap: 24px;
+    padding: 32px 0;
   }
 
   .interiors-shop-left-column {
-    gap: 24px;
+    display: block;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+  }
+
+  .interiors-shop-left-column .interiors-shop-card {
+    display: none;
+  }
+
+  .interiors-shop-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    margin-left: 16px;
+    box-sizing: border-box;
+  }
+
+  .interiors-shop-grid::-webkit-scrollbar {
+    display: none;
   }
 
   .interiors-shop-heading {
+    width: 100%;
     font-size: 32px;
     line-height: 38px;
+    margin: 0 0 12px;
   }
 
   .interiors-shop-description {
@@ -184,17 +205,33 @@
   }
 
   .interiors-shop-text {
-    margin-bottom: 8px;
+    margin-bottom: 0;
   }
 
-  /* Remove stair effect on mobile */
+  .interiors-shop-card {
+    flex: 0 0 82%;
+    min-width: 82%;
+    scroll-snap-align: start;
+  }
+
+  .interiors-shop-card h5 {
+    margin: 10px 0 1px;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+  }
+
+  .interiors-shop-card p {
+    font-size: 14px;
+    line-height: 20px;
+    width: 92%;
+    margin-bottom: 20px;
+  }
+
+  .interiors-shop-card.card-left,
   .interiors-shop-card.card-middle,
   .interiors-shop-card.card-right {
     margin-top: 0;
-  }
-
-  .interiors-shop-card-image {
-    aspect-ratio: 16 / 10;
   }
 
   .interiors-shop-card p {
