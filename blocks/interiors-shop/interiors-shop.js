@@ -43,6 +43,8 @@ export default function decorate(block) {
   rows.slice(1).forEach((row) => {
     const cells = [...row.children];
 
+    console.log("CELLS", cells);
+
     cells.forEach((cell) => {
       const img = cell.querySelector('img');
       const title = cell.querySelector('strong');
