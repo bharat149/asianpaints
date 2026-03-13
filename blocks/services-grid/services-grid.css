@@ -1,36 +1,43 @@
 /* Services Grid - Everything a home needs */
 
-/* Override section wrapper */
+/* Outer section wrapper */
 .section.services-grid-container {
   margin: 0 !important;
   padding: 60px 40px !important;
+  box-sizing: border-box;
+  overflow-x: clip;
 }
 
-.section.services-grid-container>div {
+.section.services-grid-container > div {
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
+  box-sizing: border-box;
 }
 
-/* Main grid layout */
+/* Main layout */
 .services-grid {
   display: flex !important;
   align-items: center;
   gap: 80px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Text column - fixed width */
+/* Left text column */
 .services-grid-text {
-  flex: 0 0 500px;
+  flex: 0 1 500px;
   max-width: 500px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .services-grid-text h2 {
   color: #1d1d1f;
   font-size: 54px;
   font-weight: 800;
-  margin-top: 0;
-  margin-bottom: 30px;
+  margin: 0 0 30px;
   line-height: 60px;
   font-family: 'Manrope', sans-serif;
   letter-spacing: -2px;
@@ -40,21 +47,26 @@
   color: #000;
   font-size: 18px;
   line-height: 28px;
-  margin-bottom: 0;
+  margin: 0;
   font-weight: 400;
 }
 
-/* Images wrapper - takes remaining space */
+/* Right images area */
 .services-grid-images {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Grid container for cards */
-.services-grid-container {
+/* Card grid */
+.services-grid-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Individual card */
@@ -63,14 +75,14 @@
   align-items: center;
   gap: 16px;
   padding: 23px;
-  height: 150px;
+  min-width: 0;
+  min-height: 150px;
   background: #faf6ef;
   border-radius: 10px;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  /* width: 48.6%; */
 }
 
 .services-grid-card:hover {
@@ -79,33 +91,41 @@
 
 /* Card image */
 .services-grid-card-image {
-  flex: 0 0 100px;
+  flex: 0 0 82px;
   width: 82px;
   height: 104px;
   border-radius: 5px;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.services-grid-card-image picture,
+.services-grid-card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .services-grid-card-image img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  display: block;
+  transition: transform 0.3s ease;
 }
 
 /* Card text */
 .services-grid-card-text {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .services-grid-card-text span {
   color: #000;
-  font-size: 32px;
+  font-size: clamp(20px, 2vw, 32px);
   font-weight: 400;
-  line-height: 35.2px;
+  line-height: 1.1;
   display: block;
-  word-wrap: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Arrow */
@@ -116,24 +136,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #faf6ef;
+  background: #ece5d7;
   border-radius: 50%;
   color: #232426;
   font-size: 30px;
+  line-height: 1;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .services-grid-card:hover .services-grid-card-arrow {
-  background: #ece5d7;
   transform: translate(2px, -2px);
 }
 
 .services-grid-card:hover .services-grid-card-image img {
-  transform: scale(1.1);
-  transition: 0.3s;
+  transform: scale(1.06);
 }
 
-/* Mobile responsive */
+/* Tablet / smaller desktop */
+@media (max-width: 1200px) {
+  .services-grid {
+    gap: 48px;
+  }
+
+  .services-grid-text {
+    flex-basis: 420px;
+    max-width: 420px;
+  }
+
+  .services-grid-text h2 {
+    font-size: 46px;
+    line-height: 52px;
+  }
+
+  .services-grid-card {
+    padding: 20px;
+  }
+}
+
+/* Mobile / tablet */
 @media (max-width: 991px) {
   .section.services-grid-container {
     padding: 40px 24px !important;
@@ -142,23 +183,26 @@
 
   .services-grid {
     flex-direction: column;
+    align-items: stretch;
     gap: 40px;
   }
 
   .services-grid-text {
     flex: none;
     max-width: 100%;
-    text-align: center;
   }
 
   .services-grid-text h2 {
     font-size: 36px;
+    line-height: 42px;
+    margin-bottom: 16px;
+    text-align: left;
+    letter-spacing: -1px;
   }
 
   .services-grid-text p {
     font-size: 16px;
     line-height: 24px;
-    margin-bottom: 0;
     text-align: left;
   }
 
@@ -166,28 +210,36 @@
     width: 100%;
   }
 
-  .services-grid-container {
+  .services-grid-cards {
     gap: 16px;
   }
 
   .services-grid-card {
-    padding: 15px 13px;
-    gap: 12px;
-    height: auto;
     display: block;
     position: relative;
+    min-height: auto;
+    padding: 15px 13px 18px;
   }
 
   .services-grid-card-image {
-    flex: 0 0 70px;
     width: 100%;
     height: auto;
+    border-radius: 6px;
+  }
+
+  .services-grid-card-image picture,
+  .services-grid-card-image img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .services-grid-card-text {
+    margin-top: 10px;
   }
 
   .services-grid-card-text span {
     font-size: 20px;
     line-height: 22px;
-    margin-top: 10px;
     max-width: 89%;
   }
 
@@ -196,21 +248,24 @@
     height: 32px;
     position: absolute;
     right: 10px;
-    transform: none;
-    bottom: 3px;
-    font-size: 24px;
+    bottom: 10px;
+    font-size: 22px;
   }
 }
 
+/* Small mobile */
 @media (max-width: 600px) {
-  .services-grid-container {
-    grid-template-columns: repeat(2, 1fr);
+  .section.services-grid-container {
+    padding: 32px 16px !important;
+  }
+
+  .services-grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .services-grid-text h2 {
     font-size: 32px;
     line-height: 41px;
     margin-bottom: 12px;
-    text-align: left;
   }
 }
