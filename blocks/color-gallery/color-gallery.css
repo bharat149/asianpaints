@@ -101,22 +101,28 @@
   min-width: 0;
 }
 
-.color-gallery-carousel-container {
+.color-gallery-swiper {
   position: relative;
   overflow: hidden;
-  padding-bottom: 70px;
+  padding-bottom: 90px;
 }
 
+.color-gallery-swiper .swiper-wrapper,
 .color-gallery-carousel-track {
   display: flex;
-  gap: 16px;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  align-items: stretch;
+  box-sizing: border-box;
 }
 
-/* Each slide */
+.color-gallery-swiper .swiper-slide,
 .color-gallery-slide {
-  flex: 0 0 260px;
-  width: 260px;
+  height: auto;
+  display: flex;
+  box-sizing: border-box;
+}
+
+.color-gallery-swiper .swiper-slide > * {
+  width: 100%;
 }
 
 /* Entire card clickable */
@@ -131,6 +137,13 @@
   background: #e0e0e0;
   cursor: pointer;
   box-shadow: none;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-sizing: border-box;
+}
+
+.color-gallery-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
 /* Top / bottom split */
@@ -172,31 +185,37 @@
   transform: scale(1.08);
 }
 
-/* Optional subtle card lift */
-.color-gallery-card {
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+/* Navigation container */
+.color-gallery-navigation {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 20;
+  float: right;
+  margin-top: 20px;
 }
 
-.color-gallery-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Navigation Buttons - Bottom right corner */
+/* Arrow buttons */
 .color-gallery-nav {
-  position: absolute;
-  bottom: 0;
+  position: static !important;
   width: 48px;
   height: 48px;
+  flex: 0 0 48px;
   border-radius: 50%;
   background: #fff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #1a1a1a;
   cursor: pointer;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin-top: 0 !important;
+  box-sizing: border-box;
 }
 
 .color-gallery-nav:hover:not(:disabled) {
@@ -209,8 +228,11 @@
   opacity: 0.4;
 }
 
-.color-gallery-prev {
-  right: 100px;
+/* Remove default Swiper arrows */
+.color-gallery-nav.swiper-button-prev::after,
+.color-gallery-nav.swiper-button-next::after,
+.color-gallery-nav::after {
+  display: none;
 }
 
 .color-gallery-prev::before {
@@ -219,10 +241,6 @@
   font-weight: 400;
   color: #1a1a1a;
   line-height: 1;
-}
-
-.color-gallery-next {
-  right: 40px;
 }
 
 .color-gallery-next::before {
@@ -253,7 +271,7 @@
     align-items: center;
     gap: 8px;
     padding: 14px 28px;
-    background: #277BD4;
+    background: #277bd4;
     color: #fff;
     text-decoration: none;
     border-radius: 30px;
@@ -302,29 +320,18 @@
 
   .color-gallery-carousel {
     width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    min-width: 0;
+    overflow: visible;
   }
 
-  .color-gallery-carousel::-webkit-scrollbar {
-    display: none;
-  }
-
-  .color-gallery-carousel-container {
+  .color-gallery-swiper {
     overflow: visible;
     padding-bottom: 0;
   }
 
+  .color-gallery-swiper .swiper-wrapper,
   .color-gallery-carousel-track {
-    gap: 12px;
-    padding: 0 10px;
-  }
-
-  .color-gallery-slide {
-    flex: 0 0 200px;
-    width: 200px;
+    align-items: stretch;
   }
 
   .color-gallery-card {
@@ -332,6 +339,7 @@
     border-radius: 16px;
   }
 
+  .color-gallery-navigation,
   .color-gallery-nav {
     display: none;
   }
@@ -339,11 +347,6 @@
 
 /* Tablet adjustments */
 @media (min-width: 768px) and (max-width: 991px) {
-  .color-gallery-slide {
-    flex: 0 0 240px;
-    width: 240px;
-  }
-
   .color-gallery-card {
     height: 420px;
   }
@@ -351,11 +354,6 @@
 
 /* Large desktop */
 @media (min-width: 1400px) {
-  .color-gallery-slide {
-    flex: 0 0 280px;
-    width: 280px;
-  }
-
   .color-gallery-card {
     height: 500px;
   }

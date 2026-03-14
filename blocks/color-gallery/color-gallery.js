@@ -1,17 +1,100 @@
 /*
 ** Authoring format **
+Col 1 contains text content
 Col 2 contains multiple desktop top images
-
 Col 3 contains multiple mobile top images
-
 Col 4 contains multiple desktop bottom images
-
 Col 5 contains multiple mobile bottom images
-
 Col 6 contains multiple URLs
 */
 
-export default function decorate(block) {
+function getPicturesFromColumn(col) {
+  if (!col) return [];
+  return [...col.querySelectorAll('picture')];
+}
+
+function getLinksFromColumn(col) {
+  if (!col) return [];
+
+  const links = [...col.querySelectorAll('a')];
+  if (links.length) return links.map((link) => link.href);
+
+  const paragraphValues = [...col.querySelectorAll('p')]
+    .map((p) => p.textContent.trim())
+    .filter(Boolean);
+
+  if (paragraphValues.length) return paragraphValues;
+
+  const text = col.textContent.trim();
+  return text ? [text] : [];
+}
+
+function cloneSourcesToPicture(targetPicture, sourcePicture, mediaQuery) {
+  if (!sourcePicture) return;
+
+  [...sourcePicture.querySelectorAll('source')].forEach((sourceEl) => {
+    const source = document.createElement('source');
+
+    if (sourceEl.type) source.type = sourceEl.type;
+    if (sourceEl.srcset) source.srcset = sourceEl.srcset;
+
+    if (mediaQuery) {
+      source.media = mediaQuery;
+    } else if (sourceEl.media) {
+      source.media = sourceEl.media;
+    }
+
+    targetPicture.appendChild(source);
+  });
+}
+
+function createResponsivePicture(desktopPicture, mobilePicture, altText = '') {
+  const desktopImg = desktopPicture?.querySelector('img');
+  const mobileImg = mobilePicture?.querySelector('img');
+
+  if (!desktopImg && !mobileImg) return null;
+
+  const picture = document.createElement('picture');
+
+  cloneSourcesToPicture(picture, mobilePicture, '(max-width: 767px)');
+  cloneSourcesToPicture(picture, desktopPicture, '(min-width: 768px)');
+
+  const img = document.createElement('img');
+  img.src = mobileImg?.src || desktopImg?.src || '';
+  img.alt = mobileImg?.alt || desktopImg?.alt || altText;
+  img.loading = 'lazy';
+  img.decoding = 'async';
+
+  if (desktopImg?.width) img.width = desktopImg.width;
+  if (desktopImg?.height) img.height = desktopImg.height;
+
+  picture.appendChild(img);
+
+  return picture;
+}
+
+function updateNavState(swiper, prevButton, nextButton) {
+  if (!swiper || !prevButton || !nextButton) return;
+
+  prevButton.disabled = swiper.isBeginning;
+  nextButton.disabled = swiper.isEnd;
+
+  prevButton.style.opacity = swiper.isBeginning ? '0.4' : '1';
+  nextButton.style.opacity = swiper.isEnd ? '0.4' : '1';
+}
+
+async function getSwiperClass() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
+
+  // eslint-disable-next-line no-console
+  console.warn('Swiper loader is not available on window.loadSwiper');
+  return null;
+}
+
+export default async function decorate(block) {
+  if (block.dataset.colorGalleryInitialized === 'true') return;
+
   const row = block.querySelector(':scope > div');
   if (!row) return;
 
@@ -22,68 +105,12 @@ export default function decorate(block) {
   const textCol = columns[0];
   textCol.classList.add('color-gallery-text');
 
-  // Column 2–6
+  // Columns 2–6
   const desktopTopCol = columns[1];
   const mobileTopCol = columns[2];
   const desktopBottomCol = columns[3];
   const mobileBottomCol = columns[4];
   const urlCol = columns[5];
-
-  const carouselCol = document.createElement('div');
-  carouselCol.className = 'color-gallery-carousel';
-
-  const carouselContainer = document.createElement('div');
-  carouselContainer.className = 'color-gallery-carousel-container';
-
-  const carouselTrack = document.createElement('div');
-  carouselTrack.className = 'color-gallery-carousel-track';
-
-  function getPicturesFromColumn(col) {
-    return [...col.querySelectorAll('picture')];
-  }
-
-  function getLinksFromColumn(col) {
-    const links = [...col.querySelectorAll('a')];
-    if (links.length) return links.map((link) => link.href);
-
-    // fallback: each line / paragraph can be treated as url
-    const items = [...col.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
-    if (items.length) return items;
-
-    const text = col.textContent.trim();
-    return text ? [text] : [];
-  }
-
-  function createResponsivePicture(desktopPicture, mobilePicture, altText = '') {
-    const desktopImg = desktopPicture?.querySelector('img');
-    const mobileImg = mobilePicture?.querySelector('img');
-
-    if (!desktopImg && !mobileImg) return null;
-
-    const picture = document.createElement('picture');
-
-    if (mobileImg?.src) {
-      const mobileSource = document.createElement('source');
-      mobileSource.setAttribute('media', '(max-width: 767px)');
-      mobileSource.setAttribute('srcset', mobileImg.src);
-      picture.appendChild(mobileSource);
-    }
-
-    if (desktopImg?.src) {
-      const desktopSource = document.createElement('source');
-      desktopSource.setAttribute('media', '(min-width: 768px)');
-      desktopSource.setAttribute('srcset', desktopImg.src);
-      picture.appendChild(desktopSource);
-    }
-
-    const img = document.createElement('img');
-    img.src = mobileImg?.src || desktopImg?.src || '';
-    img.alt = mobileImg?.alt || desktopImg?.alt || altText;
-    img.loading = 'lazy';
-    picture.appendChild(img);
-
-    return picture;
-  }
 
   const desktopTopPictures = getPicturesFromColumn(desktopTopCol);
   const mobileTopPictures = getPicturesFromColumn(mobileTopCol);
@@ -96,27 +123,38 @@ export default function decorate(block) {
     mobileTopPictures.length,
     desktopBottomPictures.length,
     mobileBottomPictures.length,
-    urls.length
+    urls.length,
   );
+
+  if (!totalCards) return;
+
+  const carouselCol = document.createElement('div');
+  carouselCol.className = 'color-gallery-carousel';
+
+  const swiperEl = document.createElement('div');
+  swiperEl.className = 'swiper color-gallery-swiper';
+
+  const swiperWrapper = document.createElement('div');
+  swiperWrapper.className = 'swiper-wrapper color-gallery-carousel-track';
 
   for (let i = 0; i < totalCards; i += 1) {
     const topPicture = createResponsivePicture(
       desktopTopPictures[i],
       mobileTopPictures[i],
-      `Top image ${i + 1}`
+      `Top image ${i + 1}`,
     );
 
     const bottomPicture = createResponsivePicture(
       desktopBottomPictures[i],
       mobileBottomPictures[i],
-      `Bottom image ${i + 1}`
+      `Bottom image ${i + 1}`,
     );
 
-    // skip card if both images missing
+    // Skip card if both images are missing
     if (!topPicture && !bottomPicture) continue;
 
     const slide = document.createElement('div');
-    slide.className = 'color-gallery-slide';
+    slide.className = 'swiper-slide color-gallery-slide';
 
     const cardLink = document.createElement('a');
     cardLink.className = 'color-gallery-card';
@@ -135,103 +173,113 @@ export default function decorate(block) {
     cardLink.appendChild(topWrap);
     cardLink.appendChild(bottomWrap);
     slide.appendChild(cardLink);
-    carouselTrack.appendChild(slide);
+    swiperWrapper.appendChild(slide);
   }
 
-  if (!carouselTrack.children.length) return;
+  if (!swiperWrapper.children.length) return;
 
-  carouselContainer.appendChild(carouselTrack);
+  swiperEl.appendChild(swiperWrapper);
 
-  const slides = carouselTrack.querySelectorAll('.color-gallery-slide');
-  const totalSlides = slides.length;
-
+  const totalSlides = swiperWrapper.children.length;
   let prevButton;
   let nextButton;
 
   if (totalSlides > 1) {
+    const navContainer = document.createElement('div');
+    navContainer.className = 'color-gallery-navigation';
+
     prevButton = document.createElement('button');
-    prevButton.className = 'color-gallery-nav color-gallery-prev';
+    prevButton.className = 'color-gallery-nav color-gallery-prev swiper-button-prev';
+    prevButton.type = 'button';
     prevButton.setAttribute('aria-label', 'Previous');
 
     nextButton = document.createElement('button');
-    nextButton.className = 'color-gallery-nav color-gallery-next';
+    nextButton.className = 'color-gallery-nav color-gallery-next swiper-button-next';
+    nextButton.type = 'button';
     nextButton.setAttribute('aria-label', 'Next');
 
-    carouselContainer.appendChild(prevButton);
-    carouselContainer.appendChild(nextButton);
+    navContainer.appendChild(prevButton);
+    navContainer.appendChild(nextButton);
+    swiperEl.appendChild(navContainer);
   }
 
-  carouselCol.appendChild(carouselContainer);
+  carouselCol.appendChild(swiperEl);
 
-  // Remove original cols 2–6 and append carousel
+  // Remove original columns 2–6 and append carousel
   columns.slice(1).forEach((col) => col.remove());
   row.appendChild(carouselCol);
 
-  if (totalSlides > 1) {
-    let currentIndex = 0;
-
-    function getSlideWidth() {
-      const slide = slides[0];
-      if (!slide) return 276;
-      const width = slide.offsetWidth;
-      const gap = window.innerWidth <= 991 ? 12 : 16;
-      return width + gap;
-    }
-
-    function getVisibleSlides() {
-      const containerWidth = carouselCol.offsetWidth;
-      const slideWidth = getSlideWidth();
-      return Math.max(1, Math.floor(containerWidth / slideWidth));
-    }
-
-    function updateCarousel() {
-      const slideWidth = getSlideWidth();
-      const visibleSlides = getVisibleSlides();
-      const maxIndex = Math.max(0, totalSlides - visibleSlides);
-
-      if (currentIndex < 0) currentIndex = 0;
-      if (currentIndex > maxIndex) currentIndex = maxIndex;
-
-      const translateX = currentIndex * slideWidth;
-      carouselTrack.style.transform = `translateX(-${translateX}px)`;
-
-      if (prevButton && nextButton) {
-        prevButton.disabled = currentIndex === 0;
-        nextButton.disabled = currentIndex >= maxIndex;
-
-        prevButton.style.opacity = currentIndex === 0 ? '0.4' : '1';
-        nextButton.style.opacity = currentIndex >= maxIndex ? '0.4' : '1';
-      }
-    }
-
-    prevButton?.addEventListener('click', (e) => {
-      e.preventDefault();
-      currentIndex -= 1;
-      updateCarousel();
-    });
-
-    nextButton?.addEventListener('click', (e) => {
-      e.preventDefault();
-      currentIndex += 1;
-      updateCarousel();
-    });
-
-    setTimeout(updateCarousel, 100);
-
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(updateCarousel, 100);
-    });
-  }
-
   // Add mobile CTA below carousel
+  const existingMobileCta = block.querySelector('.color-gallery-mobile-cta');
+  if (existingMobileCta) existingMobileCta.remove();
+
   const mobileCta = document.createElement('div');
   mobileCta.className = 'color-gallery-mobile-cta';
+
   const ctaLink = textCol.querySelector('a');
   if (ctaLink) {
     const mobileLink = ctaLink.cloneNode(true);
     mobileCta.appendChild(mobileLink);
     block.appendChild(mobileCta);
+  }
+
+  block.dataset.colorGalleryInitialized = 'true';
+
+  if (totalSlides <= 1) return;
+
+  try {
+    const Swiper = await getSwiperClass();
+    if (!Swiper) return;
+
+    const swiper = new Swiper(swiperEl, {
+      slidesPerView: 1.15,
+      spaceBetween: 12,
+      speed: 500,
+      loop: false,
+      watchOverflow: true,
+      navigation: {
+        prevEl: prevButton,
+        nextEl: nextButton,
+      },
+      breakpoints: {
+        768: {
+          slidesPerView: 2,
+          spaceBetween: 12,
+        },
+        992: {
+          slidesPerView: 3,
+          spaceBetween: 16,
+        },
+        1200: {
+          slidesPerView: 3,
+          spaceBetween: 16,
+        },
+      },
+      on: {
+        init(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        slideChange(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        resize(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        reachBeginning(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        reachEnd(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        fromEdge(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+      },
+    });
+
+    block.colorGallerySwiper = swiper;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize color-gallery Swiper', error);
   }
 }
