@@ -329,11 +329,6 @@
     width: 100%;
     border-radius: 10px;
   }
-
-  .color-gallery-navigation,
-  .color-gallery-nav {
-    display: none;
-  }
 }
 
 /* Tablet adjustments */
