@@ -1,5 +1,23 @@
-export default function decorate(block) {
-  // Add wrapper class to parent section
+async function getSwiperClass() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
+
+  // eslint-disable-next-line no-console
+  console.warn('Swiper loader is not available on window.loadSwiper');
+  return null;
+}
+
+function updateNavState(swiper, prevButton, nextButton) {
+  if (!swiper || !prevButton || !nextButton) return;
+
+  prevButton.disabled = swiper.isBeginning;
+  nextButton.disabled = swiper.isEnd;
+
+  prevButton.style.opacity = swiper.isBeginning ? '0.4' : '1';
+  nextButton.style.opacity = swiper.isEnd ? '0.4' : '1';
+}
+
+export default async function decorate(block) {
   const section = block.closest('.section');
   if (section) {
     section.classList.add('tools-carousel-wrapper');
@@ -11,126 +29,139 @@ export default function decorate(block) {
   const columns = [...row.children];
   if (columns.length < 2) return;
 
-  // First column is heading
   const headingCol = columns[0];
   headingCol.classList.add('tools-carousel-heading');
 
-  // Second column contains carousel items
   const carouselCol = columns[1];
-  if (carouselCol) {
-    carouselCol.classList.add('tools-carousel-items');
+  carouselCol.classList.add('tools-carousel-items');
 
-    // Get all images and headings
-    const images = [...carouselCol.querySelectorAll('img')];
-    const headings = [...carouselCol.querySelectorAll('h3')];
+  const images = [...carouselCol.querySelectorAll('img')];
+  const headings = [...carouselCol.querySelectorAll('h3')];
 
-    if (images.length > 0 || headings.length > 0) {
-      // Create carousel structure
-      const carouselContainer = document.createElement('div');
-      carouselContainer.className = 'tools-carousel-container';
+  if (images.length > 0 || headings.length > 0) {
+    const carouselTrack = document.createElement('div');
+    carouselTrack.className = 'tools-carousel-track swiper';
 
-      const carouselTrack = document.createElement('div');
-      carouselTrack.className = 'tools-carousel-track';
+    const swiperWrapper = document.createElement('div');
+    swiperWrapper.className = 'swiper-wrapper';
 
-      // Create slides from images and headings
-      const items = Math.max(images.length, headings.length);
-      for (let i = 0; i < items; i++) {
-        const slide = document.createElement('div');
-        slide.className = 'tools-carousel-slide';
-        if (i === 0) slide.classList.add('active');
+    const items = Math.max(images.length, headings.length);
 
-        const heading = headings[i];
-        const img = images[i];
+    for (let i = 0; i < items; i += 1) {
+      const slide = document.createElement('div');
+      slide.className = 'tools-carousel-slide swiper-slide';
 
-        // Add image (will be hidden by CSS)
-        if (img) {
-          slide.appendChild(img.cloneNode(true));
-        }
+      const heading = headings[i];
+      const img = images[i];
 
-        // Add title
-        if (heading) {
-          const title = document.createElement('div');
-          title.className = 'tools-carousel-title';
-          title.textContent = heading.textContent;
-          slide.appendChild(title);
-        }
-
-        carouselTrack.appendChild(slide);
+      if (img) {
+        slide.appendChild(img.cloneNode(true));
       }
 
-      carouselContainer.appendChild(carouselTrack);
+      if (heading) {
+        const title = document.createElement('div');
+        title.className = 'tools-carousel-title';
+        title.textContent = heading.textContent;
+        slide.appendChild(title);
+      }
 
-      // Create navigation container (top right)
+      swiperWrapper.appendChild(slide);
+    }
+
+    let prevButton;
+    let nextButton;
+    let paginationEl;
+
+    if (items > 1) {
       const navContainer = document.createElement('div');
       navContainer.className = 'tools-carousel-nav-container';
 
-      const prevButton = document.createElement('button');
-      prevButton.className = 'tools-carousel-nav tools-carousel-prev';
+      prevButton = document.createElement('button');
+      prevButton.className = 'tools-carousel-nav tools-carousel-prev swiper-button-prev';
+      prevButton.type = 'button';
       prevButton.setAttribute('aria-label', 'Previous');
-      prevButton.innerHTML = '←';
 
-      const nextButton = document.createElement('button');
-      nextButton.className = 'tools-carousel-nav tools-carousel-next';
+      nextButton = document.createElement('button');
+      nextButton.className = 'tools-carousel-nav tools-carousel-next swiper-button-next';
+      nextButton.type = 'button';
       nextButton.setAttribute('aria-label', 'Next');
-      nextButton.innerHTML = '→';
 
       navContainer.appendChild(prevButton);
       navContainer.appendChild(nextButton);
 
-      // Clear carousel column and add container
+      paginationEl = document.createElement('div');
+      paginationEl.className = 'tools-carousel-pagination swiper-pagination';
+
       carouselCol.innerHTML = '';
-      carouselCol.appendChild(carouselContainer);
+      carouselTrack.appendChild(swiperWrapper);
+      carouselCol.appendChild(carouselTrack);
+      carouselCol.appendChild(navContainer);
+      carouselCol.appendChild(paginationEl);
+    } else {
+      carouselCol.innerHTML = '';
+      carouselTrack.appendChild(swiperWrapper);
+      carouselCol.appendChild(carouselTrack);
+    }
 
-      // Add nav container to the section wrapper (for absolute positioning at page right)
-      if (section) {
-        section.appendChild(navContainer);
-      } else {
-        block.appendChild(navContainer);
+    if (items > 1) {
+      try {
+        const Swiper = await getSwiperClass();
+        if (!Swiper) return;
+
+        const swiper = new Swiper(carouselTrack, {
+          slidesPerView: 'auto',
+          spaceBetween: 16,
+          speed: 500,
+          loop: false,
+          watchOverflow: true,
+          navigation: {
+            prevEl: prevButton,
+            nextEl: nextButton,
+          },
+          pagination: {
+            el: paginationEl,
+            clickable: false,
+          },
+          breakpoints: {
+            0: {
+              slidesPerView: 'auto',
+              spaceBetween: 12,
+            },
+            1000: {
+              slidesPerView: 'auto',
+              spaceBetween: 16,
+            },
+          },
+          on: {
+            init(instance) {
+              updateNavState(instance, prevButton, nextButton);
+            },
+            slideChange(instance) {
+              updateNavState(instance, prevButton, nextButton);
+            },
+            resize(instance) {
+              updateNavState(instance, prevButton, nextButton);
+            },
+            reachBeginning(instance) {
+              updateNavState(instance, prevButton, nextButton);
+            },
+            reachEnd(instance) {
+              updateNavState(instance, prevButton, nextButton);
+            },
+            fromEdge(instance) {
+              updateNavState(instance, prevButton, nextButton);
+            },
+          },
+        });
+
+        block.toolsCarouselSwiper = swiper;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to initialize tools-carousel Swiper', error);
       }
-
-      // Carousel logic
-      let currentIndex = 0;
-      const slides = carouselTrack.querySelectorAll('.tools-carousel-slide');
-      const totalSlides = slides.length;
-      const slideWidth = 280; // card width
-      const gap = 16; // gap between cards
-
-      function getMaxIndex() {
-        const containerWidth = carouselContainer.offsetWidth;
-        const visibleSlides = Math.floor(containerWidth / (slideWidth + gap));
-        return Math.max(0, totalSlides - visibleSlides);
-      }
-
-      function showSlide(index) {
-        const maxIndex = getMaxIndex();
-        currentIndex = Math.max(0, Math.min(index, maxIndex));
-        const offset = currentIndex * (slideWidth + gap);
-        carouselTrack.style.transform = `translateX(-${offset}px)`;
-      }
-
-      prevButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showSlide(currentIndex - 1);
-      });
-
-      nextButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showSlide(currentIndex + 1);
-      });
-
-      // Handle resize
-      window.addEventListener('resize', () => {
-        showSlide(currentIndex);
-      });
-
-      // Initialize
-      showSlide(0);
     }
   }
 
-  // Move columns to be direct children of block
   block.append(headingCol, carouselCol);
   row.remove();
 }
