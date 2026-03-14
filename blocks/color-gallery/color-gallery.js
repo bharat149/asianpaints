@@ -243,8 +243,8 @@ export default async function decorate(block) {
       },
       breakpoints: {
         768: {
-          slidesPerView: 2,
-          spaceBetween: 12,
+          slidesPerView: 1.3,
+          spaceBetween: 10,
         },
         992: {
           slidesPerView: 3,
