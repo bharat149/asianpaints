@@ -1,3 +1,11 @@
+/*
+** Authoring format **
+col 1 = heading
+col 2 = multiple images
+col 3 = multiple titles
+col 4 = multiple URLs
+*/
+
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -22,6 +30,56 @@ function removeInjectedSwiperIcons(prevButton, nextButton) {
   nextButton?.querySelectorAll('.swiper-navigation-icon').forEach((icon) => icon.remove());
 }
 
+function getDirectItems(column) {
+  if (!column) return [];
+
+  const items = [...column.children].filter((child) => {
+    const text = child.textContent?.trim();
+    const media = child.querySelector('picture, img') || child.matches('picture, img');
+    const link = child.querySelector('a') || child.matches('a');
+    return text || media || link;
+  });
+
+  if (items.length) return items;
+
+  return column.textContent?.trim() ? [column] : [];
+}
+
+function getTitleFromItem(item) {
+  if (!item) return '';
+
+  const cloned = item.cloneNode(true);
+  cloned.querySelectorAll('picture, img, a').forEach((el) => el.remove());
+
+  return cloned.textContent?.trim() || item.textContent?.trim() || '';
+}
+
+function getImageFromItem(item) {
+  if (!item) return null;
+
+  if (item.matches?.('picture')) return item.cloneNode(true);
+
+  const picture = item.querySelector?.('picture');
+  if (picture) return picture.cloneNode(true);
+
+  const img = item.matches?.('img') ? item : item.querySelector?.('img');
+  if (img) return img.cloneNode(true);
+
+  return null;
+}
+
+function getHrefFromItem(item) {
+  if (!item) return '#';
+
+  if (item.matches?.('a[href]')) return item.href.trim();
+
+  const anchor = item.querySelector?.('a[href]');
+  if (anchor?.href) return anchor.href.trim();
+
+  const text = item.textContent?.trim();
+  return text || '#';
+}
+
 export default async function decorate(block) {
   const section = block.closest('.section');
   if (section) {
@@ -32,18 +90,25 @@ export default async function decorate(block) {
   if (!row) return;
 
   const columns = [...row.children];
-  if (columns.length < 2) return;
+  if (columns.length < 4) return;
 
   const headingCol = columns[0];
   headingCol.classList.add('tools-carousel-heading');
 
-  const carouselCol = columns[1];
-  carouselCol.classList.add('tools-carousel-items');
+  const imageCol = columns[1];
+  const titleCol = columns[2];
+  const linkCol = columns[3];
 
-  const images = [...carouselCol.querySelectorAll('img')];
-  const headings = [...carouselCol.querySelectorAll('h3')];
+  const carouselCol = document.createElement('div');
+  carouselCol.className = 'tools-carousel-items';
 
-  if (!images.length && !headings.length) {
+  const imageItems = getDirectItems(imageCol);
+  const titleItems = getDirectItems(titleCol);
+  const linkItems = getDirectItems(linkCol);
+
+  const items = Math.max(titleItems.length, imageItems.length, linkItems.length);
+
+  if (!items) {
     block.append(headingCol, carouselCol);
     row.remove();
     return;
@@ -55,23 +120,22 @@ export default async function decorate(block) {
   const swiperWrapper = document.createElement('div');
   swiperWrapper.className = 'swiper-wrapper';
 
-  const items = Math.max(images.length, headings.length);
-
   for (let i = 0; i < items; i += 1) {
-    const slide = document.createElement('div');
+    const slide = document.createElement('a');
     slide.className = 'tools-carousel-slide swiper-slide';
+    slide.href = getHrefFromItem(linkItems[i]);
 
-    const heading = headings[i];
-    const img = images[i];
+    const imageNode = getImageFromItem(imageItems[i]);
+    const titleText = getTitleFromItem(titleItems[i]);
 
-    if (img) {
-      slide.appendChild(img.cloneNode(true));
+    if (imageNode) {
+      slide.appendChild(imageNode);
     }
 
-    if (heading) {
+    if (titleText) {
       const title = document.createElement('div');
       title.className = 'tools-carousel-title';
-      title.textContent = heading.textContent;
+      title.textContent = titleText;
       slide.appendChild(title);
     }
 
