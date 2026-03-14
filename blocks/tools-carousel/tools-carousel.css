@@ -31,15 +31,16 @@
 
 /* Items column */
 .tools-carousel-items {
-  position: relative;
   overflow: hidden;
   min-width: 0;
+  margin-top: 50px;
 }
 
 /* Swiper applied directly to track */
 .tools-carousel-track {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  padding-top: 76px;
 }
 
 .tools-carousel-track .swiper-wrapper {
@@ -56,9 +57,10 @@
 }
 
 /* Navigation arrows */
+
 .tools-carousel-nav-container {
   position: absolute;
-  top: 30px;
+  top: 15px;
   right: 40px;
   display: flex;
   gap: 10px;
@@ -68,7 +70,7 @@
 .tools-carousel-nav {
   position: static !important;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 2px solid #fff;
   width: 40px;
   height: 40px;
   min-width: 40px;
@@ -108,15 +110,26 @@
 
 .tools-carousel-nav.swiper-button-prev::after,
 .tools-carousel-nav.swiper-button-next::after {
-  display: none;
+  display: none !important;
 }
 
 .tools-carousel-prev::before {
   content: '←';
+  color: #fff;
+  top: 9px;
+  position: absolute;
 }
 
 .tools-carousel-next::before {
   content: '→';
+  color: #fff;
+  top: 9px;
+  position: absolute;
+}
+
+.swiper-button-next.swiper-button-disabled,
+.swiper-button-prev.swiper-button-disabled {
+  background: transparent;
 }
 
 /* Pagination dots */
@@ -251,8 +264,10 @@
   .tools-carousel-pagination {
     display: block;
     margin-top: 16px;
-    text-align: left;
+    text-align: left !important;
     line-height: 0;
+    margin-bottom: 10px;
+    padding-left: 28px;
   }
 
   .tools-carousel-pagination .swiper-pagination-bullet {
@@ -282,6 +297,10 @@
     font-size: 32px !important;
     line-height: 34px !important;
     padding: 16px !important;
+  }
+
+  .tools-carousel-items {
+    margin-top: 0;
   }
 }
 
