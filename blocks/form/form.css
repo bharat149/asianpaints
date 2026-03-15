@@ -38,7 +38,6 @@
 .form.block .form-description-cell {
   flex: 0 0 300px;
   max-width: 300px;
-  font-family: Manrope, sans-serif;
 }
 
 /* Title parts */
@@ -47,7 +46,6 @@
   color: #000;
   font-weight: 700;
   margin-bottom: 8px;
-  font-family: Manrope, sans-serif;
 }
 
 .form.block .form-title-large {
@@ -56,14 +54,12 @@
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 20px;
-  font-family: Manrope, sans-serif;
 }
 
 .form.block .form-subtitle {
   font-size: 20px;
   color: #3b3d40;
   line-height: 1.5;
-  font-family: Manrope, sans-serif;
 }
 
 /* Form fields area - right side */
@@ -106,7 +102,6 @@
   padding: 0 8px;
   background: #fff;
   color: #53565a;
-  font-family: Manrope, sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -134,7 +129,6 @@
   background-color: transparent;
   color: #53565a;
   font-size: 18px;
-  font-family: Manrope, sans-serif;
   line-height: 1.2;
   transition:
     border-color 0.25s ease,
@@ -199,7 +193,6 @@
 
 .form.block .form-consent-text {
   color: #53565a;
-  font-family: Manrope, sans-serif;
   font-size: 12px;
   font-weight: 500;
   line-height: 24px;
@@ -268,7 +261,6 @@
 /* Note */
 .form.block .form-consent-note {
   color: #53565a;
-  font-family: Manrope, sans-serif;
   font-size: 12px;
   line-height: 16.3px;
   max-width: 920px;
@@ -372,7 +364,7 @@
 
   .form.block .form-title-large {
     font-size: 32px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 41.6px;
     letter-spacing: 0;
     margin-bottom: 6px;
