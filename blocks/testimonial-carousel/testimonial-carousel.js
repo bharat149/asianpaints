@@ -44,15 +44,17 @@ function buildHeading(rows, block) {
 }
 
 function createQuoteIcon() {
-  const logoSvg = document.createElement('div');
-  logoSvg.className = 'testimonial-logo-bg';
-  logoSvg.innerHTML = `
-    <svg width="81" height="70" viewBox="0 0 81 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M35.5 0C25.283 0 17 8.283 17 18.5C17 28.717 25.283 37 35.5 37C37.053 37 38.561 36.822 40 36.492V37C40 51.912 27.912 64 13 64H10V70H13C31.225 70 46 55.225 46 37V18.5C46 8.283 37.717 0 35.5 0Z" fill="#E8E8E8"/>
-      <path d="M70.5 0C60.283 0 52 8.283 52 18.5C52 28.717 60.283 37 70.5 37C72.053 37 73.561 36.822 75 36.492V37C75 51.912 62.912 64 48 64H45V70H48C66.225 70 81 55.225 81 37V18.5C81 8.283 72.717 0 70.5 0Z" fill="#E8E8E8"/>
-    </svg>
-  `;
-  return logoSvg;
+  const logo = document.createElement('div');
+  logo.className = 'testimonial-logo-bg';
+
+  const img = document.createElement('img');
+  img.src = 'https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/wht-our-client-say-bg-logo.webp';
+  img.alt = 'Quote background';
+  img.loading = 'lazy';
+
+  logo.appendChild(img);
+
+  return logo;
 }
 
 function getTestimonialContent(columns) {
@@ -106,11 +108,14 @@ function createVideoModal(block) {
 function openVideoModal(block, videoUrl) {
   const modal = block.querySelector('.testimonial-video-modal');
   const videoWrapper = modal?.querySelector('.testimonial-video-wrapper');
-  if (!modal || !videoWrapper) return;
+  if (!modal || !videoWrapper || !videoUrl) return;
+
+  const separator = videoUrl.includes('?') ? '&' : '?';
+  const iframeSrc = `${videoUrl}${separator}autoplay=1&rel=0`;
 
   videoWrapper.innerHTML = `
     <iframe
-      src="${videoUrl}?autoplay=1&rel=0"
+      src="${iframeSrc}"
       title="Customer testimonial video"
       allow="autoplay; encrypted-media; picture-in-picture"
       allowfullscreen
@@ -143,16 +148,18 @@ function buildSlide(row, block) {
   const nameCol = columns[3];
   const placeCol = columns[4];
 
-  const videoLink = videoCol?.querySelector('a')?.href || '';
+  const videoLink = (
+    videoCol?.querySelector('a')?.href
+    || videoCol?.textContent?.trim()
+    || ''
+  );
 
-  /* Image */
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'testimonial-image';
 
   const picture = imageCol?.querySelector('picture');
   if (picture) imageWrapper.appendChild(picture.cloneNode(true));
 
-  /* Play button */
   const playButton = document.createElement('button');
   playButton.className = 'testimonial-play-button';
   playButton.type = 'button';
@@ -166,17 +173,18 @@ function buildSlide(row, block) {
     />
   `;
 
-  playButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (videoLink) {
+  if (!videoLink) {
+    playButton.style.display = 'none';
+  } else {
+    playButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       openVideoModal(block, videoLink);
-    }
-  });
+    });
+  }
 
   imageWrapper.appendChild(playButton);
 
-  /* Content */
   const contentWrapper = document.createElement('div');
   contentWrapper.className = 'testimonial-content';
   contentWrapper.appendChild(createQuoteIcon());
