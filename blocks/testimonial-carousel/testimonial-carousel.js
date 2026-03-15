@@ -86,16 +86,83 @@ function getTestimonialContent(columns) {
   return { quoteText, nameText, locationText };
 }
 
-function buildSlide(row) {
+function createVideoModal(block) {
+  const modal = document.createElement('div');
+  modal.className = 'testimonial-video-modal';
+  modal.innerHTML = `
+    <div class="testimonial-video-modal-content">
+      <button class="testimonial-video-close" type="button" aria-label="Close video popup">
+        <span></span>
+        <span></span>
+      </button>
+      <div class="testimonial-video-wrapper"></div>
+    </div>
+  `;
+
+  block.appendChild(modal);
+  return modal;
+}
+
+function openVideoModal(block, videoUrl) {
+  const modal = block.querySelector('.testimonial-video-modal');
+  const videoWrapper = modal?.querySelector('.testimonial-video-wrapper');
+  if (!modal || !videoWrapper) return;
+
+  videoWrapper.innerHTML = `
+    <iframe
+      src="${videoUrl}?autoplay=1&rel=0"
+      title="Customer testimonial video"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  `;
+
+  modal.classList.add('active');
+  document.body.classList.add('testimonial-video-open');
+}
+
+function closeVideoModal(block) {
+  const modal = block.querySelector('.testimonial-video-modal');
+  const videoWrapper = modal?.querySelector('.testimonial-video-wrapper');
+  if (!modal || !videoWrapper) return;
+
+  modal.classList.remove('active');
+  videoWrapper.innerHTML = '';
+  document.body.classList.remove('testimonial-video-open');
+}
+
+function buildSlide(row, block) {
   const slide = document.createElement('div');
   slide.className = 'testimonial-slide swiper-slide';
 
   const columns = [...row.querySelectorAll(':scope > div')];
+  const videoUrl = 'https://www.youtube.com/embed/O9gnmNDkZaE';
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'testimonial-image';
+
   const picture = columns[0]?.querySelector('picture');
   if (picture) imageWrapper.appendChild(picture.cloneNode(true));
+
+  const playButton = document.createElement('button');
+  playButton.className = 'testimonial-play-button';
+  playButton.type = 'button';
+  playButton.setAttribute('aria-label', 'Play testimonial video');
+  playButton.innerHTML = `
+    <img
+      src="https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/play-icon.webp"
+      alt="Play video"
+      loading="lazy"
+    />
+  `;
+
+  playButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openVideoModal(block, videoUrl);
+  });
+
+  imageWrapper.appendChild(playButton);
 
   const contentWrapper = document.createElement('div');
   contentWrapper.className = 'testimonial-content';
@@ -135,6 +202,27 @@ function hideSiblingHeading(siblingHeading) {
   }
 }
 
+function bindModalEvents(block) {
+  const modal = block.querySelector('.testimonial-video-modal');
+  const closeButton = block.querySelector('.testimonial-video-close');
+
+  closeButton?.addEventListener('click', () => {
+    closeVideoModal(block);
+  });
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeVideoModal(block);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+      closeVideoModal(block);
+    }
+  });
+}
+
 export default async function decorate(block) {
   const rows = [...block.querySelectorAll(':scope > div')];
   if (!rows.length) return;
@@ -167,7 +255,7 @@ export default async function decorate(block) {
   swiperWrapper.className = 'swiper-wrapper';
 
   testimonialRows.forEach((row) => {
-    swiperWrapper.appendChild(buildSlide(row));
+    swiperWrapper.appendChild(buildSlide(row, block));
   });
 
   swiperEl.appendChild(swiperWrapper);
@@ -195,8 +283,10 @@ export default async function decorate(block) {
 
   block.textContent = '';
   block.appendChild(container);
+  createVideoModal(block);
 
   hideSiblingHeading(siblingHeading);
+  bindModalEvents(block);
 
   const prevButton = block.querySelector('.testimonial-prev');
   const nextButton = block.querySelector('.testimonial-next');
