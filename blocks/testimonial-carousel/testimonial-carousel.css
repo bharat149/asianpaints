@@ -124,7 +124,7 @@
 .testimonial-carousel .testimonial-quote {
   position: relative;
   z-index: 1;
-  margin: 0 0 35px;
+  margin: 0;
   color: #4d4d4d;
   font-family: Manrope, sans-serif;
   font-size: 14px;

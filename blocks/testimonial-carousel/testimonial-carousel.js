@@ -136,18 +136,28 @@ function buildSlide(row, block) {
   slide.className = 'testimonial-slide swiper-slide';
 
   const columns = [...row.querySelectorAll(':scope > div')];
-  const videoUrl = 'https://www.youtube.com/embed/O9gnmNDkZaE';
 
+  const imageCol = columns[0];
+  const videoCol = columns[1];
+  const quoteCol = columns[2];
+  const nameCol = columns[3];
+  const placeCol = columns[4];
+
+  const videoLink = videoCol?.querySelector('a')?.href || '';
+
+  /* Image */
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'testimonial-image';
 
-  const picture = columns[0]?.querySelector('picture');
+  const picture = imageCol?.querySelector('picture');
   if (picture) imageWrapper.appendChild(picture.cloneNode(true));
 
+  /* Play button */
   const playButton = document.createElement('button');
   playButton.className = 'testimonial-play-button';
   playButton.type = 'button';
   playButton.setAttribute('aria-label', 'Play testimonial video');
+
   playButton.innerHTML = `
     <img
       src="https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/play-icon.webp"
@@ -159,16 +169,21 @@ function buildSlide(row, block) {
   playButton.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    openVideoModal(block, videoUrl);
+    if (videoLink) {
+      openVideoModal(block, videoLink);
+    }
   });
 
   imageWrapper.appendChild(playButton);
 
+  /* Content */
   const contentWrapper = document.createElement('div');
   contentWrapper.className = 'testimonial-content';
   contentWrapper.appendChild(createQuoteIcon());
 
-  const { quoteText, nameText, locationText } = getTestimonialContent(columns);
+  const quoteText = quoteCol?.textContent?.trim() || '';
+  const nameText = nameCol?.textContent?.trim() || '';
+  const placeText = placeCol?.textContent?.trim() || '';
 
   if (quoteText) {
     const quoteDiv = document.createElement('div');
@@ -182,12 +197,13 @@ function buildSlide(row, block) {
     attribution.className = 'testimonial-attribution';
     attribution.innerHTML = `
       <span class="testimonial-name">${nameText}</span>
-      ${locationText ? `<span class="testimonial-location">, ${locationText}</span>` : ''}
+      ${placeText ? `<span class="testimonial-location">, ${placeText}</span>` : ''}
     `;
     contentWrapper.appendChild(attribution);
   }
 
   slide.append(imageWrapper, contentWrapper);
+
   return slide;
 }
 
