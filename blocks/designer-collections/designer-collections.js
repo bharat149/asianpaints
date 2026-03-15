@@ -1,3 +1,14 @@
+/*
+** Authoring format **
+Column 1 → logo desktop
+Column 2 → logo mobile
+Column 3 → gif/video URL
+Column 4 → title
+Column 5 → subtitle
+Column 6 → CTA label
+Column 7 → PDF link
+*/
+
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -111,10 +122,11 @@ function bindHoverPlayback(target, mediaEl) {
 
 export default async function decorate(block) {
   const section = block.closest('.section');
+  const sectionTitle = section?.querySelector('h2');
+  const titleText = sectionTitle?.textContent?.trim() || 'Designer Collections';
 
-  let heading = block.querySelector('h2');
-  if (!heading && section) {
-    heading = section.querySelector('.default-content-wrapper h2');
+  if (sectionTitle) {
+    sectionTitle.style.display = 'none';
   }
 
   const row = block.querySelector(':scope > div');
@@ -154,16 +166,10 @@ export default async function decorate(block) {
   const header = document.createElement('div');
   header.className = 'designer-collections-header';
 
-  if (heading) {
-    const titleEl = document.createElement('h2');
-    titleEl.className = 'designer-collections-title';
-    titleEl.textContent = heading.textContent.trim();
-    header.appendChild(titleEl);
-
-    if (!block.contains(heading)) {
-      heading.style.display = 'none';
-    }
-  }
+  const titleEl = document.createElement('h2');
+  titleEl.className = 'designer-collections-title';
+  titleEl.textContent = titleText;
+  header.appendChild(titleEl);
 
   const navWrapper = document.createElement('div');
   navWrapper.className = 'designer-collections-nav-wrapper';
@@ -235,15 +241,15 @@ export default async function decorate(block) {
     content.className = 'designer-collections-content';
 
     if (title) {
-      const titleEl = document.createElement('h3');
-      titleEl.textContent = title;
-      content.appendChild(titleEl);
+      const cardTitle = document.createElement('h3');
+      cardTitle.textContent = title;
+      content.appendChild(cardTitle);
     }
 
     if (subtitle) {
-      const subtitleEl = document.createElement('p');
-      subtitleEl.textContent = subtitle;
-      content.appendChild(subtitleEl);
+      const cardSubtitle = document.createElement('p');
+      cardSubtitle.textContent = subtitle;
+      content.appendChild(cardSubtitle);
     }
 
     const ctaWrap = document.createElement('div');
@@ -254,6 +260,7 @@ export default async function decorate(block) {
     cta.href = pdfHref;
     cta.target = '_blank';
     cta.rel = 'noopener noreferrer';
+    cta.setAttribute('aria-label', title ? `${ctaLabel} - ${title}` : ctaLabel);
 
     const ctaText = document.createElement('span');
     ctaText.className = 'designer-collections-cta-text';

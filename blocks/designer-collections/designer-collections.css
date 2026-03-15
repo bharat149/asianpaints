@@ -24,7 +24,7 @@
 }
 
 .designer-collections-title {
-  color: #277bd4;
+  color: #000;
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
@@ -306,7 +306,7 @@
 
   .designer-collections-content p {
     font-size: 12px;
-        line-height: 16.8px;
+    line-height: 16.8px;
     margin: 0 auto;
   }
 
