@@ -188,6 +188,13 @@
   align-items: center;
 }
 
+.designer-collections-cta:hover {
+  text-decoration: underline;
+  color: black;
+  text-underline-offset: 4px;
+}
+
+
 .designer-collections-nav {
   position: static !important;
   background: white;

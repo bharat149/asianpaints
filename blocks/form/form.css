@@ -6,21 +6,21 @@
   padding: 0 40px;
 }
 
-.section.form-container > .form-wrapper {
+.section.form-container>.form-wrapper {
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
 /* Remove any inherited div margins */
-.section.form-container > .form-wrapper > div,
+.section.form-container>.form-wrapper>div,
 .section.form-container .form-wrapper {
   margin: 0 !important;
   max-width: none !important;
 }
 
 .form.block {
-  background-color: #011c5f;
+  background-color: #fff;
   border-radius: 20px;
   padding: 50px 60px;
   max-width: 100%;
@@ -44,7 +44,7 @@
 /* Title parts */
 .form.block .form-title-small {
   font-size: 20px;
-  color: #fff;
+  color: #000;
   font-weight: 700;
   margin-bottom: 8px;
   font-family: Manrope, sans-serif;
@@ -52,7 +52,7 @@
 
 .form.block .form-title-large {
   font-size: 64px;
-  color: #f47838;
+  color: #f14950;
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 20px;
@@ -61,7 +61,7 @@
 
 .form.block .form-subtitle {
   font-size: 20px;
-  color: rgb(255 255 255 / 80%);
+  color: #3b3d40;
   line-height: 1.5;
   font-family: Manrope, sans-serif;
 }
@@ -90,41 +90,202 @@
   min-width: 0;
 }
 
+.form.block .form-field {
+  position: relative;
+  min-width: 0;
+}
+
+.form.block .form-field-label {
+  position: absolute;
+  top: -10px;
+  left: 18px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  background: #fff;
+  color: #53565a;
+  font-family: Manrope, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.form.block .form-field.show-label .form-field-label {
+  opacity: 1;
+  visibility: visible;
+}
+
+.form.block .form-field-required {
+  color: #ff8a80;
+}
+
 .form.block .form-input {
   width: 100%;
-  padding: 18px 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: #E0ECF9;
-  color: #1a1a1a;
-  font-size: 15px;
-  font-family: var(--body-font-family);
-  transition: all 0.3s ease;
+  height: 54px;
+  padding: 0 20px;
+  border: 1px solid #53565a;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #53565a;
+  font-size: 18px;
+  font-family: Manrope, sans-serif;
+  line-height: 1.2;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    color 0.25s ease,
+    background-color 0.25s ease;
   box-sizing: border-box;
 }
 
 .form.block .form-input::placeholder {
-  color: #277bd4;
+  color: #53565a;
   opacity: 1;
 }
 
 .form.block .form-input:focus {
   outline: none;
-  background-color: #d0e0f0;
-  box-shadow: 0 0 0 2px rgb(244 120 56 / 30%);
+}
+
+.form.block .form-field.is-focused .form-input {
+  border-color: #53565a;
+  box-shadow: #53565a;
+}
+
+.form.block .form-field.has-value .form-input {
+  border-color: #53565a;
+}
+
+.form.block .form-field:not(.is-focused):not(.has-value) .form-input {
+  border-color: #53565a;
+}
+
+/* Consent area */
+.form.block .form-consent-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 4px;
+}
+
+.form.block .form-consent-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px 34px;
+}
+
+.form.block .form-consent-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 32px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form.block .form-consent-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form.block .form-consent-text {
+  color: #53565a;
+  font-family: Manrope, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+/* Checkbox */
+.form.block .form-consent-box {
+  position: relative;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #53565a;
+  border-radius: 6px;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.form.block .form-consent-input:checked+.form-consent-box {
+  background: #fff;
+  border-color: #53565a;
+}
+
+.form.block .form-consent-input:checked+.form-consent-box::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 9px;
+  width: 6px;
+  height: 12px;
+  border-right: 2px solid #011c5f;
+  border-bottom: 2px solid #011c5f;
+  transform: rotate(45deg);
+}
+
+/* Toggle */
+.form.block .form-consent-item--toggle .form-consent-toggle {
+  position: relative;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: gray;
+  transition: background-color 0.2s ease;
+}
+
+.form.block .form-consent-item--toggle .form-consent-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.form.block .form-consent-item--toggle .form-consent-input:checked+.form-consent-toggle {
+  background: #14c759;
+}
+
+.form.block .form-consent-item--toggle .form-consent-input:checked+.form-consent-toggle::after {
+  transform: translateX(19px);
+}
+
+/* Note */
+.form.block .form-consent-note {
+  color: #53565a;
+  font-family: Manrope, sans-serif;
+  font-size: 12px;
+  line-height: 16.3px;
+  max-width: 920px;
+  font-weight: 400;
 }
 
 /* Button cell - aligned to right */
 .form.block .form-button-cell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  margin-top: 16px;
+  justify-content: flex-start;
+  margin-top: 0;
   width: 100%;
 }
 
 .form.block .form-submit {
-  padding: 16px 32px;
+  padding: 8px 32px;
   background: #f5a623;
   color: #1a1a1a;
   border: 2px solid #f5a623;
@@ -158,7 +319,7 @@
 }
 
 /* Tablet */
-@media (width <= 991px) {
+@media (width <=991px) {
   .form.block {
     padding: 40px;
   }
@@ -171,22 +332,26 @@
   .form.block .form-description-cell {
     flex: none;
     max-width: 100%;
-    text-align: center;
+    text-align: left;
   }
 
   .form.block .form-title-large {
     font-size: 36px;
   }
+
+  .form.block .form-consent-options {
+    gap: 22px 24px;
+  }
 }
 
 /* Mobile */
-@media (width <= 600px) {
+@media (width <=600px) {
   .section.form-container {
     padding: 20px 16px;
   }
 
   .form.block {
-    padding: 28px 24px;
+    padding: 0;
     border-radius: 16px;
   }
 
@@ -196,16 +361,21 @@
   }
 
   .form.block .form-description-cell {
-    text-align: center;
+    text-align: left;
   }
 
   .form.block .form-title-small {
-    font-size: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 28px;
   }
 
   .form.block .form-title-large {
     font-size: 32px;
-    margin-bottom: 12px;
+    font-weight: 800;
+    line-height: 41.6px;
+    letter-spacing: 0;
+    margin-bottom: 6px;
   }
 
   .form.block .form-subtitle {
@@ -218,6 +388,63 @@
 
   .form.block .form-input-cell {
     width: 100%;
+  }
+
+  .form.block .form-field-label {
+    left: 16px;
+    font-size: 13px;
+    top: -6px;
+
+  }
+
+  .form.block .form-input {
+    height: 52px;
+    padding: 20px 18px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .form.block .form-consent-area {
+    gap: 18px;
+  }
+
+  .form.block .form-consent-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .form.block .form-consent-item {
+    width: 100%;
+    gap: 16px;
+  }
+
+  .form.block .form-consent-text {
+    font-size: 14px;
+  }
+
+  .form.block .form-consent-box {
+    width: 20px;
+    height: 20px;
+    flex-basis: 20px;
+  }
+
+  .form.block .form-consent-input:checked+.form-consent-box::after {
+    top: 3px;
+    left: 7px;
+    width: 5px;
+    height: 11px;
+  }
+
+  .form.block .form-consent-item--toggle .form-consent-toggle {
+    width: 40px;
+    height: 22px;
+    flex-basis: 40px;
+  }
+
+  .form.block .form-consent-note {
+    font-size: 10px;
+    line-height: 1.5;
   }
 
   .form.block .form-button-cell {
@@ -241,13 +468,13 @@
   padding: 60px 24px;
 }
 
-@media (width >= 900px) {
+@media (width >=900px) {
   .section.form-calculator-container {
     padding: 80px 40px;
   }
 }
 
-.section.form-calculator-container > .form-wrapper {
+.section.form-calculator-container>.form-wrapper {
   max-width: 1400px !important;
   margin: 0 auto !important;
   padding: 0 !important;
@@ -266,7 +493,7 @@
   gap: 40px;
 }
 
-@media (width >= 900px) {
+@media (width >=900px) {
   .form.calculator {
     flex-direction: row;
     align-items: flex-start;
@@ -274,7 +501,7 @@
   }
 }
 
-@media (width >= 1200px) {
+@media (width >=1200px) {
   .form.calculator {
     gap: 80px;
     padding: 56px 80px;
@@ -286,14 +513,14 @@
   flex: 0 0 auto;
 }
 
-@media (width >= 900px) {
+@media (width >=900px) {
   .form.calculator .form-calc-header {
     flex: 0 0 300px;
     max-width: 300px;
   }
 }
 
-@media (width >= 1200px) {
+@media (width >=1200px) {
   .form.calculator .form-calc-header {
     flex: 0 0 340px;
     max-width: 340px;
@@ -310,7 +537,7 @@
   line-height: 1.4;
 }
 
-/* Calculator large title - "Get instant budget estimates" */
+/* Calculator large title */
 .form.calculator .form-calc-title-large {
   font-family: var(--heading-font-family);
   font-size: 36px;
@@ -320,19 +547,19 @@
   line-height: 1.15;
 }
 
-@media (width >= 768px) {
+@media (width >=768px) {
   .form.calculator .form-calc-title-large {
     font-size: 44px;
   }
 }
 
-@media (width >= 1200px) {
+@media (width >=1200px) {
   .form.calculator .form-calc-title-large {
     font-size: 52px;
   }
 }
 
-/* Right column - Form area (no card, transparent) */
+/* Right column - Form area */
 .form.calculator .form-calc-body {
   flex: 1;
   background-color: transparent;
@@ -347,7 +574,7 @@
   margin-bottom: 24px;
 }
 
-@media (width >= 768px) {
+@media (width >=768px) {
   .form.calculator .form-calc-options-row {
     flex-direction: row;
     gap: 40px;
@@ -415,10 +642,11 @@
   justify-content: center;
 }
 
-.form.calculator .form-calc-option-icon svg {
+.form.calculator .form-calc-option-icon img {
   width: 28px;
   height: 28px;
-  fill: #333;
+  object-fit: contain;
+  display: block;
 }
 
 /* Bottom row - Input + Button side by side */
@@ -429,7 +657,7 @@
   align-items: stretch;
 }
 
-@media (width >= 768px) {
+@media (width >=768px) {
   .form.calculator .form-calc-input-row {
     flex-direction: row;
     align-items: flex-end;
@@ -442,7 +670,7 @@
   max-width: 100%;
 }
 
-@media (width >= 768px) {
+@media (width >=768px) {
   .form.calculator .form-calc-input-field {
     max-width: 320px;
   }
@@ -471,7 +699,7 @@
   color: #999;
 }
 
-/* Calculator submit button - muted yellow pill */
+/* Calculator submit button */
 .form.calculator .form-calc-submit {
   padding: 16px 32px;
   background-color: #f0d9a8;
@@ -500,7 +728,7 @@
 }
 
 /* Mobile adjustments */
-@media (width <= 599px) {
+@media (width <=599px) {
   .form.calculator {
     padding: 32px 24px;
   }
@@ -521,4 +749,3 @@
     width: 100%;
   }
 }
-
