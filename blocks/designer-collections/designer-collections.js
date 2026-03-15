@@ -1,203 +1,361 @@
-export default function decorate(block) {
+async function getSwiperClass() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
+
+  // eslint-disable-next-line no-console
+  console.warn('Swiper loader is not available on window.loadSwiper');
+  return null;
+}
+
+function updateNavState(swiper, prevButton, nextButton) {
+  if (!swiper || !prevButton || !nextButton) return;
+
+  prevButton.disabled = swiper.isBeginning;
+  nextButton.disabled = swiper.isEnd;
+
+  prevButton.style.opacity = swiper.isBeginning ? '0.4' : '1';
+  nextButton.style.opacity = swiper.isEnd ? '0.4' : '1';
+}
+
+function removeInjectedSwiperIcons(prevButton, nextButton) {
+  prevButton?.querySelectorAll('.swiper-navigation-icon').forEach((icon) => icon.remove());
+  nextButton?.querySelectorAll('.swiper-navigation-icon').forEach((icon) => icon.remove());
+}
+
+function getColumnItems(column) {
+  if (!column) return [];
+
+  const directChildren = [...column.children].filter((child) => {
+    const hasText = child.textContent?.trim();
+    const hasPicture = child.querySelector('picture, img') || child.matches('picture, img');
+    const hasLink = child.querySelector('a[href]') || child.matches('a[href]');
+    return hasText || hasPicture || hasLink;
+  });
+
+  if (directChildren.length) return directChildren;
+
+  return column.textContent?.trim() ? [column] : [];
+}
+
+function getPictureItem(item) {
+  if (!item) return null;
+
+  if (item.matches?.('picture')) return item.cloneNode(true);
+
+  const picture = item.querySelector?.('picture');
+  if (picture) return picture.cloneNode(true);
+
+  const img = item.matches?.('img') ? item : item.querySelector?.('img');
+  if (img) return img.cloneNode(true);
+
+  return null;
+}
+
+function getTextItem(item) {
+  if (!item) return '';
+
+  const cloned = item.cloneNode(true);
+  cloned.querySelectorAll('picture, img, a').forEach((el) => el.remove());
+
+  return cloned.textContent?.trim() || item.textContent?.trim() || '';
+}
+
+function getHrefItem(item) {
+  if (!item) return '';
+
+  if (item.matches?.('a[href]')) return item.href.trim();
+
+  const anchor = item.querySelector?.('a[href]');
+  if (anchor?.href) return anchor.href.trim();
+
+  return item.textContent?.trim() || '';
+}
+
+function createVideoElement(src, title) {
+  if (!src) return null;
+
+  const video = document.createElement('video');
+  video.className = 'designer-collections-video';
+  video.src = src;
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = 'metadata';
+  video.setAttribute('aria-label', title || 'Collection preview');
+
+  video.addEventListener('ended', () => {
+    video.pause();
+    video.currentTime = 0;
+  });
+
+  return video;
+}
+
+function bindHoverPlayback(target, mediaEl) {
+  if (!mediaEl || mediaEl.tagName.toLowerCase() !== 'video') return;
+
+  target.addEventListener('mouseenter', async () => {
+    try {
+      mediaEl.pause();
+      mediaEl.currentTime = 0;
+      await mediaEl.play();
+    } catch (e) {
+      // no-op
+    }
+  });
+
+  target.addEventListener('mouseleave', () => {
+    mediaEl.pause();
+    mediaEl.currentTime = 0;
+  });
+}
+
+export default async function decorate(block) {
   const section = block.closest('.section');
 
-  // Look for heading inside block first, then in preceding sibling
   let heading = block.querySelector('h2');
   if (!heading && section) {
-    // Check for heading in default content before the block
-    const defaultContent = section.querySelector('.default-content-wrapper h2');
-    if (defaultContent) {
-      heading = defaultContent;
-    }
+    heading = section.querySelector('.default-content-wrapper h2');
   }
 
-  // Get all rows
-  const rows = [...block.querySelectorAll(':scope > div')];
-  if (rows.length === 0) return;
+  const row = block.querySelector(':scope > div');
+  if (!row) return;
 
-  // Create header with title and nav
+  const columns = [...row.children];
+  if (columns.length < 7) return;
+
+  const desktopLogoCol = columns[0];
+  const mobileLogoCol = columns[1];
+  const mediaUrlCol = columns[2];
+  const titleCol = columns[3];
+  const subtitleCol = columns[4];
+  const ctaLabelCol = columns[5];
+  const pdfLinkCol = columns[6];
+
+  const desktopLogoItems = getColumnItems(desktopLogoCol);
+  const mobileLogoItems = getColumnItems(mobileLogoCol);
+  const mediaUrlItems = getColumnItems(mediaUrlCol);
+  const titleItems = getColumnItems(titleCol);
+  const subtitleItems = getColumnItems(subtitleCol);
+  const ctaLabelItems = getColumnItems(ctaLabelCol);
+  const pdfLinkItems = getColumnItems(pdfLinkCol);
+
+  const totalCards = Math.max(
+    desktopLogoItems.length,
+    mobileLogoItems.length,
+    mediaUrlItems.length,
+    titleItems.length,
+    subtitleItems.length,
+    ctaLabelItems.length,
+    pdfLinkItems.length,
+  );
+
+  if (!totalCards) return;
+
   const header = document.createElement('div');
   header.className = 'designer-collections-header';
 
   if (heading) {
     const titleEl = document.createElement('h2');
     titleEl.className = 'designer-collections-title';
-    titleEl.textContent = heading.textContent;
+    titleEl.textContent = heading.textContent.trim();
     header.appendChild(titleEl);
-    // Hide original heading if it's outside the block
+
     if (!block.contains(heading)) {
       heading.style.display = 'none';
     }
   }
 
-  // Create navigation wrapper
   const navWrapper = document.createElement('div');
   navWrapper.className = 'designer-collections-nav-wrapper';
 
   const prevButton = document.createElement('button');
-  prevButton.className = 'designer-collections-nav designer-collections-prev';
+  prevButton.className = 'designer-collections-nav designer-collections-prev swiper-button-prev';
+  prevButton.type = 'button';
   prevButton.setAttribute('aria-label', 'Previous');
-  prevButton.innerHTML = '←';
 
   const nextButton = document.createElement('button');
-  nextButton.className = 'designer-collections-nav designer-collections-next';
+  nextButton.className = 'designer-collections-nav designer-collections-next swiper-button-next';
+  nextButton.type = 'button';
   nextButton.setAttribute('aria-label', 'Next');
-  nextButton.innerHTML = '→';
 
   navWrapper.appendChild(prevButton);
   navWrapper.appendChild(nextButton);
   header.appendChild(navWrapper);
 
-  // Create carousel structure
-  const carouselContainer = document.createElement('div');
-  carouselContainer.className = 'designer-collections-carousel';
+  const carousel = document.createElement('div');
+  carousel.className = 'designer-collections-carousel swiper';
 
-  const carouselTrack = document.createElement('div');
-  carouselTrack.className = 'designer-collections-track';
+  const track = document.createElement('div');
+  track.className = 'designer-collections-track swiper-wrapper';
 
-  // Get the first (and only) row which contains all the cells
-  const dataRow = rows[0];
-  if (!dataRow) return;
+  for (let i = 0; i < totalCards; i += 1) {
+    const desktopLogo = getPictureItem(desktopLogoItems[i]);
+    const mobileLogo = getPictureItem(mobileLogoItems[i]);
+    const mediaSrc = getHrefItem(mediaUrlItems[i]);
+    const title = getTextItem(titleItems[i]);
+    const subtitle = getTextItem(subtitleItems[i]);
+    const ctaLabel = getTextItem(ctaLabelItems[i]) || 'Download PDF';
+    const pdfHref = getHrefItem(pdfLinkItems[i]) || '#';
 
-  // Get all cells (columns) from the data row - each is a collection
-  const cells = [...dataRow.children];
+    if (!title && !desktopLogo && !mobileLogo && !mediaSrc) continue;
 
-  cells.forEach((cell, cellIndex) => {
-    const card = document.createElement('div');
-    card.className = 'designer-collections-card';
-    if (cellIndex === 0) card.classList.add('active');
+    const slide = document.createElement('div');
+    slide.className = 'designer-collections-card swiper-slide';
 
-    // Extract logo, video link, title, and description from cell content
-    const logo = cell.querySelector('img');
-    // Look for video links - mp4 or webm
-    let videoSrc = '';
-    let videoLink = cell.querySelector('a[href$=".mp4"]');
-    if (!videoLink) {
-      videoLink = cell.querySelector('a[href$=".webm"]');
-    }
-    // Also check for any anchor that contains .mp4 in href or text
-    if (!videoLink) {
-      const allLinks = cell.querySelectorAll('a');
-      allLinks.forEach((link) => {
-        if (link.href.includes('.mp4') || link.href.includes('.webm')) {
-          videoLink = link;
-        }
-      });
-    }
-    // Get video source from link or try plain text
-    if (videoLink) {
-      videoSrc = videoLink.href;
-    } else {
-      // Check for plain text URL in paragraphs
-      const paragraphs = cell.querySelectorAll('p');
-      paragraphs.forEach((p) => {
-        const text = p.textContent.trim();
-        if (text.includes('.mp4') || text.includes('.webm')) {
-          videoSrc = text;
-        }
-      });
-    }
-    const title = cell.querySelector('strong');
-    const description = cell.querySelector('em');
+    const cardInner = document.createElement('div');
+    cardInner.className = 'designer-collections-card-inner';
 
-    // Add logo
-    if (logo) {
-      const logoDiv = document.createElement('div');
-      logoDiv.className = 'designer-collections-logo';
-      logoDiv.appendChild(logo.cloneNode(true));
-      card.appendChild(logoDiv);
+    const logoWrap = document.createElement('div');
+    logoWrap.className = 'designer-collections-logo';
+
+    if (desktopLogo) {
+      const desktopWrap = document.createElement('div');
+      desktopWrap.className = 'designer-collections-logo-image designer-collections-logo-image--desktop';
+      desktopWrap.appendChild(desktopLogo);
+      logoWrap.appendChild(desktopWrap);
     }
 
-    // Add video/image
-    const mediaDiv = document.createElement('div');
-    mediaDiv.className = 'designer-collections-image';
-
-    if (videoSrc) {
-      const video = document.createElement('video');
-      video.setAttribute('playsinline', '');
-      video.setAttribute('muted', '');
-      video.setAttribute('loop', '');
-      video.setAttribute('autoplay', '');
-      video.src = videoSrc;
-      video.className = 'designer-collections-video';
-      mediaDiv.appendChild(video);
+    if (mobileLogo) {
+      const mobileWrap = document.createElement('div');
+      mobileWrap.className = 'designer-collections-logo-image designer-collections-logo-image--mobile';
+      mobileWrap.appendChild(mobileLogo);
+      logoWrap.appendChild(mobileWrap);
     }
-    card.appendChild(mediaDiv);
 
-    // Add content
+    const mediaWrap = document.createElement('div');
+    mediaWrap.className = 'designer-collections-image';
+
+    const mediaEl = createVideoElement(mediaSrc, title);
+    if (mediaEl) {
+      mediaWrap.appendChild(mediaEl);
+      bindHoverPlayback(cardInner, mediaEl);
+    }
+
     const content = document.createElement('div');
     content.className = 'designer-collections-content';
 
     if (title) {
       const titleEl = document.createElement('h3');
-      titleEl.textContent = title.textContent;
+      titleEl.textContent = title;
       content.appendChild(titleEl);
     }
 
-    if (description) {
-      const descEl = document.createElement('p');
-      descEl.textContent = description.textContent;
-      content.appendChild(descEl);
+    if (subtitle) {
+      const subtitleEl = document.createElement('p');
+      subtitleEl.textContent = subtitle;
+      content.appendChild(subtitleEl);
     }
 
-    card.appendChild(content);
-    carouselTrack.appendChild(card);
-  });
+    const ctaWrap = document.createElement('div');
+    ctaWrap.className = 'designer-collections-cta-wrap';
 
-  carouselContainer.appendChild(carouselTrack);
+    const cta = document.createElement('a');
+    cta.className = 'designer-collections-cta';
+    cta.href = pdfHref;
+    cta.target = '_blank';
+    cta.rel = 'noopener noreferrer';
 
-  // Clear block content and add header + carousel
+    const ctaText = document.createElement('span');
+    ctaText.className = 'designer-collections-cta-text';
+    ctaText.textContent = ctaLabel;
+
+    const ctaIcon = document.createElement('img');
+    ctaIcon.className = 'designer-collections-cta-icon';
+    ctaIcon.src = 'https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg';
+    ctaIcon.alt = '';
+    ctaIcon.setAttribute('aria-hidden', 'true');
+
+    cta.appendChild(ctaText);
+    cta.appendChild(ctaIcon);
+    ctaWrap.appendChild(cta);
+
+    cardInner.appendChild(logoWrap);
+    cardInner.appendChild(mediaWrap);
+    cardInner.appendChild(content);
+    cardInner.appendChild(ctaWrap);
+
+    slide.appendChild(cardInner);
+    track.appendChild(slide);
+  }
+
+  if (!track.children.length) return;
+
+  carousel.appendChild(track);
+
+  const pagination = document.createElement('div');
+  pagination.className = 'designer-collections-pagination swiper-pagination';
+  carousel.appendChild(pagination);
+
   block.innerHTML = '';
   block.appendChild(header);
-  block.appendChild(carouselContainer);
+  block.appendChild(carousel);
 
-  // Carousel logic
-  let currentSlide = 0;
-  const cards = carouselTrack.querySelectorAll('.designer-collections-card');
-  const totalSlides = cards.length;
-
-  function getCardsPerView() {
-    if (window.innerWidth >= 1200) return 4;
-    if (window.innerWidth >= 900) return 3;
-    if (window.innerWidth >= 600) return 2;
-    return 1;
+  if (track.children.length <= 1) {
+    navWrapper.style.display = 'none';
+    pagination.style.display = 'none';
+    return;
   }
 
-  function showSlide(index) {
-    const cardsPerView = getCardsPerView();
-    cards.forEach((card) => card.classList.remove('active'));
+  try {
+    const Swiper = await getSwiperClass();
+    if (!Swiper) return;
 
-    const offset = Math.min(index, Math.max(0, totalSlides - cardsPerView));
-    const cardWidth = cards[0].offsetWidth;
-    const gap = 24;
-    carouselTrack.style.transform = `translateX(-${offset * (cardWidth + gap)}px)`;
+    const swiper = new Swiper(carousel, {
+      slidesPerView: 1.15,
+      spaceBetween: 18,
+      speed: 500,
+      loop: false,
+      watchOverflow: true,
+      navigation: {
+        prevEl: prevButton,
+        nextEl: nextButton,
+      },
+      pagination: {
+        el: pagination,
+        clickable: true,
+      },
+      breakpoints: {
+        0: {
+          slidesPerView: 1.15,
+          spaceBetween: 18,
+        },
+        600: {
+          slidesPerView: 1.3,
+          spaceBetween: 10,
+        },
+        900: {
+          slidesPerView: 4,
+          spaceBetween: 42,
+        },
+      },
+      on: {
+        init(instance) {
+          removeInjectedSwiperIcons(prevButton, nextButton);
+          updateNavState(instance, prevButton, nextButton);
+        },
+        slideChange(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        resize(instance) {
+          removeInjectedSwiperIcons(prevButton, nextButton);
+          updateNavState(instance, prevButton, nextButton);
+        },
+        reachBeginning(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        reachEnd(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        fromEdge(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+      },
+    });
 
-    for (let i = 0; i < cardsPerView && (offset + i) < totalSlides; i += 1) {
-      cards[offset + i].classList.add('active');
-    }
-
-    // Update button states
-    prevButton.disabled = offset === 0;
-    nextButton.disabled = offset >= totalSlides - cardsPerView;
+    removeInjectedSwiperIcons(prevButton, nextButton);
+    block.designerCollectionsSwiper = swiper;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize designer-collections Swiper', error);
   }
-
-  prevButton.addEventListener('click', () => {
-    const cardsPerView = getCardsPerView();
-    currentSlide = Math.max(0, currentSlide - 1);
-    showSlide(currentSlide);
-  });
-
-  nextButton.addEventListener('click', () => {
-    const cardsPerView = getCardsPerView();
-    currentSlide = Math.min(totalSlides - cardsPerView, currentSlide + 1);
-    showSlide(currentSlide);
-  });
-
-  // Handle window resize
-  window.addEventListener('resize', () => {
-    showSlide(currentSlide);
-  });
-
-  // Initial show
-  showSlide(0);
 }
