@@ -25,9 +25,11 @@ function getUtmParams() {
 
 function getVisitorId() {
   try {
-    if (typeof window._satellite !== 'undefined'
+    if (
+      typeof window._satellite !== 'undefined'
       && window._satellite.getVisitorId
-      && window._satellite.getVisitorId().getMarketingCloudVisitorID) {
+      && window._satellite.getVisitorId().getMarketingCloudVisitorID
+    ) {
       return window._satellite.getVisitorId().getMarketingCloudVisitorID() || '';
     }
   } catch (e) {
@@ -41,8 +43,13 @@ function limitDigits(input, maxLen) {
   input.value = digits.slice(0, maxLen);
 }
 
-function isMobileValid(v) { return /^[0-9]{10}$/.test((v || '').trim()); }
-function isPincodeValid(v) { return /^[0-9]{6}$/.test((v || '').trim()); }
+function isMobileValid(v) {
+  return /^[0-9]{10}$/.test((v || '').trim());
+}
+
+function isPincodeValid(v) {
+  return /^[0-9]{6}$/.test((v || '').trim());
+}
 
 function setError(fieldWrap, msg) {
   const err = fieldWrap.querySelector('.error-msg');
@@ -61,8 +68,7 @@ function setLabelTop(fieldWrap, top) {
 }
 
 /**
- * IMPORTANT: Cross-origin to beta causes CORS preflight if we send non-simple headers.
- * Remove X-Requested-With to avoid OPTIONS preflight and reduce 403s.
+ * Keep headers minimal to reduce preflight issues cross-origin.
  */
 async function postFormUrlEncoded(url, data) {
   const body = new URLSearchParams();
@@ -84,17 +90,30 @@ async function postFormUrlEncoded(url, data) {
 }
 
 function buildMarkup(cfg) {
+  const thankyouCta =
+    (cfg.exploreCtaLink && cfg.exploreCtaLabel)
+      ? `
+        <div class="cta animated-btn-yellow-onhover-black round-corner-radius-button">
+          <a href="${cfg.exploreCtaLink}" class="animated-arrow-button explore-painting-btn" target="_self"
+             aria-label="${cfg.exploreCtaLabel}">
+            ${cfg.exploreCtaLabel}<span class="arrow"></span>
+          </a>
+        </div>`
+      : '';
+
   return `
     <div class="miniform hero-miniform">
-      <div class="find-contractor-form-container track_field_focus"
+
+      <div class="find-contractor-form-container ${cfg.alignment || ''} track_field_focus"
         data-attr-respath="${cfg.node || ''}"
         data-attr-campaignId="${cfg.campaignId || ''}"
-        data-attr-emptyFieldError="${cfg.fieldRequiredMsg || 'Field is required'}"
-        data-attr-mobileError="${cfg.mobileErrorMsg || 'Phone number is invalid'}"
-        data-attr-pincodeError="${cfg.pincodeErrorMsg || 'Enter a valid 6 digit Zip Code'}">
-
+        data-attr-emptyFieldError="${cfg.emptyFieldErrorMessage || 'Field is required'}"
+        data-attr-mobileError="${cfg.mobileNumberErrorMessage || 'Phone number is invalid'}"
+        data-attr-pincodeError="${cfg.pincodeErrorMessage || 'Enter a valid 6 digit Zip Code'}"
+        data-attr-redirection="${cfg.redirectionUrl || ''}"
+      >
         <div class="title-section">
-          <p>${cfg.title || 'Let our experts help you!'}</p>
+          ${cfg.formTitle || '<p>Let our experts help you!</p>'}
         </div>
 
         <form class="hero-form-contact" novalidate>
@@ -121,8 +140,9 @@ function buildMarkup(cfg) {
               aria-label="${cfg.whatsappConsentText || 'Update me on WhatsApp'}"></span>
           </div>
 
+          <!-- Disclaimer stays exactly here (below WhatsApp) -->
           <div class="disclaimer-section">
-            ${cfg.disclaimerHtml || 'By proceeding, you are authorizing Asian Paints and its suggested contractors to get in touch with you through calls, sms, or e-mail'}
+            ${cfg.disclaimerHtml || ''}
           </div>
 
           <button type="submit" class="get-contractors-button hero-form-submit">
@@ -132,6 +152,7 @@ function buildMarkup(cfg) {
         </form>
       </div>
 
+      <!-- THANK YOU (structure mirrors AMS miniform-thankyou.html) -->
       <div class="mf-thankyou-revamp-container" style="display:none">
         <div class="mf__dismissible-container--head" role="button" tabindex="0" aria-label="Close">
           <span class="mf-close-icon">×</span>
@@ -140,27 +161,28 @@ function buildMarkup(cfg) {
         <div class="row no-gutters mf-revamp-thankyou">
           <div class="col-lg-4 col-12 mf-revamp-thankyou-left">
             <div class="mf-thank-you-left-content" style="display:block">
-              <h2>${cfg.thankYouLeftSuccessHeading || 'Thank you!'}</h2>
-              <p>${cfg.thankYouLeftSuccessDescription || 'We will contact you shortly.'}</p>
+              <h2>${cfg.thankYouLeftSuccessHeading || ''}</h2>
+              <p>${cfg.thankYouLeftSuccessDescription || ''}</p>
             </div>
-
             <div class="mf-error-left-content" style="display:none">
-              <h2>${cfg.thankYouLeftErrorHeading || 'Something went wrong'}</h2>
-              <p>${cfg.thankYouLeftErrorDescription || 'Please try again later.'}</p>
+              <h2>${cfg.thankYouLeftErrorHeading || ''}</h2>
+              <p>${cfg.thankYouLeftErrorDescription || ''}</p>
             </div>
           </div>
 
           <div class="col-lg-8 col-12 mf-revamp-thankyou-right"
-            style="--bg-image-desktop:url('${cfg.thankYouBgDesktop || ''}');
-                   --bg-image-mob:url('${cfg.thankYouBgMobile || ''}');">
+            style="--bg-image-desktop: url('${cfg.thankYouBgDesktop || ''}');
+                   --bg-image-mob: url('${cfg.thankYouBgMobile || ''}');">
             <div class="mf-thank-you-message" style="display:block">
               <p class="mf-thank-you-message-title">${cfg.thankYouRightHeading || ''}</p>
-              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSub1 || ''}</p>
-              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSub2 || ''}</p>
+              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingOne || ''}</p>
+              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingTwo || ''}</p>
+              ${thankyouCta}
             </div>
           </div>
         </div>
       </div>
+
     </div>
   `;
 }
@@ -219,51 +241,103 @@ function buildBasePayload() {
 }
 
 export default function decorate(block) {
-  const rows = [...block.children];
-  let picture = null;
-
-  rows.forEach((row) => {
-    [...row.children].forEach((col) => {
-      const pic = col.querySelector('picture');
-      if (pic) picture = pic;
-    });
-  });
+  // --- 1) Pull authored values from block.dataset (maps 1:1 to _hero-form.json field names) ---
+  const ds = block.dataset;
 
   const cfg = {
-    node: block.dataset.node || '',
-    campaignId: block.dataset.campaignid || '',
-    title: block.dataset.title || 'Let our experts help you!',
-    ctaLabel: block.dataset.ctalabel || 'Get recommended contractor',
-    whatsappConsentText: block.dataset.whatsapptext || 'Update me on WhatsApp',
-    disclaimerHtml: block.dataset.disclaimer || '',
-    thankYouBgDesktop: block.dataset.thankyoudesktop || '',
-    thankYouBgMobile: block.dataset.thankyouwmobile || '',
+    classes: ds.classes || '',
+    alignment: ds.alignment || '',
+    node: ds.node || '',
+    campaignId: ds.campaignid || ds.campaignId || '',
+    redirectionUrl: ds.redirectionurl || ds.redirectionUrl || '',
+
+    heroBgDesktop: ds.herobgdesktop || ds.heroBgDesktop || '',
+    heroBgMobile: ds.herobgmobile || ds.heroBgMobile || '',
+    heroBgAlt: ds.herobgalt || ds.heroBgAlt || '',
+
+    formTitle: ds.formtitle || ds.formTitle || '',
+    ctaLabel: ds.ctalabel || ds.ctaLabel || '',
+    whatsappConsentText: ds.whatsappconsenttext || ds.whatsappConsentText || '',
+    disclaimerHtml: ds.disclaimerhtml || ds.disclaimerHtml || '',
+
+    emptyFieldErrorMessage: ds.emptyfielderrormessage || ds.emptyFieldErrorMessage || '',
+    mobileNumberErrorMessage: ds.mobilenumbererrormessage || ds.mobileNumberErrorMessage || '',
+    pincodeErrorMessage: ds.pincodeerrormessage || ds.pincodeErrorMessage || '',
+
+    thankYouLeftSuccessHeading: ds.thankyuleftsuccessheading || ds.thankYouLeftSuccessHeading || '',
+    thankYouLeftSuccessDescription: ds.thankyuleftsuccessdescription || ds.thankYouLeftSuccessDescription || '',
+    thankYouLeftErrorHeading: ds.thankyulefterrorheading || ds.thankYouLeftErrorHeading || '',
+    thankYouLeftErrorDescription: ds.thankyulefterrordescription || ds.thankYouLeftErrorDescription || '',
+
+    thankYouRightHeading: ds.thankyourightheading || ds.thankYouRightHeading || '',
+    thankYouRightSubHeadingOne: ds.thankyourightsubheadingone || ds.thankYouRightSubHeadingOne || '',
+    thankYouRightSubHeadingTwo: ds.thankyourightsubheadingtwo || ds.thankYouRightSubHeadingTwo || '',
+
+    thankYouBgDesktop: ds.thankyoubgdesktop || ds.thankYouBgDesktop || '',
+    thankYouBgMobile: ds.thankyoubgmobile || ds.thankYouBgMobile || '',
+
+    exploreCtaLabel: ds.explorectalabel || ds.exploreCtaLabel || '',
+    exploreCtaLink: ds.explorectalink || ds.exploreCtaLink || '',
   };
+
+  // --- 2) Preserve existing authored picture if present, else build from heroBgDesktop/Mobile ---
+  const picture = block.querySelector('picture');
 
   block.innerHTML = '';
 
-  // Keep original overlay structure: background first, then panel wrapper
+  // Background container
+  const bgContainer = document.createElement('div');
+  bgContainer.className = 'hero-form-background';
+
   if (picture) {
-    const bgContainer = document.createElement('div');
-    bgContainer.className = 'hero-form-background';
     bgContainer.appendChild(picture);
-    block.appendChild(bgContainer);
+  } else if (cfg.heroBgDesktop || cfg.heroBgMobile) {
+    // Build picture similar to AMS miniform background markup style [3](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.html)
+    const pic = document.createElement('picture');
+
+    if (cfg.heroBgDesktop) {
+      const s = document.createElement('source');
+      s.media = '(min-width:992px)';
+      s.srcset = cfg.heroBgDesktop;
+      pic.appendChild(s);
+    }
+    if (cfg.heroBgMobile) {
+      const s = document.createElement('source');
+      s.media = '(min-width:320px)';
+      s.srcset = cfg.heroBgMobile;
+      pic.appendChild(s);
+    }
+    const img = document.createElement('img');
+    img.src = cfg.heroBgDesktop || cfg.heroBgMobile;
+    img.alt = cfg.heroBgAlt || '';
+    img.loading = 'lazy';
+    pic.appendChild(img);
+
+    bgContainer.appendChild(pic);
   }
 
+  block.appendChild(bgContainer);
+
+  // Panel wrapper (overlay)
   const formWrapper = document.createElement('div');
   formWrapper.className = 'hero-form-panel-wrapper';
   formWrapper.appendChild(htmlToEl(buildMarkup(cfg)));
   block.appendChild(formWrapper);
 
+  // --- 3) Wiring: validation + submit + thankyou toggle (AMS-equivalent) ---
   const container = block.querySelector('.find-contractor-form-container');
   const form = block.querySelector('.hero-form-contact');
+
   const mobileWrap = block.querySelector('.mobile-input-section');
   const pinWrap = block.querySelector('.pincode-input-section');
   const mobileInput = block.querySelector('#mobile-number');
   const pinInput = block.querySelector('#pincode');
+
   const consentInput = block.querySelector('#whatsapp-consent-input');
   const spinner = block.querySelector('.get-contractor-progress-status');
+
   const thankyou = block.querySelector('.mf-thankyou-revamp-container');
+  const closeBtn = thankyou?.querySelector('.mf__dismissible-container--head');
 
   const fieldIsReqMsg = container?.getAttribute('data-attr-emptyFieldError') || 'Field is required';
   const validMobNoMsg = container?.getAttribute('data-attr-mobileError') || 'Phone number is invalid';
@@ -282,8 +356,7 @@ export default function decorate(block) {
   }
 
   function onChange(fieldWrap, input) {
-    if (input.value.trim()) setLabelTop(fieldWrap, true);
-    else setLabelTop(fieldWrap, false);
+    setLabelTop(fieldWrap, !!input.value.trim());
   }
 
   mobileInput?.addEventListener('focus', () => onFocus(mobileWrap));
@@ -291,8 +364,8 @@ export default function decorate(block) {
   mobileInput?.addEventListener('input', () => {
     limitDigits(mobileInput, 10);
     onChange(mobileWrap, mobileInput);
-    if (mobileInput.value.trim()
-      && !isMobileValid(mobileInput.value)) setError(mobileWrap, validMobNoMsg);
+    // eslint-disable-next-line max-len
+    if (mobileInput.value.trim() && !isMobileValid(mobileInput.value)) setError(mobileWrap, validMobNoMsg);
     else setError(mobileWrap, '');
   });
 
@@ -301,8 +374,8 @@ export default function decorate(block) {
   pinInput?.addEventListener('input', () => {
     limitDigits(pinInput, 6);
     onChange(pinWrap, pinInput);
-    if (pinInput.value.trim()
-      && !isPincodeValid(pinInput.value)) setError(pinWrap, validPincodeMsg);
+    // eslint-disable-next-line max-len
+    if (pinInput.value.trim() && !isPincodeValid(pinInput.value)) setError(pinWrap, validPincodeMsg);
     else setError(pinWrap, '');
   });
 
@@ -326,8 +399,12 @@ export default function decorate(block) {
 
   function showThankYou(success) {
     if (!thankyou || !container) return;
+
+    // Like AMS: hide form & hero background, show thankyou [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
     container.style.display = 'none';
+    bgContainer.style.display = 'none';
     thankyou.style.display = 'block';
+
     const okLeft = thankyou.querySelector('.mf-thank-you-left-content');
     const errLeft = thankyou.querySelector('.mf-error-left-content');
     if (okLeft && errLeft) {
@@ -339,10 +416,10 @@ export default function decorate(block) {
   function resetFromThankYou() {
     if (!thankyou || !container) return;
     thankyou.style.display = 'none';
+    bgContainer.style.display = '';
     container.style.display = '';
   }
 
-  const closeBtn = thankyou?.querySelector('.mf__dismissible-container--head');
   closeBtn?.addEventListener('click', resetFromThankYou);
   closeBtn?.addEventListener('keydown', (e) => { if (e.key === 'Enter') resetFromThankYou(); });
 
@@ -352,9 +429,8 @@ export default function decorate(block) {
 
     spinner?.classList.remove('d-none');
 
-    // Require CryptoJS globally for AesUtil to work
+    // AesUtil requires CryptoJS globally (your earlier AMS flow uses AesUtil too) [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)[6](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/hero-form.js)
     if (!window.CryptoJS) {
-      // Fail fast; encryption cannot work without CryptoJS
       showThankYou(false);
       spinner?.classList.add('d-none');
       return;
@@ -396,12 +472,14 @@ export default function decorate(block) {
     payload.utmCampaignSource = utm.utmCampaignSource;
 
     try {
+      // DB call first, like AMS [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
       const dbResp = await postFormUrlEncoded(
         `${AMS_BASE}/apcolourcatalogue/ccforms.saveleadform.json`,
         payload,
       );
 
       if (dbResp && dbResp.Status === 'SUCCESS' && dbResp.rowID) {
+        // SF call after DB success, like AMS [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
         const sfPayload = { ...payload, rowId: dbResp.rowID };
         const sfResp = await postFormUrlEncoded(
           `${AMS_BASE}/apcolourcatalogue/ccforms/salesforce.leadstosalesforce.json`,
@@ -409,7 +487,14 @@ export default function decorate(block) {
         );
 
         const ok = sfResp && (sfResp.returnCode === 201 || sfResp.returnCode === '201');
-        showThankYou(!!ok);
+
+        // If redirect configured, behave like AMS “formRedirect” concept [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
+        const redirect = container.getAttribute('data-attr-redirection');
+        if (ok && redirect) {
+          window.location.href = redirect;
+        } else {
+          showThankYou(!!ok);
+        }
       } else {
         showThankYou(false);
       }
