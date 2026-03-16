@@ -1,3 +1,5 @@
+import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
+
 // SVG icons for calculator options
 const ICONS = {
   freshPainting: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.41 4.59L17 3.17 10.24 9.93c-.55-.16-1.14-.13-1.69.09-1.13.46-1.77 1.64-1.55 2.87.22 1.23 1.24 2.16 2.49 2.25.17.01.34 0 .51-.02.54-.08 1.05-.32 1.45-.72.44-.44.69-1.02.69-1.64 0-.32-.07-.62-.21-.9l6.73-6.73 1.06 1.06 1.42-1.42-2.73-2.45zM5 20v-2h2v2H5zm6-5v5H9v-5h2zm4 5v-8h2v8h-2zm4-10v10h2V10h-2z"/></svg>`,
@@ -259,18 +261,41 @@ function renderDefaultForm(block) {
         const input = document.createElement('input');
 
         let inputType = 'text';
+        let inputId = '';
+        let inputName = '';
         if (headerCell) {
           const headerLabel = headerCell.textContent.toLowerCase();
           if (headerLabel.includes('phone')) {
             inputType = 'tel';
+            inputId = 'enquire-mobile';
+            inputName = 'ENQUIRE_MOBILE';
+            input.inputMode = 'numeric';
+            input.pattern = '[1-9][0-9]{9}';
+            input.maxLength = 10;
           } else if (headerLabel.includes('email')) {
             inputType = 'email';
+            inputId = 'enquire-email';
+            inputName = 'ENQUIRE_EMAIL';
+          } else if (headerLabel.includes('pin')) {
+            inputType = 'text';
+            inputId = 'enquire-pincode';
+            inputName = 'ENQUIRE_PINCODE';
+            input.inputMode = 'numeric';
+            input.pattern = '[0-9]{6}';
+            input.maxLength = 6;
+          } else if (headerLabel.includes('name')) {
+            inputType = 'text';
+            inputId = 'enquire-name';
+            inputName = 'ENQUIRE_NAME';
+            input.pattern = '[A-Za-z ]{2,}';
           }
         }
 
         input.type = inputType;
         input.placeholder = content;
         input.className = 'form-input';
+        if (inputId) input.id = inputId;
+        if (inputName) input.name = inputName;
         input.required = true;
         cell.textContent = '';
         cell.appendChild(input);
@@ -284,6 +309,8 @@ function renderDefaultForm(block) {
     if (inputCells.length > 0) {
       const fieldsArea = document.createElement('div');
       fieldsArea.className = 'form-fields-area';
+      row.classList.add('form-attributes');
+      row.setAttribute('data-attr-resourcePath', window.location.pathname || '');
 
       const inputsGrid = document.createElement('div');
       inputsGrid.className = 'form-inputs-grid';
@@ -296,6 +323,33 @@ function renderDefaultForm(block) {
 
       if (buttonCell) {
         fieldsArea.appendChild(buttonCell);
+        const submitBtn = buttonCell.querySelector('button.form-submit');
+        if (submitBtn) {
+          submitBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            const inputs = row.querySelectorAll('.form-input');
+            const isValid = [...inputs].every((input) => input.reportValidity());
+            if (!isValid) return;
+
+            submitBtn.disabled = true;
+            submitLeadFromForm(row, {
+              resourcePath: row.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
+              selectors: {
+                name: '#enquire-name',
+                email: '#enquire-email',
+                mobile: '#enquire-mobile',
+                pincode: '#enquire-pincode',
+              },
+            })
+              .catch((err) => {
+                // eslint-disable-next-line no-console
+                console.error('Default form submission failed', err);
+              })
+              .finally(() => {
+                submitBtn.disabled = false;
+              });
+          });
+        }
       }
 
       // Append to row after description
