@@ -18,28 +18,26 @@
   margin: 0 auto;
 }
 
-/* Cards grid container */
+/* ---------------- MOBILE LAYOUT ---------------- */
+/* Side-by-side cards with horizontal scroll */
+
 .cards-action .cards-action-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-@media (min-width: 600px) {
-  .cards-action .cards-action-container {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .cards-action .cards-action-container {
-    gap: 48px;
-  }
+.cards-action .cards-action-container::-webkit-scrollbar {
+  display: none;
 }
 
 /* Individual card */
 .cards-action-card {
+  flex: 0 0 260px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -57,7 +55,32 @@
   transform: translateY(-2px);
 }
 
-/* Circular image container */
+/* ---------------- DESKTOP GRID ---------------- */
+
+@media (min-width: 600px) {
+
+  .cards-action .cards-action-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .cards-action-card {
+    flex: unset;
+  }
+
+}
+
+@media (min-width: 1200px) {
+  .cards-action .cards-action-container {
+    gap: 48px;
+  }
+}
+
+/* ---------------- IMAGE ---------------- */
+
 .cards-action-image {
   width: 120px;
   height: 120px;
@@ -98,7 +121,8 @@
   border-radius: 50%;
 }
 
-/* Content wrapper */
+/* ---------------- CONTENT ---------------- */
+
 .cards-action-content {
   display: flex;
   flex-direction: column;
@@ -106,7 +130,8 @@
   gap: 8px;
 }
 
-/* Card title */
+/* Title */
+
 .cards-action-title {
   font-family: var(--heading-font-family);
   font-size: 16px;
@@ -128,7 +153,8 @@
   }
 }
 
-/* Card description */
+/* Subtitle */
+
 .cards-action-description {
   font-family: var(--body-font-family);
   font-size: 13px;
@@ -144,7 +170,8 @@
   }
 }
 
-/* CTA button */
+/* ---------------- CTA ---------------- */
+
 .cards-action-cta {
   display: inline-flex;
   align-items: center;

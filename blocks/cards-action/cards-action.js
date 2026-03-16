@@ -1,81 +1,131 @@
+/*
+** Authoring format **
+Col 1 contains multiple images
+Col 2 contains multiple title
+Col 3 contains multiple subtitle
+Col 4 contains multiple cta label
+Col 5 contains multiple cta redirection link
+*/
+
+function getPicturesFromColumn(column) {
+  if (!column) return [];
+
+  return [...column.querySelectorAll('picture')].map((picture) =>
+    picture.cloneNode(true),
+  );
+}
+
+function getTextItemsFromColumn(column) {
+  if (!column) return [];
+
+  const items = [];
+
+  [...column.children].forEach((child) => {
+    const text = child.textContent.trim();
+    if (text) items.push(text);
+  });
+
+  if (items.length) return items;
+
+  return column.innerHTML
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getLinkItemsFromColumn(column) {
+  if (!column) return [];
+
+  const links = [];
+
+  [...column.children].forEach((child) => {
+    const anchor = child.querySelector('a') || (child.tagName === 'A' ? child : null);
+
+    if (anchor?.href) {
+      links.push(anchor.href);
+      return;
+    }
+
+    const text = child.textContent.trim();
+    if (text) links.push(text);
+  });
+
+  return links;
+}
+
 export default function decorate(block) {
   const rows = [...block.children];
-
-  // Create cards container
   const cardsContainer = document.createElement('div');
   cardsContainer.className = 'cards-action-container';
 
   rows.forEach((row) => {
     const cols = [...row.children];
-    if (cols.length < 2) return;
+    if (cols.length < 5) return;
 
-    const card = document.createElement('div');
-    card.className = 'cards-action-card';
+    const imageItems = getPicturesFromColumn(cols[0]);
+    const titleItems = getTextItemsFromColumn(cols[1]);
+    const subtitleItems = getTextItemsFromColumn(cols[2]);
+    const ctaLabelItems = getTextItemsFromColumn(cols[3]);
+    const ctaLinkItems = getLinkItemsFromColumn(cols[4]);
 
-    // First column - image
-    const imageCol = cols[0];
-    const picture = imageCol.querySelector('picture');
-    if (picture) {
-      const imageWrapper = document.createElement('div');
-      imageWrapper.className = 'cards-action-image';
-      imageWrapper.appendChild(picture.cloneNode(true));
-      card.appendChild(imageWrapper);
-    }
+    const totalCards = Math.max(
+      imageItems.length,
+      titleItems.length,
+      subtitleItems.length,
+      ctaLabelItems.length,
+      ctaLinkItems.length,
+    );
 
-    // Second column - content (title, description, CTA)
-    const contentCol = cols[1];
-    const contentWrapper = document.createElement('div');
-    contentWrapper.className = 'cards-action-content';
+    for (let i = 0; i < totalCards; i += 1) {
+      const card = document.createElement('div');
+      card.className = 'cards-action-card';
 
-    // Get title from strong tag
-    const strong = contentCol.querySelector('strong');
-    if (strong) {
-      const title = document.createElement('h3');
-      title.className = 'cards-action-title';
-      title.textContent = strong.textContent;
-      contentWrapper.appendChild(title);
-    }
+      const image = imageItems[i];
+      const title = titleItems[i];
+      const subtitle = subtitleItems[i];
+      const ctaLabel = ctaLabelItems[i];
+      const ctaLink = ctaLinkItems[i];
 
-    // Get description - look for text nodes inside the content
-    // The content may be wrapped in a <p> tag by AEM
-    const paragraph = contentCol.querySelector('p');
-    const searchNode = paragraph || contentCol;
-    let descText = '';
-
-    // Iterate through child nodes looking for text nodes
-    [...searchNode.childNodes].forEach((node) => {
-      // Check for text nodes (nodeType 3)
-      if (node.nodeType === 3) {
-        const text = node.textContent.trim();
-        if (text) {
-          descText += text + ' ';
-        }
+      if (image) {
+        const imageWrapper = document.createElement('div');
+        imageWrapper.className = 'cards-action-image';
+        imageWrapper.appendChild(image);
+        card.appendChild(imageWrapper);
       }
-    });
 
-    descText = descText.trim();
-    if (descText) {
-      const desc = document.createElement('p');
-      desc.className = 'cards-action-description';
-      desc.textContent = descText;
-      contentWrapper.appendChild(desc);
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'cards-action-content';
+
+      if (title) {
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'cards-action-title';
+        titleEl.textContent = title;
+        contentWrapper.appendChild(titleEl);
+      }
+
+      if (subtitle) {
+        const subtitleEl = document.createElement('p');
+        subtitleEl.className = 'cards-action-description';
+        subtitleEl.textContent = subtitle;
+        contentWrapper.appendChild(subtitleEl);
+      }
+
+      if (ctaLabel && ctaLink) {
+        const ctaEl = document.createElement('a');
+        ctaEl.className = 'cards-action-cta';
+        ctaEl.href = ctaLink;
+        ctaEl.textContent = ctaLabel;
+        contentWrapper.appendChild(ctaEl);
+      }
+
+      card.appendChild(contentWrapper);
+      cardsContainer.appendChild(card);
     }
-
-    // Get CTA link
-    const link = contentCol.querySelector('a');
-    if (link) {
-      const cta = document.createElement('a');
-      cta.className = 'cards-action-cta';
-      cta.href = link.href;
-      cta.textContent = link.textContent;
-      contentWrapper.appendChild(cta);
-    }
-
-    card.appendChild(contentWrapper);
-    cardsContainer.appendChild(card);
   });
 
-  // Clear block and add new structure
-  block.textContent = '';
+  block.innerHTML = '';
   block.appendChild(cardsContainer);
 }
