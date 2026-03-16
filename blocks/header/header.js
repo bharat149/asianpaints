@@ -4,11 +4,1406 @@
  * Row 0: Brand bar (dark blue)
  * Row 1: Main header (logo, search, action icons, CTA, hamburger)
  * Row 2: Navigation bar (home icon, main nav with megamenu, secondary nav)
+ *
+ * Integrations (matching original asianpaints.com):
+ * - Search with location detection API + autocomplete dropdown
+ * - Keycloak SSO authentication (login/profile state)
+ * - MiniCart API for live cart badge count
+ * - Visual search with file upload, drag-and-drop, and validation
  */
 
-import { getMetadata } from '../../scripts/aem.js';
+import { getMetadata, decorateIcons } from '../../scripts/aem.js';
 
 const DESKTOP_BREAKPOINT = 992;
+const AP_ORIGIN = window.location.origin;
+
+function isOnAsianPaintsDomain() {
+  return true;
+}
+
+/**
+ * Same-domain mode: all AP paths resolve relative to current origin.
+ */
+function apUrl(path) {
+  return path;
+}
+
+/* eslint-disable max-len */
+const AP_PATHS = {
+  DETECT_LOCATION: '/apcolourcatalogue/detect-location',
+  CONTRACTOR_PROFILE: '/apcolourcatalogue/contractorprofile.json',
+  MINI_CART: '/apcolourcatalogue/commerce/miniCart.json',
+  VISUAL_SEARCH_UPLOAD: '/apcolourcatalogue/visualSearch',
+  DEALER_LOCATOR: '/content/ap/en/home/store-locator/jcr:content/root/responsivegrid_320175147/responsivegrid_242725073/storelocatorlepton_c.json',
+};
+/* eslint-enable max-len */
+
+const AP_API = {
+  DETECT_LOCATION: apUrl(AP_PATHS.DETECT_LOCATION),
+  CONTRACTOR_PROFILE: apUrl(AP_PATHS.CONTRACTOR_PROFILE),
+  MINI_CART: apUrl(AP_PATHS.MINI_CART),
+  SEARCH_RESULTS: apUrl('/content/ap/en/home/searchresult.html'),
+  DEALER_PAGE: apUrl('/content/ap/en/home/store-locator.html'),
+  CONTRACTOR_PAGE: apUrl('/content/ap/en/home/contractor-listing-page.html'),
+  KEYCLOAK_URL: 'https://auth.asianpaints.com',
+  KEYCLOAK_REALM: 'asianpaintsRealm',
+  KEYCLOAK_CLIENT: 'asianpaints',
+  KEYCLOAK_JS: 'https://cdn.jsdelivr.net/npm/keycloak-js@22.0.3/dist/keycloak.min.js',
+  KEYCLOAK_PAGE_URL: `${AP_ORIGIN}/content/ap/en/home/key-cloak.html`,
+  PROFILE_PAGE: apUrl('/content/ap/en/home/my-profile.html'),
+  WISHLIST_PAGE: apUrl('/content/ap/en/home/my-wishlist.html'),
+  SHOP_URL: apUrl('/paint-products.html'),
+  VISUAL_SEARCH_UPLOAD: apUrl(AP_PATHS.VISUAL_SEARCH_UPLOAD),
+  UNBXD_API_KEY: 'decd8e031bd76ff9fa152afeadcb1773',
+  UNBXD_SITE_KEY: 'ss-unbxd-prod-asianpaints46541696944854',
+  UNBXD_BASE: 'https://search.unbxd.io',
+};
+
+const AP_GEO_PLACE = {
+  API_URL: 'https://places.googleapis.com/v1/places:searchText',
+  API_KEY: 'AIzaSyAbju50ovh011X-_bJKuGK7NtrnSxS5h7I',
+  FIELD_MASK: 'places.location',
+};
+
+/* eslint-disable max-len */
+const DEALER_LOCATOR_TYPE_FILTER = 'Beautiful Homes,Colour Ideas,EzyCR Prime,EZY CR,CR NXT Prime,CR NXT,Colour World,Non-colour world';
+/* eslint-enable max-len */
+
+function resolveApLink(urlOrPath, fallback = AP_API.SHOP_URL) {
+  if (!urlOrPath) return fallback;
+  if (/^https?:\/\//i.test(urlOrPath)) return urlOrPath;
+  return apUrl(urlOrPath.startsWith('/') ? urlOrPath : `/${urlOrPath}`);
+}
+
+async function fetchFromAp(pathOrUrl, options = {}) {
+  const url = /^https?:\/\//i.test(pathOrUrl)
+    ? pathOrUrl
+    : (pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`);
+  try {
+    const response = await fetch(url, options);
+    return response.ok ? response : null;
+  } catch {
+    return null;
+  }
+}
+
+/* eslint-disable max-len */
+const SEARCH_SUGGESTIONS_LINKS = [
+  { text: 'Colour Inspiration', href: apUrl('/inspiration/ideas/colour-inspiration.html') },
+  { text: 'Interior Textures', href: apUrl('/catalogue/interior-textures.html') },
+  { text: 'Exterior Textures', href: apUrl('/catalogue/exterior-textures.html') },
+  { text: 'Wallpaper', href: apUrl('/products/wall-coverings.html') },
+  { text: 'Blogs', href: apUrl('/blogs.html') },
+  { text: 'Shade Card', href: apUrl('/catalogue/colour-catalogue.html') },
+];
+
+/* EDS icons: use icon names matching /icons/<name>.svg (decorateIcons pattern) */
+const SEARCH_QUICK_LINKS = [
+  { text: 'Beautiful Homes Painting Service', href: apUrl('/services/asian-paints-safe-painting-service.html'), icon: 'ql-bh-painting' },
+  { text: 'Interior Design Solution', href: apUrl('/services/beautiful-homes-service.html'), icon: 'ql-interior-design' },
+  { text: 'Budget Calculators', href: apUrl('/resources/tools/paint-budget-calculator.html'), icon: 'ql-budget-calculator' },
+  { text: 'Home Colour Guide', href: apUrl('/home-colour-guide.html'), icon: 'ql-home-colour-guide' },
+];
+
+const TRENDING_ARROW_SVG = '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.55556 1.22217H11M11 1.22217V5.66661M11 1.22217L6.55556 5.66661L4.33333 3.44439L1 6.77772" stroke="#111827" stroke-width="1.13" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+/* eslint-enable max-len */
+
+const FALLBACK_TRENDING_QUERIES = ['Beige', 'Grey', 'White', 'Cream', 'Green', 'Ivory', 'Blue', 'Exterior'];
+const suggestionPreviewCache = new Map();
+let suggestionPreviewToken = 0;
+
+const SUGGESTION_CATEGORY_LABELS = {
+  shade: 'Colours',
+  gallery: 'Inspirations & Design Ideas',
+  texture: 'Textures',
+  wallpaper: 'Wallpapers',
+};
+
+const SUGGESTION_CATEGORY_ORDER = ['Colours', 'Inspirations & Design Ideas', 'Textures', 'Wallpapers'];
+
+const VS_ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/tiff'];
+const VS_MAX_SIZE_MB = 5;
+const SEARCH_DEBOUNCE_MS = 80;
+const SEARCH_RESULTS_DEBOUNCE_MS = 400;
+const LOCATION_DETECTION_DEBOUNCE_MS = 1500;
+
+const DEALER_KEYWORDS = [
+  'dealers', 'dealer', 'store', 'stores', 'shop', 'paint shop', 'brand',
+];
+
+const CONTRACTOR_KEYWORDS = [
+  'contractors', 'contractor', 'painters', 'painter', 'worker', 'service', 'expert',
+];
+
+let keycloakInstance = null;
+
+function getUnbxdUid() {
+  let uid = localStorage.getItem('unbxd-uid');
+  if (!uid) {
+    uid = `uid-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    localStorage.setItem('unbxd-uid', uid);
+  }
+  return uid;
+}
+
+// ──────────────────────────────────────────────
+//  API: Unbxd Autosuggest + Search
+// ──────────────────────────────────────────────
+
+async function fetchUnbxdAutosuggest(query, options = {}) {
+  const uid = getUnbxdUid();
+  const base = `${AP_API.UNBXD_BASE}/${AP_API.UNBXD_API_KEY}/${AP_API.UNBXD_SITE_KEY}`;
+  const fields = options.fields
+    || 'title,price,imageUrl,sku,cfType,entityCode,computed_discount,productUrl,sellingPrice,priceAfterReduction,uniqueId,id,autosuggest,doctype';
+  const params = new URLSearchParams({
+    q: query || '*',
+    version: 'V2',
+    uid,
+    'inFields.count': String(options.inFieldsCount ?? 0),
+    'topQueries.count': String(options.topQueriesCount ?? 8),
+    'keywordSuggestions.count': '0',
+    'promotedSuggestion.count': '0',
+    'popularProducts.count': String(options.popularProductsCount ?? 6),
+    'popularProducts.fields': fields,
+    indent: 'off',
+    fallback: 'true',
+  });
+  if (options.includeSourceFields) {
+    params.set('sourceFields', 'Texture,Shade,Wallpaper,gallery');
+    params.set('sourceField.Texture.count', '4');
+    params.set('sourceField.Shade.count', '5');
+    params.set('sourceField.Wallpaper.count', '4');
+    params.set('sourceField.gallery.count', '4');
+  }
+  try {
+    const resp = await fetch(`${base}/autosuggest?${params}`);
+    if (!resp.ok) return null;
+    return resp.json();
+  } catch {
+    return null;
+  }
+}
+
+async function fetchUnbxdSearch(query) {
+  const base = `${AP_API.UNBXD_BASE}/${AP_API.UNBXD_API_KEY}/${AP_API.UNBXD_SITE_KEY}`;
+  const fields = 'title,price,imageUrl,sku,cfType,entityCode,computed_discount,productUrl,sellingPrice,priceAfterReduction,uniqueId,id,autosuggest,doctype';
+  const params = new URLSearchParams({
+    q: query,
+    fields,
+    rows: '6',
+    indent: 'off',
+    facet: 'off',
+    analytics: 'false',
+    redirect: 'false',
+    version: 'V2',
+  });
+  try {
+    const resp = await fetch(`${base}/search?${params}`);
+    if (!resp.ok) return null;
+    return resp.json();
+  } catch {
+    return null;
+  }
+}
+
+function containsIndianPincode(text) {
+  return /\b[1-9][0-9]{5}\b/.test(text || '');
+}
+
+function findNlpEntity(query) {
+  const text = (query || '').toLowerCase();
+  if (!text) return '';
+  if (CONTRACTOR_KEYWORDS.some((kw) => text.includes(kw))) return 'contractor';
+  if (DEALER_KEYWORDS.some((kw) => text.includes(kw))) return 'dealer';
+  return '';
+}
+
+function extractLocationFromQuery(query) {
+  const match = (query || '').match(/\b(?:in|near|at)\s+([^,]+)$/i);
+  if (!match) return '';
+  return match[1].trim();
+}
+
+async function fetchDetectedLocations(query) {
+  if (!query || query.length < 3) return [];
+  try {
+    const params = new URLSearchParams({ text: query });
+    const resp = await fetchFromAp(`${AP_PATHS.DETECT_LOCATION}?${params}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      credentials: 'include',
+    });
+    if (!resp) return [];
+    const data = await resp.json();
+    if (!Array.isArray(data?.locations)) return [];
+    return data.locations
+      .map((loc) => (typeof loc === 'string' ? loc : loc?.location))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchContractorsByLocation(location) {
+  if (!location) return [];
+  try {
+    const key = containsIndianPincode(location) ? 'pinCode' : 'area';
+    const params = new URLSearchParams({ [key]: location, _: String(Date.now()) });
+    const resp = await fetchFromAp(`${AP_PATHS.CONTRACTOR_PROFILE}?${params}`, { credentials: 'include' });
+    if (!resp) return null;
+    const data = await resp.json();
+    return Array.isArray(data?.data) ? data.data : [];
+  } catch {
+    return null;
+  }
+}
+
+const placeCoordinatesCache = new Map();
+
+async function fetchLocationCoordinates(location) {
+  const key = (location || '').trim().toLowerCase();
+  if (!key) return null;
+  if (placeCoordinatesCache.has(key)) return placeCoordinatesCache.get(key);
+
+  try {
+    const resp = await fetch(AP_GEO_PLACE.API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': AP_GEO_PLACE.API_KEY,
+        'X-Goog-FieldMask': AP_GEO_PLACE.FIELD_MASK,
+      },
+      body: JSON.stringify({ textQuery: location, maxResultCount: 1 }),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    const coords = data?.places?.[0]?.location;
+    if (coords?.latitude == null || coords?.longitude == null) return null;
+    placeCoordinatesCache.set(key, coords);
+    return coords;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchDealersByLocation(location) {
+  if (!location) return [];
+  const coords = await fetchLocationCoordinates(location);
+  if (!coords) return null;
+
+  try {
+    const params = new URLSearchParams({
+      latitude: String(coords.latitude),
+      longitude: String(coords.longitude),
+      radius: '5000',
+      limit: '4',
+      typeofretailer: DEALER_LOCATOR_TYPE_FILTER,
+    });
+    const resp = await fetchFromAp(`${AP_PATHS.DEALER_LOCATOR}?_=${Date.now()}`, {
+      method: 'POST',
+      body: params,
+      credentials: 'include',
+    });
+    if (!resp) return null;
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return null;
+  }
+}
+
+// ──────────────────────────────────────────────
+//  API: MiniCart
+// ──────────────────────────────────────────────
+
+async function fetchMiniCartCount() {
+  try {
+    const resp = await fetchFromAp(`${AP_PATHS.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
+    if (!resp) return 0;
+    const data = await resp.json();
+    if (data.status === 'failure') return 0;
+    return data.totalItems || data.count || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function updateCartBadge(block, count) {
+  const badge = block.querySelector('.cart-badge');
+  if (!badge) return;
+  badge.textContent = String(count);
+  badge.style.display = count > 0 ? 'flex' : 'none';
+  badge.setAttribute('aria-hidden', count > 0 ? 'false' : 'true');
+}
+
+async function primeLocationContext() {
+  try {
+    await fetchFromAp(`${AP_PATHS.DETECT_LOCATION}?_=${Date.now()}`, { credentials: 'include' });
+  } catch {
+    // no-op; location enrichment is best-effort
+  }
+}
+
+// ──────────────────────────────────────────────
+//  API: Keycloak Authentication
+// ──────────────────────────────────────────────
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+function updateProfileUI(block, authenticated) {
+  const profileBtn = block.querySelector('.action-btn.profile-btn');
+  if (!profileBtn) return;
+
+  const greeting = block.querySelector('.profile-greeting');
+
+  if (authenticated && keycloakInstance?.tokenParsed) {
+    const name = keycloakInstance.tokenParsed.given_name
+      || keycloakInstance.tokenParsed.name
+      || '';
+    profileBtn.classList.add('logged-in');
+    if (greeting && name) {
+      greeting.textContent = `Hello ${name}`;
+      greeting.classList.add('visible');
+      setTimeout(() => greeting.classList.remove('visible'), 4000);
+    }
+  } else {
+    profileBtn.classList.remove('logged-in');
+    if (greeting) greeting.classList.remove('visible');
+  }
+}
+
+/**
+ * Whether to attempt the full Keycloak auth flow.
+ * True on asianpaints.com (production) by default. On other domains, add
+ * ?keycloak=force to the URL to opt-in for testing (you must also register
+ * your dev/preview domain in the Keycloak client's Valid Redirect URIs).
+ */
+function shouldInitKeycloak() {
+  if (isOnAsianPaintsDomain()) return true;
+  const params = new URLSearchParams(window.location.search);
+  return params.get('keycloak') === 'force';
+}
+
+async function initKeycloak(block) {
+  if (!shouldInitKeycloak()) {
+    updateProfileUI(block, false);
+    return;
+  }
+
+  try {
+    await loadScript(AP_API.KEYCLOAK_JS);
+    /* global Keycloak */
+    keycloakInstance = new Keycloak({
+      url: AP_API.KEYCLOAK_URL,
+      realm: AP_API.KEYCLOAK_REALM,
+      clientId: AP_API.KEYCLOAK_CLIENT,
+    });
+
+    const ssoRedirect = isOnAsianPaintsDomain()
+      ? AP_API.KEYCLOAK_PAGE_URL
+      : `${window.location.origin}/content/ap/en/home/key-cloak.html`;
+
+    const authenticated = await keycloakInstance.init({
+      onLoad: 'check-sso',
+      silentCheckSsoRedirectUri: ssoRedirect,
+      checkLoginIframe: false,
+    });
+
+    updateProfileUI(block, authenticated);
+
+    keycloakInstance.onTokenExpired = () => {
+      keycloakInstance.updateToken(30).catch(() => {
+        updateProfileUI(block, false);
+      });
+    };
+  } catch {
+    updateProfileUI(block, false);
+  }
+}
+
+function handleProfileClick(e) {
+  if (keycloakInstance?.authenticated) {
+    window.location.href = AP_API.PROFILE_PAGE;
+    return;
+  }
+
+  e.preventDefault();
+
+  if (keycloakInstance) {
+    keycloakInstance.login({ redirectUri: window.location.href });
+  } else {
+    window.location.href = AP_API.PROFILE_PAGE;
+  }
+}
+
+// ──────────────────────────────────────────────
+//  Visual Search: File Validation + Upload
+// ──────────────────────────────────────────────
+
+function validateVisualSearchFile(file) {
+  if (!file) return { valid: false, error: 'No file selected' };
+  if (!VS_ALLOWED_TYPES.includes(file.type)) {
+    return { valid: false, error: 'Only JPG, JPEG and PNG file formats are allowed' };
+  }
+  if (file.size > VS_MAX_SIZE_MB * 1024 * 1024) {
+    return { valid: false, error: `Max file size limit is ${VS_MAX_SIZE_MB}MB` };
+  }
+  return { valid: true, error: null };
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function getCookieValue(name) {
+  const escaped = String(name || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
+async function uploadVisualSearchImage(file, modal) {
+  const statusEl = modal.querySelector('.vs-status');
+  const errorEl = modal.querySelector('.vs-error');
+  if (errorEl) errorEl.textContent = '';
+
+  const validation = validateVisualSearchFile(file);
+  if (!validation.valid) {
+    if (errorEl) {
+      errorEl.textContent = validation.error;
+      errorEl.style.display = 'block';
+    }
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'Uploading...';
+    statusEl.style.display = 'block';
+  }
+
+  try {
+    const imageDetails = await readFileAsDataUrl(file);
+    if (!imageDetails) throw new Error('Unable to read image');
+    const fileName = file.name || 'uploaded-image';
+
+    const formBody = new URLSearchParams({
+      imageDetails: encodeURIComponent(imageDetails),
+      referer: document.referrer || '',
+      pageUrl: window.location.href,
+      uid: getCookieValue('unbxd.userId'),
+      visit: getCookieValue('unbxd.visit'),
+      visitId: getCookieValue('unbxd.visitId'),
+    });
+
+    const resp = await fetchFromAp(AP_PATHS.VISUAL_SEARCH_UPLOAD, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      },
+      body: formBody.toString(),
+      credentials: 'include',
+    });
+    if (resp?.ok) {
+      const responseText = await resp.text();
+      let data = null;
+      try {
+        data = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        data = responseText;
+      }
+
+      const redirectUrl = data?.redirectUrl || data?.redirectURL || data?.url;
+      if (redirectUrl && /^https?:\/\//i.test(String(redirectUrl))) {
+        window.location.href = redirectUrl;
+        return;
+      }
+
+      if (typeof data?.totalCount !== 'undefined') {
+        localStorage.setItem('uploaded-image-search-name', fileName.replace(/\.[^.]+$/, ''));
+        window.location.href = `${AP_API.SEARCH_RESULTS}?variantType=visualsearch&ts=${Date.now()}`;
+        return;
+      }
+
+      if (statusEl) statusEl.textContent = 'Image processed successfully';
+    } else if (errorEl) {
+      errorEl.textContent = 'Oops file upload failed, please try again!';
+      errorEl.style.display = 'block';
+    }
+  } catch {
+    if (errorEl) {
+      errorEl.textContent = 'Oops file upload failed, please try again!';
+      errorEl.style.display = 'block';
+    }
+  } finally {
+    if (statusEl) statusEl.style.display = 'none';
+  }
+}
+
+// ──────────────────────────────────────────────
+//  Search: Suggestions Dropdown + Redirect
+// ──────────────────────────────────────────────
+
+function navigateToSearchResults(query) {
+  if (!query || !query.trim()) return;
+  window.location.href = `${AP_API.SEARCH_RESULTS}?q=${encodeURIComponent(query.trim())}`;
+}
+
+function getSearchResultUrl(query) {
+  return `${AP_API.SEARCH_RESULTS}?q=${encodeURIComponent((query || '').trim())}`;
+}
+
+function getEntityExploreUrl(entity, query, location) {
+  if (!location) return getSearchResultUrl(query);
+  if (entity === 'contractor') {
+    const mode = containsIndianPincode(query) ? 'pinCode' : 'area';
+    return `${AP_API.CONTRACTOR_PAGE}?cpListing=${mode}:${encodeURIComponent(location)}`;
+  }
+  if (entity === 'dealer') {
+    return `${AP_API.DEALER_PAGE}?q=${encodeURIComponent(location)}`;
+  }
+  return getSearchResultUrl(query);
+}
+
+function setLocationResultState(dialog, state) {
+  const panel = dialog.querySelector('.sd-location-results');
+  const title = dialog.querySelector('.sd-location-title');
+  const list = dialog.querySelector('.sd-location-list');
+  const empty = dialog.querySelector('.sd-location-empty');
+  const explore = dialog.querySelector('.sd-location-explore');
+  if (!panel || !title || !list || !empty || !explore) return;
+
+  panel.classList.remove('active');
+  list.innerHTML = '';
+  empty.style.display = 'none';
+  explore.style.display = 'none';
+  explore.removeAttribute('href');
+
+  if (!state || !state.visible) return;
+
+  panel.classList.add('active');
+  title.textContent = state.title || '';
+  if (state.emptyText) {
+    empty.textContent = state.emptyText;
+    empty.style.display = 'block';
+  }
+  if (state.exploreHref) {
+    explore.href = state.exploreHref;
+    explore.style.display = '';
+  }
+}
+
+function renderContractorLocationResults(dialog, query, location, contractors) {
+  const list = dialog.querySelector('.sd-location-list');
+  if (!list) return;
+
+  const exploreHref = getEntityExploreUrl('contractor', query, location);
+  const locationLabel = location || 'selected location';
+
+  if (!Array.isArray(contractors) || contractors.length === 0) {
+    setLocationResultState(dialog, {
+      visible: true,
+      title: `Contractors near ${locationLabel}`,
+      emptyText: 'Contractors not found for this location',
+      exploreHref,
+    });
+    return;
+  }
+
+  setLocationResultState(dialog, {
+    visible: true,
+    title: `Contractors near ${locationLabel}`,
+    exploreHref,
+  });
+
+  contractors.slice(0, 4).forEach((contractor) => {
+    const card = document.createElement('a');
+    card.className = 'sd-location-card';
+    card.href = contractor.contractorId
+      ? apUrl(`/content/ap/en/home/contractor-locator.${contractor.contractorId}.html`)
+      : exploreHref;
+
+    const name = document.createElement('div');
+    name.className = 'sd-location-name';
+    name.textContent = `${contractor.firstName || ''} ${contractor.lastName || ''}`.trim() || 'Contractor';
+
+    const area = document.createElement('div');
+    area.className = 'sd-location-meta';
+    area.textContent = contractor.areasServiced?.[0] || locationLabel;
+
+    const rating = document.createElement('div');
+    rating.className = 'sd-location-rating';
+    const avg = contractor.avgRating || '0';
+    const reviews = contractor.totalRatingsCount || 0;
+    rating.textContent = `★ ${avg} (${reviews} reviews)`;
+
+    card.append(name, area, rating);
+    list.appendChild(card);
+  });
+}
+
+function renderDealerLocationResults(dialog, query, location, dealers = []) {
+  const list = dialog.querySelector('.sd-location-list');
+  if (!list) return;
+
+  const locationLabel = location || 'selected location';
+  const exploreHref = getEntityExploreUrl('dealer', query, location);
+
+  if (!Array.isArray(dealers) || dealers.length === 0) {
+    setLocationResultState(dialog, {
+      visible: true,
+      title: `Dealers near ${locationLabel}`,
+      emptyText: 'Use Explore dealers to view nearby stores',
+      exploreHref,
+    });
+    return;
+  }
+
+  setLocationResultState(dialog, {
+    visible: true,
+    title: `Dealers near ${locationLabel}`,
+    exploreHref,
+  });
+
+  dealers.slice(0, 4).forEach((dealer) => {
+    const card = document.createElement('a');
+    card.className = 'sd-location-card';
+    if (dealer.latitude && dealer.longitude) {
+      card.href = `https://www.google.com/maps/dir/,/${dealer.latitude},${dealer.longitude}`;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+    } else {
+      card.href = exploreHref;
+    }
+
+    const name = document.createElement('div');
+    name.className = 'sd-location-name';
+    name.textContent = dealer.contactname || 'Nearby Store';
+
+    const address = document.createElement('div');
+    address.className = 'sd-location-meta';
+    address.textContent = dealer.address || locationLabel;
+
+    const meta = document.createElement('div');
+    meta.className = 'sd-location-rating';
+    if (dealer.typeofretailer && dealer.mobileno) {
+      meta.textContent = `${dealer.typeofretailer} | +91 ${dealer.mobileno}`;
+    } else if (dealer.typeofretailer) {
+      meta.textContent = dealer.typeofretailer;
+    } else if (dealer.mobileno) {
+      meta.textContent = `+91 ${dealer.mobileno}`;
+    } else {
+      meta.textContent = 'Store details available';
+    }
+
+    card.append(name, address, meta);
+    list.appendChild(card);
+  });
+}
+
+async function handleLocationAwareSearch(dialog, query, requestToken = 0, getActiveToken = () => requestToken) {
+  const isStale = () => requestToken !== getActiveToken();
+  if (isStale()) return;
+
+  const entity = findNlpEntity(query);
+  if (!entity) {
+    if (isStale()) return;
+    setLocationResultState(dialog, { visible: false });
+    return;
+  }
+
+  const locations = await fetchDetectedLocations(query);
+  if (isStale()) return;
+  let [location] = locations;
+  if (!location && !isOnAsianPaintsDomain()) {
+    location = extractLocationFromQuery(query);
+  }
+  if (location && location.trim().length < 3) {
+    setLocationResultState(dialog, { visible: false });
+    return;
+  }
+  if (!location) {
+    if (isStale()) return;
+    setLocationResultState(dialog, { visible: false });
+    return;
+  }
+
+  if (entity === 'contractor') {
+    const contractors = await fetchContractorsByLocation(location);
+    if (isStale()) return;
+    if (contractors === null) {
+      const unavailableText = isOnAsianPaintsDomain()
+        ? 'Contractors not found for this location'
+        : 'Live contractor preview is unavailable in local mode. Use Explore contractors.';
+      setLocationResultState(dialog, {
+        visible: true,
+        title: `Contractors near ${location}`,
+        emptyText: unavailableText,
+        exploreHref: getEntityExploreUrl('contractor', query, location),
+      });
+      return;
+    }
+    if (!isOnAsianPaintsDomain() && Array.isArray(contractors) && contractors.length === 0) {
+      setLocationResultState(dialog, {
+        visible: true,
+        title: `Contractors near ${location}`,
+        emptyText: 'Live contractor preview is unavailable in local mode. Use Explore contractors.',
+        exploreHref: getEntityExploreUrl('contractor', query, location),
+      });
+      return;
+    }
+    renderContractorLocationResults(dialog, query, location, contractors);
+    return;
+  }
+
+  const dealers = await fetchDealersByLocation(location);
+  if (isStale()) return;
+  if (dealers === null) {
+    const unavailableText = isOnAsianPaintsDomain()
+      ? 'Use Explore dealers to view nearby stores'
+      : 'Live dealer preview is unavailable in local mode. Use Explore dealers.';
+    setLocationResultState(dialog, {
+      visible: true,
+      title: `Dealers near ${location}`,
+      emptyText: unavailableText,
+      exploreHref: getEntityExploreUrl('dealer', query, location),
+    });
+    return;
+  }
+  if (!isOnAsianPaintsDomain() && Array.isArray(dealers) && dealers.length === 0) {
+    setLocationResultState(dialog, {
+      visible: true,
+      title: `Dealers near ${location}`,
+      emptyText: 'Live dealer preview is unavailable in local mode. Use Explore dealers.',
+      exploreHref: getEntityExploreUrl('dealer', query, location),
+    });
+    return;
+  }
+  renderDealerLocationResults(dialog, query, location, dealers);
+}
+
+// ──────────────────────────────────────────────
+//  Search Dialog: Full-screen overlay
+// ──────────────────────────────────────────────
+
+function normalizeImageUrl(imageUrl) {
+  const value = Array.isArray(imageUrl) ? imageUrl[0] : imageUrl;
+  if (!value || typeof value !== 'string') return '';
+  if (value.startsWith('//')) return `https:${value}`;
+  if (value.startsWith('/')) return apUrl(value);
+  return value;
+}
+
+function isRenderableImageUrl(url) {
+  if (!url) return false;
+  const hasImageShape = /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(url) || url.includes('/content/dam/');
+  if (!hasImageShape) return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    const host = parsed.hostname.toLowerCase();
+    if (host.includes('.transform')) return false;
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+    return host.endsWith('asianpaints.com')
+      || host.endsWith('static.asianpaints.com')
+      || host.endsWith('search.unbxd.io');
+  } catch {
+    return false;
+  }
+}
+
+function getSwatchFallbackUrl(product) {
+  const rawCode = product?.uniqueId || product?.entityCode || product?.sku || '';
+  if (typeof rawCode !== 'string') return '';
+  const normalized = rawCode.startsWith('en-') ? rawCode.slice(3) : rawCode;
+  if (!/^[A-Za-z0-9]+$/.test(normalized)) return '';
+  return `${AP_ORIGIN}/content/dam/asian_paints/colours/swatches/${normalized}.png.transform/cc-width-221-height-260/image.png`;
+}
+
+function isLikelyShadeCode(value) {
+  if (!value || typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  return /^[A-Za-z]?\d{3,4}$/.test(trimmed);
+}
+
+function renderSearchProducts(container, products, isSwatch) {
+  container.innerHTML = '';
+  products.slice(0, 6).forEach((p) => {
+    const card = document.createElement('a');
+    card.className = 'sd-product-card';
+    const productUrl = Array.isArray(p.productUrl) ? p.productUrl[0] : p.productUrl;
+    card.href = productUrl
+      ? resolveApLink(productUrl, getSearchResultUrl(p.title))
+      : getSearchResultUrl(p.title);
+
+    /* eslint-disable max-len */
+    const directImage = normalizeImageUrl(p.imageUrl);
+    const fallbackSwatch = isSwatch ? getSwatchFallbackUrl(p) : '';
+    const imgUrl = isRenderableImageUrl(directImage) ? directImage : fallbackSwatch;
+    /* eslint-enable max-len */
+    if (imgUrl) {
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = p.title || '';
+      img.loading = 'lazy';
+      card.appendChild(img);
+    }
+
+    const name = document.createElement('div');
+    name.className = 'sd-product-name';
+    name.textContent = p.title || '';
+
+    const code = document.createElement('div');
+    code.className = 'sd-product-code';
+    const candidateCode = p.entityCode || p.sku || p.uniqueId?.replace('en-', '') || '';
+    const safeCode = candidateCode.includes('/') ? '' : candidateCode;
+    code.textContent = isLikelyShadeCode(safeCode) ? safeCode : '';
+    if (!code.textContent) code.style.display = 'none';
+
+    card.append(name, code);
+    container.appendChild(card);
+  });
+}
+
+function getLegacyTopQueries(data) {
+  const topQueries = data?.response?.topQueries;
+  if (Array.isArray(topQueries?.TopQuery)) return topQueries.TopQuery;
+  if (Array.isArray(topQueries?.topQuery)) return topQueries.topQuery;
+  if (Array.isArray(topQueries)) return topQueries;
+  return [];
+}
+
+function extractAutosuggestSections(data, preferInField = false) {
+  const raw = data?.response?.products;
+  const products = Array.isArray(raw?.product)
+    ? raw.product
+    : Array.isArray(raw)
+      ? raw
+      : [];
+
+  const popularProducts = products.filter((item) => item?.doctype === 'POPULAR_PRODUCTS');
+  const inFieldProducts = products.filter((item) => item?.doctype === 'IN_FIELD');
+  const topSearchQueries = products
+    .filter((item) => item?.doctype === 'TOP_SEARCH_QUERIES' || item?.doctype === 'TRENDING_QUERIES')
+    .map((item) => item?.autosuggest)
+    .filter(Boolean);
+
+  const legacyTopQueries = getLegacyTopQueries(data)
+    .map((item) => item?.autosuggest || item?.title || '')
+    .filter(Boolean);
+
+  const dedupedTopQueries = [...topSearchQueries, ...legacyTopQueries]
+    .filter((query, index, arr) => arr.findIndex((q) => q.toLowerCase() === query.toLowerCase()) === index);
+
+  const seenSuggestionKeys = new Set();
+  const suggestions = [];
+  inFieldProducts.forEach((item) => {
+    const text = item?.autosuggest || item?.title || '';
+    const category = getSuggestionCategory(item);
+    if (!text) return;
+    if (!category) return;
+    const key = text.toLowerCase();
+    if (seenSuggestionKeys.has(key)) return;
+    seenSuggestionKeys.add(key);
+    suggestions.push({
+      text,
+      category,
+    });
+  });
+
+  const bestResults = preferInField
+    ? (inFieldProducts.length ? inFieldProducts : popularProducts)
+    : (popularProducts.length ? popularProducts : inFieldProducts);
+
+  return {
+    bestResults: bestResults.length ? bestResults : products,
+    topQueries: dedupedTopQueries,
+    suggestions: suggestions.slice(0, 8),
+  };
+}
+
+function getSuggestionCategory(item) {
+  const fromCfTypeIn = Array.isArray(item?.cfType_in) ? item.cfType_in[0] : item?.cfType_in;
+  const fromCfType = Array.isArray(item?.cfType) ? item.cfType[0] : item?.cfType;
+  const rawType = String(fromCfTypeIn || fromCfType || '').toLowerCase().trim();
+  if (!rawType) return '';
+  const normalized = rawType.replaceAll(/\s+/g, '');
+  return SUGGESTION_CATEGORY_LABELS[normalized] || '';
+}
+
+function renderTrendingQueries(dialog, queries = []) {
+  const trendingContainer = dialog.querySelector('.sd-trending-list');
+  if (!trendingContainer) return;
+
+  trendingContainer.innerHTML = '';
+  queries.forEach((suggestedQuery) => {
+    const tag = document.createElement('button');
+    tag.className = 'sd-trending-tag';
+    tag.type = 'button';
+    const icon = document.createElement('span');
+    icon.className = 'sd-trending-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = TRENDING_ARROW_SVG;
+    const label = document.createElement('span');
+    label.textContent = suggestedQuery;
+    tag.append(icon, label);
+    tag.addEventListener('click', () => {
+      const input = dialog.querySelector('.sd-search-input');
+      if (input) {
+        input.value = suggestedQuery;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    trendingContainer.appendChild(tag);
+  });
+}
+
+function renderSearchDialogResults(dialog, data, options = {}) {
+  const productsContainer = dialog.querySelector('.sd-best-results-grid');
+  if (!productsContainer) return;
+
+  const parsed = extractAutosuggestSections(data, Boolean(options.preferInField));
+  renderSearchProducts(productsContainer, parsed.bestResults, true);
+  renderTrendingQueries(dialog, parsed.topQueries.length ? parsed.topQueries : FALLBACK_TRENDING_QUERIES);
+  renderSuggestions(dialog, parsed.suggestions, Boolean(options.queryMode), options.queryText || '');
+  toggleSearchDialogQueryMode(dialog, Boolean(options.queryMode));
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function highlightSuggestionMatch(text, query) {
+  const source = String(text || '');
+  const q = String(query || '').trim();
+  if (!q) return escapeHtml(source);
+
+  const sourceLower = source.toLowerCase();
+  const qLower = q.toLowerCase();
+  let cursor = 0;
+  let html = '';
+
+  while (cursor < source.length) {
+    const matchIndex = sourceLower.indexOf(qLower, cursor);
+    if (matchIndex === -1) {
+      html += escapeHtml(source.slice(cursor));
+      break;
+    }
+    html += escapeHtml(source.slice(cursor, matchIndex));
+    html += `<strong>${escapeHtml(source.slice(matchIndex, matchIndex + q.length))}</strong>`;
+    cursor = matchIndex + q.length;
+  }
+
+  return html;
+}
+
+function extractSearchProducts(data) {
+  return Array.isArray(data?.response?.products?.product)
+    ? data.response.products.product
+    : Array.isArray(data?.response?.products)
+      ? data.response.products
+      : [];
+}
+
+async function previewSuggestionResults(dialog, query) {
+  const trimmed = (query || '').trim();
+  const productsContainer = dialog.querySelector('.sd-best-results-grid');
+  if (!productsContainer || trimmed.length < 3) return;
+
+  const token = ++suggestionPreviewToken;
+  const cacheKey = trimmed.toLowerCase();
+
+  let products = suggestionPreviewCache.get(cacheKey);
+  if (!products) {
+    const searchData = await fetchUnbxdSearch(trimmed);
+    if (!searchData) return;
+    products = extractSearchProducts(searchData);
+    suggestionPreviewCache.set(cacheKey, products);
+  }
+
+  if (token !== suggestionPreviewToken) return;
+  renderSearchProducts(productsContainer, products, false);
+  const seeAll = dialog.querySelector('.sd-see-all');
+  if (seeAll) seeAll.href = getSearchResultUrl(trimmed);
+}
+
+function restoreInputResults(dialog) {
+  const input = dialog.querySelector('.sd-search-input');
+  const seeAll = dialog.querySelector('.sd-see-all');
+  const query = (input?.value || '').trim();
+  if (seeAll) {
+    seeAll.href = query ? getSearchResultUrl(query) : AP_API.SEARCH_RESULTS;
+  }
+  if (query.length >= 3) {
+    handleSearchDialogSearchResults(dialog, query);
+  }
+}
+
+function renderSuggestions(dialog, suggestions = [], queryMode = false, activeQuery = '') {
+  const list = dialog.querySelector('.sd-suggestions-list');
+  if (!list) return;
+
+  list.innerHTML = '';
+  list.onmouseleave = null;
+  list.onfocusout = null;
+
+  if (!queryMode) {
+    SEARCH_SUGGESTIONS_LINKS.forEach((link) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = link.href;
+      a.textContent = link.text;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    return;
+  }
+
+  if (!suggestions.length) return;
+
+  list.onmouseleave = () => {
+    suggestionPreviewToken += 1;
+    restoreInputResults(dialog);
+  };
+  list.onfocusout = (event) => {
+    if (!list.contains(event.relatedTarget)) {
+      suggestionPreviewToken += 1;
+      restoreInputResults(dialog);
+    }
+  };
+
+  const grouped = new Map(SUGGESTION_CATEGORY_ORDER.map((category) => [category, []]));
+  suggestions.forEach((entry) => {
+    if (!entry?.category) return;
+    if (!grouped.has(entry.category)) return;
+    grouped.get(entry.category).push(entry);
+  });
+
+  const categoriesWithEntries = [...grouped.entries()].filter(([, entries]) => entries.length > 0);
+  categoriesWithEntries.forEach(([category, entries], index) => {
+    const isLastCategory = index === categoriesWithEntries.length - 1;
+    const headerLi = document.createElement('li');
+    headerLi.className = 'sd-suggestion-category' + (isLastCategory ? ' sd-suggestion-category-last' : '');
+    headerLi.textContent = category;
+    list.appendChild(headerLi);
+
+    entries.forEach((entry) => {
+      const suggestedQuery = entry.text;
+      const li = document.createElement('li');
+      li.className = 'sd-suggestion-item';
+      const a = document.createElement('a');
+      a.href = getSearchResultUrl(suggestedQuery);
+      a.innerHTML = highlightSuggestionMatch(suggestedQuery, activeQuery);
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const input = dialog.querySelector('.sd-search-input');
+        if (input) {
+          input.value = suggestedQuery;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+      a.addEventListener('mouseenter', () => {
+        previewSuggestionResults(dialog, suggestedQuery);
+      });
+      a.addEventListener('focus', () => {
+        previewSuggestionResults(dialog, suggestedQuery);
+      });
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  });
+}
+
+function toggleSearchDialogQueryMode(dialog, active) {
+  dialog.classList.toggle('sd-query-mode', active);
+}
+
+async function handleSearchDialogQuery(dialog, query) {
+  const trimmed = (query || '').trim();
+  if (!trimmed) {
+    toggleSearchDialogQueryMode(dialog, false);
+    const initial = await fetchUnbxdAutosuggest('*', {
+      inFieldsCount: 0,
+      topQueriesCount: 8,
+      popularProductsCount: 6,
+      includeSourceFields: true,
+    });
+    if (initial) renderSearchDialogResults(dialog, initial, { preferInField: false, queryMode: false, queryText: '' });
+    else {
+      renderTrendingQueries(dialog, FALLBACK_TRENDING_QUERIES);
+      renderSuggestions(dialog, [], false, '');
+    }
+    return;
+  }
+
+  toggleSearchDialogQueryMode(dialog, true);
+
+  if (trimmed.length < 3) {
+    renderSuggestions(dialog, [], true, trimmed);
+    return;
+  }
+
+  const autoData = await fetchUnbxdAutosuggest(trimmed, {
+    inFieldsCount: 10,
+    topQueriesCount: 0,
+    popularProductsCount: 6,
+    includeSourceFields: true,
+  });
+
+  if (autoData) renderSearchDialogResults(dialog, autoData, { preferInField: true, queryMode: true, queryText: trimmed });
+}
+
+async function handleSearchDialogSearchResults(dialog, query) {
+  const productsContainer = dialog.querySelector('.sd-best-results-grid');
+  if (!productsContainer || !query || query.length < 3) return;
+
+  const searchData = await fetchUnbxdSearch(query);
+  if (!searchData) return;
+
+  const searchProducts = extractSearchProducts(searchData);
+  renderSearchProducts(productsContainer, searchProducts, false);
+}
+
+function buildSearchDialog() {
+  const overlay = document.createElement('div');
+  overlay.className = 'search-dialog-overlay';
+
+  const dialog = document.createElement('div');
+  dialog.className = 'search-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-label', 'Search');
+
+  // Top: search bar row
+  const topBar = document.createElement('div');
+  topBar.className = 'sd-search-bar';
+
+  const searchIcon = document.createElement('span');
+  searchIcon.className = 'sd-search-icon';
+  /* eslint-disable max-len */
+  searchIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  /* eslint-enable max-len */
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'sd-search-input';
+  input.placeholder = 'Search';
+  input.setAttribute('autocomplete', 'off');
+
+  const cameraIcon = document.createElement('button');
+  cameraIcon.className = 'sd-camera-btn';
+  cameraIcon.type = 'button';
+  cameraIcon.setAttribute('aria-label', 'Search by image');
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'sd-close-btn';
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', 'Close search');
+  closeBtn.innerHTML = '&times;';
+
+  topBar.append(searchIcon, input, cameraIcon, closeBtn);
+
+  // Content area: two columns
+  const content = document.createElement('div');
+  content.className = 'sd-content';
+
+  // Left column
+  const leftCol = document.createElement('div');
+  leftCol.className = 'sd-left';
+
+  // Trending queries
+  const trendingSection = document.createElement('div');
+  trendingSection.className = 'sd-section';
+  trendingSection.classList.add('sd-trending-section');
+  const trendingTitle = document.createElement('h3');
+  trendingTitle.className = 'sd-section-title';
+  trendingTitle.textContent = 'Trending Queries';
+  const trendingList = document.createElement('div');
+  trendingList.className = 'sd-trending-list';
+  trendingSection.append(trendingTitle, trendingList);
+
+  // Suggestions
+  const sugSection = document.createElement('div');
+  sugSection.className = 'sd-section';
+  sugSection.classList.add('sd-suggestions-section');
+  const sugTitle = document.createElement('h3');
+  sugTitle.className = 'sd-section-title';
+  sugTitle.textContent = 'Suggestions';
+  const sugList = document.createElement('ul');
+  sugList.className = 'sd-suggestions-list';
+  renderSuggestions(dialog, [], false);
+  sugSection.append(sugTitle, sugList);
+
+  // Quick links
+  const qlSection = document.createElement('div');
+  qlSection.className = 'sd-section';
+  qlSection.classList.add('sd-quicklinks-section');
+  const qlTitle = document.createElement('h3');
+  qlTitle.className = 'sd-section-title';
+  qlTitle.textContent = 'Quick links';
+  const qlGrid = document.createElement('div');
+  qlGrid.className = 'sd-quicklinks-grid';
+  SEARCH_QUICK_LINKS.forEach((link) => {
+    const card = document.createElement('a');
+    card.className = 'sd-quicklink-card';
+    card.href = link.href;
+    const iconSpan = document.createElement('span');
+    iconSpan.className = `icon icon-${link.icon}`;
+    iconSpan.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.className = 'sd-quicklink-label';
+    label.textContent = link.text;
+    card.append(iconSpan, label);
+    qlGrid.appendChild(card);
+  });
+  decorateIcons(qlGrid);
+  qlSection.append(qlTitle, qlGrid);
+
+  leftCol.append(trendingSection, sugSection, qlSection);
+
+  // Right column: Best Results
+  const rightCol = document.createElement('div');
+  rightCol.className = 'sd-right';
+
+  const brTitle = document.createElement('h3');
+  brTitle.className = 'sd-section-title';
+  brTitle.textContent = 'Best Results';
+
+  const brGrid = document.createElement('div');
+  brGrid.className = 'sd-best-results-grid';
+
+  const seeAll = document.createElement('a');
+  seeAll.className = 'sd-see-all';
+  seeAll.href = AP_API.SEARCH_RESULTS;
+  seeAll.textContent = 'See all results';
+  const seeAllArrow = document.createElement('span');
+  seeAllArrow.textContent = ' \u203A';
+  seeAll.appendChild(seeAllArrow);
+
+  rightCol.append(brTitle, brGrid, seeAll);
+
+  const locationResults = document.createElement('section');
+  locationResults.className = 'sd-location-results';
+  const locationTitle = document.createElement('h3');
+  locationTitle.className = 'sd-section-title sd-location-title';
+  const locationList = document.createElement('div');
+  locationList.className = 'sd-location-list';
+  const locationEmpty = document.createElement('p');
+  locationEmpty.className = 'sd-location-empty';
+  const locationExplore = document.createElement('a');
+  locationExplore.className = 'sd-location-explore';
+  locationExplore.textContent = 'Explore more';
+  locationExplore.style.display = 'none';
+  locationResults.append(locationTitle, locationList, locationEmpty, locationExplore);
+
+  content.append(leftCol, rightCol);
+  dialog.append(topBar, content, locationResults);
+  overlay.appendChild(dialog);
+
+  let locationRequestToken = 0;
+
+  // Interactions
+  const closeDialog = () => {
+    locationRequestToken += 1;
+    overlay.classList.remove('active');
+    document.body.classList.remove('search-dialog-open');
+    input.value = '';
+    toggleSearchDialogQueryMode(dialog, false);
+  };
+
+  closeBtn.addEventListener('click', closeDialog);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeDialog();
+  });
+
+  // Search input: debounced query
+  let dialogDebounce = null;
+  let searchDebounce = null;
+  let locationDebounce = null;
+  input.addEventListener('input', () => {
+    clearTimeout(dialogDebounce);
+    clearTimeout(searchDebounce);
+    clearTimeout(locationDebounce);
+    locationRequestToken += 1;
+    const currentLocationToken = locationRequestToken;
+    const rawQuery = input.value;
+    const query = rawQuery.trim();
+    dialogDebounce = setTimeout(() => {
+      handleSearchDialogQuery(dialog, rawQuery);
+      seeAll.href = query
+        ? getSearchResultUrl(query)
+        : AP_API.SEARCH_RESULTS;
+    }, SEARCH_DEBOUNCE_MS);
+    searchDebounce = setTimeout(() => {
+      handleSearchDialogSearchResults(dialog, rawQuery);
+    }, SEARCH_RESULTS_DEBOUNCE_MS);
+    locationDebounce = setTimeout(() => {
+      handleLocationAwareSearch(dialog, rawQuery, currentLocationToken, () => locationRequestToken);
+    }, LOCATION_DETECTION_DEBOUNCE_MS);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const query = input.value;
+      closeDialog();
+      navigateToSearchResults(query);
+    }
+    if (e.key === 'Escape') closeDialog();
+  });
+
+  return overlay;
+}
+
+async function openSearchDialog(block) {
+  const overlay = block.querySelector('.search-dialog-overlay');
+  if (!overlay) return;
+
+  overlay.classList.add('active');
+  document.body.classList.add('search-dialog-open');
+
+  const input = overlay.querySelector('.sd-search-input');
+  if (input) {
+    setTimeout(() => input.focus(), 100);
+  }
+  const dialog = overlay.querySelector('.search-dialog');
+  if (!dialog) return;
+  setLocationResultState(dialog, { visible: false });
+
+  // Load initial data (trending + popular products)
+  const data = await fetchUnbxdAutosuggest('*', {
+    inFieldsCount: 0,
+    topQueriesCount: 8,
+    popularProductsCount: 6,
+    includeSourceFields: true,
+  });
+  if (data) {
+    renderSearchDialogResults(dialog, data, { queryMode: false, queryText: '' });
+  }
+}
+
+// ──────────────────────────────────────────────
+//  Build Functions
+// ──────────────────────────────────────────────
 
 function buildBrandBar(brandDiv) {
   const brandBar = document.createElement('div');
@@ -57,7 +1452,7 @@ function buildMainHeader(mainDiv) {
   hamburger.innerHTML = '<span class="hamburger-icon"></span><span class="hamburger-cross"></span>';
   inner.appendChild(hamburger);
 
-  // Logo — first <p> containing <a><img>
+  // Logo
   const paragraphs = mainDiv.querySelectorAll('p');
   if (paragraphs[0]) {
     const logoAnchor = paragraphs[0].querySelector('a');
@@ -71,7 +1466,7 @@ function buildMainHeader(mainDiv) {
     }
   }
 
-  // Search bar — second <p> containing search icon + camera icon
+  // Search bar with suggestions dropdown
   const searchBar = document.createElement('div');
   searchBar.className = 'header-search';
 
@@ -88,13 +1483,15 @@ function buildMainHeader(mainDiv) {
   searchInput.type = 'text';
   searchInput.className = 'search-input';
   searchInput.setAttribute('aria-label', 'Search');
+  searchInput.setAttribute('name', 'global-search');
+  searchInput.setAttribute('autocomplete', 'off');
 
-  // Rotating placeholder
+  // Rotating placeholder (matching original site's data-search-values)
   const placeholders = [
+    'Search for Wall colours',
+    'Search for Interior paints',
     'Search for Colour inspiration',
     'Search for Budget calculator',
-    'Search for Waterproofing solutions',
-    'Search for Interior design ideas',
   ];
   let placeholderIdx = 0;
   [searchInput.placeholder] = placeholders;
@@ -119,7 +1516,7 @@ function buildMainHeader(mainDiv) {
   searchBar.appendChild(cameraBtn);
   inner.appendChild(searchBar);
 
-  // Mobile search icon (standalone button, shown only on mobile)
+  // Mobile search icon
   const mobileSearchBtn = document.createElement('button');
   mobileSearchBtn.className = 'mobile-search-btn';
   mobileSearchBtn.type = 'button';
@@ -132,7 +1529,7 @@ function buildMainHeader(mainDiv) {
   }
   inner.appendChild(mobileSearchBtn);
 
-  // Action icons — from <ul> in mainDiv
+  // Action icons
   const actionsUl = mainDiv.querySelector('ul');
   if (actionsUl) {
     const actionsContainer = document.createElement('div');
@@ -152,8 +1549,18 @@ function buildMainHeader(mainDiv) {
         actionLink.setAttribute('aria-label', img.alt || '');
       }
 
+      const altText = (img?.alt || '').toLowerCase();
+
+      // Profile button
+      if (altText.includes('profile') || altText.includes('user') || altText.includes('login')) {
+        actionLink.classList.add('profile-btn');
+        const greeting = document.createElement('span');
+        greeting.className = 'profile-greeting';
+        actionLink.appendChild(greeting);
+      }
+
       // Cart badge
-      if (img && img.alt && img.alt.toLowerCase().includes('cart')) {
+      if (altText.includes('cart')) {
         actionLink.classList.add('cart-btn');
         const badge = document.createElement('span');
         badge.className = 'cart-badge';
@@ -167,7 +1574,7 @@ function buildMainHeader(mainDiv) {
     inner.appendChild(actionsContainer);
   }
 
-  // CTA button — last <p> containing <a> without <img>
+  // CTA button
   const lastP = paragraphs[paragraphs.length - 1];
   if (lastP) {
     const ctaAnchor = lastP.querySelector('a');
@@ -200,7 +1607,6 @@ function buildMobileSearchPanel(mainDiv) {
 
   const paragraphs = mainDiv.querySelectorAll('p');
 
-  // Search icon
   const searchIcon = document.createElement('span');
   searchIcon.className = 'search-icon';
   if (paragraphs[1]) {
@@ -208,20 +1614,18 @@ function buildMobileSearchPanel(mainDiv) {
     if (imgs[0]) searchIcon.appendChild(imgs[0].cloneNode(true));
   }
 
-  // Search input
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'search-input';
   input.placeholder = 'Search';
   input.setAttribute('aria-label', 'Search');
+  input.setAttribute('autocomplete', 'off');
 
-  // Camera button (visual search)
   const cameraBtn = document.createElement('button');
   cameraBtn.className = 'camera-btn';
   cameraBtn.type = 'button';
   cameraBtn.setAttribute('aria-label', 'Search by image');
 
-  // Close button
   const closeBtn = document.createElement('button');
   closeBtn.className = 'mobile-search-close';
   closeBtn.type = 'button';
@@ -245,7 +1649,6 @@ function buildCartModal() {
   closeBtn.setAttribute('aria-label', 'Close cart');
   closeBtn.innerHTML = '&times;';
 
-  // Empty cart icon (SVG shopping bag)
   const iconWrap = document.createElement('div');
   iconWrap.className = 'cart-modal-icon';
 
@@ -255,13 +1658,16 @@ function buildCartModal() {
 
   const shopBtn = document.createElement('a');
   shopBtn.className = 'cart-modal-shop';
-  shopBtn.href = 'https://www.asianpaints.com/products';
+  shopBtn.href = AP_API.SHOP_URL;
   shopBtn.textContent = 'Shop now';
 
-  modal.append(closeBtn, iconWrap, cartTitle, shopBtn);
+  // Cart items list (populated when items exist)
+  const cartItems = document.createElement('div');
+  cartItems.className = 'cart-items-list';
+
+  modal.append(closeBtn, iconWrap, cartTitle, cartItems, shopBtn);
   overlay.appendChild(modal);
 
-  // Close modal
   const close = () => overlay.classList.remove('active');
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', (e) => {
@@ -278,12 +1684,10 @@ function buildMegamenuPanel(submenuUl) {
   const dropdownInner = document.createElement('div');
   dropdownInner.className = 'dropdown-inner';
 
-  // Each <li> in submenuUl is a column
   submenuUl.querySelectorAll(':scope > li').forEach((colLi) => {
     const column = document.createElement('div');
     column.className = 'dropdown-column';
 
-    // Column heading is the first <a> in this <li>
     const headingLink = colLi.querySelector(':scope > a, :scope > p > a');
     if (headingLink) {
       const heading = document.createElement('h4');
@@ -292,7 +1696,6 @@ function buildMegamenuPanel(submenuUl) {
       column.appendChild(heading);
     }
 
-    // Column items are in the nested <ul>
     const itemsUl = colLi.querySelector(':scope > ul');
     if (itemsUl) {
       const linkList = document.createElement('ul');
@@ -306,7 +1709,6 @@ function buildMegamenuPanel(submenuUl) {
           link.href = a.getAttribute('href');
           link.textContent = a.textContent.trim();
 
-          // Check for "New" badge items
           const text = a.textContent.trim();
           if (text === 'Textures For You' || text === 'Shade Cards') {
             const badge = document.createElement('span');
@@ -338,7 +1740,6 @@ function buildNavBar(navDiv, secondaryDiv) {
   const inner = document.createElement('div');
   inner.className = 'header-nav-inner';
 
-  // Left: main navigation
   const navLeft = document.createElement('div');
   navLeft.className = 'nav-left';
 
@@ -363,14 +1764,12 @@ function buildNavBar(navDiv, secondaryDiv) {
       link.href = anchor.getAttribute('href');
       link.textContent = anchor.textContent.trim();
 
-      // Home item gets special class
       if (link.textContent === 'Home') {
         navItem.classList.add('nav-home');
         link.setAttribute('aria-label', 'Home');
         link.textContent = '';
       }
 
-      // Check for submenu (megamenu)
       const submenuUl = li.querySelector(':scope > ul');
       if (submenuUl) {
         navItem.classList.add('has-dropdown');
@@ -394,7 +1793,6 @@ function buildNavBar(navDiv, secondaryDiv) {
 
   inner.appendChild(navLeft);
 
-  // Right: secondary navigation
   if (secondaryDiv) {
     const secUl = secondaryDiv.querySelector('ul');
     if (secUl) {
@@ -430,9 +1828,13 @@ function buildNavBar(navDiv, secondaryDiv) {
   return navBar;
 }
 
+/* Visual search assets: use AP static origin when on localhost (GIF won't exist locally) */
+const VS_ASSETS_ORIGIN = window.location.hostname === 'localhost'
+  ? 'https://www.asianpaints.com'
+  : window.location.origin;
 /* eslint-disable max-len */
-const DRAG_DROP_GIF = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/drag-drop-gif-desktop.gif';
-const BROWSE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+const DRAG_DROP_GIF = `${VS_ASSETS_ORIGIN}/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/drag-drop-gif-desktop.gif`;
+const BROWSE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 /* eslint-enable max-len */
 
 function buildVisualSearchModal() {
@@ -442,11 +1844,15 @@ function buildVisualSearchModal() {
   const modal = document.createElement('div');
   modal.className = 'vs-modal';
 
+  const header = document.createElement('div');
+  header.className = 'vs-modal-header';
+
   const closeBtn = document.createElement('button');
   closeBtn.className = 'vs-modal-close';
   closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', 'Close');
   closeBtn.innerHTML = '&times;';
+  header.appendChild(closeBtn);
 
   const dropZone = document.createElement('div');
   dropZone.className = 'vs-dropzone';
@@ -469,7 +1875,7 @@ function buildVisualSearchModal() {
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.accept = 'image/jpeg,image/png';
+  fileInput.accept = 'image/jpeg,image/png,image/tiff';
   fileInput.className = 'vs-file-input';
   fileInput.setAttribute('aria-label', 'Browse an image');
 
@@ -477,6 +1883,7 @@ function buildVisualSearchModal() {
   browseBtn.className = 'vs-browse-btn';
   browseBtn.type = 'button';
   const browseLabel = document.createElement('span');
+  browseLabel.className = 'vs-browse-label';
   browseLabel.textContent = 'Browse an image';
   browseBtn.appendChild(browseLabel);
   const browseIcon = document.createElement('span');
@@ -488,21 +1895,46 @@ function buildVisualSearchModal() {
   hint.className = 'vs-hint';
   hint.textContent = 'JPG or PNG. 5MB Maximum';
 
-  dropZone.append(title, uploadIcon, dragText, orText, browseBtn, hint);
-  modal.append(closeBtn, dropZone);
+  const statusMsg = document.createElement('p');
+  statusMsg.className = 'vs-status';
+  statusMsg.style.display = 'none';
+
+  const errorMsg = document.createElement('p');
+  errorMsg.className = 'vs-error';
+  errorMsg.style.display = 'none';
+
+  dropZone.append(title, uploadIcon, dragText, orText, browseBtn, hint, statusMsg, errorMsg);
+  modal.append(header, dropZone);
   overlay.appendChild(modal);
 
-  // Close modal
-  const close = () => overlay.classList.remove('active');
+  const resetState = () => {
+    statusMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = '';
+    statusMsg.textContent = '';
+  };
+
+  const close = () => {
+    overlay.classList.remove('active');
+    resetState();
+  };
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
   });
 
-  // Browse button opens file picker
-  browseBtn.addEventListener('click', () => fileInput.click());
+  browseBtn.addEventListener('click', () => {
+    resetState();
+    fileInput.click();
+  });
 
-  // Drag & drop visuals
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      uploadVisualSearchImage(fileInput.files[0], modal);
+    }
+  });
+
+  // Drag & drop with actual file handling
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropZone.classList.add('dragover');
@@ -513,10 +1945,94 @@ function buildVisualSearchModal() {
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
+    resetState();
+    const { files } = e.dataTransfer;
+    if (files.length > 1) {
+      errorMsg.textContent = 'Please upload only 1 file';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if (files.length === 1) {
+      uploadVisualSearchImage(files[0], modal);
+    }
   });
 
   return overlay;
 }
+
+// ──────────────────────────────────────────────
+//  Cart Modal: Refresh with live data
+// ──────────────────────────────────────────────
+
+async function refreshCartModal(block) {
+  const modal = block.querySelector('.cart-modal');
+  if (!modal) return;
+
+  const titleEl = modal.querySelector('.cart-modal-title');
+  const iconEl = modal.querySelector('.cart-modal-icon');
+  const itemsList = modal.querySelector('.cart-items-list');
+  const shopBtn = modal.querySelector('.cart-modal-shop');
+  const setShopState = () => {
+    if (titleEl) titleEl.textContent = 'Your cart is empty';
+    if (iconEl) iconEl.style.display = '';
+    if (itemsList) itemsList.innerHTML = '';
+    if (shopBtn) {
+      shopBtn.textContent = 'Shop now';
+      shopBtn.href = AP_API.SHOP_URL;
+    }
+  };
+
+  try {
+    const resp = await fetchFromAp(`${AP_PATHS.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
+    if (!resp) {
+      setShopState();
+      return;
+    }
+    const data = await resp.json();
+
+    if (data.status === 'failure' || !data.entries || data.entries.length === 0) {
+      setShopState();
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = `Your cart (${data.entries.length} items)`;
+    if (iconEl) iconEl.style.display = 'none';
+    if (itemsList) {
+      itemsList.innerHTML = '';
+      data.entries.forEach((entry) => {
+        const row = document.createElement('div');
+        row.className = 'cart-item-row';
+
+        const name = document.createElement('span');
+        name.className = 'cart-item-name';
+        name.textContent = entry.product?.name || entry.name || 'Product';
+
+        const qty = document.createElement('span');
+        qty.className = 'cart-item-qty';
+        qty.textContent = `Qty: ${entry.quantity || 1}`;
+
+        row.append(name, qty);
+        itemsList.appendChild(row);
+      });
+    }
+    if (shopBtn) {
+      const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
+      if (cartPathOrUrl) {
+        shopBtn.textContent = 'View cart';
+        shopBtn.href = resolveApLink(cartPathOrUrl);
+      } else {
+        shopBtn.textContent = 'Shop now';
+        shopBtn.href = AP_API.SHOP_URL;
+      }
+    }
+  } catch {
+    setShopState();
+  }
+}
+
+// ──────────────────────────────────────────────
+//  Interactions
+// ──────────────────────────────────────────────
 
 function closeMobilePanel(block) {
   const navInner = block.querySelector('.header-nav-inner');
@@ -538,12 +2054,11 @@ function addInteractions(block) {
       hamburger.classList.toggle('is-open', !expanded);
       navBar.classList.toggle('mobile-open', !expanded);
       document.body.classList.toggle('nav-open', !expanded);
-      // Close any open sub-panel when closing menu
       if (expanded) closeMobilePanel(block);
     });
   }
 
-  // Add back buttons to dropdown panels for mobile slide-in
+  // Back buttons for mobile dropdown panels
   block.querySelectorAll('.nav-item.has-dropdown').forEach((item) => {
     const dropdown = item.querySelector('.nav-dropdown');
     const link = item.querySelector('.nav-link');
@@ -583,14 +2098,12 @@ function addInteractions(block) {
       }, 100);
     });
 
-    // Click: desktop vs mobile behavior
     const link = item.querySelector('.nav-link');
     if (link) {
       link.addEventListener('click', (e) => {
         if (window.innerWidth < DESKTOP_BREAKPOINT) {
           e.preventDefault();
           const navInner = block.querySelector('.header-nav-inner');
-          // Close any other open panels
           block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
             if (other !== item) other.classList.remove('active');
           });
@@ -610,58 +2123,64 @@ function addInteractions(block) {
     }
   });
 
-  // Cart modal — open on cart button click
+  // Cart modal + live cart data fetch
   const cartBtn = block.querySelector('.cart-btn');
   const cartModal = block.querySelector('.cart-modal-overlay');
   if (cartBtn && cartModal) {
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      refreshCartModal(block);
       cartModal.classList.add('active');
     });
   }
 
-  // Visual search modal — wire ALL camera buttons (desktop + mobile search panel)
+  // Visual search modal (from header camera buttons AND search dialog camera button)
   const vsModal = block.querySelector('.vs-modal-overlay');
   if (vsModal) {
-    block.querySelectorAll('.camera-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
+    block.querySelectorAll('.camera-btn, .sd-camera-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Close search dialog if open
+        const sdOverlay = block.querySelector('.search-dialog-overlay');
+        if (sdOverlay?.classList.contains('active')) {
+          sdOverlay.classList.remove('active');
+          document.body.classList.remove('search-dialog-open');
+        }
         vsModal.classList.add('active');
       });
     });
   }
 
-  // Search focus effect (desktop)
-  const searchInput = block.querySelector('.header-search .search-input');
-  const searchBar = block.querySelector('.header-search');
-  if (searchInput && searchBar) {
-    searchInput.addEventListener('focus', () => searchBar.classList.add('focused'));
-    searchInput.addEventListener('blur', () => searchBar.classList.remove('focused'));
+  // Desktop search: clicking search bar opens the search dialog
+  const searchBarEl = block.querySelector('.header-search');
+  if (searchBarEl) {
+    searchBarEl.addEventListener('click', () => {
+      openSearchDialog(block);
+    });
+    searchBarEl.style.cursor = 'pointer';
+    const searchInput = searchBarEl.querySelector('.search-input');
+    if (searchInput) searchInput.style.cursor = 'pointer';
   }
 
-  // Mobile search panel: open/close
+  // Mobile search: open search dialog instead of inline panel
   const mobileSearchBtn = block.querySelector('.mobile-search-btn');
-  const mobileSearchPanel = block.querySelector('.mobile-search-panel');
-  if (mobileSearchBtn && mobileSearchPanel) {
-    const mobileSearchClose = mobileSearchPanel.querySelector('.mobile-search-close');
-    const mobileInput = mobileSearchPanel.querySelector('.search-input');
-
+  if (mobileSearchBtn) {
     mobileSearchBtn.addEventListener('click', () => {
-      mobileSearchPanel.classList.add('active');
-      if (mobileInput) mobileInput.focus();
+      openSearchDialog(block);
     });
+  }
 
-    if (mobileSearchClose) {
-      mobileSearchClose.addEventListener('click', () => {
-        mobileSearchPanel.classList.remove('active');
-      });
-    }
+  // Profile button: login or navigate to profile
+  const profileBtn = block.querySelector('.action-btn.profile-btn');
+  if (profileBtn) {
+    profileBtn.addEventListener('click', handleProfileClick);
   }
 
   // Viewport resize handler
   const mql = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
   mql.addEventListener('change', (e) => {
     if (e.matches) {
-      // Switched to desktop
       if (hamburger) {
         hamburger.setAttribute('aria-expanded', 'false');
         hamburger.classList.remove('is-open');
@@ -669,18 +2188,35 @@ function addInteractions(block) {
       if (navBar) navBar.classList.remove('mobile-open');
       document.body.classList.remove('nav-open');
       closeMobilePanel(block);
-      // Close mobile search panel
       const searchPanel = block.querySelector('.mobile-search-panel');
       if (searchPanel) searchPanel.classList.remove('active');
     } else {
-      // Switched to mobile — close any open desktop dropdowns
       block.querySelectorAll('.nav-item.has-dropdown.active').forEach((li) => li.classList.remove('active'));
     }
   });
 }
 
+// ──────────────────────────────────────────────
+//  Async Integrations Init (non-blocking)
+// ──────────────────────────────────────────────
+
+async function initIntegrations(block) {
+  // Prime location context for search/location-aware integrations
+  primeLocationContext();
+
+  // Fetch cart count and update badge
+  const count = await fetchMiniCartCount();
+  updateCartBadge(block, count);
+
+  // Initialize Keycloak authentication (non-blocking)
+  initKeycloak(block);
+}
+
+// ──────────────────────────────────────────────
+//  Main Decorate
+// ──────────────────────────────────────────────
+
 export default async function decorate(block) {
-  // Standard EDS nav fetch: read path from metadata, fallback to /nav
   const navMeta = getMetadata('nav');
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
   const resp = await fetch(`${navPath}.plain.html`);
@@ -721,6 +2257,12 @@ export default async function decorate(block) {
   // Visual search modal
   block.appendChild(buildVisualSearchModal());
 
-  // Wire up all interactions
+  // Search dialog (full-screen overlay)
+  block.appendChild(buildSearchDialog());
+
+  // Wire up all UI interactions
   addInteractions(block);
+
+  // Initialize API integrations (cart count, auth) — non-blocking
+  initIntegrations(block);
 }
