@@ -1,3 +1,5 @@
+import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
+
 export default function decorate(block) {
   const isIds = block.classList.contains('ids');
 
@@ -27,16 +29,40 @@ export default function decorate(block) {
   const rightSection = document.createElement('div');
   rightSection.className = 'form-expert-right';
 
+  const formAttributes = document.createElement('div');
+  formAttributes.className = 'form-attributes form-expert-form-attributes';
+  formAttributes.setAttribute('data-attr-resourcePath', window.location.pathname || '');
+
   const form = document.createElement('form');
-  form.className = 'form-expert-form';
+  form.className = 'form-expert-form custom-enquire-form-step-1 form-group-global form-group-global__enquire-form form-revamp form-revamp-vertical';
+  form.noValidate = true;
 
   const inputsGrid = document.createElement('div');
   inputsGrid.className = 'form-expert-inputs-grid';
 
-  inputsGrid.appendChild(createInputField('text', 'Enter your name', 'name'));
+  inputsGrid.appendChild(createInputField({
+    type: 'text',
+    placeholder: 'Enter your name',
+    name: 'ENQUIRE_NAME',
+    id: 'enquire-name',
+    pattern: '[A-Za-z ]{2,}',
+  }));
   inputsGrid.appendChild(createMobileField());
-  inputsGrid.appendChild(createInputField('text', 'Enter your Pincode', 'pincode'));
-  inputsGrid.appendChild(createInputField('email', 'Enter your Email', 'email'));
+  inputsGrid.appendChild(createInputField({
+    type: 'text',
+    placeholder: 'Enter your Pincode',
+    name: 'ENQUIRE_PINCODE',
+    id: 'enquire-pincode',
+    inputMode: 'numeric',
+    pattern: '[0-9]{6}',
+    maxLength: 6,
+  }));
+  inputsGrid.appendChild(createInputField({
+    type: 'email',
+    placeholder: 'Enter your Email',
+    name: 'ENQUIRE_EMAIL',
+    id: 'enquire-email',
+  }));
 
   form.appendChild(inputsGrid);
   form.appendChild(createToggle('Update me on WhatsApp', true));
@@ -58,35 +84,62 @@ export default function decorate(block) {
   buttonContainer.className = 'form-expert-button-container';
   const submitBtn = document.createElement('button');
   submitBtn.type = 'submit';
-  submitBtn.className = 'form-expert-submit';
+  submitBtn.className = 'form-expert-submit ctaText enquireForm--step-1-submit track_form_submit animated-arrow-btn yellow-gradient';
   submitBtn.innerHTML = 'Book a free site visit <span class="arrow">\u2192</span>';
   buttonContainer.appendChild(submitBtn);
   form.appendChild(buttonContainer);
 
-  rightSection.appendChild(form);
+  formAttributes.appendChild(form);
+  rightSection.appendChild(formAttributes);
   container.appendChild(leftSection);
   container.appendChild(rightSection);
   block.appendChild(container);
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (isIds) {
-      // eslint-disable-next-line no-alert
-      alert('Thank you for your interest! We will contact you shortly to schedule your free site visit.');
-    } else {
-      window.location.href = 'https://www.asianpaints.com/services/asian-paints-safe-painting-service.html';
+
+    if (!form.reportValidity()) {
+      return;
     }
+
+    submitBtn.disabled = true;
+
+    submitLeadFromForm(form, {
+      resourcePath: formAttributes.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
+    })
+      .then(() => {
+        form.reset();
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Form submission failed', err);
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+      });
   });
 }
 
-function createInputField(type, placeholder, name) {
+function createInputField({
+  type,
+  placeholder,
+  name,
+  id,
+  pattern = '',
+  maxLength = null,
+  inputMode = '',
+}) {
   const wrapper = document.createElement('div');
   wrapper.className = 'form-expert-field';
   const input = document.createElement('input');
   input.type = type;
   input.placeholder = placeholder;
   input.name = name;
+  input.id = id;
   input.className = 'form-expert-input';
+  if (pattern) input.pattern = pattern;
+  if (maxLength) input.maxLength = maxLength;
+  if (inputMode) input.inputMode = inputMode;
   input.required = true;
   wrapper.appendChild(input);
   return wrapper;
@@ -101,9 +154,11 @@ function createMobileField() {
   const input = document.createElement('input');
   input.type = 'tel';
   input.placeholder = 'Enter mobile number';
-  input.name = 'mobile';
+  input.name = 'ENQUIRE_MOBILE';
+  input.id = 'enquire-mobile';
   input.className = 'form-expert-input form-expert-mobile-input';
-  input.pattern = '[0-9]{10}';
+  input.pattern = '[1-9][0-9]{9}';
+  input.inputMode = 'numeric';
   input.maxLength = 10;
   input.required = true;
   wrapper.appendChild(prefix);
@@ -113,13 +168,19 @@ function createMobileField() {
 
 function createToggle(label, checked) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'form-expert-toggle-wrapper';
+  wrapper.className = 'form-expert-toggle-wrapper whatsAppConsentFormFld';
+  if (checked) {
+    wrapper.classList.add('whatsAppCheckbox-checked');
+  }
   const toggle = document.createElement('label');
   toggle.className = 'form-expert-toggle';
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.checked = checked;
   checkbox.name = 'whatsapp';
+  checkbox.addEventListener('change', () => {
+    wrapper.classList.toggle('whatsAppCheckbox-checked', checkbox.checked);
+  });
   const slider = document.createElement('span');
   slider.className = 'form-expert-toggle-slider';
   toggle.appendChild(checkbox);

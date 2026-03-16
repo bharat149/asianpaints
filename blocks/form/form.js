@@ -1,3 +1,6 @@
+import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
+
+// SVG icons for calculator options
 const ICONS = {
   freshPainting: 'https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/sps-revamp/mini-pbc-tool/fresh_painting_new_new.webp',
   repainting: 'https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/sps-revamp/mini-pbc-tool/repainting-new-desk.webp',
@@ -353,6 +356,47 @@ function renderDefaultForm(block) {
       if (content) {
         cell.classList.add('form-input-cell');
         createDefaultField(cell, rowIdx, cellIdx, headerText, content);
+        const input = document.createElement('input');
+
+        let inputType = 'text';
+        let inputId = '';
+        let inputName = '';
+        if (headerCell) {
+          const headerLabel = headerCell.textContent.toLowerCase();
+          if (headerLabel.includes('phone')) {
+            inputType = 'tel';
+            inputId = 'enquire-mobile';
+            inputName = 'ENQUIRE_MOBILE';
+            input.inputMode = 'numeric';
+            input.pattern = '[1-9][0-9]{9}';
+            input.maxLength = 10;
+          } else if (headerLabel.includes('email')) {
+            inputType = 'email';
+            inputId = 'enquire-email';
+            inputName = 'ENQUIRE_EMAIL';
+          } else if (headerLabel.includes('pin')) {
+            inputType = 'text';
+            inputId = 'enquire-pincode';
+            inputName = 'ENQUIRE_PINCODE';
+            input.inputMode = 'numeric';
+            input.pattern = '[0-9]{6}';
+            input.maxLength = 6;
+          } else if (headerLabel.includes('name')) {
+            inputType = 'text';
+            inputId = 'enquire-name';
+            inputName = 'ENQUIRE_NAME';
+            input.pattern = '[A-Za-z ]{2,}';
+          }
+        }
+
+        input.type = inputType;
+        input.placeholder = content;
+        input.className = 'form-input';
+        if (inputId) input.id = inputId;
+        if (inputName) input.name = inputName;
+        input.required = true;
+        cell.textContent = '';
+        cell.appendChild(input);
         inputCells.push(cell);
       } else {
         cell.classList.add('form-empty-cell');
@@ -362,6 +406,8 @@ function renderDefaultForm(block) {
     if (inputCells.length > 0) {
       const fieldsArea = document.createElement('div');
       fieldsArea.className = 'form-fields-area';
+      row.classList.add('form-attributes');
+      row.setAttribute('data-attr-resourcePath', window.location.pathname || '');
 
       const inputsGrid = document.createElement('div');
       inputsGrid.className = 'form-inputs-grid';
@@ -375,6 +421,33 @@ function renderDefaultForm(block) {
 
       if (buttonCell) {
         fieldsArea.appendChild(buttonCell);
+        const submitBtn = buttonCell.querySelector('button.form-submit');
+        if (submitBtn) {
+          submitBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            const inputs = row.querySelectorAll('.form-input');
+            const isValid = [...inputs].every((input) => input.reportValidity());
+            if (!isValid) return;
+
+            submitBtn.disabled = true;
+            submitLeadFromForm(row, {
+              resourcePath: row.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
+              selectors: {
+                name: '#enquire-name',
+                email: '#enquire-email',
+                mobile: '#enquire-mobile',
+                pincode: '#enquire-pincode',
+              },
+            })
+              .catch((err) => {
+                // eslint-disable-next-line no-console
+                console.error('Default form submission failed', err);
+              })
+              .finally(() => {
+                submitBtn.disabled = false;
+              });
+          });
+        }
       }
 
       if (descriptionCell) {
