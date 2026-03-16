@@ -1,8 +1,5 @@
 import { loadScript } from './aem.js';
-import { isProd } from './utils.js';
-
-// FIXME: Replace with actual URLs
-const LAUNCH_URL = isProd ? "prod-url" : "stage-url";
+import { getSiteConfig } from './configs.js';
 
 /**
  * Tracks a custom event. Triggers a _satellite.track call.
@@ -28,6 +25,10 @@ export async function initAnalytics() {
   };
 
   // Load the Launch script
-  // FIXME: Uncomment the following line once we have the actual LAUNCH_URL
-  //return loadScript(LAUNCH_URL, { async: true });
+  const siteConfig = await getSiteConfig();
+  const launchUrl = siteConfig?.launchUrl;
+  if (!launchUrl) {
+    return;
+  }
+  await loadScript(launchUrl, { async: true });
 }
