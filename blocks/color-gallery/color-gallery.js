@@ -180,6 +180,9 @@ export default async function decorate(block) {
 
   swiperEl.appendChild(swiperWrapper);
 
+  const paginationEl = document.createElement('div');
+  paginationEl.className = 'color-gallery-pagination swiper-pagination';
+
   const totalSlides = swiperWrapper.children.length;
   let prevButton;
   let nextButton;
@@ -204,6 +207,7 @@ export default async function decorate(block) {
   }
 
   carouselCol.appendChild(swiperEl);
+  carouselCol.appendChild(paginationEl);
 
   // Remove original columns 2–6 and append carousel
   columns.slice(1).forEach((col) => col.remove());
@@ -237,10 +241,17 @@ export default async function decorate(block) {
       speed: 500,
       loop: false,
       watchOverflow: true,
+    
       navigation: {
         prevEl: prevButton,
         nextEl: nextButton,
       },
+    
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+      },
+    
       breakpoints: {
         768: {
           slidesPerView: 1.3,
@@ -253,26 +264,6 @@ export default async function decorate(block) {
         1200: {
           slidesPerView: 3,
           spaceBetween: 16,
-        },
-      },
-      on: {
-        init(instance) {
-          updateNavState(instance, prevButton, nextButton);
-        },
-        slideChange(instance) {
-          updateNavState(instance, prevButton, nextButton);
-        },
-        resize(instance) {
-          updateNavState(instance, prevButton, nextButton);
-        },
-        reachBeginning(instance) {
-          updateNavState(instance, prevButton, nextButton);
-        },
-        reachEnd(instance) {
-          updateNavState(instance, prevButton, nextButton);
-        },
-        fromEdge(instance) {
-          updateNavState(instance, prevButton, nextButton);
         },
       },
     });

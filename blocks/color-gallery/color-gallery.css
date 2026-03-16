@@ -6,10 +6,10 @@
 .color-gallery {
   display: flex;
   align-items: flex-start;
-  gap: 40px;
+  /* gap: 40px; */
   max-width: none;
   margin: 0;
-  padding: 20px 0 0 24px;
+  padding: 20px 0 0 0
 }
 
 /* Remove default block styling */
@@ -55,7 +55,7 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 24px;
+  padding: 14px 20px;
   background: #fff;
   color: #1a1a1a;
   text-decoration: none;
@@ -69,12 +69,21 @@
 }
 
 .color-gallery-text a::after,
-.color-gallery-text a.button::after {
-  content: '→';
-  display: inline-block;
+.color-gallery-text a.button::after , .color-gallery-mobile-cta a::after , .color-gallery-mobile-cta a.button:after {
+  content: '';
+  display: flex;
   transition: transform 0.3s ease;
-  font-weight: 400;
-  background: none;
+  background: url(https://beta.sleekworld.com/etc.clientlibs/apsite/clientlibs/clientlib-apuae/resources/images/arrow-right-icon.svg);
+  background-repeat: no-repeat;
+  object-fit: cover;
+  width: 20px;
+  height: 14px;
+  vertical-align: middle;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  font-weight: 800;
 }
 
 .color-gallery-text a:hover,
@@ -248,7 +257,7 @@
   .color-gallery-mobile-cta {
     display: block;
     text-align: left;
-    margin-top: 5px;
+    margin-top: 20px;
     width: 100%;
   }
 
@@ -344,5 +353,58 @@
   .color-gallery-card {
     height: 500px;
     border-radius: 10px;
+  }
+}
+
+@media (min-width: 992px) {
+  .section.color-gallery-container {
+    margin: 80px 0;
+  }
+  .color-gallery-slide {
+    width:305px !important;
+  }
+  .color-gallery-card {
+    height: 100%;
+  }
+  .color-gallery-swiper .swiper-wrapper, .color-gallery-carousel-track
+  {
+    /* justify-content: flex-end; */
+  }
+  /* Left Container - Text Content */
+.color-gallery-text {
+  flex: unset !important;
+  max-width: unset !important;
+  width: 25%;
+  padding: 0 15px 0 40px;
+}
+.color-gallery-carousel {
+  width: 75%;
+}
+.color-gallery-navigation{
+  transform: translateX(-30px);
+}
+.color-gallery-pagination {
+  display: none;
+}
+}
+
+@media (max-width: 991px) {
+  .color-gallery-navigation {
+    display: none;
+  }
+
+  .color-gallery-pagination {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 16px;
+    transform: translateY(25px) !important;
+  }
+  span.swiper-pagination-bullet.swiper-pagination-bullet-active {
+    background: #4d4d4d !important;
+    width: 8px !important;
+    opacity: 1 !important;
+    height: 8px;
+    width: 20px !important;
+    border-radius: 8px;
   }
 }
