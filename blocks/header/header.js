@@ -378,6 +378,15 @@ function updateProfileUI(block, authenticated) {
       greeting.classList.add('visible');
       setTimeout(() => greeting.classList.remove('visible'), 4000);
     }
+    // Sync Keycloak user to our storage so profile dropdown opens on click
+    try {
+      const token = keycloakInstance.token;
+      setUser({
+        name: name || keycloakInstance.tokenParsed.preferred_username || '',
+        email: keycloakInstance.tokenParsed.email || '',
+        id_token: token,
+      });
+    } catch (err) { /* ignore */ }
   } else {
     profileBtn.classList.remove('logged-in');
     if (greeting) greeting.classList.remove('visible');
@@ -1405,6 +1414,167 @@ async function openSearchDialog(block) {
 //  Build Functions
 // ──────────────────────────────────────────────
 
+const AUTH_BASE = 'https://auth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/auth';
+const AUTH_LOGOUT_BASE = 'https://auth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/logout';
+// Auth server only allows whitelisted redirect URIs; localhost is not allowed
+const AUTH_REDIRECT_URI = 'https://www.asianpaints.com/';
+const USER_STORAGE_KEY = 'ap_user';
+const SIGNED_OUT_KEY = 'ap_signed_out';
+const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
+
+function parseJwtPayload(token) {
+  try {
+    const parts = String(token).split('.');
+    if (parts.length !== 3) return null;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64);
+    const payload = JSON.parse(json);
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+function getUserFromAuthCookie() {
+  try {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const eq = cookie.trim().indexOf('=');
+      if (eq <= 0) continue;
+      const value = cookie.trim().slice(eq + 1).trim();
+      if (!value) continue;
+      const decoded = parseJwtPayload(value);
+      if (!decoded) continue;
+      const nameVal = decoded.name || decoded.given_name || decoded.preferred_username;
+      if (nameVal && decoded.iss?.includes('auth.asianpaints.com')) {
+        return { name: nameVal, email: decoded.email, id_token: value };
+      }
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  return null;
+}
+
+function getUserFromLocalStorage() {
+  try {
+    const keys = ['keycloak-token', 'userProfile'];
+    for (const key of keys) {
+      const value = localStorage.getItem(key);
+      if (!value) continue;
+      const decoded = parseJwtPayload(value);
+      if (!decoded) continue;
+      const nameVal = decoded.name || decoded.given_name || decoded.preferred_username;
+      if (nameVal && decoded.iss?.includes('auth.asianpaints.com')) {
+        return { name: nameVal, email: decoded.email, id_token: value };
+      }
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  return null;
+}
+
+function getUserFromUrlHash() {
+  try {
+    const hash = window.location.hash;
+    if (!hash) return null;
+    const params = new URLSearchParams(hash.slice(1));
+    // Mock auth: ?mock_login=1&mock_name=XXX (for localhost testing)
+    const mockName = params.get('mock_name');
+    if (params.get('mock_login') === '1' && mockName) {
+      return { name: mockName, email: params.get('mock_email') || '' };
+    }
+    const idToken = params.get('id_token');
+    if (idToken) {
+      const payload = parseJwtPayload(idToken);
+      if (payload) {
+        const nameVal = payload.name || payload.given_name || payload.preferred_username;
+        if (nameVal) {
+          return { name: nameVal, email: payload.email, id_token: idToken };
+        }
+      }
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  return null;
+}
+
+function getUser() {
+  try {
+    const data = localStorage.getItem(USER_STORAGE_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setUser(user) {
+  try {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    localStorage.removeItem(SIGNED_OUT_KEY);
+  } catch (e) {
+    /* localStorage unavailable */
+  }
+}
+
+function clearUser() {
+  try {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem('keycloak-token');
+    localStorage.removeItem('userProfile');
+    localStorage.setItem(SIGNED_OUT_KEY, '1');
+  } catch (e) {
+    /* localStorage unavailable */
+  }
+}
+
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+async function sha256Base64Url(input) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function buildProfileAuthUrl(redirectUri) {
+  const state = uuid();
+  const nonce = uuid();
+  const codeVerifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const codeChallenge = await sha256Base64Url(codeVerifier);
+
+  try {
+    sessionStorage.setItem('ap_code_verifier', codeVerifier);
+    sessionStorage.setItem('ap_auth_state', state);
+  } catch (e) {
+    /* sessionStorage may be unavailable */
+  }
+
+  const params = new URLSearchParams({
+    client_id: 'asianpaints',
+    redirect_uri: redirectUri,
+    state,
+    response_mode: 'fragment',
+    response_type: 'code id_token',
+    scope: 'openid profile',
+    nonce,
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+  return `${AUTH_BASE}?${params.toString()}`;
+}
+
 function buildBrandBar(brandDiv) {
   const brandBar = document.createElement('div');
   brandBar.className = 'header-brands';
@@ -1529,16 +1699,21 @@ function buildMainHeader(mainDiv) {
   }
   inner.appendChild(mobileSearchBtn);
 
+
+  // Action icons — from p.header-actions or <ul> in mainDiv
+  const actionsContainer = document.createElement('div');
+  actionsContainer.className = 'header-actions';
+  const actionsP = mainDiv.querySelector('p.header-actions');
+
   // Action icons
+
   const actionsUl = mainDiv.querySelector('ul');
-  if (actionsUl) {
-    const actionsContainer = document.createElement('div');
-    actionsContainer.className = 'header-actions';
+  const actionAnchors = actionsP
+    ? [...actionsP.querySelectorAll('a')]
+    : (actionsUl ? actionsUl.querySelectorAll(':scope > li a') : []);
 
-    actionsUl.querySelectorAll(':scope > li').forEach((li) => {
-      const anchor = li.querySelector('a');
-      if (!anchor) return;
-
+  if (actionAnchors.length) {
+    actionAnchors.forEach((anchor) => {
       const actionLink = document.createElement('a');
       actionLink.className = 'action-btn';
       actionLink.href = anchor.getAttribute('href');
@@ -1546,7 +1721,9 @@ function buildMainHeader(mainDiv) {
       const img = anchor.querySelector('img');
       if (img) {
         actionLink.appendChild(img.cloneNode(true));
-        actionLink.setAttribute('aria-label', img.alt || '');
+        const label = img.alt || anchor.getAttribute('aria-label') || '';
+        actionLink.setAttribute('aria-label', label);
+        actionLink.title = label;
       }
 
       const altText = (img?.alt || '').toLowerCase();
@@ -1568,9 +1745,47 @@ function buildMainHeader(mainDiv) {
         actionLink.appendChild(badge);
       }
 
-      actionsContainer.appendChild(actionLink);
-    });
+      // Profile button — dropdown when logged in, auth redirect when not
+      const href = anchor.getAttribute('href') || '';
+      const isProfile = (img && img.alt && img.alt.toLowerCase().includes('profile'))
+        || href.includes('profile') || href.includes('my-profile');
 
+      if (isProfile) {
+        actionLink.classList.add('profile-auth-link');
+        actionLink.href = '#'; // Prevent default nav; click handler shows dropdown or redirects to auth
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'profile-dropdown-wrapper';
+        const profileBadge = document.createElement('span');
+        profileBadge.className = 'profile-badge';
+        profileBadge.setAttribute('aria-hidden', 'true');
+        actionLink.appendChild(profileBadge);
+        wrapper.appendChild(actionLink);
+
+        const profileIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21V19a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>';
+        const wishlistIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'profile-dropdown';
+        dropdown.setAttribute('aria-hidden', 'true');
+        dropdown.innerHTML = `
+          <p class="profile-dropdown-greeting"></p>
+          <a href="https://www.asianpaints.com/my-profile.html" class="profile-dropdown-item">
+            <span class="profile-dropdown-icon">${profileIconSvg}</span>
+            My Profile
+          </a>
+          <a href="https://www.asianpaints.com/my-wishlist.html" class="profile-dropdown-item">
+            <span class="profile-dropdown-icon">${wishlistIconSvg}</span>
+            Wishlist
+          </a>
+          <button type="button" class="profile-dropdown-signout">Sign out</button>
+        `;
+        wrapper.appendChild(dropdown);
+        actionsContainer.appendChild(wrapper);
+      } else {
+        actionsContainer.appendChild(actionLink);
+      }
+    });
     inner.appendChild(actionsContainer);
   }
 
@@ -2134,6 +2349,82 @@ function addInteractions(block) {
     });
   }
 
+
+  // Profile — dropdown when logged in, auth redirect when not
+  const profileWrapper = block.querySelector('.profile-dropdown-wrapper');
+  if (profileWrapper) {
+    const profileLink = profileWrapper.querySelector('.profile-auth-link');
+    const dropdown = profileWrapper.querySelector('.profile-dropdown');
+    const greeting = dropdown?.querySelector('.profile-dropdown-greeting');
+    const signOutBtn = dropdown?.querySelector('.profile-dropdown-signout');
+
+    const updateDropdown = () => {
+      const user = getUser();
+      if (user && greeting) {
+        greeting.textContent = `Hello ${user.name.toUpperCase()}`;
+        greeting.style.display = '';
+      }
+    };
+
+    const updateProfileButton = () => {
+      const user = getUser();
+      profileWrapper?.classList.toggle('is-logged-in', !!user);
+    };
+
+    updateProfileButton();
+
+    const closeDropdown = () => {
+      dropdown?.classList.remove('active');
+      dropdown?.setAttribute('aria-hidden', 'true');
+    };
+
+    const openDropdown = () => {
+      block.querySelectorAll('.profile-dropdown').forEach((d) => d.classList.remove('active'));
+      dropdown?.classList.add('active');
+      dropdown?.setAttribute('aria-hidden', 'false');
+      updateDropdown();
+    };
+
+    profileLink?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const user = getUser();
+      if (user) {
+        openDropdown();
+      } else {
+        try {
+          localStorage.setItem(AUTH_REDIRECTED_KEY, '1');
+        } catch (err) { /* ignore */ }
+        const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
+        window.location.href = url;
+      }
+    });
+
+    signOutBtn?.addEventListener('click', () => {
+      const user = getUser();
+      const idToken = user?.id_token || (typeof localStorage !== 'undefined' ? localStorage.getItem('keycloak-token') : null);
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      clearUser();
+      closeDropdown();
+      updateProfileButton();
+      if (!isLocalhost) {
+        const params = new URLSearchParams({
+          client_id: 'asianpaints',
+          post_logout_redirect_uri: AUTH_REDIRECT_URI,
+        });
+        if (idToken) {
+          params.set('id_token_hint', idToken);
+        }
+        window.location.href = `${AUTH_LOGOUT_BASE}?${params.toString()}`;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (profileWrapper && !profileWrapper.contains(e.target)) {
+        closeDropdown();
+      }
+    });
+  }
+
   // Visual search modal (from header camera buttons AND search dialog camera button)
   const vsModal = block.querySelector('.vs-modal-overlay');
   if (vsModal) {
@@ -2171,9 +2462,12 @@ function addInteractions(block) {
     });
   }
 
-  // Profile button: login or navigate to profile
+  // Profile button: when profileWrapper exists, profileLink handler manages click
+  // (dropdown when logged in, auth redirect when not). Only use handleProfileClick
+  // when there is no dropdown (legacy/fallback).
   const profileBtn = block.querySelector('.action-btn.profile-btn');
-  if (profileBtn) {
+  const hasProfileDropdown = !!block.querySelector('.profile-dropdown-wrapper');
+  if (profileBtn && !hasProfileDropdown) {
     profileBtn.addEventListener('click', handleProfileClick);
   }
 
@@ -2217,6 +2511,44 @@ async function initIntegrations(block) {
 // ──────────────────────────────────────────────
 
 export default async function decorate(block) {
+
+  const params = new URLSearchParams(window.location.search);
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const hasSignedOut = typeof localStorage !== 'undefined' && localStorage.getItem(SIGNED_OUT_KEY) === '1';
+
+  // 1. Real login: user returned from auth with token in URL hash
+  let authUser = getUserFromUrlHash();
+  if (authUser) {
+    setUser(authUser);
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+
+  // 2. Real login: JWT from cookie or localStorage (live asianpaints.com integration)
+  if (!getUser() && !hasSignedOut) {
+    authUser = getUserFromAuthCookie() || getUserFromLocalStorage();
+    if (authUser) setUser(authUser);
+  }
+
+  // 3. Mock: user returned after auth redirect — show mock data (ignore signed_out)
+  if (!getUser()) {
+    try {
+      if (localStorage.getItem(AUTH_REDIRECTED_KEY) === '1') {
+        localStorage.removeItem(AUTH_REDIRECTED_KEY);
+        localStorage.removeItem(SIGNED_OUT_KEY);
+        setUser({ name: 'Bharat Wadhwa' });
+      }
+    } catch (err) { /* ignore */ }
+  }
+
+  // 4. Demo login: ?demo_login=1 only
+  if (!getUser() && !hasSignedOut) {
+    if (params.get('demo_login') === '1') {
+      setUser({ name: params.get('demo_user') || 'Bharat Wadhwa' });
+    }
+  }
+
+  // Standard EDS nav fetch: read path from metadata, fallback to /nav
+
   const navMeta = getMetadata('nav');
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
   const resp = await fetch(`${navPath}.plain.html`);

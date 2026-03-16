@@ -232,6 +232,107 @@
   object-fit: contain;
 }
 
+/* Profile dropdown */
+.header .profile-dropdown-wrapper {
+  position: relative;
+}
+
+.header .profile-dropdown-wrapper .profile-auth-link {
+  position: relative;
+}
+
+.header .profile-dropdown-wrapper .profile-badge {
+  display: none;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background: #00b894;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.header .profile-dropdown-wrapper.is-logged-in .profile-badge {
+  display: block;
+}
+
+.header .profile-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  background: #fff;
+  border: 1px solid var(--header-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  padding: 16px 0;
+  z-index: 1100;
+}
+
+.header .profile-dropdown.active {
+  display: block;
+}
+
+.header .profile-dropdown-greeting {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--header-text-dark);
+  margin: 0 20px 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--header-border);
+}
+
+.header .profile-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  color: var(--header-text-dark);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.header .profile-dropdown-item:hover {
+  background: rgb(0 0 0 / 4%);
+}
+
+.header .profile-dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.header .profile-dropdown-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.header .profile-dropdown-signout {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 12px 20px 0;
+  padding: 10px 16px;
+  background: #fff;
+  border: 2px solid var(--header-text-dark);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--header-text-dark);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header .profile-dropdown-signout:hover {
+  background: var(--header-text-dark);
+  color: #fff;
+}
+
 /* Cart badge */
 .header .cart-badge {
   position: absolute;
@@ -1035,6 +1136,202 @@ body.nav-open {
   font-size: 12px;
   color: #999;
   margin: 12px 0 0;
+}
+
+/* ========================================
+   MOCK LOGIN MODAL (localhost only)
+   ======================================== */
+.header .mock-login-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 50%);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+.header .mock-login-overlay.active {
+  display: flex;
+}
+
+.header .mock-login-card {
+  background: #fff;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90vw;
+  position: relative;
+  padding: 32px 28px;
+}
+
+.header .mock-login-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+
+.header .mock-login-close:hover {
+  color: #333;
+}
+
+.header .mock-login-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 24px;
+  background: linear-gradient(135deg, #7c3aed 0%, #ea580c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header .mock-login-card label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.header .mock-login-input-wrap {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.header .mock-login-country {
+  padding: 12px 16px;
+  background: #f5f5f5;
+  font-size: 16px;
+  color: #333;
+  border-right: 1px solid #ddd;
+}
+
+.header .mock-login-input {
+  flex: 1;
+  border: none;
+  padding: 12px 16px;
+  font-size: 16px;
+  outline: none;
+}
+
+.header .mock-login-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin: -12px 0 12px;
+}
+
+.header .mock-login-proceed {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #f5a623 0%, #f5d623 100%);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.header .mock-login-proceed:hover {
+  opacity: 0.95;
+}
+
+.header .mock-login-or {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 16px;
+}
+
+.header .mock-login-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+
+.header .mock-login-google:hover {
+  background: #f9f9f9;
+}
+
+.header .mock-login-google-icon {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #4285f4, #ea4335);
+  color: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.header .mock-login-brands {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.header .mock-login-ap {
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.header .mock-login-asianpaints {
+  color: #ea580c;
+  font-weight: 600;
+}
+
+.header .mock-login-step-2 .mock-login-otp-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px;
+}
+
+.header .mock-login-step-2 .mock-login-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.header .mock-login-edit-mobile {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.header .mock-login-edit-mobile:hover {
+  color: #333;
 }
 
 /* ========================================
