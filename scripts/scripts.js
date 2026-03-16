@@ -1,3 +1,4 @@
+
 import {
   loadHeader,
   loadFooter,
@@ -12,6 +13,7 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
+import { initAnalytics } from './analytics.js';
 
 (function loadCryptoJSGlobally() {
   if (window.CryptoJS) return;
@@ -104,6 +106,7 @@ export function decorateMain(main) {
  */
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
+   initAnalytics();
   decorateTemplateAndTheme();
   const main = doc.querySelector('main');
   if (main) {
@@ -152,6 +155,7 @@ function loadDelayed() {
   window.setTimeout(() => import('./delayed.js'), 3000);
   // load anything that can be postponed to the latest here
 }
+
 
 async function loadPage() {
   await loadEager(document);

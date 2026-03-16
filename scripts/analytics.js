@@ -2,7 +2,7 @@ import { loadScript } from './aem.js';
 import { isProd } from './utils.js';
 
 // FIXME: Replace with actual URLs
-const LAUNCH_URL = isProd ? "prod-url" : "stage-url";
+const LAUNCH_URL = isProd() ? "https://assets.adobedtm.com/launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js" : "https://assets.adobedtm.com/launch-EN495a9f3edad74404a35ef4ec6c95ed17-staging.min.js";
 
 /**
  * Tracks a custom event. Triggers a _satellite.track call.
@@ -29,5 +29,5 @@ export async function initAnalytics() {
 
   // Load the Launch script
   // FIXME: Uncomment the following line once we have the actual LAUNCH_URL
-  //return loadScript(LAUNCH_URL, { async: true });
+  return loadScript(LAUNCH_URL, { async: true });
 }
