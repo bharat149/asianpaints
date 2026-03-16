@@ -11,9 +11,7 @@
 
 /* ===== BACKGROUND IMAGE – FULL WIDTH ===== */
 .hero-form-background {
-    position: absolute;
     inset: 0;
-    z-index: 0;
 }
 
 .hero-form-background picture,
@@ -284,25 +282,236 @@
     cursor: pointer;
 }
 
-.hero-form .mf-close-icon {
-    font-size: 18px;
-    line-height: 1;
-}
-
-/* Left/right thank-you layout */
-.hero-form .mf-revamp-thankyou-left {
-    background: #f5f5f5;
-}
-
-.hero-form .mf-revamp-thankyou-right {
-    background-image: var(--bg-image-desktop);
-    background-size: 100% 100%;
-    padding: 0 60px;
-}
-
 @media (width < 900px) {
     .hero-form .mf-revamp-thankyou-right {
         background-image: var(--bg-image-mob);
         padding: 32px 30px;
     }
+}
+
+/* ===========================
+   THANK YOU (AMS port to EDS)
+   =========================== */
+
+/* When thank-you is shown, make wrapper full-width and remove overlay behavior */
+.hero-form.is-thankyou .hero-form-panel-wrapper {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    width: 100%;
+    padding: 0;
+}
+
+.hero-form.is-thankyou .find-contractor-form-container {
+    display: none;
+}
+
+.hero-form.is-thankyou .hero-form-background {
+    display: none;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thankyou-revamp-container {
+        padding: 0;
+    }
+}
+
+@media (width <= 991px) {
+    .hero-form .mf__dismissible-container--head {
+        top: 20px;
+        right: 20px;
+        width: 32px;
+        height: 32px;
+        background: #EEEEEF;
+    }
+}
+
+.hero-form .mf-close-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* --- Replace bootstrap row/col with flex grid --- */
+.hero-form .mf-revamp-thankyou {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.hero-form .mf-revamp-thankyou-left {
+    background: #f5f5f5;
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+    min-height: 429px;
+    position: relative;
+}
+
+.hero-form .mf-revamp-thankyou-right {
+    flex: 0 0 66.6667%;
+    max-width: 66.6667%;
+    min-height: 429px;
+    background-image: var(--bg-image-desktop);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 60px;
+    box-sizing: border-box;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-revamp-thankyou-left,
+    .hero-form .mf-revamp-thankyou-right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .hero-form .mf-revamp-thankyou-left {
+        min-height: auto;
+    }
+
+    .hero-form .mf-revamp-thankyou-right {
+        background-image: var(--bg-image-mob);
+        min-height: 410px;
+        padding: 32px 30px;
+        justify-content: flex-start;
+    }
+}
+
+/* Left content positioning */
+.hero-form .mf-thank-you-left-content,
+.hero-form .mf-error-left-content {
+    position: absolute;
+    top: 50%;
+    padding: 0 60px;
+    transform: translateY(-50%);
+    box-sizing: border-box;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-left-content,
+    .hero-form .mf-error-left-content {
+        position: static;
+        transform: none;
+        padding: 20px 80px 27px 20px;
+    }
+}
+
+@media (width <= 360px) {
+    .hero-form .mf-thank-you-left-content,
+    .hero-form .mf-error-left-content {
+        padding: 20px 40px 27px 20px;
+    }
+}
+
+.hero-form .mf-thank-you-left-content h2,
+.hero-form .mf-error-left-content h2 {
+    font-size: 40px;
+    font-weight: 700;
+    color: #000;
+    line-height: 48px;
+    letter-spacing: -0.8px;
+    margin-bottom: 25px;
+    text-shadow: 3px 2.5px 0 #fff, 3px 2.5px 2px #000;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-left-content h2,
+    .hero-form .mf-error-left-content h2 {
+        font-size: 24px;
+        line-height: 56px;
+        letter-spacing: -0.48px;
+        margin-bottom: 0;
+    }
+}
+
+.hero-form .mf-thank-you-left-content p,
+.hero-form .mf-error-left-content p {
+    color: #222;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 21px;
+    letter-spacing: 0.14px;
+    margin-bottom: 0;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-left-content p,
+    .hero-form .mf-error-left-content p {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16.8px;
+        text-align: left;
+    }
+}
+
+/* Right message */
+.hero-form .mf-thank-you-message {
+    color: #fff;
+}
+
+.hero-form .mf-thank-you-message-title {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 48px;
+    margin-bottom: 16px;
+    width: 400px;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-message-title {
+        font-size: 32px;
+        line-height: 35px;
+        width: 100%;
+    }
+}
+
+.hero-form .mf-thank-you-message-subtitle {
+    color: #dcdbdb;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    margin-bottom: 0;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-message-subtitle {
+        font-size: 12px;
+        line-height: 18px;
+    }
+}
+
+/* Optional CTA (ported intent, simplified) */
+.hero-form .hero-thankyou-cta {
+    margin-top: 20px;
+}
+
+.hero-form .hero-thankyou-cta .explore-painting-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    background: #fff;
+    color: #000;
+}
+
+.hero-form .hero-thankyou-cta .explore-painting-btn:hover,
+.hero-form .hero-thankyou-cta .explore-painting-btn:focus {
+    background: #FDBF45;
+    outline: none;
+}
+
+.hero-form .hero-thankyou-cta .arrow {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid currentcolor;
+    border-top: 2px solid currentcolor;
+    transform: rotate(45deg);
 }
