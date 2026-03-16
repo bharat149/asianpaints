@@ -356,13 +356,17 @@ function renderDefaultForm(block) {
       if (content) {
         cell.classList.add('form-input-cell');
         createDefaultField(cell, rowIdx, cellIdx, headerText, content);
-        const input = document.createElement('input');
+
+        const input = cell.querySelector('.form-input');
+        if (!input) return;
 
         let inputType = 'text';
         let inputId = '';
         let inputName = '';
+
         if (headerCell) {
           const headerLabel = headerCell.textContent.toLowerCase();
+
           if (headerLabel.includes('phone')) {
             inputType = 'tel';
             inputId = 'enquire-mobile';
@@ -391,14 +395,14 @@ function renderDefaultForm(block) {
 
         input.type = inputType;
         input.placeholder = content;
-        input.className = 'form-input';
         if (inputId) input.id = inputId;
         if (inputName) input.name = inputName;
         input.required = true;
-        cell.textContent = '';
-        cell.appendChild(input);
+
         inputCells.push(cell);
-      } else {
+      }
+
+      else {
         cell.classList.add('form-empty-cell');
       }
     });
