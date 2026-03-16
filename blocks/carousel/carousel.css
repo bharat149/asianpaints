@@ -1,8 +1,15 @@
 @import url('./resources/libraries/slick.css');
 @import url('./resources/libraries/slick-theme.css');
 
+.apCityCarousel {
+    overflow-x: clip;
+    overflow-y: visible;
+}
+
 .apCityCarousel .contractors-in-your-city {
-    margin-left: 40px;
+    margin-left: 28px;
+    position: relative;
+    overflow: visible;
 }
 
 @media (min-width: 320px) and (max-width: 991px) {
@@ -31,8 +38,16 @@
     }
 }
 
-.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards {
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards:not(.slick-initialized) {
     display: flex;
+}
+
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards.slick-initialized {
+    display: block;
+}
+
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-list {
+    overflow: hidden;
 }
 
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .contractors-in-your-city-card {
@@ -40,45 +55,16 @@
     margin-right: 20px;
 }
 
-@media (min-width: 320px) and (max-width: 991px) {
-    .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .contractors-in-your-city-card {
-        margin-right: 20px;
-    }
+.apCityCarousel .contractors-citycard-link,
+.apCityCarousel .contractors-citycard-link:hover,
+.apCityCarousel .contractors-citycard-link:focus,
+.apCityCarousel .contractors-citycard-link:active {
+    text-decoration: none;
+    color: inherit;
 }
 
-.apCityCarousel
-.contractors-in-your-city
-.contractors-in-your-city-cards
-.contractors-in-your-city-card
-.contractors-citycard-link
-.contractors-in-your-city-card-img {
-    overflow: hidden;
-    display: block;
-    width: 229px;
-    height: 210px;
-    border-radius: 8px;
-}
-
-.apCityCarousel
-.contractors-in-your-city
-.contractors-in-your-city-cards
-.contractors-in-your-city-card
-.contractors-citycard-link
-.contractors-in-your-city-card-img
-.blur-image {
-    filter: grayscale(100%);
-    -webkit-filter: grayscale(100%);
-    -webkit-transition: 0.3s ease-in-out;
-    transition: 0.3s ease-in-out;
-    cursor: pointer;
-}
-
-.apCityCarousel
-.contractors-in-your-city
-.contractors-in-your-city-cards
-.contractors-in-your-city-card
-.contractors-citycard-link
-.contractors-in-your-city-card-title {
+.apCityCarousel .contractors-in-your-city-card-title {
+    text-decoration: none;
     font-size: 24px;
     font-weight: 800;
     line-height: 33.6px;
@@ -87,50 +73,43 @@
 }
 
 @media (min-width: 320px) and (max-width: 991px) {
-    .apCityCarousel
-    .contractors-in-your-city
-    .contractors-in-your-city-cards
-    .contractors-in-your-city-card
-    .contractors-citycard-link
-    .contractors-in-your-city-card-title {
+    .apCityCarousel .contractors-in-your-city-card-title {
         font-size: 20px;
         line-height: 28px;
         font-weight: 700;
     }
 }
 
-.apCityCarousel
-.contractors-in-your-city
-.contractors-in-your-city-cards
-.contractors-in-your-city-card
-.contractors-citycard-link:hover
-.blur-image {
+.apCityCarousel .contractors-in-your-city-card-img {
+    overflow: hidden;
+    display: block;
+    width: 229px;
+    height: 210px;
+    border-radius: 8px;
+}
+
+.apCityCarousel .contractors-in-your-city-card-img .blur-image {
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    transition: 0.3s ease-in-out;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.apCityCarousel .contractors-citycard-link:hover .blur-image,
+.apCityCarousel .contractors-in-your-city-card:focus-visible .blur-image {
     filter: none;
     transform: scale(1.1);
-    overflow: hidden;
 }
 
-.apCityCarousel
-.contractors-in-your-city
-.contractors-in-your-city-cards
-.contractors-in-your-city-card:focus-visible
-.blur-image {
-    filter: none !important;
-    transform: scale(1.1);
-    overflow: hidden;
-}
-
-.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-arrow {
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev,
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-next {
     top: -62px;
-    bottom: 2px;
-}
-
-.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-arrow:before {
     width: 44px;
     height: 44px;
-    background-position: 50%;
-    position: absolute;
-    content: '';
+    z-index: 2;
 }
 
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev {
@@ -138,17 +117,36 @@
     left: unset;
 }
 
-.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev:before {
-    background-image: url('./resources/images/prev-icon_v2.svg');
-}
-
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-next {
     right: 55px;
     left: unset;
 }
 
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev:before,
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-next:before {
+    content: '';
+    font-size: 0;
+    line-height: 0;
+    width: 44px;
+    height: 44px;
+    display: block;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 44px 44px;
+    opacity: 1;
+}
+
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev:before {
+    background-image: url('./resources/images/prev-icon_v2.svg');
+}
+
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-next:before {
     background-image: url('./resources/images/next-icon_v2.svg');
+}
+
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev.slick-disabled:before,
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-next.slick-disabled:before {
+    opacity: 0.25;
 }
 
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-dots {
@@ -171,10 +169,6 @@
     height: 8px !important;
 }
 
-.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-dots li button:hover:before {
-    opacity: 0.4;
-}
-
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-dots li.slick-active {
     margin-right: 11px;
     margin-left: 6px;
@@ -186,7 +180,10 @@
     opacity: 1 !important;
 }
 
-.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-list .slick-track {
-    display: flex;
-    width: 100% !important;
+#find-trusted-contractors-in-your-city {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 41.6px;
+    color: #000;
+    margin-bottom: 30px;
 }
