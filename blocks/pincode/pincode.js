@@ -14,9 +14,10 @@ function readKeyValueRows(block) {
   rows.forEach((row) => {
     const cols = [...row.children];
     if (cols.length < 2) return;
-    const k = normalizeKey(cols[0].textContent);
+    const [col0, col1] = cols;
+    const k = normalizeKey(col0.textContent);
     if (!k) return;
-    map[k] = cols[1];
+    map[k] = col1;
   });
   return map;
 }
@@ -112,20 +113,20 @@ function decorateSearch(block) {
 function decorateCta(block) {
   const cfg = readKeyValueRows(block);
 
-  const picture = getPicture(cfg['image']);
-  const titleText = getCellText(cfg['title']);
+  const picture = getPicture(cfg.image);
+  const titleText = getCellText(cfg.title);
   const placeholderText = getCellText(cfg['input placeholder']) || 'Enter pincode';
   const ctaText = getCellText(cfg['cta text']) || 'Search';
 
   const wrapper = document.createElement('div');
-  wrapper.className = 'pincode-cta-wrapper swap-img-wraper';
+  wrapper.className = 'swapimagewithcta imageWithRightTextComp';
 
   const imgWrap = document.createElement('div');
-  imgWrap.className = 'pincode-cta-image img-wrapper img-left';
+  imgWrap.className = 'img-wrapper img-left';
   if (picture) imgWrap.appendChild(picture);
 
   const rightWrap = document.createElement('div');
-  rightWrap.className = 'pincode-cta-content righttext-wrapper text-align-right';
+  rightWrap.className = 'righttext-wrapper text-align-right';
 
   const headingWrap = document.createElement('div');
   headingWrap.className = 'righttext-heading';
@@ -160,7 +161,7 @@ function decorateCta(block) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'pincode-cta-button js-pincode-cta';
-  button.textContent = ctaText;
+  button.innerHTML = `${ctaText} &rarr;`;
 
   inputWithCta.appendChild(inputWp);
   inputWithCta.appendChild(button);
