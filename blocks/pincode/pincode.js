@@ -175,7 +175,7 @@ function decorateCta(block) {
   const handleGo = () => {
     const pincode = input.value.trim();
     if (pincode && pincode.length >= 5) {
-      window.location.href = `https://www.asianpaints.com/contractor-listing-page.html?pincode=${encodeURIComponent(pincode)}`;
+      window.location.href = `https://www.asianpaints.com/contractor-listing-page.html?cpListing=pincode:${encodeURIComponent(pincode)}`;
     }
   };
 
