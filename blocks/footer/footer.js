@@ -1,475 +1,516 @@
 /**
  * Asian Paints Footer Block
- * Transforms footer content into pixel-perfect layout matching design
+ * Content-driven: fetches /footer.plain.html and renders 5 sections
+ * Mega Footer | Video Banner | Global Presence | Divisions | Bottom Bar
  * @param {Element} block The footer block element
  */
-export default async function decorate(block) {
-  // Fetch footer content
-  const resp = await fetch('/footer.plain.html');
-  if (!resp.ok) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to load footer:', resp.status);
-    return;
+
+/* ---------- IMAGE FALLBACKS (local PNG images) ---------- */
+const IMG = 'https://content.da.live/aemysites/asian-paints-demo/.footer';
+const IMAGE_FALLBACKS = {
+  'Asian Paints Logo': `${IMG}/ap-logo.png`,
+  'Asian Paints': `${IMG}/ap-logo.png`,
+  'Har Ghar Kuch Kehta Hai': `${IMG}/har-ghar-kuch-kehta-hai-desktop.png`,
+  Global: `${IMG}/global.png`,
+  Arabia: `${IMG}/arabia.png`,
+  Bangladesh: `${IMG}/bangladesh.png`,
+  Egypt: `${IMG}/egypt.png`,
+  Ethiopia: `${IMG}/ethiopia.png`,
+  Fiji: `${IMG}/fiji.png`,
+  Nepal: `${IMG}/nepal.png`,
+  'Sri Lanka': `${IMG}/sri-lanka.png`,
+  Facebook: `${IMG}/facebook.png`,
+  X: `${IMG}/x.png`,
+  Instagram: `${IMG}/instagram.png`,
+  YouTube: `${IMG}/youtube.png`,
+  Pinterest: `${IMG}/pinterest.png`,
+};
+
+/**
+ * Fix broken images in parsed HTML fragment.
+ * DA content sometimes has src="about:error" for images that weren't uploaded.
+ * Replace with known CDN URLs based on alt text.
+ */
+function fixBrokenImages(fragment) {
+  fragment.querySelectorAll('img').forEach((img) => {
+    const src = img.getAttribute('src') || '';
+    if (src === 'about:error' || !src || src === '') {
+      const alt = img.getAttribute('alt') || '';
+      const fallback = IMAGE_FALLBACKS[alt];
+      if (fallback) {
+        img.setAttribute('src', fallback);
+      }
+    }
+  });
+}
+
+/* ---------- HELPERS ---------- */
+function el(tag, attrs = {}, ...children) {
+  const elem = document.createElement(tag);
+  Object.entries(attrs).forEach(([key, val]) => {
+    if (key === 'className') elem.className = val;
+    else elem.setAttribute(key, val);
+  });
+  children.forEach((child) => {
+    if (typeof child === 'string') elem.appendChild(document.createTextNode(child));
+    else if (child) elem.appendChild(child);
+  });
+  return elem;
+}
+
+/**
+ * Parse link groups from a cell containing alternating title/link paragraphs.
+ * DA format: <p>Title +</p> <p><a>link</a> <a>link</a>…</p>
+ * @returns {Array<{title: string, links: Array<{text: string, href: string}>}>}
+ */
+function parseLinkGroups(cell) {
+  const groups = [];
+  const paras = [...cell.querySelectorAll(':scope > p')];
+  let i = 0;
+  while (i < paras.length) {
+    const p = paras[i];
+    const links = [...p.querySelectorAll('a')];
+    const text = p.textContent.trim();
+
+    if (links.length === 0 && text) {
+      // Title paragraph (e.g. "Services +")
+      const title = text.replace(/\s*\+\s*$/, '');
+      i += 1;
+      // Next paragraph should be links
+      const linkPara = paras[i];
+      const groupLinks = linkPara
+        ? [...linkPara.querySelectorAll('a')].map((a) => ({
+          text: a.textContent.trim(),
+          href: a.getAttribute('href'),
+        }))
+        : [];
+      groups.push({ title, links: groupLinks });
+      i += 1;
+    } else if (links.length > 0) {
+      // Links paragraph without a preceding title (e.g. About section)
+      groups.push({
+        title: links[0].textContent.trim(),
+        links: links.map((a) => ({
+          text: a.textContent.trim(),
+          href: a.getAttribute('href'),
+        })),
+      });
+      i += 1;
+    } else {
+      i += 1;
+    }
   }
+  return groups;
+}
+
+/* ---------- SECTION 1: MEGA FOOTER ---------- */
+function buildBrandColumn(cell) {
+  const col = el('div', { className: 'mega-col mega-col-brand' });
+
+  // Logo — first <a> containing an <img>
+  const logoAnchor = cell.querySelector('a');
+  if (logoAnchor) {
+    const logo = el('a', {
+      href: logoAnchor.getAttribute('href') || '/',
+      className: 'footer-brand-logo',
+      'aria-label': 'Asian Paints Home',
+    });
+    const img = logoAnchor.querySelector('img');
+    if (img) {
+      logo.appendChild(el('img', {
+        src: img.getAttribute('src'),
+        alt: img.getAttribute('alt') || 'Asian Paints',
+        width: img.getAttribute('width') || '180',
+        height: img.getAttribute('height') || '63',
+        loading: 'lazy',
+      }));
+    }
+    col.appendChild(logo);
+  }
+
+  // Contact — tel: and mailto: links
+  const contact = el('div', { className: 'footer-brand-contact' });
+  const allLinks = [...cell.querySelectorAll('a')];
+
+  const phoneLink = allLinks.find((a) => a.getAttribute('href')?.startsWith('tel:'));
+  if (phoneLink) {
+    const phone = el('a', { href: phoneLink.getAttribute('href'), className: 'contact-row' });
+    phone.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+    phone.appendChild(el('span', {}, phoneLink.textContent.trim()));
+    contact.appendChild(phone);
+  }
+
+  const emailLink = allLinks.find((a) => a.getAttribute('href')?.startsWith('mailto:'));
+  if (emailLink) {
+    const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row' });
+    email.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+    email.appendChild(el('span', {}, emailLink.textContent.trim()));
+    contact.appendChild(email);
+  }
+  col.appendChild(contact);
+
+  // Public Notice — look for "Public Notice" text
+  const paras = [...cell.querySelectorAll('p')];
+  const noticeTitleP = paras.find((p) => p.textContent.trim().startsWith('Public Notice'));
+  if (noticeTitleP) {
+    const notice = el('div', { className: 'footer-public-notice' });
+    notice.appendChild(el('div', { className: 'notice-label' }, noticeTitleP.textContent.trim()));
+    const nextP = noticeTitleP.nextElementSibling;
+    if (nextP && nextP.tagName === 'P') {
+      notice.appendChild(el('p', { className: 'notice-body' }, nextP.textContent.trim()));
+    }
+    col.appendChild(notice);
+  }
+
+  return col;
+}
+
+function buildLinkColumnFromGroups(groups) {
+  const col = el('div', { className: 'mega-col mega-col-links' });
+  groups.forEach((group) => {
+    const section = el('div', { className: 'link-group' });
+
+    const header = el('button', {
+      className: 'link-group-title',
+      'aria-expanded': 'false',
+      type: 'button',
+    });
+    header.appendChild(el('span', {}, group.title));
+    header.innerHTML += '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    section.appendChild(header);
+
+    const list = el('ul', { className: 'link-group-list' });
+    group.links.forEach((link) => {
+      const li = el('li');
+      li.appendChild(el('a', { href: link.href }, link.text));
+      list.appendChild(li);
+    });
+    section.appendChild(list);
+    col.appendChild(section);
+  });
+  return col;
+}
+
+function buildMegaFooter(container, row) {
+  const cells = [...row.querySelectorAll(':scope > div')];
+  if (cells.length < 2) return;
+
+  const section = el('section', { className: 'footer-mega', 'aria-label': 'Footer navigation' });
+  const inner = el('div', { className: 'footer-mega-inner' });
+  const grid = el('div', { className: 'mega-grid' });
+
+  // Zone 1: Brand column (left — white text on grey)
+  grid.appendChild(buildBrandColumn(cells[0]));
+
+  // Parse groups from cells
+  const linkGroups = parseLinkGroups(cells[1]);
+  const aboutGroups = cells[2] ? parseLinkGroups(cells[2]) : [];
+
+  // Zone 2: Center block (white background with link columns)
+  const center = el('div', { className: 'mega-center' });
+  const centerNav = el('nav', { className: 'mega-center-grid' });
+
+  const columnDist = [2, 1, 2, 1];
+  let idx = 0;
+  columnDist.forEach((count) => {
+    const slice = linkGroups.slice(idx, idx + count);
+    if (slice.length > 0) {
+      centerNav.appendChild(buildLinkColumnFromGroups(slice));
+    }
+    idx += count;
+  });
+  if (idx < linkGroups.length) {
+    centerNav.appendChild(buildLinkColumnFromGroups(linkGroups.slice(idx)));
+  }
+
+  center.appendChild(centerNav);
+  grid.appendChild(center);
+
+  // Zone 3: About column (right — white text on grey)
+  if (aboutGroups.length > 0) {
+    const aboutCol = buildLinkColumnFromGroups(aboutGroups);
+    aboutCol.classList.add('mega-col-about');
+    grid.appendChild(aboutCol);
+  }
+
+  inner.appendChild(grid);
+  section.appendChild(inner);
+  container.appendChild(section);
+}
+
+/* ---------- SECTION 2: VIDEO BANNER ---------- */
+function buildVideoBanner(container, row) {
+  if (!row) return;
+  const cell = row.querySelector(':scope > div') || row;
+
+  const banner = el('section', { className: 'footer-video-banner' });
+  const mediaBg = el('div', { className: 'video-bg' });
+
+  // Banner image — find the large image (not the YouTube logo)
+  const allImgs = [...cell.querySelectorAll('img')];
+  const bannerImg = allImgs.find((img) => {
+    const w = parseInt(img.getAttribute('width'), 10);
+    return !w || w > 100;
+  }) || allImgs[0];
+
+  // Use the picture wrapping the banner image, or create one
+  const bannerPicture = bannerImg?.closest('picture');
+  if (bannerPicture) {
+    const pic = bannerPicture.cloneNode(true);
+    const picImg = pic.querySelector('img');
+    if (picImg) {
+      picImg.setAttribute('width', '755');
+      picImg.setAttribute('height', '513');
+      picImg.setAttribute('loading', 'lazy');
+    }
+    mediaBg.appendChild(pic);
+  } else if (bannerImg) {
+    const pic = document.createElement('picture');
+    const imgEl = el('img', {
+      src: bannerImg.getAttribute('src'),
+      alt: bannerImg.getAttribute('alt') || 'Har Ghar Kuch Kehta Hai',
+      loading: 'lazy',
+      width: '755',
+      height: '513',
+    });
+    pic.appendChild(imgEl);
+    mediaBg.appendChild(pic);
+  }
+  banner.appendChild(mediaBg);
+
+  // Gradient overlay
+  banner.appendChild(el('div', { className: 'video-gradient' }));
+
+  // CTA overlay — find "WATCH NOW" text
+  const ctaText = cell.textContent.includes('WATCH NOW') ? 'WATCH NOW' : 'WATCH NOW';
+  const overlay = el('div', { className: 'video-overlay' });
+  const cta = el('button', {
+    className: 'watch-now-btn',
+    'aria-label': `${ctaText} on YouTube`,
+    type: 'button',
+  });
+  cta.innerHTML = `<img class="yt-icon" src="${IMG}/youtube-logo.png" alt="YouTube" width="64" height="64">`;
+  cta.appendChild(el('span', {}, ctaText));
+  cta.addEventListener('click', () => {
+    window.open('https://www.youtube.com/watch?v=c6GKMQDYI1k', '_blank', 'noopener');
+  });
+  overlay.appendChild(cta);
+  banner.appendChild(overlay);
+
+  container.appendChild(banner);
+}
+
+/* ---------- SECTION 3: GLOBAL PRESENCE ---------- */
+function buildGlobalPresence(container, row) {
+  if (!row) return;
+  const cells = [...row.querySelectorAll(':scope > div')];
+
+  const wrapper = el('section', { className: 'footer-global', 'aria-label': 'Our Global Presence' });
+  const inner = el('div', { className: 'footer-global-inner' });
+
+  // Title from first cell
+  const titleText = cells[0]?.textContent.trim() || 'OUR GLOBAL PRESENCE';
+  const titleRow = el('div', { className: 'section-title-row' });
+  titleRow.appendChild(el('span', { className: 'title-line' }));
+  titleRow.appendChild(el('h3', { className: 'section-title' }, titleText));
+  titleRow.appendChild(el('span', { className: 'title-line' }));
+  inner.appendChild(titleRow);
+
+  // Country items from second cell — pattern: <a><img></a> CountryName
+  const contentCell = cells[1] || cells[0];
+  const countries = el('div', { className: 'country-list' });
+
+  // Parse country items: each <a> has an <img>, followed by text node with country name
+  const anchors = [...contentCell.querySelectorAll('a')];
+  anchors.forEach((a) => {
+    const img = a.querySelector('img');
+    if (!img) return;
+    const item = el('div', { className: 'country-item' });
+    item.appendChild(el('img', {
+      src: img.getAttribute('src'),
+      alt: img.getAttribute('alt') || '',
+      width: '32',
+      height: '32',
+      loading: 'lazy',
+      className: 'country-flag',
+    }));
+    // Country name from alt text (since text nodes may not be reliable)
+    const name = img.getAttribute('alt') || '';
+    item.appendChild(el('span', { className: 'country-name' }, name));
+    countries.appendChild(item);
+  });
+  inner.appendChild(countries);
+
+  wrapper.appendChild(inner);
+  container.appendChild(wrapper);
+}
+
+/* ---------- SECTION 4: DIVISIONS ---------- */
+function buildDivisions(container, row) {
+  if (!row) return;
+  const cells = [...row.querySelectorAll(':scope > div')];
+
+  const wrapper = el('section', { className: 'footer-divisions', 'aria-label': 'Our Divisions' });
+  const inner = el('div', { className: 'footer-divisions-inner' });
+
+  // Title from first cell
+  const titleText = cells[0]?.textContent.trim() || 'OUR DIVISIONS';
+  const titleRow = el('div', { className: 'section-title-row' });
+  titleRow.appendChild(el('span', { className: 'title-line' }));
+  titleRow.appendChild(el('h3', { className: 'section-title' }, titleText));
+  titleRow.appendChild(el('span', { className: 'title-line' }));
+  inner.appendChild(titleRow);
+
+  // Division logos from second cell — <a> with <picture>/<img>
+  const contentCell = cells[1] || cells[0];
+  const logos = el('div', { className: 'division-logos' });
+  const anchors = [...contentCell.querySelectorAll('a')];
+  anchors.forEach((a) => {
+    const img = a.querySelector('img');
+    if (!img) return;
+    const link = el('a', {
+      href: a.getAttribute('href') || '#',
+      className: 'division-logo',
+      'aria-label': img.getAttribute('alt') || '',
+      target: '_blank',
+      rel: 'noopener',
+    });
+    link.appendChild(el('img', {
+      src: img.getAttribute('src'),
+      alt: img.getAttribute('alt') || '',
+      loading: 'lazy',
+      height: '50',
+    }));
+    logos.appendChild(link);
+  });
+  inner.appendChild(logos);
+
+  wrapper.appendChild(inner);
+  container.appendChild(wrapper);
+}
+
+/* ---------- SECTION 5: BOTTOM BAR ---------- */
+function buildBottomBar(container, row) {
+  if (!row) return;
+  const cells = [...row.querySelectorAll(':scope > div')];
+
+  const bottom = el('section', { className: 'footer-bottom', 'aria-label': 'Footer info' });
+  const inner = el('div', { className: 'footer-bottom-inner' });
+
+  // Cell 0: Social icons
+  if (cells[0]) {
+    const social = el('div', { className: 'bottom-social' });
+    [...cells[0].querySelectorAll('a')].forEach((a) => {
+      const img = a.querySelector('img');
+      if (!img) return;
+      const link = el('a', {
+        href: a.getAttribute('href'),
+        className: 'social-icon',
+        'aria-label': img.getAttribute('alt') || '',
+        target: '_blank',
+        rel: 'noopener',
+      });
+      link.appendChild(el('img', {
+        src: img.getAttribute('src'),
+        alt: img.getAttribute('alt') || '',
+        width: '28',
+        height: '28',
+        loading: 'lazy',
+      }));
+      social.appendChild(link);
+    });
+    inner.appendChild(social);
+  }
+
+  // Cell 1: Copyright
+  if (cells[1]) {
+    const copy = el('div', { className: 'bottom-copyright' });
+    copy.textContent = cells[1].textContent.trim();
+    inner.appendChild(copy);
+  }
+
+  // Cell 2: Sitemap
+  if (cells[2]) {
+    const sitemap = el('div', { className: 'bottom-sitemap' });
+    const sitemapLink = cells[2].querySelector('a');
+    if (sitemapLink) {
+      const a = el('a', { href: sitemapLink.getAttribute('href') });
+      a.innerHTML = 'Sitemap <span class="sitemap-arrow">&rsaquo;</span>';
+      sitemap.appendChild(a);
+    }
+    inner.appendChild(sitemap);
+  }
+
+  bottom.appendChild(inner);
+  container.appendChild(bottom);
+}
+
+/* ---------- MOBILE ACCORDION ---------- */
+function initMobileAccordions(block) {
+  const titles = block.querySelectorAll('.link-group-title');
+  titles.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (window.innerWidth >= 1024) return;
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      titles.forEach((other) => {
+        other.setAttribute('aria-expanded', 'false');
+        other.nextElementSibling.style.maxHeight = null;
+      });
+      if (!expanded) {
+        btn.setAttribute('aria-expanded', 'true');
+        const list = btn.nextElementSibling;
+        list.style.maxHeight = `${list.scrollHeight}px`;
+      }
+    });
+  });
+
+  const mq = window.matchMedia('(min-width: 1024px)');
+  mq.addEventListener('change', (e) => {
+    titles.forEach((btn) => {
+      if (e.matches) {
+        btn.nextElementSibling.style.maxHeight = null;
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+}
+
+/* ---------- DECORATE ---------- */
+export default async function decorate(block) {
+  const resp = await fetch('/footer.plain.html');
+  if (!resp.ok) return;
 
   const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  const fragment = document.createElement('div');
+  fragment.innerHTML = html;
 
-  // Get the footer-wrapper content
-  const wrapper = doc.querySelector('.footer-wrapper');
-  if (!wrapper) return;
+  // Fix broken image sources before processing
+  fixBrokenImages(fragment);
 
-  const sections = [...wrapper.children];
+  // Find the footer block wrapper — DA content has <div class="footer-wrapper">
+  const wrapper = fragment.querySelector('.footer-wrapper') || fragment;
+
+  // Rows = direct div children of the wrapper (5 rows)
+  const rows = [...wrapper.querySelectorAll(':scope > div')];
+
   block.textContent = '';
+  const footerContent = el('div', { className: 'footer-content' });
 
-  // Create footer container
-  const footerContainer = document.createElement('div');
-  footerContainer.className = 'footer-container';
+  // Row 0: Mega Footer (brand + links + about)
+  if (rows[0]) buildMegaFooter(footerContent, rows[0]);
 
-  // ========================================
-  // SECTION 1: Our Divisions + Main Content
-  // ========================================
-  const mainSection = sections[0];
-  if (mainSection) {
-    const mainDivs = [...mainSection.querySelectorAll(':scope > div')];
-    const leftContent = mainDivs[0];
-    const rightContent = mainDivs[1];
+  // Row 1: Video Banner
+  if (rows[1]) buildVideoBanner(footerContent, rows[1]);
 
-    // --- OUR DIVISIONS ---
-    const divisionsSection = document.createElement('div');
-    divisionsSection.className = 'footer-divisions';
+  // Row 2: Global Presence
+  if (rows[2]) buildGlobalPresence(footerContent, rows[2]);
 
-    // Get first text as title
-    const divisionTitle = leftContent?.querySelector('p:first-child');
-    if (divisionTitle && !divisionTitle.querySelector('a')) {
-      const title = document.createElement('h3');
-      title.className = 'footer-section-title';
-      title.textContent = divisionTitle.textContent;
-      divisionsSection.appendChild(title);
-    }
+  // Row 3: Divisions
+  if (rows[3]) buildDivisions(footerContent, rows[3]);
 
-    // Get division logos (all p elements with pictures/links before the hr)
-    const divisionLogos = document.createElement('div');
-    divisionLogos.className = 'division-logos';
+  // Row 4: Bottom Bar
+  if (rows[4]) buildBottomBar(footerContent, rows[4]);
 
-    const hrElement = leftContent?.querySelector('hr');
-    const allParagraphs = leftContent ? [...leftContent.querySelectorAll('p')] : [];
-
-    allParagraphs.forEach((p, idx) => {
-      if (idx === 0) return; // Skip title
-      const link = p.querySelector('a');
-      const picture = p.querySelector('picture');
-
-      // Stop at hr
-      if (hrElement && p.compareDocumentPosition(hrElement) & Node.DOCUMENT_POSITION_PRECEDING) {
-        return;
-      }
-
-      if (link && picture) {
-        const logoLink = document.createElement('a');
-        logoLink.href = link.getAttribute('href') || '#';
-        logoLink.className = 'division-logo';
-        logoLink.appendChild(picture.cloneNode(true));
-        divisionLogos.appendChild(logoLink);
-      }
-    });
-
-    divisionsSection.appendChild(divisionLogos);
-    footerContainer.appendChild(divisionsSection);
-
-    // --- MAIN CONTENT GRID ---
-    const mainGrid = document.createElement('div');
-    mainGrid.className = 'footer-main-grid';
-
-    // Left side: Menu columns
-    const menuSection = document.createElement('div');
-    menuSection.className = 'footer-menus';
-
-    // Parse menu sections (after hr)
-    const menuTitles = ['About', 'Policies', 'Content', 'Calculators'];
-    const lists = leftContent ? [...leftContent.querySelectorAll('ul')] : [];
-    const titleElements = leftContent ? [...leftContent.querySelectorAll('p')] : [];
-
-    menuTitles.forEach((menuTitle, idx) => {
-      const column = document.createElement('div');
-      column.className = 'footer-menu-column';
-
-      const title = document.createElement('h4');
-      title.className = 'menu-title';
-      title.textContent = menuTitle;
-      column.appendChild(title);
-
-      if (lists[idx]) {
-        const ul = document.createElement('ul');
-        ul.className = 'menu-links';
-        lists[idx].querySelectorAll('li').forEach((li) => {
-          const newLi = document.createElement('li');
-          const link = li.querySelector('a');
-          if (link) {
-            const a = document.createElement('a');
-            a.href = link.getAttribute('href') || '#';
-            a.textContent = link.textContent;
-            newLi.appendChild(a);
-          }
-          ul.appendChild(newLi);
-        });
-        column.appendChild(ul);
-      }
-
-      menuSection.appendChild(column);
-    });
-
-    mainGrid.appendChild(menuSection);
-
-    // Right side: Logo, Country, Contact, etc.
-    const rightSection = document.createElement('div');
-    rightSection.className = 'footer-right';
-
-    if (rightContent) {
-      // Logo and Country selector
-      const logoCountry = document.createElement('div');
-      logoCountry.className = 'footer-logo-country';
-
-      // Logo
-      const logoPic = rightContent.querySelector('p:first-child picture');
-      if (logoPic) {
-        const logoLink = document.createElement('a');
-        logoLink.href = '/';
-        logoLink.className = 'footer-logo';
-        logoLink.appendChild(logoPic.cloneNode(true));
-        logoCountry.appendChild(logoLink);
-      }
-
-      // Country selector
-      const countryList = rightContent.querySelector('ul');
-      if (countryList) {
-        const countrySelector = document.createElement('div');
-        countrySelector.className = 'country-selector';
-
-        const selectedCountry = document.createElement('button');
-        selectedCountry.className = 'country-selected';
-        selectedCountry.innerHTML = `
-          <span class="country-flag"></span>
-          <span class="country-name">India</span>
-          <svg class="dropdown-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        `;
-
-        const dropdown = document.createElement('div');
-        dropdown.className = 'country-dropdown';
-        const dropdownUl = document.createElement('ul');
-        countryList.querySelectorAll('li').forEach((li) => {
-          const link = li.querySelector('a');
-          if (link) {
-            const newLi = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = link.getAttribute('href') || '#';
-            a.textContent = link.textContent;
-            newLi.appendChild(a);
-            dropdownUl.appendChild(newLi);
-          }
-        });
-        dropdown.appendChild(dropdownUl);
-
-        countrySelector.appendChild(selectedCountry);
-        countrySelector.appendChild(dropdown);
-        logoCountry.appendChild(countrySelector);
-      }
-
-      rightSection.appendChild(logoCountry);
-
-      // Contact Us section
-      const contactSection = document.createElement('div');
-      contactSection.className = 'footer-contact';
-
-      const contactTitle = document.createElement('h4');
-      contactTitle.className = 'footer-subsection-title';
-      contactTitle.textContent = 'Contact Us';
-      contactSection.appendChild(contactTitle);
-
-      // Phone
-      const phoneLink = rightContent.querySelector('a[href^="tel:"]');
-      if (phoneLink) {
-        const phoneDiv = document.createElement('div');
-        phoneDiv.className = 'contact-item';
-        phoneDiv.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          </svg>
-          <a href="${phoneLink.getAttribute('href')}">${phoneLink.textContent}</a>
-        `;
-        contactSection.appendChild(phoneDiv);
-      }
-
-      // Email
-      const emailLink = rightContent.querySelector('a[href^="mailto:"]');
-      if (emailLink) {
-        const emailDiv = document.createElement('div');
-        emailDiv.className = 'contact-item';
-        emailDiv.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-            <polyline points="22,6 12,13 2,6"></polyline>
-          </svg>
-          <a href="${emailLink.getAttribute('href')}">${emailLink.textContent}</a>
-        `;
-        contactSection.appendChild(emailDiv);
-      }
-
-      rightSection.appendChild(contactSection);
-
-      // Find a store section
-      const storeSection = document.createElement('div');
-      storeSection.className = 'footer-store';
-
-      const storeTitle = document.createElement('h4');
-      storeTitle.className = 'footer-subsection-title';
-      storeTitle.textContent = 'Find a store';
-      storeSection.appendChild(storeTitle);
-
-      const storeForm = document.createElement('form');
-      storeForm.className = 'store-form';
-      storeForm.innerHTML = `
-        <input type="text" placeholder="Enter pincode" maxlength="6" pattern="[0-9]{6}">
-        <button type="submit">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </button>
-      `;
-      storeSection.appendChild(storeForm);
-
-      rightSection.appendChild(storeSection);
-
-      // Newsletter section
-      const newsSection = document.createElement('div');
-      newsSection.className = 'footer-newsletter';
-
-      const newsTitle = document.createElement('h4');
-      newsTitle.className = 'footer-subsection-title';
-      newsTitle.textContent = 'Get the latest trending news';
-      newsSection.appendChild(newsTitle);
-
-      const newsForm = document.createElement('form');
-      newsForm.className = 'newsletter-form';
-      newsForm.innerHTML = `
-        <input type="email" placeholder="Enter email id">
-        <button type="submit">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </button>
-      `;
-      newsSection.appendChild(newsForm);
-
-      rightSection.appendChild(newsSection);
-
-      // Download App section
-      const appSection = document.createElement('div');
-      appSection.className = 'footer-app';
-
-      const appTitle = document.createElement('h4');
-      appTitle.className = 'footer-subsection-title';
-      appTitle.textContent = 'Download our visualiser app';
-      appSection.appendChild(appTitle);
-
-      const appWrapper = document.createElement('div');
-      appWrapper.className = 'app-downloads';
-
-      // Get QR codes and store buttons from content
-      const allPics = rightContent.querySelectorAll('picture');
-      const qrCodes = [];
-      const storeButtons = [];
-
-      allPics.forEach((pic) => {
-        const img = pic.querySelector('img');
-        const alt = img?.getAttribute('alt') || '';
-        if (alt.includes('QR')) {
-          qrCodes.push(pic);
-        } else if (alt.includes('Play') || alt.includes('App Store')) {
-          const parentA = pic.closest('a');
-          storeButtons.push({ pic, link: parentA?.getAttribute('href') || '/' });
-        }
-      });
-
-      // Create app download items
-      for (let i = 0; i < Math.min(qrCodes.length, 2); i += 1) {
-        const appItem = document.createElement('div');
-        appItem.className = 'app-item';
-
-        const qrDiv = document.createElement('div');
-        qrDiv.className = 'qr-code';
-        qrDiv.appendChild(qrCodes[i].cloneNode(true));
-        appItem.appendChild(qrDiv);
-
-        if (storeButtons[i]) {
-          const storeLink = document.createElement('a');
-          storeLink.href = storeButtons[i].link;
-          storeLink.className = 'store-button';
-          storeLink.appendChild(storeButtons[i].pic.cloneNode(true));
-          appItem.appendChild(storeLink);
-        }
-
-        appWrapper.appendChild(appItem);
-      }
-
-      appSection.appendChild(appWrapper);
-      rightSection.appendChild(appSection);
-
-      // Connect with us
-      const socialSection = document.createElement('div');
-      socialSection.className = 'footer-social';
-
-      const socialTitle = document.createElement('h4');
-      socialTitle.className = 'footer-subsection-title';
-      socialTitle.textContent = 'Connect with us';
-      socialSection.appendChild(socialTitle);
-
-      const socialLinks = document.createElement('div');
-      socialLinks.className = 'social-links';
-
-      // Get social icons
-      const socialPics = rightContent.querySelectorAll('a[href*="facebook"], a[href*="twitter"], a[href*="x.com"], a[href*="instagram"], a[href*="youtube"], a[href*="pinterest"]');
-      socialPics.forEach((link) => {
-        const socialLink = document.createElement('a');
-        socialLink.href = link.getAttribute('href') || '#';
-        socialLink.className = 'social-link';
-        const pic = link.querySelector('picture');
-        if (pic) {
-          socialLink.appendChild(pic.cloneNode(true));
-        }
-        socialLinks.appendChild(socialLink);
-      });
-
-      socialSection.appendChild(socialLinks);
-      rightSection.appendChild(socialSection);
-    }
-
-    mainGrid.appendChild(rightSection);
-    footerContainer.appendChild(mainGrid);
-  }
-
-  // ========================================
-  // SECTION 2: Colour Tools
-  // ========================================
-  const colourToolsSection = sections[1];
-  if (colourToolsSection) {
-    const colourTools = document.createElement('div');
-    colourTools.className = 'footer-colour-tools';
-
-    const toolsTitle = document.createElement('h3');
-    toolsTitle.className = 'footer-section-title';
-    toolsTitle.textContent = 'Colour tools';
-    colourTools.appendChild(toolsTitle);
-
-    const toolsGrid = document.createElement('div');
-    toolsGrid.className = 'colour-tools-grid';
-
-    const toolLinks = colourToolsSection.querySelectorAll('a');
-    toolLinks.forEach((link) => {
-      const toolLink = document.createElement('a');
-      toolLink.href = link.getAttribute('href') || '#';
-      toolLink.className = 'colour-tool-link';
-      toolLink.textContent = link.textContent;
-      toolsGrid.appendChild(toolLink);
-    });
-
-    colourTools.appendChild(toolsGrid);
-    footerContainer.appendChild(colourTools);
-  }
-
-  // ========================================
-  // SECTION 3: Copyright
-  // ========================================
-  const copyrightSection = sections[2];
-  if (copyrightSection) {
-    const copyright = document.createElement('div');
-    copyright.className = 'footer-copyright';
-    copyright.textContent = copyrightSection.textContent.trim();
-    footerContainer.appendChild(copyright);
-  }
-
-  // ========================================
-  // SECTION 4: Public Notice
-  // ========================================
-  const noticeSection = sections[3];
-  if (noticeSection) {
-    const notice = document.createElement('div');
-    notice.className = 'footer-notice';
-
-    const noticeDivs = noticeSection.querySelectorAll('div');
-    if (noticeDivs.length >= 2) {
-      const noticeTitle = document.createElement('span');
-      noticeTitle.className = 'notice-title';
-      noticeTitle.textContent = noticeDivs[0].textContent;
-      notice.appendChild(noticeTitle);
-
-      const noticeText = document.createElement('p');
-      noticeText.className = 'notice-text';
-      noticeText.textContent = noticeDivs[1].textContent;
-      notice.appendChild(noticeText);
-    }
-
-    footerContainer.appendChild(notice);
-  }
-
-  block.appendChild(footerContainer);
-
-  // ========================================
-  // INTERACTIONS
-  // ========================================
-
-  // Country selector toggle
-  const countryBtn = block.querySelector('.country-selected');
-  const countryDropdown = block.querySelector('.country-dropdown');
-
-  if (countryBtn && countryDropdown) {
-    countryBtn.addEventListener('click', () => {
-      countryDropdown.classList.toggle('open');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.country-selector')) {
-        countryDropdown.classList.remove('open');
-      }
-    });
-  }
-
-  // Store form submission
-  const storeForm = block.querySelector('.store-form');
-  if (storeForm) {
-    storeForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = storeForm.querySelector('input');
-      const pincode = input.value.trim();
-      if (pincode && /^\d{6}$/.test(pincode)) {
-        window.location.href = `/store-locator?pincode=${pincode}`;
-      } else {
-        input.classList.add('error');
-        setTimeout(() => input.classList.remove('error'), 2000);
-      }
-    });
-  }
-
-  // Newsletter form
-  const newsForm = block.querySelector('.newsletter-form');
-  if (newsForm) {
-    newsForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = newsForm.querySelector('input');
-      const email = input.value.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailRegex.test(email)) {
-        input.value = '';
-        // Show success (could add toast notification)
-      } else {
-        input.classList.add('error');
-        setTimeout(() => input.classList.remove('error'), 2000);
-      }
-    });
-  }
+  block.append(footerContent);
+  initMobileAccordions(block);
 }

@@ -1,353 +1,517 @@
-/* Hero Form Block - Split layout with background image and contact form */
-
-.hero-form-container {
-  max-width: unset !important;
-  padding: 0 !important;
-}
-
-.hero-form-container > .default-content-wrapper,
-.hero-form-container > .hero-form-wrapper {
-  max-width: unset;
-  padding: 0;
-}
-
+/* ===== HERO ROOT – FULL BLEED ===== */
 .hero-form {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  min-height: 500px;
-  background-color: #f5f5f5;
+    position: relative;
+    width: 100vw;
+    min-height: 520px;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    background: transparent;
+    overflow: hidden;
 }
 
-@media (width >= 900px) {
-  .hero-form {
-    grid-template-columns: 65% 35%;
-    min-height: 600px;
-  }
-}
-
-/* Background image - spans full width */
+/* ===== BACKGROUND IMAGE – FULL WIDTH ===== */
 .hero-form-background {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-@media (width >= 900px) {
-  .hero-form-background {
-    position: absolute;
     inset: 0;
-    z-index: 0;
-  }
 }
 
-.hero-form-background picture {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
+.hero-form-background picture,
 .hero-form-background img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: left center;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-/* Content area - text overlay on left */
-.hero-form-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 40px 24px;
-  z-index: 2;
-  background: linear-gradient(to top, rgb(0 0 0 / 80%) 0%, rgb(0 0 0 / 0%) 100%);
-}
-
-@media (width >= 900px) {
-  .hero-form-content {
-    position: absolute;
-    inset: auto auto 60px 40px;
-    max-width: 400px;
-    padding: 0;
-    background: none;
-    z-index: 3;
-  }
-}
-
-.hero-form-heading {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #fff;
-  margin: 0 0 12px;
-  font-style: italic;
-}
-
-@media (width >= 900px) {
-  .hero-form-heading {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
-}
-
-.hero-form-subheading {
-  font-size: 14px;
-  font-weight: 400;
-  color: #fff;
-  margin: 0 0 20px;
-  opacity: 0.9;
-}
-
-@media (width >= 900px) {
-  .hero-form-subheading {
-    font-size: 16px;
-    margin-bottom: 24px;
-  }
-}
-
-.hero-form-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border: 2px solid #fff;
-  border-radius: 30px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  background: transparent;
-  transition: all 0.3s ease;
-}
-
-.hero-form-cta:hover {
-  background: #fff;
-  color: #222;
-  text-decoration: none;
-}
-
-.hero-form-cta-arrow {
-  font-size: 18px;
-}
-
-/* Form panel - right side */
+/* ===== FORM WRAPPER – OVERLAY ON RIGHT ===== */
 .hero-form-panel-wrapper {
-  position: relative;
-  z-index: 4;
-  padding: 20px;
+    position: absolute;
+    top: 50%;
+    right: 64px;
+    transform: translateY(-50%);
+    z-index: 2;
 }
 
-@media (width >= 900px) {
-  .hero-form-panel-wrapper {
-    grid-column: 2;
-    grid-row: 1;
+/* ===== FORM CARD ===== */
+.hero-form .find-contractor-form-container {
+    background-color: #FEF9F2;
+    border-radius: 8px;
+    width: 518px;
+    max-width: 100%;
+    padding: 40px 35px;
+}
+
+/* ===== MOBILE (NO OVERLAY – YOU SAID YOU'LL HANDLE LATER) ===== */
+@media (width <= 900px) {
+    .hero-form {
+        width: 100%;
+        margin: 0;
+    }
+
+    .hero-form-panel-wrapper {
+        position: static;
+        transform: none;
+        padding: 16px;
+    }
+
+    .hero-form .find-contractor-form-container {
+        width: 100%;
+        margin: 0 auto;
+    }
+}
+
+/* ===== TYPOGRAPHY & FORM STYLES (UNCHANGED) ===== */
+.hero-form .title-section p {
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 41.6px;
+    color: #2F2F2F;
+    margin: 0 0 20px;
+}
+
+.hero-form .mobile-input-section,
+.hero-form .pincode-input-section {
+    width: 100%;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.hero-form .input-label {
+    position: absolute;
+    font-size: 16px;
+    top: 14px;
+    left: 16px;
+    color: #75787B;
+    transition: 0.3s;
+}
+
+.hero-form .input-label.top {
+    top: -10px;
+    font-size: 12px;
+    background: #fff;
+    padding: 0 4px;
+}
+
+.hero-form input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #75787B;
+}
+
+.hero-form .hero-form-submit {
+    width: 100%;
+    padding: 16px;
+    border-radius: 30px;
+    background: #FDBF45;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+/* mobile sizing only (no overlay behavior) */
+@media (width < 900px) {
+    .hero-form .find-contractor-form-container {
+        width: calc(100% - 32px);
+        padding: 25px 15px;
+        margin: 16px auto;
+        transform: none; /* ensure no forced overlap */
+    }
+}
+
+@media (width < 900px) {
+    .hero-form .title-section p {
+        font-size: 24px;
+        line-height: 33.6px;
+        text-align: center;
+    }
+}
+
+/* Inputs */
+.hero-form #mobile-number,
+.hero-form #pincode {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    text-align: left;
+    color: #000;
+    padding: 15px;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid #75787B;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.hero-form #mobile-number::placeholder,
+.hero-form #pincode::placeholder {
+    color: #75787B;
+    font-weight: 400;
+}
+
+/* Errors */
+.hero-form .error-msg {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: -0.006em;
+    text-align: left;
+    color: #FF4D00;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 40px;
-    background-color: #f5ede3;
-  }
+    gap: 3px;
 }
 
-.hero-form-panel {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgb(0 0 0 / 15%);
-  max-width: 500px;
-  width: 100%;
+.hero-form .error-msg.d-none { display: none; }
+
+.hero-form .has-error .input-label { color: #FF4D00; }
+
+.hero-form .has-error #mobile-number,
+.hero-form .has-error #pincode { border-color: #FF4D00; }
+
+/* WhatsApp consent custom checkbox */
+.hero-form .whatsapp-update-consent-section {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    height: 20px;
 }
 
-@media (width >= 900px) {
-  .hero-form-panel {
-    padding: 32px;
-  }
+.hero-form .whatsapp-update-consent-section input[type="checkbox"] {
+    width: 0;
+    height: 0;
+    opacity: 0;
 }
 
-.hero-form-panel-heading {
-  font-size: 20px;
-  font-weight: 600;
-  color: #222;
-  margin: 0 0 20px;
-  text-align: center;
+.hero-form .whatsapp-consent-label {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16.8px;
+    text-align: left;
+    color: #2E2F32;
+    padding-left: 28px;
+    cursor: pointer;
+    margin: 0;
 }
 
-@media (width >= 900px) {
-  .hero-form-panel-heading {
-    font-size: 24px;
-    margin-bottom: 24px;
-  }
+.hero-form .whatsapp-consent-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    border-radius: 4px;
+    background: #fff;
+    border: 1px solid #292929;
 }
 
-/* Form layout */
-.hero-form-contact {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.hero-form .whatsapp-update-consent-section:has(input:checked) .whatsapp-consent-checkmark {
+    background: #2BA45B;
+    border: none;
 }
 
-.hero-form-field-full {
-  width: 100%;
+.hero-form .whatsapp-update-consent-section:has(input:checked) .whatsapp-consent-checkmark::after {
+    content: "";
+    width: 4px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    position: absolute;
+    top: 18%;
+    left: 40%;
+    transform: rotate(45deg);
+    display: block;
 }
 
-.hero-form-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+/* Disclaimer */
+.hero-form .disclaimer-section {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16.8px;
+    text-align: left;
+    color: #000;
+    opacity: 0.6;
+    margin-bottom: 20px;
 }
 
-@media (width >= 600px) {
-  .hero-form-row {
-    grid-template-columns: 1fr 1fr;
-  }
+.hero-form .hero-form-submit:hover {
+    background: #FDBF45;
 }
 
-.hero-form-field {
-  position: relative;
+/* Spinner */
+.hero-form .get-contractor-progress-status {
+    display: inline-block;
+    animation: heroform-spin 1s linear infinite;
 }
 
-.hero-form-field input {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  background: #fff;
-  transition: border-color 0.2s ease;
+.hero-form .get-contractor-progress-status.d-none { display: none; }
+
+@keyframes heroform-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-.hero-form-field input:focus {
-  outline: none;
-  border-color: var(--primary-color, #431a80);
+/* Thank-you container */
+.hero-form .mf-thankyou-revamp-container {
+    padding: 75px 35px;
+    background: #fff;
+    width: 100%;
+    position: relative;
 }
 
-.hero-form-field input::placeholder {
-  color: #999;
-}
-
-.hero-form-field.hero-form-field-phone input {
-  padding-left: 50px;
-}
-
-/* Phone field with country code */
-.hero-form-field-phone {
-  position: relative;
-}
-
-.hero-form-country-code {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-}
-
-/* WhatsApp toggle */
-.hero-form-options {
-  margin-top: 8px;
-}
-
-.hero-form-whatsapp {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  margin-bottom: 12px;
-}
-
-.hero-form-whatsapp input[type="checkbox"] {
-  display: none;
-}
-
-.hero-form-toggle {
-  width: 48px;
-  height: 26px;
-  background: #ccc;
-  border-radius: 13px;
-  position: relative;
-  transition: background 0.3s ease;
-  flex-shrink: 0;
-}
-
-.hero-form-toggle::after {
-  content: '';
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  background: #fff;
-  border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.3s ease;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-}
-
-.hero-form-whatsapp input:checked + .hero-form-toggle {
-  background: #25d366;
-}
-
-.hero-form-whatsapp input:checked + .hero-form-toggle::after {
-  transform: translateX(22px);
-}
-
-.hero-form-whatsapp-text {
-  font-size: 14px;
-  color: #222;
-}
-
-.hero-form-disclaimer {
-  font-size: 11px;
-  color: #666;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Submit button */
-.hero-form-submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 16px 24px;
-  background: var(--accent-color, #f7a81b);
-  border: none;
-  border-radius: 30px;
-  color: #000;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 8px;
-}
-
-.hero-form-submit:hover {
-  background: #e59d15;
-  color: #000;
-}
-
-.hero-form-arrow {
-  font-size: 18px;
-}
-
-/* Mobile adjustments */
 @media (width < 900px) {
-  .hero-form-content {
+    .hero-form .mf-thankyou-revamp-container { padding: 0; }
+}
+
+.hero-form .mf__dismissible-container--head {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 9;
+    background: #EEEEEF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+@media (width < 900px) {
+    .hero-form .mf-revamp-thankyou-right {
+        background-image: var(--bg-image-mob);
+        padding: 32px 30px;
+    }
+}
+
+/* ===========================
+   THANK YOU (AMS port to EDS)
+   =========================== */
+
+/* When thank-you is shown, make wrapper full-width and remove overlay behavior */
+.hero-form.is-thankyou .hero-form-panel-wrapper {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    width: 100%;
+    padding: 0;
+}
+
+.hero-form.is-thankyou .find-contractor-form-container {
     display: none;
-  }
+}
 
-  .hero-form-panel-wrapper {
-    background: linear-gradient(to bottom, transparent 0%, #f5f5f5 30%);
-    padding-top: 350px;
-  }
+.hero-form.is-thankyou .hero-form-background {
+    display: none;
+}
 
-  .hero-form-background {
-    height: 400px;
-  }
+@media (width <= 991px) {
+    .hero-form .mf-thankyou-revamp-container {
+        padding: 0;
+    }
+}
+
+@media (width <= 991px) {
+    .hero-form .mf__dismissible-container--head {
+        top: 20px;
+        right: 20px;
+        width: 32px;
+        height: 32px;
+        background: #EEEEEF;
+    }
+}
+
+.hero-form .mf-close-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* --- Replace bootstrap row/col with flex grid --- */
+.hero-form .mf-revamp-thankyou {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.hero-form .mf-revamp-thankyou-left {
+    background: #f5f5f5;
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+    min-height: 429px;
+    position: relative;
+}
+
+.hero-form .mf-revamp-thankyou-right {
+    flex: 0 0 66.6667%;
+    max-width: 66.6667%;
+    min-height: 429px;
+    background-image: var(--bg-image-desktop);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 60px;
+    box-sizing: border-box;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-revamp-thankyou-left,
+    .hero-form .mf-revamp-thankyou-right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .hero-form .mf-revamp-thankyou-left {
+        min-height: auto;
+    }
+
+    .hero-form .mf-revamp-thankyou-right {
+        background-image: var(--bg-image-mob);
+        min-height: 410px;
+        padding: 32px 30px;
+        justify-content: flex-start;
+    }
+}
+
+/* Left content positioning */
+.hero-form .mf-thank-you-left-content,
+.hero-form .mf-error-left-content {
+    position: absolute;
+    top: 50%;
+    padding: 0 60px;
+    transform: translateY(-50%);
+    box-sizing: border-box;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-left-content,
+    .hero-form .mf-error-left-content {
+        position: static;
+        transform: none;
+        padding: 20px 80px 27px 20px;
+    }
+}
+
+@media (width <= 360px) {
+    .hero-form .mf-thank-you-left-content,
+    .hero-form .mf-error-left-content {
+        padding: 20px 40px 27px 20px;
+    }
+}
+
+.hero-form .mf-thank-you-left-content h2,
+.hero-form .mf-error-left-content h2 {
+    font-size: 40px;
+    font-weight: 700;
+    color: #000;
+    line-height: 48px;
+    letter-spacing: -0.8px;
+    margin-bottom: 25px;
+    text-shadow: 3px 2.5px 0 #fff, 3px 2.5px 2px #000;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-left-content h2,
+    .hero-form .mf-error-left-content h2 {
+        font-size: 24px;
+        line-height: 56px;
+        letter-spacing: -0.48px;
+        margin-bottom: 0;
+    }
+}
+
+.hero-form .mf-thank-you-left-content p,
+.hero-form .mf-error-left-content p {
+    color: #222;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 21px;
+    letter-spacing: 0.14px;
+    margin-bottom: 0;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-left-content p,
+    .hero-form .mf-error-left-content p {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16.8px;
+        text-align: left;
+    }
+}
+
+/* Right message */
+.hero-form .mf-thank-you-message {
+    color: #fff;
+}
+
+.hero-form .mf-thank-you-message-title {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 48px;
+    margin-bottom: 16px;
+    width: 400px;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-message-title {
+        font-size: 32px;
+        line-height: 35px;
+        width: 100%;
+    }
+}
+
+.hero-form .mf-thank-you-message-subtitle {
+    color: #dcdbdb;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    margin-bottom: 0;
+}
+
+@media (width <= 991px) {
+    .hero-form .mf-thank-you-message-subtitle {
+        font-size: 12px;
+        line-height: 18px;
+    }
+}
+
+/* Optional CTA (ported intent, simplified) */
+.hero-form .hero-thankyou-cta {
+    margin-top: 20px;
+}
+
+.hero-form .hero-thankyou-cta .explore-painting-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    background: #fff;
+    color: #000;
+}
+
+.hero-form .hero-thankyou-cta .explore-painting-btn:hover,
+.hero-form .hero-thankyou-cta .explore-painting-btn:focus {
+    background: #FDBF45;
+    outline: none;
+}
+
+.hero-form .hero-thankyou-cta .arrow {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid currentcolor;
+    border-top: 2px solid currentcolor;
+    transform: rotate(45deg);
 }

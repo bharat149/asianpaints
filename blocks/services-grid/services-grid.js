@@ -3,69 +3,111 @@ export default function decorate(block) {
   if (!row) return;
 
   const columns = [...row.children];
-  if (columns.length < 2) return;
+  if (columns.length < 4) return;
 
-  // First column is text content
+  // Column 1 = text
   const textCol = columns[0];
   textCol.classList.add('services-grid-text');
 
-  // Second column contains service images in a grid
-  const servicesCol = columns[1];
-  if (servicesCol) {
-    servicesCol.classList.add('services-grid-images');
+  // Column 2 = mobile images
+  const mobileCol = columns[1];
 
-    // Get all images
-    const images = [...servicesCol.querySelectorAll('img')];
+  // Column 3 = desktop images
+  const desktopCol = columns[2];
 
-    // Map alt text to full service names
-    const serviceNames = {
-      Interior: 'Interior wall paint',
-      Exterior: 'Exterior wall paint',
-      Waterproofing: 'Waterproofing Services',
-      'Wood Finish': 'Wood Solutions',
-    };
+  // Column 4 = links
+  const linkCol = columns[3];
 
-    if (images.length > 0) {
-      // Create grid container
-      const gridContainer = document.createElement('div');
-      gridContainer.className = 'services-grid-container';
+  const mobileImages = [...mobileCol.querySelectorAll('img')];
+  const desktopImages = [...desktopCol.querySelectorAll('img')];
+  const links = [...linkCol.querySelectorAll('a')];
 
-      // Wrap each image in a card with text and arrow
-      images.forEach((img) => {
-        const card = document.createElement('a');
-        card.className = 'services-grid-card';
-        card.href = '#'; // Could be linked to actual service pages
+  const serviceNames = {
+    Interior: 'Interior wall paint',
+    Exterior: 'Exterior wall paint',
+    Waterproofing: 'Waterproofing Services',
+    'Wood Finish': 'Wood Solutions',
+  };
 
-        // Image container
-        const imgContainer = document.createElement('div');
-        imgContainer.className = 'services-grid-card-image';
-        imgContainer.appendChild(img.cloneNode(true));
+  const servicesCol = document.createElement('div');
+  servicesCol.className = 'services-grid-images';
 
-        // Text container
-        const textContainer = document.createElement('div');
-        textContainer.className = 'services-grid-card-text';
-        const altText = img.alt || 'Service';
-        const serviceName = serviceNames[altText] || altText;
-        textContainer.innerHTML = `<span>${serviceName}</span>`;
+  const gridContainer = document.createElement('div');
+  gridContainer.className = 'services-grid-cards';
 
-        // Arrow
-        const arrow = document.createElement('div');
-        arrow.className = 'services-grid-card-arrow';
-        arrow.innerHTML = '↗';
+  const totalCards = Math.max(mobileImages.length, desktopImages.length);
 
-        card.appendChild(imgContainer);
-        card.appendChild(textContainer);
-        card.appendChild(arrow);
-        gridContainer.appendChild(card);
-      });
+  for (let i = 0; i < totalCards; i += 1) {
+    const mobileImg = mobileImages[i];
+    const desktopImg = desktopImages[i];
+    const link = links[i];
 
-      // Clear services column and add grid
-      servicesCol.innerHTML = '';
-      servicesCol.appendChild(gridContainer);
+    if (!mobileImg && !desktopImg) continue;
+
+    const referenceImg = desktopImg || mobileImg;
+    const altText = referenceImg?.alt?.trim() || 'Service';
+    const serviceName = serviceNames[altText] || altText;
+
+    const card = document.createElement('a');
+    card.className = 'services-grid-card';
+
+    // Apply authored link
+    card.href = link?.href || '#';
+
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'services-grid-card-image';
+
+    const picture = document.createElement('picture');
+
+    if (mobileImg?.src) {
+      const mobileSource = document.createElement('source');
+      mobileSource.media = '(max-width: 767px)';
+      mobileSource.srcset = mobileImg.currentSrc || mobileImg.src;
+      picture.appendChild(mobileSource);
     }
+
+    if (desktopImg?.src) {
+      const desktopSource = document.createElement('source');
+      desktopSource.media = '(min-width: 768px)';
+      desktopSource.srcset = desktopImg.currentSrc || desktopImg.src;
+      picture.appendChild(desktopSource);
+    }
+
+    const img = document.createElement('img');
+    img.src =
+      desktopImg?.currentSrc ||
+      desktopImg?.src ||
+      mobileImg?.currentSrc ||
+      mobileImg?.src ||
+      '';
+
+    img.alt = altText;
+    img.loading = 'lazy';
+    img.width = desktopImg?.width || mobileImg?.width || 82;
+    img.height = desktopImg?.height || mobileImg?.height || 104;
+
+    picture.appendChild(img);
+    imgContainer.appendChild(picture);
+
+    const textContainer = document.createElement('div');
+    textContainer.className = 'services-grid-card-text';
+    textContainer.innerHTML = `<span>${serviceName}</span>`;
+
+    const arrow = document.createElement('div');
+    arrow.className = 'services-grid-card-arrow';
+    arrow.innerHTML = '↗';
+
+    card.appendChild(imgContainer);
+    card.appendChild(textContainer);
+    card.appendChild(arrow);
+
+    gridContainer.appendChild(card);
   }
 
-  // Move columns to be direct children of block (unwrap from row)
+  servicesCol.appendChild(gridContainer);
+
+  block.innerHTML = '';
   block.append(textCol, servicesCol);
+
   row.remove();
 }

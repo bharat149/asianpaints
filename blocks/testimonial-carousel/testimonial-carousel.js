@@ -1,10 +1,16 @@
-export default function decorate(block) {
-  const rows = [...block.querySelectorAll(':scope > div')];
-  if (rows.length === 0) return;
+async function getSwiperClass() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
 
-  // Extract heading: check sibling default-content-wrapper, then first row of block
+  // eslint-disable-next-line no-console
+  console.warn('Swiper loader is not available on window.loadSwiper');
+  return null;
+}
+
+function buildHeading(rows, block) {
   let headingText = '';
   let siblingHeading = null;
+
   const blockWrapper = block.closest('.testimonial-carousel-wrapper');
   if (blockWrapper) {
     const prevWrapper = blockWrapper.previousElementSibling;
@@ -13,17 +19,18 @@ export default function decorate(block) {
       if (siblingHeading) headingText = siblingHeading.textContent.trim();
     }
   }
+
   if (!siblingHeading && block.previousElementSibling?.tagName === 'H2') {
     siblingHeading = block.previousElementSibling;
     headingText = siblingHeading.textContent.trim();
   }
 
-  // Separate heading rows from testimonial rows
-  // A heading row has a single column with no picture element
   const testimonialRows = [];
+
   rows.forEach((row) => {
     const cols = [...row.querySelectorAll(':scope > div')];
     const isHeadingRow = cols.length === 1 && !cols[0].querySelector('picture');
+
     if (isHeadingRow && !headingText) {
       headingText = cols[0].textContent.trim();
     } else if (!isHeadingRow) {
@@ -33,207 +40,323 @@ export default function decorate(block) {
 
   if (!headingText) headingText = 'What our customers say!';
 
+  return { headingText, siblingHeading, testimonialRows };
+}
+
+function createQuoteIcon() {
+  const logo = document.createElement('div');
+  logo.className = 'testimonial-logo-bg';
+
+  const img = document.createElement('img');
+  img.src = 'https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/wht-our-client-say-bg-logo.webp';
+  img.alt = 'Quote background';
+  img.loading = 'lazy';
+
+  logo.appendChild(img);
+
+  return logo;
+}
+
+function getTestimonialContent(columns) {
+  let quoteText = '';
+  let nameText = '';
+  let locationText = '';
+
+  if (columns.length >= 4) {
+    quoteText = columns[1]?.textContent?.trim() || '';
+    nameText = columns[2]?.textContent?.trim() || '';
+    locationText = columns[3]?.textContent?.trim() || '';
+  } else if (columns.length >= 2) {
+    const paragraphs = columns[1]?.querySelectorAll('p') || [];
+    if (paragraphs[0]) quoteText = paragraphs[0].textContent.trim();
+
+    if (paragraphs[1]) {
+      const strong = paragraphs[1].querySelector('strong');
+      const fullText = paragraphs[1].textContent.trim();
+
+      if (strong) {
+        nameText = strong.textContent.trim();
+        locationText = fullText.replace(nameText, '').replace(/^[,\s]+/, '').trim();
+      } else {
+        const parts = fullText.split(',');
+        nameText = parts[0]?.trim() || '';
+        locationText = parts.slice(1).join(',').trim();
+      }
+    }
+  }
+
+  return { quoteText, nameText, locationText };
+}
+
+function createVideoModal(block) {
+  const modal = document.createElement('div');
+  modal.className = 'testimonial-video-modal';
+  modal.innerHTML = `
+    <div class="testimonial-video-modal-content">
+      <button class="testimonial-video-close" type="button" aria-label="Close video popup">
+        <span></span>
+        <span></span>
+      </button>
+      <div class="testimonial-video-wrapper"></div>
+    </div>
+  `;
+
+  block.appendChild(modal);
+  return modal;
+}
+
+function openVideoModal(block, videoUrl) {
+  const modal = block.querySelector('.testimonial-video-modal');
+  const videoWrapper = modal?.querySelector('.testimonial-video-wrapper');
+  if (!modal || !videoWrapper || !videoUrl) return;
+
+  const separator = videoUrl.includes('?') ? '&' : '?';
+  const iframeSrc = `${videoUrl}${separator}autoplay=1&rel=0`;
+
+  videoWrapper.innerHTML = `
+    <iframe
+      src="${iframeSrc}"
+      title="Customer testimonial video"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  `;
+
+  modal.classList.add('active');
+  document.body.classList.add('testimonial-video-open');
+}
+
+function closeVideoModal(block) {
+  const modal = block.querySelector('.testimonial-video-modal');
+  const videoWrapper = modal?.querySelector('.testimonial-video-wrapper');
+  if (!modal || !videoWrapper) return;
+
+  modal.classList.remove('active');
+  videoWrapper.innerHTML = '';
+  document.body.classList.remove('testimonial-video-open');
+}
+
+function buildSlide(row, block) {
+  const slide = document.createElement('div');
+  slide.className = 'testimonial-slide swiper-slide';
+
+  const columns = [...row.querySelectorAll(':scope > div')];
+
+  const imageCol = columns[0];
+  const videoCol = columns[1];
+  const quoteCol = columns[2];
+  const nameCol = columns[3];
+  const placeCol = columns[4];
+
+  const videoLink = (
+    videoCol?.querySelector('a')?.href
+    || videoCol?.textContent?.trim()
+    || ''
+  );
+
+  const imageWrapper = document.createElement('div');
+  imageWrapper.className = 'testimonial-image';
+
+  const picture = imageCol?.querySelector('picture');
+  if (picture) imageWrapper.appendChild(picture.cloneNode(true));
+
+  const playButton = document.createElement('button');
+  playButton.className = 'testimonial-play-button';
+  playButton.type = 'button';
+  playButton.setAttribute('aria-label', 'Play testimonial video');
+
+  playButton.innerHTML = `
+    <img
+      src="https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/play-icon.webp"
+      alt="Play video"
+      loading="lazy"
+    />
+  `;
+
+  if (!videoLink) {
+    playButton.style.display = 'none';
+  } else {
+    playButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openVideoModal(block, videoLink);
+    });
+  }
+
+  imageWrapper.appendChild(playButton);
+
+  const contentWrapper = document.createElement('div');
+  contentWrapper.className = 'testimonial-content';
+  contentWrapper.appendChild(createQuoteIcon());
+
+  const quoteText = quoteCol?.textContent?.trim() || '';
+  const nameText = nameCol?.textContent?.trim() || '';
+  const placeText = placeCol?.textContent?.trim() || '';
+
+  if (quoteText) {
+    const quoteDiv = document.createElement('div');
+    quoteDiv.className = 'testimonial-quote';
+    quoteDiv.textContent = quoteText;
+    contentWrapper.appendChild(quoteDiv);
+  }
+
+  if (nameText) {
+    const attribution = document.createElement('div');
+    attribution.className = 'testimonial-attribution';
+    attribution.innerHTML = `
+      <span class="testimonial-name">${nameText}</span>
+      ${placeText ? `<span class="testimonial-location">, ${placeText}</span>` : ''}
+    `;
+    contentWrapper.appendChild(attribution);
+  }
+
+  slide.append(imageWrapper, contentWrapper);
+
+  return slide;
+}
+
+function hideSiblingHeading(siblingHeading) {
+  if (!siblingHeading) return;
+
+  const wrapper = siblingHeading.closest('.default-content-wrapper');
+  if (wrapper) {
+    wrapper.style.display = 'none';
+  } else {
+    siblingHeading.style.display = 'none';
+  }
+}
+
+function bindModalEvents(block) {
+  const modal = block.querySelector('.testimonial-video-modal');
+  const closeButton = block.querySelector('.testimonial-video-close');
+
+  closeButton?.addEventListener('click', () => {
+    closeVideoModal(block);
+  });
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeVideoModal(block);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+      closeVideoModal(block);
+    }
+  });
+}
+
+export default async function decorate(block) {
+  const rows = [...block.querySelectorAll(':scope > div')];
+  if (!rows.length) return;
+
+  const Swiper = await getSwiperClass();
+  if (!Swiper) return;
+
+  const { headingText, siblingHeading, testimonialRows } = buildHeading(rows, block);
+  if (!testimonialRows.length) return;
+
   const container = document.createElement('div');
   container.className = 'testimonial-carousel-container';
 
   const headingWrapper = document.createElement('div');
   headingWrapper.className = 'testimonial-heading';
+
   const h2 = document.createElement('h2');
   const words = headingText.split(' ');
   const midPoint = Math.ceil(words.length / 2);
   h2.innerHTML = `${words.slice(0, midPoint).join(' ')}<br>${words.slice(midPoint).join(' ')}`;
   headingWrapper.appendChild(h2);
-  container.appendChild(headingWrapper);
 
   const carouselWrapper = document.createElement('div');
   carouselWrapper.className = 'testimonial-carousel-wrapper';
 
-  const slidesContainer = document.createElement('div');
-  slidesContainer.className = 'testimonial-slides';
+  const swiperEl = document.createElement('div');
+  swiperEl.className = 'testimonial-swiper swiper';
 
-  // Process testimonial rows
-  // Supports two content structures:
-  //   A) 4 columns: [image] [quote] [name] [location]
-  //   B) 2 columns: [image] [content with <p> for quote and <p><strong>Name</strong>, Location]
-  testimonialRows.forEach((row, index) => {
-    const slide = document.createElement('div');
-    slide.className = 'testimonial-slide';
-    slide.dataset.index = index;
+  const swiperWrapper = document.createElement('div');
+  swiperWrapper.className = 'swiper-wrapper';
 
-    const columns = [...row.querySelectorAll(':scope > div')];
-
-    // Build image
-    const imageWrapper = document.createElement('div');
-    imageWrapper.className = 'testimonial-image';
-    const picture = columns[0]?.querySelector('picture');
-    if (picture) imageWrapper.appendChild(picture.cloneNode(true));
-
-    // Build content
-    const contentWrapper = document.createElement('div');
-    contentWrapper.className = 'testimonial-content';
-
-    const logoSvg = document.createElement('div');
-    logoSvg.className = 'testimonial-logo-bg';
-    logoSvg.innerHTML = `
-      <svg width="81" height="70" viewBox="0 0 81 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M35.5 0C25.283 0 17 8.283 17 18.5C17 28.717 25.283 37 35.5 37C37.053 37 38.561 36.822 40 36.492V37C40 51.912 27.912 64 13 64H10V70H13C31.225 70 46 55.225 46 37V18.5C46 8.283 37.717 0 35.5 0Z" fill="#E8E8E8"/>
-        <path d="M70.5 0C60.283 0 52 8.283 52 18.5C52 28.717 60.283 37 70.5 37C72.053 37 73.561 36.822 75 36.492V37C75 51.912 62.912 64 48 64H45V70H48C66.225 70 81 55.225 81 37V18.5C81 8.283 72.717 0 70.5 0Z" fill="#E8E8E8"/>
-      </svg>
-    `;
-    contentWrapper.appendChild(logoSvg);
-
-    let quoteText = '';
-    let nameText = '';
-    let locationText = '';
-
-    if (columns.length >= 4) {
-      // Structure A: [image] [quote] [name] [location]
-      quoteText = columns[1]?.textContent?.trim() || '';
-      nameText = columns[2]?.textContent?.trim() || '';
-      locationText = columns[3]?.textContent?.trim() || '';
-    } else if (columns.length >= 2) {
-      // Structure B: [image] [content with paragraphs]
-      const paragraphs = columns[1]?.querySelectorAll('p') || [];
-      if (paragraphs[0]) quoteText = paragraphs[0].textContent.trim();
-      if (paragraphs[1]) {
-        const strong = paragraphs[1].querySelector('strong');
-        const fullText = paragraphs[1].textContent.trim();
-        if (strong) {
-          nameText = strong.textContent.trim();
-          locationText = fullText.replace(nameText, '').replace(/^[,\s]+/, '').trim();
-        } else {
-          const parts = fullText.split(',');
-          nameText = parts[0]?.trim() || '';
-          locationText = parts.slice(1).join(',').trim();
-        }
-      }
-    }
-
-    if (quoteText) {
-      const quoteDiv = document.createElement('div');
-      quoteDiv.className = 'testimonial-quote';
-      quoteDiv.textContent = quoteText;
-      contentWrapper.appendChild(quoteDiv);
-    }
-
-    if (nameText) {
-      const attribution = document.createElement('div');
-      attribution.className = 'testimonial-attribution';
-      attribution.innerHTML = `<span class="testimonial-name">${nameText}</span>${locationText ? `<span class="testimonial-location">, ${locationText}</span>` : ''}`;
-      contentWrapper.appendChild(attribution);
-    }
-
-    slide.appendChild(imageWrapper);
-    slide.appendChild(contentWrapper);
-    slidesContainer.appendChild(slide);
+  testimonialRows.forEach((row) => {
+    swiperWrapper.appendChild(buildSlide(row, block));
   });
 
-  // Wrap slides in overflow container
-  const slidesWrapper = document.createElement('div');
-  slidesWrapper.className = 'testimonial-carousel-slides-wrapper';
-  slidesWrapper.appendChild(slidesContainer);
-  carouselWrapper.appendChild(slidesWrapper);
+  swiperEl.appendChild(swiperWrapper);
 
-  // Create navigation buttons (positioned below slides)
+  const paginationEl = document.createElement('div');
+  paginationEl.className = 'testimonial-pagination swiper-pagination';
+
   const navButtons = document.createElement('div');
   navButtons.className = 'testimonial-nav-buttons';
   navButtons.innerHTML = `
-    <button class="testimonial-prev" aria-label="Previous testimonial">
+    <button class="testimonial-prev" aria-label="Previous testimonial" type="button">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 18L9 12L15 6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <button class="testimonial-next" aria-label="Next testimonial">
+    <button class="testimonial-next" aria-label="Next testimonial" type="button">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M9 18L15 12L9 6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
   `;
-  carouselWrapper.appendChild(navButtons);
 
-  container.appendChild(carouselWrapper);
+  carouselWrapper.append(swiperEl, paginationEl, navButtons);
+  container.append(headingWrapper, carouselWrapper);
 
-  // Clear the block and add new content
   block.textContent = '';
   block.appendChild(container);
+  createVideoModal(block);
 
-  // Hide the sibling heading wrapper since we're displaying the heading inside the carousel
-  if (siblingHeading) {
-    // Hide the entire default-content-wrapper to avoid spacing issues
-    const wrapper = siblingHeading.closest('.default-content-wrapper');
-    if (wrapper) {
-      wrapper.style.display = 'none';
-    } else {
-      siblingHeading.style.display = 'none';
-    }
-  }
+  hideSiblingHeading(siblingHeading);
+  bindModalEvents(block);
 
-  // Initialize carousel functionality
-  initializeCarousel(block);
-}
-
-function initializeCarousel(block) {
-  const slidesContainer = block.querySelector('.testimonial-slides');
-  const slides = block.querySelectorAll('.testimonial-slide');
   const prevButton = block.querySelector('.testimonial-prev');
   const nextButton = block.querySelector('.testimonial-next');
 
-  if (slides.length === 0) return;
-
-  let currentIndex = 0;
-  let slidesPerView = getSlidesPerView();
-
-  function getSlidesPerView() {
-    if (window.innerWidth >= 1200) return 3;
-    if (window.innerWidth >= 900) return 2;
-    return 1;
-  }
-
-  function updateCarousel() {
-    const slideWidth = slides[0].offsetWidth;
-    const gap = 20; // Match CSS gap
-    const offset = currentIndex * (slideWidth + gap);
-    slidesContainer.style.transform = `translateX(-${offset}px)`;
-
-    // Update button states
-    prevButton.disabled = currentIndex === 0;
-    nextButton.disabled = currentIndex >= slides.length - slidesPerView;
-  }
-
-  function nextSlide() {
-    if (currentIndex < slides.length - slidesPerView) {
-      currentIndex += 1;
-      updateCarousel();
-    }
-  }
-
-  function prevSlide() {
-    if (currentIndex > 0) {
-      currentIndex -= 1;
-      updateCarousel();
-    }
-  }
-
-  // Navigation button events
-  if (prevButton && nextButton) {
-    nextButton.addEventListener('click', nextSlide);
-    prevButton.addEventListener('click', prevSlide);
-  }
-
-  // Handle window resize
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      const newSlidesPerView = getSlidesPerView();
-      if (newSlidesPerView !== slidesPerView) {
-        slidesPerView = newSlidesPerView;
-        currentIndex = Math.min(currentIndex, Math.max(0, slides.length - slidesPerView));
-        updateCarousel();
-      }
-    }, 250);
+  const swiper = new Swiper(swiperEl, {
+    slidesPerView: 1.1,
+    spaceBetween: 20,
+    speed: 500,
+    watchOverflow: true,
+    navigation: {
+      prevEl: prevButton,
+      nextEl: nextButton,
+    },
+    pagination: {
+      el: paginationEl,
+      clickable: false,
+    },
+    breakpoints: {
+      600: {
+        slidesPerView: 1.2,
+        spaceBetween: 20,
+      },
+      900: {
+        slidesPerView: 2,
+        spaceBetween: 20,
+      },
+      1200: {
+        slidesPerView: 3,
+        spaceBetween: 20,
+      },
+    },
+    on: {
+      init(s) {
+        prevButton.disabled = s.isBeginning;
+        nextButton.disabled = s.isEnd;
+      },
+      slideChange(s) {
+        prevButton.disabled = s.isBeginning;
+        nextButton.disabled = s.isEnd;
+      },
+      resize(s) {
+        prevButton.disabled = s.isBeginning;
+        nextButton.disabled = s.isEnd;
+      },
+    },
   });
 
-  // Initial update
-  updateCarousel();
+  block._testimonialSwiper = swiper;
 }
