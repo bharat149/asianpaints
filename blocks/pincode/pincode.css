@@ -1,335 +1,261 @@
 /* ============================================
-   Variant: search (default) — Pincode (search)
-   ============================================ */
-
+Variant: search (default) — Pincode (search)
+============================================ */
 .pincode.search,
-.pincode:not(.cta) {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 20px 0;
-  text-align: center;
+.pincode:not(.cta){
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:40px 20px 0;
+    text-align:center;
 }
-
 .pincode.search h2,
-.pincode:not(.cta) h2 {
-    font-size: 32px;
-    font-family: Manrope, sans-serif;
-    line-height: 35px;
-    letter-spacing: 1px;
+.pincode:not(.cta) h2{
+    font-size:32px;
+    font-family:Manrope,sans-serif;
+    line-height:35px;
+    letter-spacing:1px;
 }
-
 .pincode.search p,
-.pincode:not(.cta) p {
-  font-size: 16px;
-  font-weight: 500;
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34);
-  text-align: center;
-  max-width: 800px;
-  line-height: 1.6;
-  margin: 40px 0;
+.pincode:not(.cta) p{
+    font-size:16px;
+    font-weight:500;
+    font-family:Manrope,sans-serif;
+    color:rgb(34 34 34);
+    text-align:center;
+    max-width:800px;
+    line-height:1.6;
+    margin:40px 0;
 }
-
-.pincode .pincode-search-card {
-    background-color: rgb(255 247 232);
-    padding: 30px 40px;
-    border-radius: 10px;
-    max-width: 400px;
-    align-items: center;
+.pincode .pincode-search-card{
+    background-color:rgb(255 247 232);
+    padding:30px 40px;
+    border-radius:10px;
+    max-width:400px;
+    align-items:center;
 }
-
-.pincode .pincode-search-card-title {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  color: #232426;
-  text-align: center;
-  font-family: Manrope, sans-serif;
-  margin: 0;
+.pincode .pincode-search-card-title{
+    font-size:20px;
+    font-weight:700;
+    line-height:28px;
+    color:#232426;
+    text-align:center;
+    font-family:Manrope,sans-serif;
+    margin:0;
 }
-
-.pincode .pincode-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
+.pincode .pincode-input-wrapper{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
 }
-
-.pincode .pincode-input {
-  flex: 1;
-  height: 48px;
-  padding: 12px 15px;
-  border: 1px solid rgb(117 120 123);
-  border-radius: 6px;
-  font-size: 16px;
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34);
-  background: #fff;
-  outline: none;
-  transition: border-color 0.2s ease;
-  box-sizing: border-box;
+.pincode .pincode-input{
+    flex:1;
+    height:48px;
+    padding:12px 15px;
+    border:1px solid rgb(117 120 123);
+    border-radius:6px;
+    font-size:16px;
+    font-family:Manrope,sans-serif;
+    color:rgb(34 34 34);
+    background:#fff;
+    outline:none;
+    transition:border-color 0.2s ease;
+    box-sizing:border-box;
 }
-
-.pincode .pincode-input::placeholder {
-  color: rgb(117 120 123);
+.pincode .pincode-input::placeholder{
+    color:rgb(117 120 123);
 }
-
-.pincode .pincode-input:focus {
-  border-color: rgb(252 175 23);
+.pincode .pincode-input:focus{
+    border-color:rgb(252 175 23);
 }
-
-.pincode .pincode-search-button {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  background-color: rgb(252 175 23);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-  position: relative;
-  overflow: visible;
+.pincode .pincode-search-button{
+    width:44px;
+    height:44px;
+    min-width:44px;
+    background-color:rgb(252 175 23);
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background-color 0.2s ease,transform 0.2s ease;
+    position:relative;
+    overflow:visible;
 }
-
-.pincode .pincode-search-button:hover {
-  background-color: rgb(230 155 10);
-  transform: scale(1.05);
+.pincode .pincode-search-button:hover{
+    background-color:rgb(230 155 10);
+    transform:scale(1.05);
 }
-
-.pincode .pincode-search-button::before {
-  content: "";
-  display: block;
-  width: 14px;
-  height: 2px;
-  background: #fff;
-  position: absolute;
+.pincode .pincode-search-button::before{
+    content:"";
+    display:block;
+    width:14px;
+    height:2px;
+    background:#fff;
+    position:absolute;
 }
-
-.pincode .pincode-search-button::after {
-  content: "";
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-top: 2px solid #fff;
-  border-right: 2px solid #fff;
-  transform: rotate(45deg);
-  position: absolute;
-  right: 14px;
+.pincode .pincode-search-button::after{
+    content:"";
+    display:block;
+    width:8px;
+    height:8px;
+    border-top:2px solid #fff;
+    border-right:2px solid #fff;
+    transform:rotate(45deg);
+    position:absolute;
+    right:14px;
 }
-
-@media (width <= 768px) {
-  .pincode.search h2,
-  .pincode:not(.cta) h2 {
-    font-size: 28px;
-  }
-
-  .pincode.search p,
-  .pincode:not(.cta) p {
-    font-size: 15px;
-  }
-
-  .pincode .pincode-search-card {
-    padding: 25px 30px;
-    max-width: 350px;
-  }
-
-  .pincode .pincode-search-card-title {
-    font-size: 18px;
-  }
+@media (width<=768px){
+    .pincode.search h2,
+    .pincode:not(.cta) h2{
+        font-size:28px;
+    }
+    .pincode.search p,
+    .pincode:not(.cta) p{
+        font-size:15px;
+    }
+    .pincode .pincode-search-card{
+        padding:25px 30px;
+        max-width:350px;
+    }
+    .pincode .pincode-search-card-title{
+        font-size:18px;
+    }
 }
-
-@media (width <= 600px) {
-  .pincode.search,
-  .pincode:not(.cta) {
-    padding: 30px 16px 40px;
-  }
-
-  .pincode.search h2,
-  .pincode:not(.cta) h2 {
-    font-size: 24px;
-  }
-
-  .pincode.search p,
-  .pincode:not(.cta) p {
-    font-size: 14px;
-    margin-bottom: 30px;
-  }
-
-  .pincode .pincode-search-card {
-    padding: 20px;
-    max-width: 100%;
-  }
-
-  .pincode .pincode-search-card-title {
-    font-size: 16px;
-  }
-
-  .pincode .pincode-input {
-    height: 48px;
-    padding: 12px;
-    font-size: 15px;
-  }
-
-  .pincode .pincode-search-button {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-  }
-
-  .pincode .pincode-search-button::after {
-    width: 10px;
-    height: 10px;
-  }
+@media (width<=600px){
+    .pincode.search,
+    .pincode:not(.cta){
+        padding:30px 16px 40px;
+    }
+    .pincode.search h2,
+    .pincode:not(.cta) h2{
+        font-size:24px;
+    }
+    .pincode.search p,
+    .pincode:not(.cta) p{
+        font-size:14px;
+        margin-bottom:30px;
+    }
+    .pincode .pincode-search-card{
+        padding:20px;
+        max-width:100%;
+    }
+    .pincode .pincode-search-card-title{
+        font-size:16px;
+    }
+    .pincode .pincode-input{
+        height:48px;
+        padding:12px;
+        font-size:15px;
+    }
+    .pincode .pincode-search-button{
+        width:40px;
+        height:40px;
+        min-width:40px;
+    }
+    .pincode .pincode-search-button::after{
+        width:10px;
+        height:10px;
+    }
 }
 
 /* ============================================
-   Variant: cta — Pincode (cta)
-   ============================================ */
-
-.section.pincode-container:has(.pincode.cta) {
-  background-color: #e6f3fa;
-  padding: 40px 0;
+Variant: cta — Pincode (cta)
+============================================ */
+.section.pincode-container:has(.pincode.cta){
+    background-color:#e6f3fa;
+    margin:0 20px;
+    border-radius:12px;
 }
-
-.pincode.cta {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+.pincode.cta{
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 20px;
 }
-
-.pincode.cta .pincode-cta-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 60px;
+.pincode.cta .pincode-cta-wrapper{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
 }
-
-.pincode.cta .pincode-cta-image {
-  flex: 0 0 50%;
-  max-width: 50%;
+.pincode.cta .pincode-cta-image{
+    flex:0 0 50%;
+    max-width:50%;
+    display:flex;
 }
-
-.pincode.cta .pincode-cta-image picture {
-  display: block;
-  width: 100%;
+.pincode.cta .pincode-cta-image picture{
+    display:block;
+    width:100%;
 }
-
-.pincode.cta .pincode-cta-image img {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  object-fit: cover;
+.pincode.cta .pincode-cta-image img{
+    width:100%;
+    height:auto;
+    object-fit:cover;
+    display:block;
 }
-
-.pincode.cta .pincode-cta-content {
-  flex: 1;
+.pincode.cta .pincode-cta-content{
+    flex:1;
+    padding:40px;
+    background:#e6f3fa;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
 }
-
-.pincode.cta .pincode-cta-content h2 {
-  font-family: Manrope, sans-serif;
-  font-size: 36px;
-  font-weight: 800;
-  color: #222;
-  line-height: 1.3;
-  margin: 0 0 30px;
+.pincode.cta .pincode-cta-content .righttext-heading h1{
+    font-family:Manrope,sans-serif;
+    font-size:36px;
+    font-weight:800;
+    line-height:1.3;
+    color:#222;
+    margin:0 0 30px;
 }
-
-.pincode.cta .pincode-cta-form {
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
+.pincode.cta .pin-code-city-search-wp .input-with-cta{
+    display:flex;
+    align-items:center;
 }
-
-.pincode.cta .pincode-input-wrapper {
-  flex: 1;
-  max-width: 300px;
+.pincode.cta .pincode-input-wp{
+    flex:1;
+    max-width:181px;
 }
-
-.pincode.cta .pincode-input {
-  width: 100%;
-  padding: 16px 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-family: Manrope, sans-serif;
-  font-size: 16px;
-  color: #333;
-  background: #fff;
-  box-sizing: border-box;
+.pincode.cta .pincode-input.ctaPincode{
+    font-size:16px;
+    line-height:24px;
+    letter-spacing:.54px;
+    font-weight:400;
+    text-transform:inherit;
+    width:100%;
+    padding-right:0;
+    border:1px solid #75787b;
+    background:#fff;
+    border-radius:6px;
 }
-
-.pincode.cta .pincode-input::placeholder {
-  color: #999;
+.pincode.cta .pincode-input.ctaPincode::placeholder{
+    color:#75787b;
 }
-
-.pincode.cta .pincode-input:focus {
-  outline: none;
-  border-color: #e87722;
-  box-shadow: 0 0 0 2px rgb(232 119 34 / 20%);
+.pincode.cta .pincode-input.ctaPincode:focus{
+    border-color:#fcaf17;
 }
-
-.pincode.cta .pincode-cta-button {
-  padding: 16px 40px;
-  background-color: #e87722;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-family: Manrope, sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
+.pincode.cta .pincode-cta-button.js-pincode-cta{
+    height:44px;
+    width:123px;
+    margin-left:15px;
+    border:none;
+    border-radius:50px;
+    background:#fcaf17;
+    color:#232426;
+    font-family:Manrope,sans-serif;
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:1.08px;
+    text-transform:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    white-space:nowrap;
+    padding:0 18px;
 }
-
-.pincode.cta .pincode-cta-button:hover {
-  background-color: #d46a1a;
-}
-
-@media (width <= 1024px) {
-  .pincode.cta .pincode-cta-wrapper {
-    gap: 40px;
-  }
-
-  .pincode.cta .pincode-cta-content h2 {
-    font-size: 30px;
-  }
-}
-
-@media (width <= 768px) {
-  .section.pincode-container:has(.pincode.cta) {
-    padding: 30px 0;
-  }
-
-  .pincode.cta .pincode-cta-wrapper {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .pincode.cta .pincode-cta-image {
-    flex: none;
-    max-width: 100%;
-  }
-
-  .pincode.cta .pincode-cta-content h2 {
-    font-size: 24px;
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  .pincode.cta .pincode-cta-form {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .pincode.cta .pincode-input-wrapper {
-    max-width: 100%;
-  }
-
-  .pincode.cta .pincode-cta-button {
-    width: 100%;
-    padding: 14px 32px;
-  }
+.pincode.cta .pincode-cta-button.js-pincode-cta:hover{
+    background:#fdbf45;
 }
