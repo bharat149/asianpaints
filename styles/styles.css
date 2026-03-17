@@ -222,7 +222,7 @@ a:hover {
 }
 
 /* buttons - Asian Paints brand */
-a.button:any-link,
+/* a.button:any-link,
 button {
   box-sizing: border-box;
   display: inline-block;
@@ -247,24 +247,24 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: background-color 0.2s ease, border-color 0.2s ease;
-}
+} */
 
-a.button:hover,
+/* a.button:hover,
 a.button:focus,
 button:hover,
 button:focus {
   background-color: var(--primary-color-light);
   border-color: var(--primary-color-light);
   cursor: pointer;
-}
+} */
 
-button:disabled,
+/* button:disabled,
 button:disabled:hover {
   background-color: #ddd;
   border-color: #ddd;
   color: #979797;
   cursor: unset;
-}
+} */
 
 /* Secondary button - outline style */
 a.button.secondary,
