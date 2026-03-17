@@ -267,10 +267,16 @@ Variant: cta — Pincode (cta)
     }
 }
 
+@media (width >= 992px) {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading {
+        width: 65% !important;
+    }
+}
+
 .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
     font-family: Manrope, sans-serif;
     font-weight: 800;
-    font-size: 36px;
+    font-size: 54px;
     line-height: 1.2;
     color: #222;
     margin-bottom: 25px;
@@ -279,14 +285,14 @@ Variant: cta — Pincode (cta)
 
 @media (width <= 767px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
-        font-size: 26px;
+        font-size: 32px;
         line-height: 1.15;
     }
 }
 
 @media (width >= 768px) and (width <= 991px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
-        font-size: 28px;
+        font-size: 40px;
     }
 }
 
@@ -305,7 +311,7 @@ Variant: cta — Pincode (cta)
 
 .pincode.cta .pincode-input-wp {
     flex: 1;
-    max-width: 250px;
+    max-width: 205px;
 }
 
 @media (width <= 767px) {
@@ -361,6 +367,10 @@ Variant: cta — Pincode (cta)
     white-space: nowrap;
     padding: 0 24px;
     transition: background-color 0.3s ease;
+}
+
+.pincode.cta .pincode-cta-button.js-pincode-cta svg {
+    margin-left: 8px;
 }
 
 @media (width <= 767px) {

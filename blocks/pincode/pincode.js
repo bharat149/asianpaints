@@ -161,7 +161,7 @@ function decorateCta(block) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'pincode-cta-button js-pincode-cta';
-  button.innerHTML = `${ctaText} &rarr;`;
+  button.innerHTML = `${ctaText} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M9.11103 1.1665L14.6666 6.99984M14.6666 6.99984L9.11103 12.8332M14.6666 6.99984L1.33325 6.99984" stroke="#232426" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
   inputWithCta.appendChild(inputWp);
   inputWithCta.appendChild(button);
