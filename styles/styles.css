@@ -399,7 +399,13 @@ main .section.grey {
   padding: 60px 0;
 }
 
-main .section.dark-blue {
+/* Grey section - Asian Paints */
+main .section.align-center {
+    display: grid;
+    justify-content: center;
+}
+
+main .section.dark-blue  {
   background-color: var(--navy-blue);
   color: white;
   margin: 0;
