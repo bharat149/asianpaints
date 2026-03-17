@@ -45,7 +45,7 @@ const AP_API = {
   SEARCH_RESULTS: apUrl('/content/ap/en/home/searchresult.html'),
   DEALER_PAGE: apUrl('/content/ap/en/home/store-locator.html'),
   CONTRACTOR_PAGE: apUrl('/content/ap/en/home/contractor-listing-page.html'),
-  KEYCLOAK_URL: 'https://auth.asianpaints.com',
+  KEYCLOAK_URL: 'https://betaauth.asianpaints.com',
   KEYCLOAK_REALM: 'asianpaintsRealm',
   KEYCLOAK_CLIENT: 'asianpaints',
   KEYCLOAK_JS: 'https://cdn.jsdelivr.net/npm/keycloak-js@22.0.3/dist/keycloak.min.js',
@@ -378,13 +378,16 @@ function updateProfileUI(block, authenticated) {
       greeting.classList.add('visible');
       setTimeout(() => greeting.classList.remove('visible'), 4000);
     }
-    // Sync Keycloak user to our storage so profile dropdown opens on click
+    // Sync Keycloak user to our storage so profile dropdown opens on click.
+    // Use idToken for keycloak-token/userProfile (matches original site); persist refresh token.
     try {
-      const token = keycloakInstance.token;
+      const idToken = keycloakInstance.idToken ?? keycloakInstance.token;
+      const refreshToken = keycloakInstance.refreshToken ?? null;
       setUser({
         name: name || keycloakInstance.tokenParsed.preferred_username || '',
         email: keycloakInstance.tokenParsed.email || '',
-        id_token: token,
+        id_token: idToken,
+        refresh_token: refreshToken,
       });
     } catch (err) { /* ignore */ }
   } else {
@@ -433,9 +436,9 @@ async function initKeycloak(block) {
     updateProfileUI(block, authenticated);
 
     keycloakInstance.onTokenExpired = () => {
-      keycloakInstance.updateToken(30).catch(() => {
-        updateProfileUI(block, false);
-      });
+      keycloakInstance.updateToken(30)
+        .then(() => updateProfileUI(block, true)) // Re-persist refreshed tokens
+        .catch(() => updateProfileUI(block, false));
     };
   } catch {
     updateProfileUI(block, false);
@@ -1414,8 +1417,8 @@ async function openSearchDialog(block) {
 //  Build Functions
 // ──────────────────────────────────────────────
 
-const AUTH_BASE = 'https://auth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/auth';
-const AUTH_LOGOUT_BASE = 'https://auth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/logout';
+const AUTH_BASE = 'https://betaauth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/auth';
+const AUTH_LOGOUT_BASE = 'https://betaauth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/logout';
 // Auth server only allows whitelisted redirect URIs; localhost is not allowed
 const AUTH_REDIRECT_URI = 'https://www.asianpaints.com/';
 const USER_STORAGE_KEY = 'ap_user';
@@ -1447,26 +1450,7 @@ function getUserFromAuthCookie() {
       const decoded = parseJwtPayload(value);
       if (!decoded) continue;
       const nameVal = decoded.name || decoded.given_name || decoded.preferred_username;
-      if (nameVal && decoded.iss?.includes('auth.asianpaints.com')) {
-        return { name: nameVal, email: decoded.email, id_token: value };
-      }
-    }
-  } catch (e) {
-    /* ignore */
-  }
-  return null;
-}
-
-function getUserFromLocalStorage() {
-  try {
-    const keys = ['keycloak-token', 'userProfile'];
-    for (const key of keys) {
-      const value = localStorage.getItem(key);
-      if (!value) continue;
-      const decoded = parseJwtPayload(value);
-      if (!decoded) continue;
-      const nameVal = decoded.name || decoded.given_name || decoded.preferred_username;
-      if (nameVal && decoded.iss?.includes('auth.asianpaints.com')) {
+      if (nameVal && (decoded.iss?.includes('auth.asianpaints.com') || decoded.iss?.includes('betaauth.asianpaints.com'))) {
         return { name: nameVal, email: decoded.email, id_token: value };
       }
     }
@@ -1515,6 +1499,13 @@ function setUser(user) {
   try {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
     localStorage.removeItem(SIGNED_OUT_KEY);
+    // Persist to keycloak-token and keycloak-refresh-token
+    if (user?.id_token) {
+      localStorage.setItem('keycloak-token', user.id_token);
+    }
+    if (user?.refresh_token) {
+      localStorage.setItem('keycloak-refresh-token', user.refresh_token);
+    }
   } catch (e) {
     /* localStorage unavailable */
   }
@@ -1524,6 +1515,7 @@ function clearUser() {
   try {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem('keycloak-token');
+    localStorage.removeItem('keycloak-refresh-token');
     localStorage.removeItem('userProfile');
     localStorage.setItem(SIGNED_OUT_KEY, '1');
   } catch (e) {
@@ -2523,28 +2515,20 @@ export default async function decorate(block) {
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
   }
 
-  // 2. Real login: JWT from cookie or localStorage (live asianpaints.com integration)
+  // 2. Real login: JWT from cookie (live asianpaints.com integration)
   if (!getUser() && !hasSignedOut) {
-    authUser = getUserFromAuthCookie() || getUserFromLocalStorage();
+    authUser = getUserFromAuthCookie();
     if (authUser) setUser(authUser);
   }
 
-  // 3. Mock: user returned after auth redirect — show mock data (ignore signed_out)
+  // 3. Auth redirect return: clear flags only (no mock user)
   if (!getUser()) {
     try {
       if (localStorage.getItem(AUTH_REDIRECTED_KEY) === '1') {
         localStorage.removeItem(AUTH_REDIRECTED_KEY);
         localStorage.removeItem(SIGNED_OUT_KEY);
-        setUser({ name: 'Bharat Wadhwa' });
       }
     } catch (err) { /* ignore */ }
-  }
-
-  // 4. Demo login: ?demo_login=1 only
-  if (!getUser() && !hasSignedOut) {
-    if (params.get('demo_login') === '1') {
-      setUser({ name: params.get('demo_user') || 'Bharat Wadhwa' });
-    }
   }
 
   // Standard EDS nav fetch: read path from metadata, fallback to /nav
