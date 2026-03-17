@@ -2,50 +2,79 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
- * Carousel Expertise Block - 4x2 grid of expertise category cards
- * Each card has an image with a text label overlay
+ * Carousel Expertise Block - Four Image in Row (Variant Five)
  */
 
-function createSlide(row, slideIndex, carouselId) {
-  const slide = document.createElement('li');
-  slide.dataset.slideIndex = slideIndex;
-  slide.setAttribute('id', `carousel-expertise-${carouselId}-slide-${slideIndex}`);
-  slide.classList.add('carousel-expertise-slide');
-
-  row.querySelectorAll(':scope > div').forEach((column, colIdx) => {
-    column.classList.add(`carousel-expertise-slide-${colIdx === 0 ? 'image' : 'content'}`);
-    slide.append(column);
-  });
-
-  return slide;
-}
-
-let carouselId = 0;
 export default async function decorate(block) {
-  carouselId += 1;
-  block.setAttribute('id', `carousel-expertise-${carouselId}`);
-  const rows = block.querySelectorAll(':scope > div');
+  const rows = [...block.querySelectorAll(':scope > div')];
 
   const container = document.createElement('div');
-  container.classList.add('carousel-expertise-slides-container');
+  container.className = 'fourimageinrow';
 
-  const slidesWrapper = document.createElement('ul');
-  slidesWrapper.classList.add('carousel-expertise-slides');
+  rows.forEach((row) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'fourimageinrow-wraper';
 
-  rows.forEach((row, idx) => {
-    const slide = createSlide(row, idx, carouselId);
-    moveInstrumentation(row, slide);
-    slidesWrapper.append(slide);
-    row.remove();
+    const pic = row.querySelector('picture');
+    const link = row.querySelector('a');
+    let title = '';
+    const headings = row.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    if (headings.length > 0) {
+      title = headings[0].textContent;
+    } else if (link) {
+      title = link.textContent;
+    } else {
+      title = row.textContent.trim();
+    }
+
+    const a = document.createElement('a');
+    a.className = 'fourimageinrow-imagewithtext focus-visible-auto-imp fourimageinrow-track';
+    a.href = link ? link.href : '#';
+    if (link && link.target) {
+      a.target = link.target;
+    } else if (link) {
+      a.target = '_blank';
+    }
+    a.setAttribute('aria-label', title);
+    a.setAttribute('tabindex', '0');
+
+    if (pic) {
+      const img = pic.querySelector('img');
+      if (img) {
+        img.className = 'fourimageinrow-img';
+        img.setAttribute('width', '314');
+        img.setAttribute('height', '214');
+      }
+      a.append(pic);
+    }
+
+    const titleWrap = document.createElement('div');
+    titleWrap.className = 'fourimageinrow-titlewitharrow';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'fourimageinrow-imgtitle';
+    titleSpan.textContent = title;
+
+    const arrowSpan = document.createElement('span');
+    arrowSpan.className = 'fourimageinrow-imgarrow';
+    arrowSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 16 14" fill="none"><path d="M9.11103 1.1665L14.6666 6.99984M14.6666 6.99984L9.11103 12.8332M14.6666 6.99984L1.33325 6.99984" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    titleWrap.append(titleSpan, arrowSpan);
+    a.append(titleWrap);
+    wrapper.append(a);
+
+    moveInstrumentation(row, wrapper);
+    container.append(wrapper);
   });
 
   // Optimize images
-  slidesWrapper.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '256' }]);
+  container.querySelectorAll('picture > img').forEach((img) => {
+    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '400' }]);
     moveInstrumentation(img, optimizedPic.querySelector('img'));
     img.closest('picture').replaceWith(optimizedPic);
+    optimizedPic.querySelector('img').className = 'fourimageinrow-img';
   });
 
-  container.append(slidesWrapper);
+  block.textContent = '';
   block.append(container);
 }
