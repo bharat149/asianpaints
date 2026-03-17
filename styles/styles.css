@@ -352,7 +352,6 @@ main > .section:first-of-type {
 
 /* Constrained width for default content (text, etc.) */
 main > .section > .default-content-wrapper {
-  max-width: 1200px;
   margin: auto;
   padding: 0 24px;
 }
