@@ -1,0 +1,39 @@
+.calculatorhub-container {
+    background: #f7f2e7;
+    border-radius: 10px;
+}
+
+.calculatorhub {
+    display: flex;
+    padding: 30px 50px 30px 100px;
+    justify-content: center;
+    align-items: center;
+}
+
+.calculatorhub .tool-description {
+    flex: 0 0 40%;
+}
+
+.calculatorhub .tool-description .calculatorhub-heading {
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 31.2px;
+    margin-bottom: 10px;
+}
+
+.calculatorhub .tool-description .calculatorhub-subheading {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 70.4px;
+    letter-spacing: -.02em;
+    text-align: left;
+    width: 80%;
+    margin-top: 0;
+}
+
+.calculatorhub .tool-fields {
+    flex: 0 0 60%;
+    background: #fff;
+    padding: 30px 40px 10px;
+    border-radius: 8px;
+}
