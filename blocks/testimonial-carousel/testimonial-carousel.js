@@ -43,61 +43,28 @@ function buildHeading(rows, block) {
   return { headingText, siblingHeading, testimonialRows };
 }
 
-function createQuoteIcon() {
-  const logo = document.createElement('div');
-  logo.className = 'testimonial-logo-bg';
-
-  const img = document.createElement('img');
-  img.src = 'https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/wht-our-client-say-bg-logo.webp';
-  img.alt = 'Quote background';
-  img.loading = 'lazy';
-
-  logo.appendChild(img);
-
-  return logo;
-}
-
-function getTestimonialContent(columns) {
-  let quoteText = '';
-  let nameText = '';
-  let locationText = '';
-
-  if (columns.length >= 4) {
-    quoteText = columns[1]?.textContent?.trim() || '';
-    nameText = columns[2]?.textContent?.trim() || '';
-    locationText = columns[3]?.textContent?.trim() || '';
-  } else if (columns.length >= 2) {
-    const paragraphs = columns[1]?.querySelectorAll('p') || [];
-    if (paragraphs[0]) quoteText = paragraphs[0].textContent.trim();
-
-    if (paragraphs[1]) {
-      const strong = paragraphs[1].querySelector('strong');
-      const fullText = paragraphs[1].textContent.trim();
-
-      if (strong) {
-        nameText = strong.textContent.trim();
-        locationText = fullText.replace(nameText, '').replace(/^[,\s]+/, '').trim();
-      } else {
-        const parts = fullText.split(',');
-        nameText = parts[0]?.trim() || '';
-        locationText = parts.slice(1).join(',').trim();
-      }
-    }
-  }
-
-  return { quoteText, nameText, locationText };
-}
-
 function createVideoModal(block) {
   const modal = document.createElement('div');
-  modal.className = 'testimonial-video-modal';
+  modal.className = 'modal fade testimonial-video-modal';
+  modal.id = 'videoModal';
+  modal.setAttribute('data-bs-backdrop', 'static');
+  modal.setAttribute('data-bs-keyboard', 'false');
+  modal.setAttribute('tabindex', '-1');
+  modal.setAttribute('aria-hidden', 'true');
+
   modal.innerHTML = `
-    <div class="testimonial-video-modal-content">
-      <button class="testimonial-video-close" type="button" aria-label="Close video popup">
-        <span></span>
-        <span></span>
-      </button>
-      <div class="testimonial-video-wrapper"></div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close testimonial-video-close" data-bs-dismiss="modal" aria-label="Close">
+                    <img src="https://asset.fwcdn3.com/js/8334d7de98d44c40d6af0a847f6bbf1d.svg" loading="lazy" fetchpriority="auto"/>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ratio ratio-16x9 testimonial-video-wrapper">
+                </div>
+            </div>
+        </div>
     </div>
   `;
 
@@ -105,6 +72,7 @@ function createVideoModal(block) {
   return modal;
 }
 
+/* eslint-disable no-unused-vars */
 function openVideoModal(block, videoUrl) {
   const modal = block.querySelector('.testimonial-video-modal');
   const videoWrapper = modal?.querySelector('.testimonial-video-wrapper');
@@ -116,8 +84,9 @@ function openVideoModal(block, videoUrl) {
   videoWrapper.innerHTML = `
     <iframe
       src="${iframeSrc}"
-      title="Customer testimonial video"
-      allow="autoplay; encrypted-media; picture-in-picture"
+      id="video"
+      title="video"
+      allow="autoplay;"
       allowfullscreen
     ></iframe>
   `;
@@ -125,6 +94,7 @@ function openVideoModal(block, videoUrl) {
   modal.classList.add('active');
   document.body.classList.add('testimonial-video-open');
 }
+/* eslint-enable no-unused-vars */
 
 function closeVideoModal(block) {
   const modal = block.querySelector('.testimonial-video-modal');
@@ -136,58 +106,43 @@ function closeVideoModal(block) {
   document.body.classList.remove('testimonial-video-open');
 }
 
+/* eslint-disable no-unused-vars */
 function buildSlide(row, block) {
   const slide = document.createElement('div');
-  slide.className = 'testimonial-slide swiper-slide';
+  slide.className = 'testimonial-image-section focus-visible-auto-imp swiper-slide';
+  slide.setAttribute('tabindex', '0');
 
   const columns = [...row.querySelectorAll(':scope > div')];
 
   const imageCol = columns[0];
-  const videoCol = columns[1];
   const quoteCol = columns[2];
   const nameCol = columns[3];
   const placeCol = columns[4];
 
-  const videoLink = (
-    videoCol?.querySelector('a')?.href
-    || videoCol?.textContent?.trim()
-    || ''
-  );
-
   const imageWrapper = document.createElement('div');
-  imageWrapper.className = 'testimonial-image';
+  imageWrapper.className = 'carousel-image bg-lazy-img';
 
   const picture = imageCol?.querySelector('picture');
-  if (picture) imageWrapper.appendChild(picture.cloneNode(true));
+  let imgSrc = '';
+  if (picture) {
+    const img = picture.querySelector('img');
+    if (img) imgSrc = img.src;
+    imageWrapper.style.setProperty('--slick-image-url', `url('${imgSrc}')`);
+    imageWrapper.style.setProperty('--slick-image-mobile-url', `url('${imgSrc}')`);
 
-  const playButton = document.createElement('button');
-  playButton.className = 'testimonial-play-button';
-  playButton.type = 'button';
-  playButton.setAttribute('aria-label', 'Play testimonial video');
+    // We recreate picture for the play icon specifically
+    const playPicture = document.createElement('picture');
+    playPicture.style.pointerEvents = 'none';
 
-  playButton.innerHTML = `
-    <img
-      src="https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/play-icon.webp"
-      alt="Play video"
-      loading="lazy"
-    />
-  `;
-
-  if (!videoLink) {
-    playButton.style.display = 'none';
-  } else {
-    playButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openVideoModal(block, videoLink);
-    });
+    imageWrapper.appendChild(playPicture);
   }
 
-  imageWrapper.appendChild(playButton);
-
   const contentWrapper = document.createElement('div');
-  contentWrapper.className = 'testimonial-content';
-  contentWrapper.appendChild(createQuoteIcon());
+  contentWrapper.className = 'image-text-section';
+
+  const logoPic = document.createElement('picture');
+  logoPic.innerHTML = '<img loading="lazy" fetchpriority="auto" height="70" width="81" src="https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/wht-our-client-say-bg-logo.webp" alt="wht-our-client-say-bg-logo" title="wht-our-client-say-bg-logo"/>';
+  contentWrapper.appendChild(logoPic);
 
   const quoteText = quoteCol?.textContent?.trim() || '';
   const nameText = nameCol?.textContent?.trim() || '';
@@ -195,18 +150,32 @@ function buildSlide(row, block) {
 
   if (quoteText) {
     const quoteDiv = document.createElement('div');
-    quoteDiv.className = 'testimonial-quote';
+    quoteDiv.setAttribute('role', 'article');
+    quoteDiv.className = 'image-description';
     quoteDiv.textContent = quoteText;
     contentWrapper.appendChild(quoteDiv);
   }
 
-  if (nameText) {
+  if (nameText || placeText) {
     const attribution = document.createElement('div');
-    attribution.className = 'testimonial-attribution';
-    attribution.innerHTML = `
-      <span class="testimonial-name">${nameText}</span>
-      ${placeText ? `<span class="testimonial-location">, ${placeText}</span>` : ''}
-    `;
+    attribution.className = 'image-text';
+
+    if (nameText) {
+      const spanName = document.createElement('span');
+      spanName.setAttribute('role', 'note');
+      spanName.className = 'name';
+      spanName.innerHTML = `${nameText},&nbsp;`;
+      attribution.appendChild(spanName);
+    }
+
+    if (placeText) {
+      const spanPlace = document.createElement('span');
+      spanPlace.setAttribute('role', 'note');
+      spanPlace.className = 'place';
+      spanPlace.textContent = placeText;
+      attribution.appendChild(spanPlace);
+    }
+
     contentWrapper.appendChild(attribution);
   }
 
@@ -258,22 +227,27 @@ export default async function decorate(block) {
   if (!testimonialRows.length) return;
 
   const container = document.createElement('div');
-  container.className = 'testimonial-carousel-container';
+  container.className = 'multi-video-column-container';
+  container.setAttribute('data-attr-variant-type', 'variantTwo');
 
   const headingWrapper = document.createElement('div');
-  headingWrapper.className = 'testimonial-heading';
+  headingWrapper.className = 'water-proofing-heading';
 
-  const h2 = document.createElement('h2');
-  const words = headingText.split(' ');
-  const midPoint = Math.ceil(words.length / 2);
-  h2.innerHTML = `${words.slice(0, midPoint).join(' ')}<br>${words.slice(midPoint).join(' ')}`;
-  headingWrapper.appendChild(h2);
+  const headingInner = document.createElement('div');
+  headingInner.setAttribute('role', 'heading');
+  headingInner.setAttribute('aria-level', '1');
+  headingInner.className = 'first-sub-heading-section';
 
-  const carouselWrapper = document.createElement('div');
-  carouselWrapper.className = 'testimonial-carousel-wrapper';
+  const spanOne = document.createElement('span');
+  spanOne.className = 'sub-heading-one';
+  spanOne.textContent = headingText;
+  headingInner.appendChild(spanOne);
 
-  const swiperEl = document.createElement('div');
-  swiperEl.className = 'testimonial-swiper swiper';
+  headingWrapper.appendChild(headingInner);
+
+  const carouselSection = document.createElement('div');
+  carouselSection.id = 'waterproofing';
+  carouselSection.className = 'carousel-section waterproofing-section swiper';
 
   const swiperWrapper = document.createElement('div');
   swiperWrapper.className = 'swiper-wrapper';
@@ -282,28 +256,13 @@ export default async function decorate(block) {
     swiperWrapper.appendChild(buildSlide(row, block));
   });
 
-  swiperEl.appendChild(swiperWrapper);
+  carouselSection.appendChild(swiperWrapper);
 
   const paginationEl = document.createElement('div');
   paginationEl.className = 'testimonial-pagination swiper-pagination';
 
-  const navButtons = document.createElement('div');
-  navButtons.className = 'testimonial-nav-buttons';
-  navButtons.innerHTML = `
-    <button class="testimonial-prev" aria-label="Previous testimonial" type="button">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15 18L9 12L15 6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <button class="testimonial-next" aria-label="Next testimonial" type="button">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9 18L15 12L9 6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-  `;
-
-  carouselWrapper.append(swiperEl, paginationEl, navButtons);
-  container.append(headingWrapper, carouselWrapper);
+  container.append(headingWrapper, carouselSection);
+  carouselSection.append(paginationEl);
 
   block.textContent = '';
   block.appendChild(container);
@@ -312,51 +271,39 @@ export default async function decorate(block) {
   hideSiblingHeading(siblingHeading);
   bindModalEvents(block);
 
-  const prevButton = block.querySelector('.testimonial-prev');
-  const nextButton = block.querySelector('.testimonial-next');
-
-  const swiper = new Swiper(swiperEl, {
-    slidesPerView: 1.1,
+  const swiper = new Swiper(carouselSection, {
+    slidesPerView: 'auto',
     spaceBetween: 20,
     speed: 500,
     watchOverflow: true,
-    navigation: {
-      prevEl: prevButton,
-      nextEl: nextButton,
-    },
+    slidesOffsetBefore: 15,
+    slidesOffsetAfter: 15,
     pagination: {
       el: paginationEl,
-      clickable: false,
+      clickable: true,
     },
     breakpoints: {
-      600: {
-        slidesPerView: 1.2,
-        spaceBetween: 20,
-      },
       900: {
         slidesPerView: 2,
         spaceBetween: 20,
+        slidesOffsetBefore: 0,
+        slidesOffsetAfter: 0,
       },
       1200: {
-        slidesPerView: 3,
+        slidesPerView: 2.2,
         spaceBetween: 20,
+        slidesOffsetBefore: 0,
+        slidesOffsetAfter: 0,
       },
-    },
-    on: {
-      init(s) {
-        prevButton.disabled = s.isBeginning;
-        nextButton.disabled = s.isEnd;
-      },
-      slideChange(s) {
-        prevButton.disabled = s.isBeginning;
-        nextButton.disabled = s.isEnd;
-      },
-      resize(s) {
-        prevButton.disabled = s.isBeginning;
-        nextButton.disabled = s.isEnd;
+      1400: {
+        slidesPerView: 2.5,
+        spaceBetween: 20,
+        slidesOffsetBefore: 0,
+        slidesOffsetAfter: 0,
       },
     },
   });
 
+  // eslint-disable-next-line no-underscore-dangle
   block._testimonialSwiper = swiper;
 }
