@@ -401,9 +401,51 @@ main .section.grey {
 
 /* Grey section - Asian Paints */
 main .section.align-center {
-    display: grid;
-    justify-content: center;
+    text-align: center;
 }
+
+/* Adding CTA Styling here*/
+
+/* ============================================
+   READ T&C — AEM CTA migrated styles
+   ============================================ */
+
+main .section.read-tc-cta {
+    text-align: center; /* replaces .centerAlign */
+}
+
+main .section.read-tc-cta .button-container {
+    margin: 0;
+}
+
+/* Override global EDS button */
+main .section.read-tc-cta .button-container a.button {
+    display: inline-block;
+    width: 270px;
+
+    background: #431a80;
+    border: 1px solid #431a80;
+    color: #fff;
+
+    font-family: Manrope, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.86px;
+    line-height: 16px;
+
+    padding: 16px 20px;
+    border-radius: 2px;          /* ✅ critical */
+    text-transform: uppercase;
+
+    margin: 0 auto;
+}
+
+/* Remove EDS hover overrides */
+main .section.read-tc-cta .button-container a.button:hover {
+    background: #431a80;
+    color: #fff;
+}
+
 
 main .section.dark-blue  {
   background-color: var(--navy-blue);
