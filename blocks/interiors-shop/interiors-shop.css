@@ -1,12 +1,16 @@
 .interiors-shop-wrapper {
-  padding:  0 !important;
+  padding: 0 !important;
+}
+
+.interiors-shop-container {
+  padding: 0 50px;
 }
 
 /* Full-width block */
 .interiors-shop {
-  background: #011c5f;
+  background: #000;
   color: white;
-  padding: 70px 40px !important;
+  padding: 50px;
   width: 100%;
   box-sizing: border-box;
   padding-right: 4%;
@@ -37,17 +41,18 @@
 }
 
 .interiors-shop-heading {
-  color: #f47838;
+  width: 147%;
+  color: #fff;
   font-size: 54px;
   line-height: 60px;
   font-weight: 800;
-  margin: 0 0 28px;
+  margin: -10px 0 28px;
 }
 
 .interiors-shop-description {
-  color: white;
-  font-size: 1.05rem;
-  line-height: 1.7;
+  color: #b0b1b3;
+  font-size: 16px;
+  line-height: 24px;
   margin: 0;
   opacity: 0.9;
 }
@@ -69,7 +74,6 @@
 
 .interiors-shop-card-image {
   width: 100%;
-  aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 16px;
 }
@@ -82,59 +86,49 @@
 }
 
 .interiors-shop-card-content {
-  padding: 24px;
-  background: #011c5f;
+  background: #000;
   color: white;
 }
 
 .interiors-shop-card h5 {
   color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 12px;
-  line-height: 1.3;
+  font-size: 36px;
+  margin: 20px 0 10px;
+  line-height: 39.5px;
 }
 
 .interiors-shop-card p {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0 0 24px;
-  min-height: 48px;
+  color: #b0b1b3;
+  font-size: 18px;
+  line-height: 25.2px;
+  margin: 0 0 28px;
+
 }
 
 .interiors-shop-button {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 28px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 700;
   background: transparent;
-  color: white !important;
+  color: white;
   text-decoration: none;
   border: 0.5px solid white;
   border-radius: 30px;
-  font-weight: 600;
-  font-size: 1rem;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
-.interiors-shop-button .arrow {
-  transition: transform 0.3s ease;
-}
-
 .interiors-shop-button:hover {
-  background: white;
-  color: #011c5f;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-}
-
-.interiors-shop-button:hover .arrow {
-  transform: translateX(4px);
+  background: #fff7e8;
+  color: #000;
+  border: 1px solid #232426;
 }
 
 /* Large desktop */
-@media (width >= 1400px) {
+@media (width >=1400px) {
   .interiors-shop-wrapper {
     grid-template-columns: 1.2fr 1fr 1fr;
   }
@@ -163,22 +157,47 @@
 
 /* Small tablet / large mobile */
 @media (width < 900px) {
-  .interiors-shop {
-    padding: 60px 24px;
+  .interiors-shop-container {
+    padding: 0;
   }
 
-  .interiors-shop-wrapper {
-    grid-template-columns: 1fr;
-    gap: 24px;
+  .interiors-shop {
+    padding: 32px 0;
   }
 
   .interiors-shop-left-column {
-    gap: 24px;
+    display: block;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+  }
+
+  .interiors-shop-left-column .interiors-shop-card {
+    display: none;
+  }
+
+  .interiors-shop-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    margin-left: 16px;
+    box-sizing: border-box;
+  }
+
+  .interiors-shop-grid::-webkit-scrollbar {
+    display: none;
   }
 
   .interiors-shop-heading {
+    width: 100%;
     font-size: 32px;
     line-height: 38px;
+    margin: 0 0 12px;
   }
 
   .interiors-shop-description {
@@ -186,17 +205,33 @@
   }
 
   .interiors-shop-text {
-    margin-bottom: 8px;
+    margin-bottom: 0;
   }
 
-  /* Remove stair effect on mobile */
+  .interiors-shop-card {
+    flex: 0 0 82%;
+    min-width: 82%;
+    scroll-snap-align: start;
+  }
+
+  .interiors-shop-card h5 {
+    margin: 10px 0 1px;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+  }
+
+  .interiors-shop-card p {
+    font-size: 14px;
+    line-height: 20px;
+    width: 92%;
+    margin-bottom: 20px;
+  }
+
+  .interiors-shop-card.card-left,
   .interiors-shop-card.card-middle,
   .interiors-shop-card.card-right {
     margin-top: 0;
-  }
-
-  .interiors-shop-card-image {
-    aspect-ratio: 16 / 10;
   }
 
   .interiors-shop-card p {

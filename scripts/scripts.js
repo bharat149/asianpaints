@@ -1,3 +1,4 @@
+
 import {
   loadHeader,
   loadFooter,
@@ -12,6 +13,7 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
+import { initAnalytics } from './analytics.js';
 
 (function loadCryptoJSGlobally() {
   if (window.CryptoJS) return;
@@ -21,6 +23,47 @@ import {
   script.async = false; // critical: preserve execution order
   document.head.appendChild(script);
 }());
+
+/**
+ * Global Swiper loader
+ * - can be called by any block when needed
+ * - keeps a single promise to avoid duplicate requests
+ */
+window.loadSwiper = function loadSwiper() {
+  if (window.__swiperPromise) return window.__swiperPromise;
+
+  window.__swiperPromise = new Promise((resolve, reject) => {
+    if (window.Swiper) {
+      resolve(window.Swiper);
+      return;
+    }
+
+    if (!document.querySelector('link[data-swiper-css]')) {
+      const swiperCss = document.createElement('link');
+      swiperCss.rel = 'stylesheet';
+      swiperCss.href = 'https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css';
+      swiperCss.setAttribute('data-swiper-css', 'true');
+      document.head.appendChild(swiperCss);
+    }
+
+    const existingScript = document.querySelector('script[data-swiper-js]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(window.Swiper), { once: true });
+      existingScript.addEventListener('error', reject, { once: true });
+      return;
+    }
+
+    const swiperScript = document.createElement('script');
+    swiperScript.src = 'https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js';
+    swiperScript.setAttribute('data-swiper-js', 'true');
+    swiperScript.async = true;
+    swiperScript.onload = () => resolve(window.Swiper);
+    swiperScript.onerror = reject;
+    document.head.appendChild(swiperScript);
+  });
+
+  return window.__swiperPromise;
+};
 
 /**
  * Moves all the attributes from a given element to another given element.
@@ -63,7 +106,9 @@ export function moveInstrumentation(from, to) {
 async function loadFonts() {
   await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
   try {
-    if (!window.location.hostname.includes('localhost')) sessionStorage.setItem('fonts-loaded', 'true');
+    if (!window.location.hostname.includes('localhost')) {
+      sessionStorage.setItem('fonts-loaded', 'true');
+    }
   } catch (e) {
     // sessionStorage may be unavailable (e.g. Safari private browsing)
   }
@@ -89,7 +134,6 @@ function buildAutoBlocks(main) {
  */
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
-  // hopefully forward compatible button decoration
   decorateButtons(main);
   decorateIcons(main);
   decorateLinkedPictures(main);
@@ -104,7 +148,9 @@ export function decorateMain(main) {
  */
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
+   initAnalytics();
   decorateTemplateAndTheme();
+
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
@@ -113,7 +159,6 @@ async function loadEager(doc) {
   }
 
   try {
-    /* if desktop (proxy for fast connection) or fonts already loaded, load fonts.css */
     if (window.innerWidth >= 900 || sessionStorage.getItem('fonts-loaded')) {
       loadFonts();
     }
@@ -148,10 +193,20 @@ async function loadLazy(doc) {
  * without impacting the user experience.
  */
 function loadDelayed() {
-  // eslint-disable-next-line import/no-cycle
-  window.setTimeout(() => import('./delayed.js'), 3000);
-  // load anything that can be postponed to the latest here
+  window.setTimeout(() => {
+    import('./delayed.js');
+  }, 3000);
+
+  // Preload Swiper later so it doesn't affect LCP,
+  // but keep window.loadSwiper available for on-demand block usage.
+  window.setTimeout(() => {
+    window.loadSwiper?.().catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload Swiper', e);
+    });
+  }, 3000);
 }
+
 
 async function loadPage() {
   await loadEager(document);
@@ -164,31 +219,34 @@ loadPage();
 const { searchParams, origin } = new URL(window.location.href);
 const branch = searchParams.get('nx') || 'main';
 
-export const NX_ORIGIN = branch === 'local' || origin.includes('localhost') ? 'http://localhost:6456/nx' : 'https://da.live/nx';
+export const NX_ORIGIN = branch === 'local' || origin.includes('localhost')
+  ? 'http://localhost:6456/nx'
+  : 'https://da.live/nx';
 
 (async function loadDa() {
   /* eslint-disable import/no-unresolved */
   if (searchParams.get('dapreview')) {
     await import('https://da.live/scripts/dapreview.js').then(async ({ default: daPreview }) => {
       await daPreview(loadPage);
+
       // add class to body to be used for restricting vh metric
       document.body.classList.add('da-live-preview');
 
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
-            // Check if body was replaced and apply class to new body
             const currentBody = document.body;
             if (currentBody && !currentBody.classList.contains('da-live-preview')) {
-              // apply class to body if it's not already there
               currentBody.classList.add('da-live-preview');
             }
           }
         });
       });
+
       observer.observe(document.documentElement, { childList: true, subtree: false });
     });
   }
+
   if (searchParams.get('daexperiment')) {
     import(`${NX_ORIGIN}/public/plugins/exp/exp.js`);
   }

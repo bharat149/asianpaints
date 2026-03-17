@@ -35,8 +35,8 @@
   --gradient-brand: linear-gradient(270deg, rgb(248 161 46), rgb(190 42 29) 50.07%, rgb(69 33 108) 98.1%);
 
   /* fonts */
-  --body-font-family: manrope, manrope-fallback, sans-serif;
-  --heading-font-family: manrope, manrope-fallback, sans-serif;
+  --body-font-family: 'Manrope', manrope-fallback, sans-serif;
+  --heading-font-family: 'Manrope', manrope-fallback, sans-serif;
 
   /* body sizes */
   --body-font-size-m: 22px;
@@ -211,14 +211,14 @@ button {
 
 /* links */
 a:any-link {
-  color: var(--link-color);
+  /* color: var(--link-color); */
   text-decoration: none;
   overflow-wrap: break-word;
 }
 
 a:hover {
   color: var(--link-hover-color);
-  text-decoration: underline;
+  /* text-decoration: underline; */
 }
 
 /* buttons - Asian Paints brand */

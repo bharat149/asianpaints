@@ -1,5 +1,86 @@
-export default function decorate(block) {
-  // Add wrapper class to parent section
+/*
+** Authoring format **
+col 1 = heading
+col 2 = multiple images
+col 3 = multiple titles
+col 4 = multiple URLs
+*/
+
+async function getSwiperClass() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
+
+  // eslint-disable-next-line no-console
+  console.warn('Swiper loader is not available on window.loadSwiper');
+  return null;
+}
+
+function updateNavState(swiper, prevButton, nextButton) {
+  if (!swiper || !prevButton || !nextButton) return;
+
+  prevButton.disabled = swiper.isBeginning;
+  nextButton.disabled = swiper.isEnd;
+
+  prevButton.style.opacity = swiper.isBeginning ? '0.4' : '1';
+  nextButton.style.opacity = swiper.isEnd ? '0.4' : '1';
+}
+
+function removeInjectedSwiperIcons(prevButton, nextButton) {
+  prevButton?.querySelectorAll('.swiper-navigation-icon').forEach((icon) => icon.remove());
+  nextButton?.querySelectorAll('.swiper-navigation-icon').forEach((icon) => icon.remove());
+}
+
+function getDirectItems(column) {
+  if (!column) return [];
+
+  const items = [...column.children].filter((child) => {
+    const text = child.textContent?.trim();
+    const media = child.querySelector('picture, img') || child.matches('picture, img');
+    const link = child.querySelector('a') || child.matches('a');
+    return text || media || link;
+  });
+
+  if (items.length) return items;
+
+  return column.textContent?.trim() ? [column] : [];
+}
+
+function getTitleFromItem(item) {
+  if (!item) return '';
+
+  const cloned = item.cloneNode(true);
+  cloned.querySelectorAll('picture, img, a').forEach((el) => el.remove());
+
+  return cloned.textContent?.trim() || item.textContent?.trim() || '';
+}
+
+function getImageFromItem(item) {
+  if (!item) return null;
+
+  if (item.matches?.('picture')) return item.cloneNode(true);
+
+  const picture = item.querySelector?.('picture');
+  if (picture) return picture.cloneNode(true);
+
+  const img = item.matches?.('img') ? item : item.querySelector?.('img');
+  if (img) return img.cloneNode(true);
+
+  return null;
+}
+
+function getHrefFromItem(item) {
+  if (!item) return '#';
+
+  if (item.matches?.('a[href]')) return item.href.trim();
+
+  const anchor = item.querySelector?.('a[href]');
+  if (anchor?.href) return anchor.href.trim();
+
+  const text = item.textContent?.trim();
+  return text || '#';
+}
+
+export default async function decorate(block) {
   const section = block.closest('.section');
   if (section) {
     section.classList.add('tools-carousel-wrapper');
@@ -9,128 +90,155 @@ export default function decorate(block) {
   if (!row) return;
 
   const columns = [...row.children];
-  if (columns.length < 2) return;
+  if (columns.length < 4) return;
 
-  // First column is heading
   const headingCol = columns[0];
   headingCol.classList.add('tools-carousel-heading');
 
-  // Second column contains carousel items
-  const carouselCol = columns[1];
-  if (carouselCol) {
-    carouselCol.classList.add('tools-carousel-items');
+  const imageCol = columns[1];
+  const titleCol = columns[2];
+  const linkCol = columns[3];
 
-    // Get all images and headings
-    const images = [...carouselCol.querySelectorAll('img')];
-    const headings = [...carouselCol.querySelectorAll('h3')];
+  const carouselCol = document.createElement('div');
+  carouselCol.className = 'tools-carousel-items';
 
-    if (images.length > 0 || headings.length > 0) {
-      // Create carousel structure
-      const carouselContainer = document.createElement('div');
-      carouselContainer.className = 'tools-carousel-container';
+  const imageItems = getDirectItems(imageCol);
+  const titleItems = getDirectItems(titleCol);
+  const linkItems = getDirectItems(linkCol);
 
-      const carouselTrack = document.createElement('div');
-      carouselTrack.className = 'tools-carousel-track';
+  const items = Math.max(titleItems.length, imageItems.length, linkItems.length);
 
-      // Create slides from images and headings
-      const items = Math.max(images.length, headings.length);
-      for (let i = 0; i < items; i++) {
-        const slide = document.createElement('div');
-        slide.className = 'tools-carousel-slide';
-        if (i === 0) slide.classList.add('active');
-
-        const heading = headings[i];
-        const img = images[i];
-
-        // Add image (will be hidden by CSS)
-        if (img) {
-          slide.appendChild(img.cloneNode(true));
-        }
-
-        // Add title
-        if (heading) {
-          const title = document.createElement('div');
-          title.className = 'tools-carousel-title';
-          title.textContent = heading.textContent;
-          slide.appendChild(title);
-        }
-
-        carouselTrack.appendChild(slide);
-      }
-
-      carouselContainer.appendChild(carouselTrack);
-
-      // Create navigation container (top right)
-      const navContainer = document.createElement('div');
-      navContainer.className = 'tools-carousel-nav-container';
-
-      const prevButton = document.createElement('button');
-      prevButton.className = 'tools-carousel-nav tools-carousel-prev';
-      prevButton.setAttribute('aria-label', 'Previous');
-      prevButton.innerHTML = '←';
-
-      const nextButton = document.createElement('button');
-      nextButton.className = 'tools-carousel-nav tools-carousel-next';
-      nextButton.setAttribute('aria-label', 'Next');
-      nextButton.innerHTML = '→';
-
-      navContainer.appendChild(prevButton);
-      navContainer.appendChild(nextButton);
-
-      // Clear carousel column and add container
-      carouselCol.innerHTML = '';
-      carouselCol.appendChild(carouselContainer);
-
-      // Add nav container to the section wrapper (for absolute positioning at page right)
-      if (section) {
-        section.appendChild(navContainer);
-      } else {
-        block.appendChild(navContainer);
-      }
-
-      // Carousel logic
-      let currentIndex = 0;
-      const slides = carouselTrack.querySelectorAll('.tools-carousel-slide');
-      const totalSlides = slides.length;
-      const slideWidth = 280; // card width
-      const gap = 16; // gap between cards
-
-      function getMaxIndex() {
-        const containerWidth = carouselContainer.offsetWidth;
-        const visibleSlides = Math.floor(containerWidth / (slideWidth + gap));
-        return Math.max(0, totalSlides - visibleSlides);
-      }
-
-      function showSlide(index) {
-        const maxIndex = getMaxIndex();
-        currentIndex = Math.max(0, Math.min(index, maxIndex));
-        const offset = currentIndex * (slideWidth + gap);
-        carouselTrack.style.transform = `translateX(-${offset}px)`;
-      }
-
-      prevButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showSlide(currentIndex - 1);
-      });
-
-      nextButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showSlide(currentIndex + 1);
-      });
-
-      // Handle resize
-      window.addEventListener('resize', () => {
-        showSlide(currentIndex);
-      });
-
-      // Initialize
-      showSlide(0);
-    }
+  if (!items) {
+    block.append(headingCol, carouselCol);
+    row.remove();
+    return;
   }
 
-  // Move columns to be direct children of block
+  const swiperEl = document.createElement('div');
+  swiperEl.className = 'tools-carousel-track swiper';
+
+  const swiperWrapper = document.createElement('div');
+  swiperWrapper.className = 'swiper-wrapper';
+
+  for (let i = 0; i < items; i += 1) {
+    const slide = document.createElement('a');
+    slide.className = 'tools-carousel-slide swiper-slide';
+    slide.href = getHrefFromItem(linkItems[i]);
+
+    const imageNode = getImageFromItem(imageItems[i]);
+    const titleText = getTitleFromItem(titleItems[i]);
+
+    if (imageNode) {
+      slide.appendChild(imageNode);
+    }
+
+    if (titleText) {
+      const title = document.createElement('div');
+      title.className = 'tools-carousel-title';
+      title.textContent = titleText;
+      slide.appendChild(title);
+    }
+
+    swiperWrapper.appendChild(slide);
+  }
+
+  swiperEl.appendChild(swiperWrapper);
+
+  const totalSlides = swiperWrapper.children.length;
+  let prevButton;
+  let nextButton;
+  let paginationEl;
+
+  carouselCol.innerHTML = '';
+
+  if (totalSlides > 1) {
+    const navContainer = document.createElement('div');
+    navContainer.className = 'tools-carousel-nav-container';
+
+    prevButton = document.createElement('button');
+    prevButton.className = 'tools-carousel-nav tools-carousel-prev swiper-button-prev';
+    prevButton.type = 'button';
+    prevButton.setAttribute('aria-label', 'Previous');
+
+    nextButton = document.createElement('button');
+    nextButton.className = 'tools-carousel-nav tools-carousel-next swiper-button-next';
+    nextButton.type = 'button';
+    nextButton.setAttribute('aria-label', 'Next');
+
+    navContainer.appendChild(prevButton);
+    navContainer.appendChild(nextButton);
+
+    paginationEl = document.createElement('div');
+    paginationEl.className = 'tools-carousel-pagination swiper-pagination';
+
+    carouselCol.appendChild(navContainer);
+    carouselCol.appendChild(swiperEl);
+    carouselCol.appendChild(paginationEl);
+  } else {
+    carouselCol.appendChild(swiperEl);
+  }
+
   block.append(headingCol, carouselCol);
   row.remove();
+
+  if (totalSlides <= 1) return;
+
+  try {
+    const Swiper = await getSwiperClass();
+    if (!Swiper) return;
+
+    const swiper = new Swiper(swiperEl, {
+      slidesPerView: 'auto',
+      spaceBetween: 16,
+      speed: 500,
+      loop: false,
+      watchOverflow: true,
+      navigation: {
+        prevEl: prevButton,
+        nextEl: nextButton,
+      },
+      pagination: {
+        el: paginationEl,
+        clickable: false,
+      },
+      breakpoints: {
+        0: {
+          slidesPerView: 'auto',
+          spaceBetween: 12,
+        },
+        1000: {
+          slidesPerView: 'auto',
+          spaceBetween: 16,
+        },
+      },
+      on: {
+        init(instance) {
+          removeInjectedSwiperIcons(prevButton, nextButton);
+          updateNavState(instance, prevButton, nextButton);
+        },
+        slideChange(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        resize(instance) {
+          removeInjectedSwiperIcons(prevButton, nextButton);
+          updateNavState(instance, prevButton, nextButton);
+        },
+        reachBeginning(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        reachEnd(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+        fromEdge(instance) {
+          updateNavState(instance, prevButton, nextButton);
+        },
+      },
+    });
+
+    removeInjectedSwiperIcons(prevButton, nextButton);
+    block.toolsCarouselSwiper = swiper;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize tools-carousel Swiper', error);
+  }
 }
