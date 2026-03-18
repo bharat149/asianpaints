@@ -610,3 +610,7 @@ main > .section:has(.embed-wrapper) > .default-content-wrapper:last-of-type a:ho
   color: var(--primary-color);
 }
 
+.align-center{
+    display: grid;
+    text-align: center;
+}
