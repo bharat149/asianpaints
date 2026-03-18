@@ -337,6 +337,7 @@
 .cards.stats {
   background-color: #fff5eb;
   padding: 65px 42px 90px;
+  border-radius: 10px;
 }
 
 .cards.stats > ul {
