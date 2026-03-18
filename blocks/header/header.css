@@ -336,19 +336,19 @@
 /* Cart badge */
 .header .cart-badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background: #00b894;
+  top: 6px;
+  right: 4px;
+  background: #7345b2;
   color: white;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  min-width: 14px;
-  height: 14px;
-  border-radius: 7px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 3px;
+  padding: 0;
   line-height: 1;
 }
 
@@ -1050,7 +1050,7 @@ body.nav-open {
 .header .vs-dropzone {
   border: 2px dotted #c9c9c9;
   border-radius: 10px;
-  padding: 20px 20px;
+  padding: 20px;
   text-align: center;
   transition: border-color 0.2s, background-color 0.2s;
   margin-top: 24px; /* gap between dialog border and drop zone top */
@@ -1186,7 +1186,6 @@ body.nav-open {
   font-weight: 700;
   margin: 0 0 24px;
   background: linear-gradient(135deg, #7c3aed 0%, #ea580c 100%);
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
@@ -1380,36 +1379,56 @@ body.nav-open {
 
 /* stylelint-disable-next-line no-descending-specificity */
 .header .cart-modal-icon {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   margin: 0 auto 20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='none'%3E%3Cpath d='M20 20h40l-4 30H24L20 20z' stroke='%23ccc' stroke-width='2' fill='none'/%3E%3Cpath d='M20 20l-4-8H8' stroke='%23ccc' stroke-width='2' fill='none'/%3E%3Ccircle cx='28' cy='58' r='4' stroke='%23ccc' stroke-width='2' fill='none'/%3E%3Ccircle cx='52' cy='58' r='4' stroke='%23ccc' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background: radial-gradient(circle, #fdf3e4 60%, transparent 61%);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+}
+
+.header .cart-modal-icon::before {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='none'%3E%3Crect x='18' y='24' width='26' height='32' rx='2' stroke='%23a08060' stroke-width='2' fill='none'/%3E%3Cpath d='M25 24v-6a6 6 0 0 1 12 0v6' stroke='%23a08060' stroke-width='2' fill='none'/%3E%3Crect x='36' y='30' width='22' height='28' rx='2' stroke='%23a08060' stroke-width='2' fill='none'/%3E%3Cpath d='M41 30v-4a5 5 0 0 1 10 0v4' stroke='%23a08060' stroke-width='2' fill='none'/%3E%3Cline x1='25' y1='34' x2='25' y2='42' stroke='%23a08060' stroke-width='2'/%3E%3Cline x1='43' y1='38' x2='43' y2='46' stroke='%23a08060' stroke-width='2'/%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
 }
 
 .header .cart-modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--header-text-dark);
+  font-size: 20px;
+  font-weight: 800;
+  color: #222;
   margin: 0 0 20px;
 }
 
 .header .cart-modal-shop {
-  display: inline-block;
-  background: #eea81a;
-  color: #000;
-  padding: 10px 32px;
-  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #232426;
+  padding: 14px 20px;
+  border: 1px solid #232426;
+  border-radius: 45px;
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  transition: background-color 0.25s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.header .cart-modal-shop::after {
+  content: '\2192';
+  font-size: 16px;
 }
 
 .header .cart-modal-shop:hover {
-  background: #d69515;
+  background: #232426;
+  color: #fff;
 }
 
 /* ========================================
@@ -1743,6 +1762,7 @@ body.search-dialog-open {
 }
 
 /* Section titles: Asian Paints unbxd-as-header - 14px, bold, dark. Use 800 + #111 for prominence */
+
 /* (Manrope may use same file for all weights → synthetic bold; darker color helps differentiation) */
 .header .sd-section-title {
   font-size: 14px;
@@ -1922,8 +1942,7 @@ body.search-dialog-open {
 .header .sd-quicklinks-grid {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 10px;
-  row-gap: 10px;
+  gap: 10px;
   padding-top: 10px;
   border-top: 1px solid #d9d9d9;
 }
@@ -1957,7 +1976,7 @@ body.search-dialog-open {
 }
 
 /* Icons: original uses 27x27 SVG for first, 29x29/26x29 for others - use ~26px */
-/* stylelint-disable-next-line no-descending-specificity */
+/* stylelint-disable no-descending-specificity */
 .header .sd-quicklink-card .icon img,
 .header .sd-quicklink-card img {
   width: 26px;
@@ -1966,6 +1985,7 @@ body.search-dialog-open {
   flex-shrink: 0;
   opacity: 1;
 }
+/* stylelint-enable no-descending-specificity */
 
 /* Best Results: unbxd-as-popular-product min-height 143px */
 .header .sd-best-results-grid {
@@ -2192,6 +2212,7 @@ body.search-dialog-open {
     gap: 10px;
   }
 
+  /* stylelint-disable-next-line no-duplicate-selectors */
   .header .sd-quicklink-card {
     flex: 1 1 calc(50% - 5px);
   }

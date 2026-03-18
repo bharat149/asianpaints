@@ -16,6 +16,10 @@ import { getMetadata, decorateIcons } from '../../scripts/aem.js';
 
 const DESKTOP_BREAKPOINT = 992;
 const AP_ORIGIN = window.location.origin;
+const FORM_MODAL_PATH_SEGMENT = '/forms/';
+const BOOK_SITE_VISIT_HASH = '#book-site-visit';
+const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
+const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
 
 function isOnAsianPaintsDomain() {
   return true;
@@ -26,6 +30,27 @@ function isOnAsianPaintsDomain() {
  */
 function apUrl(path) {
   return path;
+}
+
+function normalizeInternalPath(href) {
+  if (!href) return '';
+  try {
+    const url = new URL(href, window.location.href);
+    return url.pathname.replace(/(\.plain)?\.html$/, '');
+  } catch {
+    return '';
+  }
+}
+
+function getModalPathFromHref(href) {
+  if (href === BOOK_SITE_VISIT_HASH) return BOOK_SITE_VISIT_FRAGMENT_PATH;
+  if (href?.startsWith('#')) return '';
+  const path = normalizeInternalPath(href);
+  return path.includes(FORM_MODAL_PATH_SEGMENT) ? path : '';
+}
+
+function resolveCtaHref(href) {
+  return href === BOOK_SITE_VISIT_HASH ? BOOK_SITE_VISIT_PAGE_PATH : href;
 }
 
 /* eslint-disable max-len */
@@ -76,9 +101,10 @@ function resolveApLink(urlOrPath, fallback = AP_API.SHOP_URL) {
 }
 
 async function fetchFromAp(pathOrUrl, options = {}) {
-  const url = /^https?:\/\//i.test(pathOrUrl)
-    ? pathOrUrl
-    : (pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`);
+  let url = pathOrUrl;
+  if (!/^https?:\/\//i.test(pathOrUrl)) {
+    url = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+  }
   try {
     const response = await fetch(url, options);
     return response.ok ? response : null;
@@ -332,8 +358,8 @@ function updateCartBadge(block, count) {
   const badge = block.querySelector('.cart-badge');
   if (!badge) return;
   badge.textContent = String(count);
-  badge.style.display = count > 0 ? 'flex' : 'none';
-  badge.setAttribute('aria-hidden', count > 0 ? 'false' : 'true');
+  badge.style.display = 'flex';
+  badge.setAttribute('aria-hidden', 'false');
 }
 
 async function primeLocationContext() {
@@ -414,6 +440,7 @@ function updateProfileUI(block, authenticated) {
     showWelcomeUserPopup(block, name || keycloakInstance.tokenParsed.preferred_username || '');
     try {
       const idToken = keycloakInstance.idToken ?? keycloakInstance.token;
+      // eslint-disable-next-line no-use-before-define
       setUser({
         name: name || keycloakInstance.tokenParsed.preferred_username || '',
         email: keycloakInstance.tokenParsed.email || '',
@@ -547,6 +574,7 @@ async function handleProfileClick(e) {
   e.preventDefault();
 
   // Production: redirect to OIDC auth URL (auth.asianpaints.com)
+  // eslint-disable-next-line no-use-before-define
   const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
   window.location.href = url;
 }
@@ -819,6 +847,7 @@ function renderDealerLocationResults(dialog, query, location, dealers = []) {
   });
 }
 
+/* eslint-disable-next-line max-len */
 async function handleLocationAwareSearch(dialog, query, requestToken = 0, getActiveToken = () => requestToken) {
   const isStale = () => requestToken !== getActiveToken();
   if (isStale()) return;
@@ -993,11 +1022,12 @@ function getLegacyTopQueries(data) {
 
 function extractAutosuggestSections(data, preferInField = false) {
   const raw = data?.response?.products;
-  const products = Array.isArray(raw?.product)
-    ? raw.product
-    : Array.isArray(raw)
-      ? raw
-      : [];
+  let products = [];
+  if (Array.isArray(raw?.product)) {
+    products = raw.product;
+  } else if (Array.isArray(raw)) {
+    products = raw;
+  }
 
   const popularProducts = products.filter((item) => item?.doctype === 'POPULAR_PRODUCTS');
   const inFieldProducts = products.filter((item) => item?.doctype === 'IN_FIELD');
@@ -1010,14 +1040,20 @@ function extractAutosuggestSections(data, preferInField = false) {
     .map((item) => item?.autosuggest || item?.title || '')
     .filter(Boolean);
 
+  const seen = new Set();
   const dedupedTopQueries = [...topSearchQueries, ...legacyTopQueries]
-    .filter((query, index, arr) => arr.findIndex((q) => q.toLowerCase() === query.toLowerCase()) === index);
+    .filter((q) => {
+      const lower = q.toLowerCase();
+      if (seen.has(lower)) return false;
+      seen.add(lower);
+      return true;
+    });
 
   const seenSuggestionKeys = new Set();
   const suggestions = [];
   inFieldProducts.forEach((item) => {
     const text = item?.autosuggest || item?.title || '';
-    const category = getSuggestionCategory(item);
+    const category = getSuggestionCategory(item); // eslint-disable-line no-use-before-define
     if (!text) return;
     if (!category) return;
     const key = text.toLowerCase();
@@ -1029,9 +1065,12 @@ function extractAutosuggestSections(data, preferInField = false) {
     });
   });
 
-  const bestResults = preferInField
-    ? (inFieldProducts.length ? inFieldProducts : popularProducts)
-    : (popularProducts.length ? popularProducts : inFieldProducts);
+  let bestResults;
+  if (preferInField) {
+    bestResults = inFieldProducts.length ? inFieldProducts : popularProducts;
+  } else {
+    bestResults = popularProducts.length ? popularProducts : inFieldProducts;
+  }
 
   return {
     bestResults: bestResults.length ? bestResults : products,
@@ -1082,8 +1121,12 @@ function renderSearchDialogResults(dialog, data, options = {}) {
 
   const parsed = extractAutosuggestSections(data, Boolean(options.preferInField));
   renderSearchProducts(productsContainer, parsed.bestResults, true);
-  renderTrendingQueries(dialog, parsed.topQueries.length ? parsed.topQueries : FALLBACK_TRENDING_QUERIES);
+  const trendingQ = parsed.topQueries.length
+    ? parsed.topQueries : FALLBACK_TRENDING_QUERIES;
+  renderTrendingQueries(dialog, trendingQ);
+  // eslint-disable-next-line no-use-before-define
   renderSuggestions(dialog, parsed.suggestions, Boolean(options.queryMode), options.queryText || '');
+  // eslint-disable-next-line no-use-before-define
   toggleSearchDialogQueryMode(dialog, Boolean(options.queryMode));
 }
 
@@ -1121,11 +1164,13 @@ function highlightSuggestionMatch(text, query) {
 }
 
 function extractSearchProducts(data) {
-  return Array.isArray(data?.response?.products?.product)
-    ? data.response.products.product
-    : Array.isArray(data?.response?.products)
-      ? data.response.products
-      : [];
+  if (Array.isArray(data?.response?.products?.product)) {
+    return data.response.products.product;
+  }
+  if (Array.isArray(data?.response?.products)) {
+    return data.response.products;
+  }
+  return [];
 }
 
 async function previewSuggestionResults(dialog, query) {
@@ -1133,7 +1178,8 @@ async function previewSuggestionResults(dialog, query) {
   const productsContainer = dialog.querySelector('.sd-best-results-grid');
   if (!productsContainer || trimmed.length < 3) return;
 
-  const token = ++suggestionPreviewToken;
+  suggestionPreviewToken += 1;
+  const token = suggestionPreviewToken;
   const cacheKey = trimmed.toLowerCase();
 
   let products = suggestionPreviewCache.get(cacheKey);
@@ -1158,7 +1204,7 @@ function restoreInputResults(dialog) {
     seeAll.href = query ? getSearchResultUrl(query) : AP_API.SEARCH_RESULTS;
   }
   if (query.length >= 3) {
-    handleSearchDialogSearchResults(dialog, query);
+    handleSearchDialogSearchResults(dialog, query); // eslint-disable-line no-use-before-define
   }
 }
 
@@ -1206,7 +1252,7 @@ function renderSuggestions(dialog, suggestions = [], queryMode = false, activeQu
   categoriesWithEntries.forEach(([category, entries], index) => {
     const isLastCategory = index === categoriesWithEntries.length - 1;
     const headerLi = document.createElement('li');
-    headerLi.className = 'sd-suggestion-category' + (isLastCategory ? ' sd-suggestion-category-last' : '');
+    headerLi.className = `sd-suggestion-category${isLastCategory ? ' sd-suggestion-category-last' : ''}`;
     headerLi.textContent = category;
     list.appendChild(headerLi);
 
@@ -1273,7 +1319,11 @@ async function handleSearchDialogQuery(dialog, query) {
     includeSourceFields: true,
   });
 
-  if (autoData) renderSearchDialogResults(dialog, autoData, { preferInField: true, queryMode: true, queryText: trimmed });
+  if (autoData) {
+    renderSearchDialogResults(dialog, autoData, {
+      preferInField: true, queryMode: true, queryText: trimmed,
+    });
+  }
 }
 
 async function handleSearchDialogSearchResults(dialog, query) {
@@ -1532,17 +1582,25 @@ function parseJwtPayload(token) {
 function getUserFromAuthCookie() {
   try {
     const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
+    const match = cookies.find((cookie) => {
       const eq = cookie.trim().indexOf('=');
-      if (eq <= 0) continue;
+      if (eq <= 0) return false;
       const value = cookie.trim().slice(eq + 1).trim();
-      if (!value) continue;
+      if (!value) return false;
       const decoded = parseJwtPayload(value);
-      if (!decoded) continue;
-      const nameVal = decoded.name || decoded.given_name || decoded.preferred_username;
-      if (nameVal && (decoded.iss?.includes('auth.asianpaints.com') || decoded.iss?.includes('betaauth.asianpaints.com'))) {
-        return { name: nameVal, email: decoded.email, id_token: value };
-      }
+      if (!decoded) return false;
+      const nameVal = decoded.name
+        || decoded.given_name || decoded.preferred_username;
+      const isAp = decoded.iss?.includes('auth.asianpaints.com')
+        || decoded.iss?.includes('betaauth.asianpaints.com');
+      return nameVal && isAp;
+    });
+    if (match) {
+      const value = match.trim().slice(match.trim().indexOf('=') + 1).trim();
+      const decoded = parseJwtPayload(value);
+      const nameVal = decoded.name
+        || decoded.given_name || decoded.preferred_username;
+      return { name: nameVal, email: decoded.email, id_token: value };
     }
   } catch (e) {
     /* ignore */
@@ -1552,7 +1610,7 @@ function getUserFromAuthCookie() {
 
 function getUserFromUrlHash() {
   try {
-    const hash = window.location.hash;
+    const { hash } = window.location;
     if (!hash) return null;
     const params = new URLSearchParams(hash.slice(1));
     // Mock auth: ?mock_login=1&mock_name=XXX (for localhost testing)
@@ -1567,8 +1625,8 @@ function getUserFromUrlHash() {
         const nameVal = payload.name || payload.given_name || payload.preferred_username;
         if (nameVal) {
           const authUser = { name: nameVal, email: payload.email, id_token: idToken };
-          const refreshToken = params.get('refresh_token');
-          if (refreshToken) authUser.refresh_token = refreshToken;
+          const hashRefresh = params.get('refresh_token');
+          if (hashRefresh) authUser.refresh_token = hashRefresh;
           return authUser;
         }
       }
@@ -1619,11 +1677,13 @@ function clearUser() {
 }
 
 function uuid() {
+  /* eslint-disable no-bitwise */
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+  /* eslint-enable no-bitwise */
 }
 
 async function sha256Base64Url(input) {
@@ -1786,7 +1846,6 @@ function buildMainHeader(mainDiv) {
   }
   inner.appendChild(mobileSearchBtn);
 
-
   // Action icons — from p.header-actions or <ul> in mainDiv
   const actionsContainer = document.createElement('div');
   actionsContainer.className = 'header-actions';
@@ -1795,9 +1854,12 @@ function buildMainHeader(mainDiv) {
   // Action icons
 
   const actionsUl = mainDiv.querySelector('ul');
-  const actionAnchors = actionsP
-    ? [...actionsP.querySelectorAll('a')]
-    : (actionsUl ? actionsUl.querySelectorAll(':scope > li a') : []);
+  let actionAnchors = [];
+  if (actionsP) {
+    actionAnchors = [...actionsP.querySelectorAll('a')];
+  } else if (actionsUl) {
+    actionAnchors = actionsUl.querySelectorAll(':scope > li a');
+  }
 
   if (actionAnchors.length) {
     actionAnchors.forEach((anchor) => {
@@ -1886,8 +1948,14 @@ function buildMainHeader(mainDiv) {
 
       const ctaLink = document.createElement('a');
       ctaLink.className = 'cta-btn';
-      ctaLink.href = ctaAnchor.getAttribute('href');
+      const ctaHref = ctaAnchor.getAttribute('href');
+      ctaLink.href = resolveCtaHref(ctaHref);
       ctaLink.textContent = ctaAnchor.textContent.trim();
+      const modalPath = getModalPathFromHref(ctaHref);
+      if (modalPath) {
+        ctaLink.dataset.modalPath = modalPath;
+        ctaLink.setAttribute('aria-haspopup', 'dialog');
+      }
 
       const arrow = document.createElement('span');
       arrow.className = 'cta-arrow';
@@ -2436,7 +2504,6 @@ function addInteractions(block) {
     });
   }
 
-
   // Profile — dropdown when logged in, auth redirect when not
   const profileWrapper = block.querySelector('.profile-dropdown-wrapper');
   if (profileWrapper) {
@@ -2547,6 +2614,25 @@ function addInteractions(block) {
     });
   }
 
+  block.querySelectorAll('.cta-btn[data-modal-path]').forEach((ctaBtn) => {
+    ctaBtn.addEventListener('click', async (e) => {
+      const { modalPath } = ctaBtn.dataset;
+      if (!modalPath || ctaBtn.dataset.loading === 'true') return;
+
+      e.preventDefault();
+      ctaBtn.dataset.loading = 'true';
+
+      try {
+        const { openModal } = await import('../modal/modal.js');
+        await openModal(modalPath);
+      } catch {
+        window.location.assign(ctaBtn.href);
+      } finally {
+        delete ctaBtn.dataset.loading;
+      }
+    });
+  });
+
   // Profile button: when profileWrapper exists, profileLink handler manages click
   // (dropdown when logged in, auth redirect when not). Only use handleProfileClick
   // when there is no dropdown (legacy/fallback).
@@ -2596,9 +2682,6 @@ async function initIntegrations(block) {
 // ──────────────────────────────────────────────
 
 export default async function decorate(block) {
-
-  const params = new URLSearchParams(window.location.search);
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const hasSignedOut = typeof localStorage !== 'undefined' && localStorage.getItem(SIGNED_OUT_KEY) === '1';
 
   // 1. Real login: user returned from auth with token in URL hash
@@ -2672,6 +2755,11 @@ export default async function decorate(block) {
   // Wire up all UI interactions
   addInteractions(block);
 
-  // Initialize API integrations (cart count, auth) — non-blocking
-  initIntegrations(block);
+  // Defer integrations (cart, Keycloak) to avoid blocking LCP — run when idle
+  const runIntegrations = () => initIntegrations(block);
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(runIntegrations, { timeout: 2000 });
+  } else {
+    setTimeout(runIntegrations, 0);
+  }
 }
