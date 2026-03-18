@@ -1,4 +1,4 @@
-/* /blocks/calculator-hub/calculator-hub.js */
+/* /blocks/calculator-hub/quick-links.js */
 
 function parseTableToConfig(block) {
   const config = {};
