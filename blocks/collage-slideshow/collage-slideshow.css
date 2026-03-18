@@ -112,6 +112,7 @@
   object-fit: contain;
 }
 
+/* Desktop slide 1 */
 .collage-slideshow__collage--desktop .collage-slideshow__column--1 .collage-slideshow__media--logo {
   height: 144px;
 }
@@ -132,6 +133,7 @@
   height: 247px;
 }
 
+/* Desktop 9-image slide */
 .collage-slideshow__column--2 .collage-slideshow__media:not(.collage-slideshow__media--tall) {
   height: 180px;
 }
@@ -142,6 +144,60 @@
 
 .collage-slideshow__column--4 .collage-slideshow__media {
   height: 190px;
+}
+
+/* Desktop 5-image slide */
+.collage-slideshow__collage--five {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.collage-slideshow__five-left {
+  flex: 0 0 49%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.collage-slideshow__five-right {
+  flex: 0 0 49%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.collage-slideshow__five-right-bottom {
+  display: flex;
+  gap: 12px;
+}
+
+.collage-slideshow__media--five-logo {
+  height: 112px;
+  background: transparent;
+  border-radius: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.collage-slideshow__media--five-logo img,
+.collage-slideshow__media--five-logo picture img {
+  object-fit: contain;
+  object-position: left center;
+}
+
+.collage-slideshow__media--five-large-left {
+  height: 264px;
+}
+
+.collage-slideshow__media--five-top-wide {
+  height: 178px;
+}
+
+.collage-slideshow__media--five-bottom-small {
+  flex: 1 1 0;
+  height: 152px;
 }
 
 .collage-slideshow__content {
@@ -238,6 +294,18 @@
 
   .collage-slideshow__description {
     font-size: 16px;
+  }
+
+  .collage-slideshow__media--five-large-left {
+    height: 236px;
+  }
+
+  .collage-slideshow__media--five-top-wide {
+    height: 162px;
+  }
+
+  .collage-slideshow__media--five-bottom-small {
+    height: 136px;
   }
 }
 
@@ -380,6 +448,78 @@
     object-fit: contain;
   }
 
+  /* Mobile 5-image slide */
+  .collage-slideshow__collage--mobile-five {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .collage-slideshow__mobile-five-left {
+    flex: 0 0 52%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .collage-slideshow__mobile-five-right {
+    flex: 0 0 48%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .collage-slideshow__mobile-five-right-bottom {
+    display: flex;
+    gap: 6px;
+  }
+
+  .collage-slideshow__media--mobile-five-logo {
+    height: 54px;
+    background: transparent;
+    border-radius: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .collage-slideshow__media--mobile-five-logo img,
+  .collage-slideshow__media--mobile-five-logo picture img {
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .collage-slideshow__media--mobile-five-large-left {
+    height: 160px;
+  }
+
+  .collage-slideshow__media--mobile-five-top {
+    height: 92px;
+  }
+
+  .collage-slideshow__media--mobile-five-bottom {
+    flex: 1 1 0;
+    height: 62px;
+  }
+
+  .collage-slideshow__mobile-five-left img,
+  .collage-slideshow__mobile-five-left picture,
+  .collage-slideshow__mobile-five-left picture img,
+  .collage-slideshow__mobile-five-right img,
+  .collage-slideshow__mobile-five-right picture,
+  .collage-slideshow__mobile-five-right picture img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .collage-slideshow__mobile-five-left img,
+  .collage-slideshow__mobile-five-left picture img,
+  .collage-slideshow__mobile-five-right img,
+  .collage-slideshow__mobile-five-right picture img {
+    object-fit: cover;
+  }
+
   .collage-slideshow__pagination {
     margin-top: 10px;
     text-align: center;
@@ -437,6 +577,22 @@
 
   .collage-slideshow__media--mobile-bottom {
     height: 168px;
+  }
+
+  .collage-slideshow__media--mobile-five-logo {
+    height: 50px;
+  }
+
+  .collage-slideshow__media--mobile-five-large-left {
+    height: 148px;
+  }
+
+  .collage-slideshow__media--mobile-five-top {
+    height: 84px;
+  }
+
+  .collage-slideshow__media--mobile-five-bottom {
+    height: 58px;
   }
 
   .collage-slideshow__cta {
