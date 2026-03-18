@@ -115,9 +115,7 @@ function buildSlide(row, block) {
   const columns = [...row.querySelectorAll(':scope > div')];
 
   const imageCol = columns[0];
-  const quoteCol = columns[2];
-  const nameCol = columns[3];
-  const placeCol = columns[4];
+  const contentCol = columns[1];
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'carousel-image bg-lazy-img';
@@ -144,39 +142,22 @@ function buildSlide(row, block) {
   logoPic.innerHTML = '<img loading="lazy" fetchpriority="auto" height="70" width="81" src="https://static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/waterproofing/landing-page/wht-our-clients-say/wht-our-client-say-bg-logo.webp" alt="wht-our-client-say-bg-logo" title="wht-our-client-say-bg-logo"/>';
   contentWrapper.appendChild(logoPic);
 
-  const quoteText = quoteCol?.textContent?.trim() || '';
-  const nameText = nameCol?.textContent?.trim() || '';
-  const placeText = placeCol?.textContent?.trim() || '';
+  if (contentCol) {
+    const elements = [...contentCol.children];
+    if (elements.length > 0) {
+      const quoteDiv = document.createElement('div');
+      quoteDiv.setAttribute('role', 'article');
+      quoteDiv.className = 'image-description';
+      quoteDiv.innerHTML = elements[0].innerHTML;
+      contentWrapper.appendChild(quoteDiv);
 
-  if (quoteText) {
-    const quoteDiv = document.createElement('div');
-    quoteDiv.setAttribute('role', 'article');
-    quoteDiv.className = 'image-description';
-    quoteDiv.textContent = quoteText;
-    contentWrapper.appendChild(quoteDiv);
-  }
-
-  if (nameText || placeText) {
-    const attribution = document.createElement('div');
-    attribution.className = 'image-text';
-
-    if (nameText) {
-      const spanName = document.createElement('span');
-      spanName.setAttribute('role', 'note');
-      spanName.className = 'name';
-      spanName.innerHTML = `${nameText},&nbsp;`;
-      attribution.appendChild(spanName);
+      if (elements.length > 1) {
+        const attribution = document.createElement('div');
+        attribution.className = 'image-text';
+        attribution.innerHTML = elements[1].innerHTML;
+        contentWrapper.appendChild(attribution);
+      }
     }
-
-    if (placeText) {
-      const spanPlace = document.createElement('span');
-      spanPlace.setAttribute('role', 'note');
-      spanPlace.className = 'place';
-      spanPlace.textContent = placeText;
-      attribution.appendChild(spanPlace);
-    }
-
-    contentWrapper.appendChild(attribution);
   }
 
   slide.append(imageWrapper, contentWrapper);

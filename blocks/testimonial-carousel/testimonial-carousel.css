@@ -236,16 +236,19 @@
     }
 }
 
-.image-text .name {
+.image-text .name,
+.image-text strong {
     font-weight: 700;
 }
 
-.image-text .place {
+.image-text .place,
+.image-text {
     font-weight: 500;
 }
 
 @media (width <= 768px) {
-    .image-text .place {
+    .image-text .place,
+    .image-text {
         font-weight: 400;
     }
 }
