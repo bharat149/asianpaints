@@ -84,6 +84,146 @@ body.modal-open {
   padding: 0;
 }
 
+.modal dialog.book-free-site-visit-dialog::backdrop {
+  background-color: rgb(0 0 0 / 50%);
+}
+
+.modal dialog.book-free-site-visit-dialog {
+  position: fixed;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  width: min(calc(100vw - 24px), 542px);
+  max-width: 542px;
+  height: fit-content;
+  max-height: calc(100dvh - 50px);
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 20%);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: none;
+  overflow: hidden auto;
+}
+
+.modal dialog.book-free-site-visit-dialog .modal-content {
+  margin-top: 0;
+  padding: 0;
+  background: #fff;
+  overflow-y: auto;
+  max-height: calc(100dvh - 75px);
+  border-radius: 4px;
+}
+
+.modal dialog.book-free-site-visit-dialog .close-button {
+  top: 8px;
+  right: 8px;
+  width: 29px;
+  height: 25px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: none;
+  color: #222;
+  z-index: 10;
+}
+
+.modal dialog.book-free-site-visit-dialog .close-button .icon.icon-close::before,
+.modal dialog.book-free-site-visit-dialog .close-button .icon.icon-close::after {
+  width: 12px;
+  height: 1.5px;
+}
+
+@media (width <= 640px) {
+  .modal dialog.book-free-site-visit-dialog {
+    width: calc(100vw - 16px);
+    max-width: none;
+  }
+
+  .modal dialog.book-free-site-visit-dialog .close-button {
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 24px;
+  }
+
+  .modal dialog.book-free-site-visit-dialog .close-button .icon.icon-close::before,
+  .modal dialog.book-free-site-visit-dialog .close-button .icon.icon-close::after {
+    width: 11px;
+  }
+}
+
+/* Book Free Site Visit: fragment section styling inside dialog */
+.modal dialog.book-free-site-visit-dialog .section {
+  padding: 0;
+}
+
+.modal dialog.book-free-site-visit-dialog .default-content-wrapper > p:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 20px;
+  background: #dfd;
+  border-radius: 4px 4px 0 0;
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.modal dialog.book-free-site-visit-dialog .default-content-wrapper > p:first-child::before {
+  content: "";
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #25d366;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px;
+}
+
+.modal dialog.book-free-site-visit-dialog .default-content-wrapper > p:first-child span {
+  color: #c7254e;
+  font-weight: 600;
+}
+
+.modal dialog.book-free-site-visit-dialog .default-content-wrapper h2 {
+  margin: 0 0 7px;
+  padding: 16px 55px 0;
+  color: #222;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form {
+  max-width: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields {
+  box-sizing: border-box;
+  padding: 9px 55px 20px;
+  max-width: 100%;
+}
+
+@media (width <= 640px) {
+  .modal dialog.book-free-site-visit-dialog .default-content-wrapper h2 {
+    padding: 16px 20px 0;
+    font-size: 18px;
+  }
+
+  .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields {
+    padding: 9px 20px 20px;
+  }
+}
+
 /* ============================================
    Variant: promo — Modal (promo)
    ============================================ */
