@@ -2,7 +2,6 @@ import {
   readBlockConfig,
   toCamelCase,
   toClassName,
-  createOptimizedPicture,
 } from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
 
@@ -31,7 +30,9 @@ function getUtmParams() {
 
 export function getVisitorId() {
   try {
+    // eslint-disable-next-line no-underscore-dangle
     if (window._satellite && window._satellite.getVisitorId) {
+      // eslint-disable-next-line no-underscore-dangle
       return window._satellite.getVisitorId().getMarketingCloudVisitorID() || ' ';
     }
   } catch (e) {
@@ -159,7 +160,7 @@ function buildMarkup(cfg) {
 
       <div class="mf-thankyou-revamp-container" style="display:none">
         <div class="mf__dismissible-container--head" role="button" tabindex="0" aria-label="Close">
-          <img loading="lazy" id="mf-close-icon" src="/icons/close.svg" alt="closeIcon"/>
+          <img loading="lazy" id="mf-close-icon" src="https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/cross-icon.svg" alt="closeIcon"/>
         </div>
         <div class="row no-gutters mf-revamp-thankyou">
           <div class="mf-revamp-thankyou-left">
@@ -281,20 +282,25 @@ export default function decorate(block) {
   if (cfg.thankYouBackgroundMobile) cfg.thankYouBgMobile = cfg.thankYouBackgroundMobile;
   if (cfg.heroBackgroundDesktop) cfg.heroBgDesktop = cfg.heroBackgroundDesktop;
   if (cfg.heroBackgroundMobile) cfg.heroBgMobile = cfg.heroBackgroundMobile;
-  
+
   // Mapping for subtitle variant labels
-  if (cfg.thankYouRightHeadingSubOne) cfg.thankYouRightSubHeadingOne = cfg.thankYouRightHeadingSubOne;
-  if (cfg.thankYouRightSubheadingOne) cfg.thankYouRightSubHeadingOne = cfg.thankYouRightSubheadingOne;
+  if (cfg.thankYouRightHeadingSubOne) {
+    cfg.thankYouRightSubHeadingOne = cfg.thankYouRightHeadingSubOne;
+  }
+  if (cfg.thankYouRightSubheadingOne) {
+    cfg.thankYouRightSubHeadingOne = cfg.thankYouRightSubheadingOne;
+  }
 
   // Apply fallback from dataset and set defaults for all expected fields
   [
     'classes', 'alignment', 'campaignId', 'redirectionUrl', 'heroBgDesktop',
     'heroBgMobile', 'heroBgAlt', 'formTitle', 'ctaLabel', 'whatsappConsentText',
     'disclaimerHtml', 'emptyFieldErrorMessage', 'mobileNumberErrorMessage',
-    'pincodeErrorMessage', 'thankYouLeftSuccessHeading', 'thankYouLeftSuccessDescription',
-    'thankYouLeftErrorHeading', 'thankYouLeftErrorDescription', 'thankYouRightHeading',
-    'thankYouRightSubHeadingOne', 'thankYouRightSubHeadingTwo', 'thankYouBgDesktop',
-    'thankYouBgMobile', 'exploreCtaLabel', 'exploreCtaLink', 'node',
+    'pincodeErrorMessage', 'thankYouLeftSuccessHeading',
+    'thankYouLeftSuccessDescription', 'thankYouLeftErrorHeading',
+    'thankYouLeftErrorDescription', 'thankYouRightHeading', 'thankYouRightSubHeadingOne',
+    'thankYouRightSubHeadingTwo', 'thankYouBgDesktop', 'thankYouBgMobile',
+    'exploreCtaLabel', 'exploreCtaLink', 'node',
   ].forEach((f) => {
     if (!cfg[f]) {
       cfg[f] = ds[f.toLowerCase()] || ds[f] || '';
@@ -382,8 +388,9 @@ export default function decorate(block) {
   mobileInput?.addEventListener('input', () => {
     limitDigits(mobileInput, 10);
     onChange(mobileWrap, mobileInput);
-    if (mobileInput.value.trim() && !isMobileValid(mobileInput.value)) setError(mobileWrap, validMobNoMsg);
-    else setError(mobileWrap, '');
+    if (mobileInput.value.trim() && !isMobileValid(mobileInput.value)) {
+      setError(mobileWrap, validMobNoMsg);
+    } else setError(mobileWrap, '');
   });
 
   pinInput?.addEventListener('focus', () => onFocus(pinWrap));
@@ -391,8 +398,9 @@ export default function decorate(block) {
   pinInput?.addEventListener('input', () => {
     limitDigits(pinInput, 6);
     onChange(pinWrap, pinInput);
-    if (pinInput.value.trim() && !isPincodeValid(pinInput.value)) setError(pinWrap, validPincodeMsg);
-    else setError(pinWrap, '');
+    if (pinInput.value.trim() && !isPincodeValid(pinInput.value)) {
+      setError(pinWrap, validPincodeMsg);
+    } else setError(pinWrap, '');
   });
 
   const checkmark = block.querySelector('.whatsapp-consent-checkmark');
