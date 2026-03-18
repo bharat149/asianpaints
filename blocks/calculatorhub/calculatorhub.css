@@ -5,35 +5,177 @@
 
 .calculatorhub {
     display: flex;
-    padding: 30px 50px 30px 100px;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    padding: 30px 50px 30px 100px;
 }
 
-.calculatorhub .tool-description {
+/* Layout */
+.tool-description {
     flex: 0 0 40%;
 }
 
-.calculatorhub .tool-description .calculatorhub-heading {
-    font-size: 26px;
-    font-weight: 300;
-    line-height: 31.2px;
-    margin-bottom: 10px;
-}
-
-.calculatorhub .tool-description .calculatorhub-subheading {
-    font-size: 64px;
-    font-weight: 800;
-    line-height: 70.4px;
-    letter-spacing: -.02em;
-    text-align: left;
-    width: 80%;
-    margin-top: 0;
-}
-
-.calculatorhub .tool-fields {
+.tool-fields {
     flex: 0 0 60%;
     background: #fff;
     padding: 30px 40px 10px;
     border-radius: 8px;
+}
+
+/* Headings */
+.calculatorhub-heading {
+    font-size: 26px;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.calculatorhub-subheading {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 70px;
+    letter-spacing: -0.02em;
+    width: 80%;
+    margin: 0;
+}
+
+/* Form layout */
+#toolsMiniForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
+/* Headings inside form */
+.project-field-heading,
+.space-field-heading,
+.area-field label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.project-field-heading span,
+.space-field-heading span,
+.area-field span {
+    color: #ed1c24;
+}
+
+/* Radio buttons */
+.radiobtn {
+    width: 110px;
+    height: 110px;
+    display: inline-block;
+    cursor: pointer;
+    border: 1px solid #cacbcc;
+    border-radius: 5px;
+}
+
+.option-icon {
+    width: 50px;
+    height: 50px;
+    transform: translate(60%, 40%);
+}
+
+.option-icon img {
+    width: 100%;
+    opacity: 0.6;
+}
+
+.option-title {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 30px;
+    color: #53565a;
+}
+
+/* Checked state */
+input:checked+.radiobtn {
+    border-color: #5d4f43;
+    box-shadow: 0 8px 12px #00000014;
+}
+
+input:checked+.radiobtn img {
+    opacity: 1;
+}
+
+input:checked+.radiobtn .option-title {
+    color: #000;
+}
+
+/* Area input */
+.area-field {
+    margin-top: 20px;
+}
+
+.area-field input {
+    width: 239px;
+    height: 52px;
+    padding: 9px 14px;
+    border-radius: 6px;
+    border: 1px solid #cacbcc;
+    font-size: 16px;
+}
+
+.error-msg {
+    visibility: hidden;
+}
+
+/* Button */
+.animated-arrow-button {
+    width: 238px !important;
+    justify-content: center;
+}
+
+/* ================== Responsive ================== */
+
+/* Tablet */
+@media (max-width: 1200px) {
+    .radiobtn {
+        width: 90px;
+        height: 90px;
+    }
+
+    .option-icon {
+        transform: translate(37%, 25%);
+    }
+
+    .option-title {
+        margin-top: 12px;
+    }
+
+    .area-field input,
+    .animated-arrow-button {
+        width: 195px !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 991px) {
+    #toolsMiniForm {
+        display: block;
+    }
+
+    .space-field {
+        margin-top: 20px;
+    }
+
+    .area-field {
+        margin-bottom: 25px;
+    }
+
+    .project-field-heading,
+    .space-field-heading {
+        margin-bottom: 12px;
+    }
+
+    .option-title {
+        font-weight: 500;
+    }
+}
+
+/* Small desktop tweak */
+@media (min-width: 1280px) and (max-width: 1366px) {
+    .tool-fields {
+        flex: 0 0 57%;
+    }
 }
