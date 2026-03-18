@@ -82,6 +82,7 @@ Variant: search (default) — Pincode (search)
     width:44px;
     height:44px;
     min-width:44px;
+    padding:0;
     background-color:rgb(252 175 23);
     border:none;
     border-radius:50%;
@@ -91,7 +92,9 @@ Variant: search (default) — Pincode (search)
     justify-content:center;
     transition:background-color 0.2s ease,transform 0.2s ease;
     position:relative;
-    overflow:visible;
+    overflow:hidden;
+    font-size:0;
+    line-height:0;
 }
 
 .pincode .pincode-search-button:hover{
@@ -99,25 +102,15 @@ Variant: search (default) — Pincode (search)
     transform:scale(1.05);
 }
 
-.pincode .pincode-search-button::before{
-    content:"";
+.pincode .pincode-search-button svg{
     display:block;
-    width:14px;
-    height:2px;
-    background:#fff;
-    position:absolute;
+    width:16px;
+    height:14px;
+    flex:0 0 auto;
 }
 
-.pincode .pincode-search-button::after{
-    content:"";
-    display:block;
-    width:8px;
-    height:8px;
-    border-top:2px solid #fff;
-    border-right:2px solid #fff;
-    transform:rotate(45deg);
-    position:absolute;
-    right:14px;
+.pincode .pincode-search-button svg path{
+    stroke:#232426;
 }
 
 @media (width<=768px){
@@ -177,11 +170,6 @@ Variant: search (default) — Pincode (search)
         width:40px;
         height:40px;
         min-width:40px;
-    }
-
-    .pincode .pincode-search-button::after{
-        width:10px;
-        height:10px;
     }
 }
 
@@ -417,4 +405,3 @@ Variant: cta — Pincode (cta)
 .pincode.cta .pincode-cta-button.js-pincode-cta:hover {
     background: #fdbf45;
 }
-
