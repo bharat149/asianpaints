@@ -1,5 +1,5 @@
 /* =========================================================
-   QUICK LINKS — FINAL, AEM-PARITY
+   QUICK LINKS — FINAL, AEM-PARITY (UPDATED)
    ========================================================= */
 
 .quick-links {
@@ -21,8 +21,10 @@
     --ql-icon-y: 10px;
 
     --ql-btn-border: #222;
-    --ql-hover-fill: #fcaf17;
-    --ql-estimate-hover: #fff1cf;
+
+    /* Hover colors */
+    --ql-hover-fill: #fcaf17;        /* solid yellow (matches your hover image) */
+    --ql-estimate-hover: #fff7e8;    /* ✅ same solid yellow for Estimate */
 }
 
 /* =========================================================
@@ -121,6 +123,8 @@
 .quick-links .ql-secondary {
     font-family: Manrope, sans-serif;
     font-size: 14px;
+    font-size: 12px;
+    font-weight: 500;
     line-height: 1.2;
     color: var(--ql-muted);
 }
@@ -170,19 +174,62 @@
     font-weight: 600;
     line-height: 1;
     cursor: pointer;
-}
 
-.quick-links .ql-arrow {
-    font-size: 16px;
+    /* prevents any arrow translate from clipping */
+    overflow: hidden;
 }
 
 /* =========================================================
-   HOVER
+   ✅ SVG ARROW
+   ========================================================= */
+.quick-links .ql-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    transform: translateX(0);
+    transition: transform 220ms ease;
+}
+
+.quick-links .ql-arrow svg.ql-arrow-svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+/* =========================================================
+   ✅ HOVER — ARROW MOVES AHEAD (DEFAULT)
+   ========================================================= */
+/* Arrow moves for normal CTAs like WhatsApp */
+.quick-links .ql-btn:hover .ql-arrow,
+.quick-links .ql-btn:focus-visible .ql-arrow {
+    transform: translateX(6px);
+}
+
+/* =========================================================
+   ✅ Estimate: NO arrow movement (override)
+   ========================================================= */
+.quick-links .ql-card--estimate .ql-btn:hover .ql-arrow,
+.quick-links .ql-card--estimate .ql-btn:focus-visible .ql-arrow {
+    transform: translateX(0);
+}
+
+/* Optional: remove transition on estimate arrow so it never "nudges" */
+.quick-links .ql-card--estimate .ql-arrow {
+    transition: none;
+}
+
+/* =========================================================
+   HOVER BACKGROUNDS
    ========================================================= */
 .quick-links .ql-card--whatsapp .ql-btn:hover {
     background: var(--ql-hover-fill);
 }
 
+/* ✅ Estimate hover should match image (solid yellow) */
 .quick-links .ql-card--estimate .ql-btn:hover {
     background: var(--ql-estimate-hover);
 }
