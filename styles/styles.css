@@ -405,25 +405,28 @@ main .section.align-center {
 }
 
 /* Adding CTA Styling here*/
-
 /* ============================================
-   READ T&C — AEM CTA migrated styles
+   READ T&C — AEM CTA migrated styles (EDS fix)
    ============================================ */
 
 main .section.read-tc-cta {
-    text-align: center; /* replaces .centerAlign */
+    text-align: center;
 }
 
 main .section.read-tc-cta .button-container {
     margin: 0;
 }
 
-/* Override global EDS button */
-main .section.read-tc-cta .button-container a.button {
-    display: inline-block;
+/* Base button */
+main .section.read-tc-cta .button-container > a.button,
+main .section.read-tc-cta .button-container > a.button:link,
+main .section.read-tc-cta .button-container > a.button:visited {
+    display: inline-flex;                 /* better centering than inline-block */
+    align-items: center;
+    justify-content: center;
     width: 270px;
 
-    background: #431a80;
+    background-color: #431a80;
     border: 1px solid #431a80;
     color: #fff;
 
@@ -434,18 +437,48 @@ main .section.read-tc-cta .button-container a.button {
     line-height: 16px;
 
     padding: 16px 20px;
-    border-radius: 2px;          /* ✅ critical */
+    border-radius: 2px;
     text-transform: uppercase;
 
     margin: 0 auto;
+
+    /* Neutralize common EDS effects */
+    background-image: none;
+    box-shadow: none;
+    filter: none;
+    transform: none;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    text-decoration: none;
+    position: relative;                   /* for pseudo-element control */
+    overflow: hidden;                     /* avoids odd overlays bleeding */
 }
 
-/* Remove EDS hover overrides */
-main .section.read-tc-cta .button-container a.button:hover {
-    background: #431a80;
-    color: #fff;
+/* Kill pseudo-element overlays that often create that “black block” on hover */
+main .section.read-tc-cta .button-container > a.button::before,
+main .section.read-tc-cta .button-container > a.button::after {
+    content: none !important;
+    display: none !important;
 }
 
+/* Hover (match live hover shade — adjust if needed) */
+main .section.read-tc-cta .button-container > a.button:hover {
+    background-color: #5a2bb3 !important;  /* <-- Image 2 looks lighter than base */
+    border-color: #5a2bb3 !important;
+    color: #fff !important;
+
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+    background-image: none !important;
+}
+
+/* Focus states (EDS often uses focus-visible styles that can look like hover artifacts) */
+main .section.read-tc-cta .button-container > a.button:focus,
+main .section.read-tc-cta .button-container > a.button:focus-visible {
+    outline: 2px solid rgba(90, 43, 179, 0.45) !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+}
 
 main .section.dark-blue  {
   background-color: var(--navy-blue);

@@ -1,4 +1,4 @@
-/* /blocks/calculator-hub/calculator-hub.css */
+/* /blocks/calculator-hub/quick-links.css */
 
 /* ---------------------------------------
    Helpers / resets inside this block only
@@ -54,7 +54,7 @@
 /* ---------------------------------------
    Left panel
 ---------------------------------------- */
-.calculator-hub .tool-description { flex: 0 0 36%; }
+.calculator-hub .tool-description { flex: 0 0 34%; }
 
 @media (min-width: 1280px) and (max-width: 1366px) {
     .calculator-hub .tool-description { flex: 0 0 43%; }
@@ -76,15 +76,20 @@
 
 @media (min-width: 992px) {
     .calculator-hub .tool-description .heading:focus-visible { display: inline-block; }
+    .form-group.project-field{
+        margin-right: 30px;
+    }
 }
 
 .calculator-hub .tool-description .sub-heading {
-    font-size: 64px;
+    font-size: 48px;
     font-weight: 800;
-    line-height: 70.4px;
+    line-height: 55.4px;
     letter-spacing: -0.02em;
     text-align: left;
 }
+
+
 
 @media (min-width: 1280px) {
     .calculator-hub .tool-description .sub-heading { width: 80%; }
@@ -256,7 +261,7 @@
 .calculator-hub .form-group.area-field input {
     display: flex;
     padding: 9px 14px;
-    height: 52px;
+    height: 38px;
     border-radius: 6px;
     border: 1px solid #cacbcc;
     width: 239px;
