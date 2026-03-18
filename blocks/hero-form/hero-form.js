@@ -1,4 +1,9 @@
-import { readBlockConfig, toCamelCase, toClassName } from '../../scripts/aem.js';
+import {
+  readBlockConfig,
+  toCamelCase,
+  toClassName,
+  createOptimizedPicture,
+} from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
 
 const AMS_BASE = 'https://beta.asianpaints.com';
@@ -65,8 +70,13 @@ function setError(fieldWrap, msg) {
 function setLabelTop(fieldWrap, top) {
   const label = fieldWrap.querySelector('.input-label');
   if (!label) return;
-  label.classList.toggle('top', top);
-  label.classList.toggle('d-none', !top);
+  if (top) {
+    label.classList.add('top');
+    label.classList.remove('d-none');
+  } else {
+    label.classList.remove('top');
+    label.classList.add('d-none');
+  }
 }
 
 async function postFormUrlEncoded(url, data) {
@@ -137,19 +147,22 @@ function buildMarkup(cfg) {
           <div class="disclaimer-section">
             ${cfg.disclaimerHtml || ''}
           </div>
-          <button type="submit" class="get-contractors-button hero-form-submit">
-            ${cfg.ctaLabel || 'Get recommended contractor'}
-            <span class="rotating js-rotatingLeadForm get-contractor-progress-status d-none">↻</span>
-          </button>
+          <div class="cta animated-btn-yellow-onhover-black round-corner-radius-button">
+            <button type="submit" class="get-contractors-button hero-form-submit animated-arrow-button">
+              ${cfg.ctaLabel || 'Get recommended contractor'}
+              <span class="arrow"></span>
+              <span class="rotating js-rotatingLeadForm get-contractor-progress-status d-none">↻</span>
+            </button>
+          </div>
         </form>
       </div>
 
       <div class="mf-thankyou-revamp-container" style="display:none">
         <div class="mf__dismissible-container--head" role="button" tabindex="0" aria-label="Close">
-          <span class="mf-close-icon">×</span>
+          <img loading="lazy" id="mf-close-icon" src="/icons/close.svg" alt="closeIcon"/>
         </div>
         <div class="row no-gutters mf-revamp-thankyou">
-          <div class="col-lg-4 col-12 mf-revamp-thankyou-left">
+          <div class="mf-revamp-thankyou-left">
             <div class="mf-thank-you-left-content" style="display:block">
               <h2>${cfg.thankYouLeftSuccessHeading || ''}</h2>
               <p>${cfg.thankYouLeftSuccessDescription || ''}</p>
@@ -159,13 +172,15 @@ function buildMarkup(cfg) {
               <p>${cfg.thankYouLeftErrorDescription || ''}</p>
             </div>
           </div>
-          <div class="col-lg-8 col-12 mf-revamp-thankyou-right"
-            style="--bg-image-desktop: url('${cfg.thankYouBgDesktop || ''}');
-              --bg-image-mob: url('${cfg.thankYouBgMobile || ''}');">
+          <div class="mf-revamp-thankyou-right">
+            <picture class="thankyou-bg-picture">
+              <source media="(min-width: 992px)" srcset="${cfg.thankYouBgDesktop || ''}">
+              <img src="${cfg.thankYouBgMobile || cfg.thankYouBgDesktop || ''}" alt="Thank You Background" class="thankyou-bg-img">
+            </picture>
             <div class="mf-thank-you-message" style="display:block">
-              <p class="mf-thank-you-message-title">${cfg.thankYouRightHeading || ''}</p>
-              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingOne || ''}</p>
-              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingTwo || ''}</p>
+              <div class="mf-thank-you-message-title">${cfg.thankYouRightHeading || ''}</div>
+              <div class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingOne || ''}</div>
+              <div class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingTwo || ''}</div>
               ${thankyouCta}
             </div>
           </div>
@@ -239,13 +254,37 @@ export default function decorate(block) {
   });
 
   // Special handling for RichText fields to preserve HTML
-  const richTextFields = ['formTitle', 'disclaimerHtml'];
+  const richTextFields = [
+    'formTitle', 'disclaimerHtml', 'thankYouRightHeading',
+    'thankYouRightSubHeadingOne', 'thankYouRightSubHeadingTwo',
+    'thankYouRightHeadingSubOne',
+  ];
   block.querySelectorAll(':scope > div').forEach((row) => {
     const name = toCamelCase(toClassName(row.children[0]?.textContent));
     if (richTextFields.includes(name)) {
       cfg[name] = row.children[1]?.innerHTML;
     }
+    // Better image extraction: check for <img> first, then fallback to text
+    if (['heroBgDesktop', 'heroBgMobile', 'thankYouBgDesktop', 'thankYouBgMobile', 'thankYouBackgroundDesktop', 'thankYouBackgroundMobile', 'heroBackgroundDesktop', 'heroBackgroundMobile'].includes(name)) {
+      const img = row.children[1]?.querySelector('img');
+      if (img) {
+        cfg[name] = img.src;
+      } else {
+        const text = row.children[1]?.textContent?.trim();
+        if (text) cfg[name] = text;
+      }
+    }
   });
+
+  // Normalize specific long labels to standard keys
+  if (cfg.thankYouBackgroundDesktop) cfg.thankYouBgDesktop = cfg.thankYouBackgroundDesktop;
+  if (cfg.thankYouBackgroundMobile) cfg.thankYouBgMobile = cfg.thankYouBackgroundMobile;
+  if (cfg.heroBackgroundDesktop) cfg.heroBgDesktop = cfg.heroBackgroundDesktop;
+  if (cfg.heroBackgroundMobile) cfg.heroBgMobile = cfg.heroBackgroundMobile;
+  
+  // Mapping for subtitle variant labels
+  if (cfg.thankYouRightHeadingSubOne) cfg.thankYouRightSubHeadingOne = cfg.thankYouRightHeadingSubOne;
+  if (cfg.thankYouRightSubheadingOne) cfg.thankYouRightSubHeadingOne = cfg.thankYouRightSubheadingOne;
 
   // Apply fallback from dataset and set defaults for all expected fields
   [
@@ -268,15 +307,12 @@ export default function decorate(block) {
   cfg.node = cfg.node || window.location.pathname || ' ';
   cfg.campaignId = cfg.campaignId || getCampaignIdFromUrl();
 
-  const picture = block.querySelector('picture');
   block.innerHTML = '';
 
   const bgContainer = document.createElement('div');
   bgContainer.className = 'hero-form-background';
 
-  if (picture) {
-    bgContainer.appendChild(picture);
-  } else if (cfg.heroBgDesktop || cfg.heroBgMobile) {
+  if (cfg.heroBgDesktop || cfg.heroBgMobile) {
     const pic = document.createElement('picture');
 
     if (cfg.heroBgDesktop) {
@@ -288,7 +324,7 @@ export default function decorate(block) {
 
     if (cfg.heroBgMobile) {
       const s = document.createElement('source');
-      s.media = '(min-width:320px)';
+      s.media = '(max-width:991px)';
       s.srcset = cfg.heroBgMobile;
       pic.appendChild(s);
     }
@@ -296,7 +332,7 @@ export default function decorate(block) {
     const img = document.createElement('img');
     img.src = cfg.heroBgDesktop || cfg.heroBgMobile;
     img.alt = cfg.heroBgAlt || '';
-    img.loading = 'lazy';
+    img.loading = 'eager';
     pic.appendChild(img);
     bgContainer.appendChild(pic);
   }
@@ -336,7 +372,9 @@ export default function decorate(block) {
   }
 
   function onChange(fieldWrap, input) {
-    setLabelTop(fieldWrap, !!input.value.trim());
+    if (input.value.trim()) {
+      setLabelTop(fieldWrap, true);
+    }
   }
 
   mobileInput?.addEventListener('focus', () => onFocus(mobileWrap));
@@ -390,6 +428,7 @@ export default function decorate(block) {
   function showThankYou(success) {
     if (!thankyou || !container) return;
 
+    block.classList.add('is-thankyou');
     container.style.display = 'none';
     bgContainer.style.display = 'none';
     thankyou.style.display = 'block';
@@ -405,6 +444,7 @@ export default function decorate(block) {
 
   function resetFromThankYou() {
     if (!thankyou || !container) return;
+    block.classList.remove('is-thankyou');
     thankyou.style.display = 'none';
     bgContainer.style.display = '';
     container.style.display = '';
