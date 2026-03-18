@@ -362,6 +362,42 @@ function loadScript(src) {
   });
 }
 
+function persistKeycloakTokens() {
+  if (!keycloakInstance?.authenticated) return;
+  try {
+    localStorage.setItem('keycloak-token', keycloakInstance.token);
+    localStorage.setItem('keycloak-refresh-token', keycloakInstance.refreshToken ?? '');
+    if (keycloakInstance.idTokenParsed) {
+      localStorage.setItem('userProfile', JSON.stringify(keycloakInstance.idTokenParsed));
+    }
+    document.cookie = `keycloak_authToken=${keycloakInstance.token}; path=/`;
+  } catch (e) { /* ignore */ }
+}
+
+function clearKeycloakTokens() {
+  try {
+    localStorage.removeItem('keycloak-token');
+    localStorage.removeItem('keycloak-refresh-token');
+    localStorage.removeItem('userProfile');
+    document.cookie = 'keycloak_authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  } catch (e) { /* ignore */ }
+}
+
+function showWelcomeUserPopup(block, username) {
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  if (hashParams && hashParams.get('iss') != null) {
+    const greeting = block?.querySelector('.profile-greeting');
+    if (greeting && username) {
+      greeting.textContent = `Hello ${String(username).toUpperCase()}`;
+      greeting.classList.add('visible');
+      setTimeout(() => {
+        greeting.classList.remove('visible');
+      }, 2000);
+    }
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+}
+
 function updateProfileUI(block, authenticated) {
   const profileBtn = block.querySelector('.action-btn.profile-btn');
   if (!profileBtn) return;
@@ -373,26 +409,27 @@ function updateProfileUI(block, authenticated) {
       || keycloakInstance.tokenParsed.name
       || '';
     profileBtn.classList.add('logged-in');
-    if (greeting && name) {
-      greeting.textContent = `Hello ${name}`;
-      greeting.classList.add('visible');
-      setTimeout(() => greeting.classList.remove('visible'), 4000);
-    }
-    // Sync Keycloak user to our storage so profile dropdown opens on click.
-    // Use idToken for keycloak-token/userProfile (matches original site); persist refresh token.
+    block.querySelector('.profile-dropdown-wrapper')?.classList.add('is-logged-in');
+    // Shared code: showWelcomeUserPopup only when returning from auth (hash has iss)
+    showWelcomeUserPopup(block, name || keycloakInstance.tokenParsed.preferred_username || '');
     try {
       const idToken = keycloakInstance.idToken ?? keycloakInstance.token;
-      const refreshToken = keycloakInstance.refreshToken ?? null;
       setUser({
         name: name || keycloakInstance.tokenParsed.preferred_username || '',
         email: keycloakInstance.tokenParsed.email || '',
         id_token: idToken,
-        refresh_token: refreshToken,
+        refresh_token: keycloakInstance.refreshToken,
       });
+      persistKeycloakTokens();
     } catch (err) { /* ignore */ }
   } else {
     profileBtn.classList.remove('logged-in');
+    block.querySelector('.profile-dropdown-wrapper')?.classList.remove('is-logged-in');
     if (greeting) greeting.classList.remove('visible');
+    clearKeycloakTokens();
+    window.dispatchEvent(new CustomEvent('keycloakLoginNotReady', {
+      detail: { token: keycloakInstance?.token, userId: keycloakInstance?.subject },
+    }));
   }
 }
 
@@ -408,6 +445,25 @@ function shouldInitKeycloak() {
   return params.get('keycloak') === 'force';
 }
 
+function refreshToken(block) {
+  if (!keycloakInstance?.authenticated) return;
+  keycloakInstance.updateToken(30)
+    .then((refreshed) => {
+      if (refreshed) {
+        console.log('Token refreshed:', keycloakInstance.token);
+        localStorage.setItem('keycloak-token', keycloakInstance.token);
+        localStorage.setItem('keycloak-refresh-token', keycloakInstance.refreshToken ?? '');
+        document.cookie = `keycloak_authToken=${keycloakInstance.token}; path=/`;
+      } else {
+        console.log('Token still valid, no need to refresh.');
+      }
+    })
+    .catch((error) => {
+      console.error('Failed to refresh token:', error);
+      updateProfileUI(block, false);
+    });
+}
+
 async function initKeycloak(block) {
   if (!shouldInitKeycloak()) {
     updateProfileUI(block, false);
@@ -417,10 +473,18 @@ async function initKeycloak(block) {
   try {
     await loadScript(AP_API.KEYCLOAK_JS);
     /* global Keycloak */
+    if (typeof Keycloak === 'undefined') {
+      updateProfileUI(block, false);
+      return;
+    }
+    const storedToken = localStorage.getItem('keycloak-token');
+    const storedRefreshToken = localStorage.getItem('keycloak-refresh-token');
+
     keycloakInstance = new Keycloak({
       url: AP_API.KEYCLOAK_URL,
       realm: AP_API.KEYCLOAK_REALM,
       clientId: AP_API.KEYCLOAK_CLIENT,
+      enablePersistent: true,
     });
 
     const ssoRedirect = isOnAsianPaintsDomain()
@@ -429,23 +493,52 @@ async function initKeycloak(block) {
 
     const authenticated = await keycloakInstance.init({
       onLoad: 'check-sso',
+      pkceMethod: 'S256',
       silentCheckSsoRedirectUri: ssoRedirect,
       checkLoginIframe: false,
+      enableLogging: true,
+      timeSkew: 5,
+      Storage: localStorage,
+      token: storedToken || undefined,
+      refreshToken: storedRefreshToken || undefined,
     });
 
     updateProfileUI(block, authenticated);
 
+    if (typeof authenticated !== 'undefined' && authenticated) {
+      window.dispatchEvent(new CustomEvent('keycloakLoginReady', {
+        detail: { token: keycloakInstance.token, userId: keycloakInstance.subject },
+      }));
+      document.dispatchEvent(new CustomEvent('user-loggedIn'));
+      const count = await fetchMiniCartCount();
+      updateCartBadge(block, count);
+      setTimeout(() => {
+        if (localStorage.getItem('redirectPostLoginFlag') === 'true') {
+          const redirectPath = localStorage.getItem('redirectPostLoginPath');
+          localStorage.removeItem('redirectPostLoginFlag');
+          localStorage.removeItem('redirectPostLoginPath');
+          if (redirectPath) window.location.href = redirectPath;
+        }
+      }, 1000);
+    }
+
     keycloakInstance.onTokenExpired = () => {
-      keycloakInstance.updateToken(30)
-        .then(() => updateProfileUI(block, true)) // Re-persist refreshed tokens
-        .catch(() => updateProfileUI(block, false));
+      refreshToken(block);
     };
-  } catch {
+
+    // Periodic token refresh every 30 seconds (matches original site)
+    setInterval(() => refreshToken(block), 30000);
+  } catch (e) {
+    console.log(e);
+    console.error('Failed to initialize Keycloak', e);
     updateProfileUI(block, false);
+    window.dispatchEvent(new CustomEvent('keycloakLoginNotReady', {
+      detail: { token: null, userId: null },
+    }));
   }
 }
 
-function handleProfileClick(e) {
+async function handleProfileClick(e) {
   if (keycloakInstance?.authenticated) {
     window.location.href = AP_API.PROFILE_PAGE;
     return;
@@ -453,11 +546,9 @@ function handleProfileClick(e) {
 
   e.preventDefault();
 
-  if (keycloakInstance) {
-    keycloakInstance.login({ redirectUri: window.location.href });
-  } else {
-    window.location.href = AP_API.PROFILE_PAGE;
-  }
+  // Production: redirect to OIDC auth URL (auth.asianpaints.com)
+  const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
+  window.location.href = url;
 }
 
 // ──────────────────────────────────────────────
@@ -1417,11 +1508,10 @@ async function openSearchDialog(block) {
 //  Build Functions
 // ──────────────────────────────────────────────
 
-const AUTH_BASE = 'https://betaauth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/auth';
-const AUTH_LOGOUT_BASE = 'https://betaauth.asianpaints.com/realms/asianpaintsRealm/protocol/openid-connect/logout';
-// Auth server only allows whitelisted redirect URIs; localhost is not allowed
-const AUTH_REDIRECT_URI = 'https://www.asianpaints.com/';
-const USER_STORAGE_KEY = 'ap_user';
+const AUTH_BASE = `${AP_API.KEYCLOAK_URL}/realms/${AP_API.KEYCLOAK_REALM}/protocol/openid-connect/auth`;
+const AUTH_LOGOUT_BASE = `${AP_API.KEYCLOAK_URL}/realms/${AP_API.KEYCLOAK_REALM}/protocol/openid-connect/logout`;
+// Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
+const AUTH_REDIRECT_URI = `${window.location.origin}/`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
@@ -1476,7 +1566,10 @@ function getUserFromUrlHash() {
       if (payload) {
         const nameVal = payload.name || payload.given_name || payload.preferred_username;
         if (nameVal) {
-          return { name: nameVal, email: payload.email, id_token: idToken };
+          const authUser = { name: nameVal, email: payload.email, id_token: idToken };
+          const refreshToken = params.get('refresh_token');
+          if (refreshToken) authUser.refresh_token = refreshToken;
+          return authUser;
         }
       }
     }
@@ -1487,40 +1580,42 @@ function getUserFromUrlHash() {
 }
 
 function getUser() {
-  try {
-    const data = localStorage.getItem(USER_STORAGE_KEY);
-    return data ? JSON.parse(data) : null;
-  } catch (e) {
-    return null;
+  if (keycloakInstance?.authenticated && keycloakInstance?.tokenParsed) {
+    const p = keycloakInstance.tokenParsed;
+    const name = p.given_name || p.name || p.preferred_username || '';
+    return { name, email: p.email || '', id_token: keycloakInstance.token };
   }
+  try {
+    const userProfile = localStorage.getItem('userProfile');
+    if (userProfile) {
+      const p = JSON.parse(userProfile);
+      const name = p.given_name || p.name || p.preferred_username || '';
+      const idToken = localStorage.getItem('keycloak-token');
+      return name && idToken ? { name, email: p.email || '', id_token: idToken } : null;
+    }
+  } catch (e) { /* ignore */ }
+  return null;
 }
 
 function setUser(user) {
   try {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
     localStorage.removeItem(SIGNED_OUT_KEY);
-    // Persist to keycloak-token and keycloak-refresh-token
     if (user?.id_token) {
       localStorage.setItem('keycloak-token', user.id_token);
+      const payload = parseJwtPayload(user.id_token);
+      if (payload) localStorage.setItem('userProfile', JSON.stringify(payload));
     }
     if (user?.refresh_token) {
       localStorage.setItem('keycloak-refresh-token', user.refresh_token);
     }
-  } catch (e) {
-    /* localStorage unavailable */
-  }
+  } catch (e) { /* ignore */ }
 }
 
 function clearUser() {
   try {
-    localStorage.removeItem(USER_STORAGE_KEY);
-    localStorage.removeItem('keycloak-token');
-    localStorage.removeItem('keycloak-refresh-token');
-    localStorage.removeItem('userProfile');
     localStorage.setItem(SIGNED_OUT_KEY, '1');
-  } catch (e) {
-    /* localStorage unavailable */
-  }
+    clearKeycloakTokens();
+  } catch (e) { /* ignore */ }
 }
 
 function uuid() {
@@ -1559,7 +1654,7 @@ async function buildProfileAuthUrl(redirectUri) {
     state,
     response_mode: 'fragment',
     response_type: 'code id_token',
-    scope: 'openid profile',
+    scope: 'openid profile offline_access',
     nonce,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
@@ -2383,9 +2478,7 @@ function addInteractions(block) {
       if (user) {
         openDropdown();
       } else {
-        try {
-          localStorage.setItem(AUTH_REDIRECTED_KEY, '1');
-        } catch (err) { /* ignore */ }
+        // Production: redirect to OIDC auth URL (auth.asianpaints.com)
         const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
         window.location.href = url;
       }
