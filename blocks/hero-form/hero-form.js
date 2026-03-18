@@ -1,3 +1,4 @@
+import { readBlockConfig, toCamelCase, toClassName } from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
 
 const AMS_BASE = 'https://beta.asianpaints.com';
@@ -228,36 +229,44 @@ function buildBasePayload() {
 }
 
 export default function decorate(block) {
+  const config = readBlockConfig(block);
   const ds = block.dataset;
 
-  const cfg = {
-    classes: ds.classes || '',
-    alignment: ds.alignment || '',
-    campaignId: ds.campaignid || ds.campaignId || '',
-    redirectionUrl: ds.redirectionurl || ds.redirectionUrl || '',
-    heroBgDesktop: ds.herobgdesktop || ds.heroBgDesktop || '',
-    heroBgMobile: ds.herobgmobile || ds.heroBgMobile || '',
-    heroBgAlt: ds.herobgalt || ds.heroBgAlt || '',
-    formTitle: ds.formtitle || ds.formTitle || '',
-    ctaLabel: ds.ctalabel || ds.ctaLabel || '',
-    whatsappConsentText: ds.whatsappconsenttext || ds.whatsappConsentText || '',
-    disclaimerHtml: ds.disclaimerhtml || ds.disclaimerHtml || '',
-    emptyFieldErrorMessage: ds.emptyfielderrormessage || ds.emptyFieldErrorMessage || '',
-    mobileNumberErrorMessage: ds.mobilenumbererrormessage || ds.mobileNumberErrorMessage || '',
-    pincodeErrorMessage: ds.pincodeerrormessage || ds.pincodeErrorMessage || '',
-    thankYouLeftSuccessHeading: ds.thankyuleftsuccessheading || ds.thankYouLeftSuccessHeading || '',
-    thankYouLeftSuccessDescription: ds.thankyuleftsuccessdescription || ds.thankYouLeftSuccessDescription || '',
-    thankYouLeftErrorHeading: ds.thankyulefterrorheading || ds.thankYouLeftErrorHeading || '',
-    thankYouLeftErrorDescription: ds.thankyulefterrordescription || ds.thankYouLeftErrorDescription || '',
-    thankYouRightHeading: ds.thankyourightheading || ds.thankYouRightHeading || '',
-    thankYouRightSubHeadingOne: ds.thankyourightsubheadingone || ds.thankYouRightSubHeadingOne || '',
-    thankYouRightSubHeadingTwo: ds.thankyourightsubheadingtwo || ds.thankYouRightSubHeadingTwo || '',
-    thankYouBgDesktop: ds.thankyoubgdesktop || ds.thankYouBgDesktop || '',
-    thankYouBgMobile: ds.thankyoubgmobile || ds.thankYouBgMobile || '',
-    exploreCtaLabel: ds.explorectalabel || ds.exploreCtaLabel || '',
-    exploreCtaLink: ds.explorectalink || ds.exploreCtaLink || '',
-    node: window.location.pathname || ' ',
-  };
+  // Normalize config keys to camelCase and merge with dataset
+  const cfg = {};
+  Object.keys(config).forEach((key) => {
+    cfg[toCamelCase(key)] = config[key];
+  });
+
+  // Special handling for RichText fields to preserve HTML
+  const richTextFields = ['formTitle', 'disclaimerHtml'];
+  block.querySelectorAll(':scope > div').forEach((row) => {
+    const name = toCamelCase(toClassName(row.children[0]?.textContent));
+    if (richTextFields.includes(name)) {
+      cfg[name] = row.children[1]?.innerHTML;
+    }
+  });
+
+  // Apply fallback from dataset and set defaults for all expected fields
+  [
+    'classes', 'alignment', 'campaignId', 'redirectionUrl', 'heroBgDesktop',
+    'heroBgMobile', 'heroBgAlt', 'formTitle', 'ctaLabel', 'whatsappConsentText',
+    'disclaimerHtml', 'emptyFieldErrorMessage', 'mobileNumberErrorMessage',
+    'pincodeErrorMessage', 'thankYouLeftSuccessHeading', 'thankYouLeftSuccessDescription',
+    'thankYouLeftErrorHeading', 'thankYouLeftErrorDescription', 'thankYouRightHeading',
+    'thankYouRightSubHeadingOne', 'thankYouRightSubHeadingTwo', 'thankYouBgDesktop',
+    'thankYouBgMobile', 'exploreCtaLabel', 'exploreCtaLink', 'node',
+  ].forEach((f) => {
+    if (!cfg[f]) {
+      cfg[f] = ds[f.toLowerCase()] || ds[f] || '';
+    }
+    // Set back to dataset for visibility in dev tools
+    if (cfg[f]) ds[f] = cfg[f];
+  });
+
+  // Default values and final overrides
+  cfg.node = cfg.node || window.location.pathname || ' ';
+  cfg.campaignId = cfg.campaignId || getCampaignIdFromUrl();
 
   const picture = block.querySelector('picture');
   block.innerHTML = '';
@@ -433,7 +442,7 @@ export default function decorate(block) {
 
     const payload = buildBasePayload();
     payload.pageUrl = window.location.href;
-    payload.node = window.location.pathname || ' ';
+    payload.node = (cfg.node || window.location.pathname || ' ').trim();
     payload.campaignId = campaignId;
     payload.marketingChannel = 'Direct';
     payload.visitorId = getVisitorId();
