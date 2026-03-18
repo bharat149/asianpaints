@@ -200,6 +200,12 @@ Variant: cta — Pincode (cta)
     padding: 0 40px;
 }
 
+@media (width >= 320px) and (width <= 991px){
+    .pincode.cta {
+        padding: 0 16px;
+    }
+}
+
 .pincode.cta .swapimagewithcta.imageWithRightTextComp {
     display: flex;
     flex-direction: row;
@@ -239,6 +245,12 @@ Variant: cta — Pincode (cta)
     }
 }
 
+@media (width >= 1251px) and (width <= 1300px){
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper{
+        width: 75%;
+    }
+}
+
 .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper.img-left picture {
     float: left;
     width: 100%;
@@ -267,9 +279,21 @@ Variant: cta — Pincode (cta)
     }
 }
 
+@media (width >= 1251px) and (width <= 1300px){
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
+        width: 70%;
+    }
+}
+
 @media (width >= 992px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading {
         width: 65% !important;
+    }
+}
+
+@media (width >= 1251px) and (width <= 1300px){
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading {
+        width: 100% !important;
     }
 }
 
@@ -281,6 +305,14 @@ Variant: cta — Pincode (cta)
     color: #222;
     margin-bottom: 25px;
     margin-top: 0;
+}
+
+@media (width >= 1251px) and (width <= 1300px){
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1{
+        line-height: 44.4px;
+        font-size: 40px;
+        font-weight: 800;
+    }
 }
 
 @media (width <= 767px) {
@@ -321,20 +353,22 @@ Variant: cta — Pincode (cta)
 }
 
 .pincode.cta .pincode-input.ctaPincode {
-    font-family: Manrope, sans-serif;
     font-size: 16px;
     line-height: 24px;
     letter-spacing: .54px;
     font-weight: 400;
     text-transform: inherit;
-    width: 100%;
+    width: 55%;
     padding-right: 0;
-    padding-left: 15px;
-    height: 48px;
     border: 1px solid #75787b;
     background: #fff;
     border-radius: 6px;
-    box-sizing: border-box;
+}
+
+@media (width >= 992px) {
+    .pincode.cta .pincode-input.ctaPincode {
+        width: auto;
+    }
 }
 
 .pincode.cta .pincode-input.ctaPincode::placeholder {
