@@ -43,6 +43,22 @@ export default function decorate(block) {
     img.closest('picture').replaceWith(optimizedPic);
   });
 
+
+
+  ul.querySelectorAll('.cards-card-body p').forEach((p) => {
+    [...p.childNodes].forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.remove(); // remove plain text
+      } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A') {
+        node.remove(); // remove elements like <strong>, <em>, etc. but keep <a>
+      }
+    });
+    // Optional: if no <a> remains, remove the empty <p>
+    // if (!p.querySelector('a')) p.remove();
+  });
+
+
   block.textContent = '';
   block.append(ul);
+
 }

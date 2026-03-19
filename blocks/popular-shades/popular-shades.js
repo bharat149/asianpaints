@@ -243,17 +243,25 @@ export default async function decorate(block) {
     const swiper = new Swiper(swiperEl, {
       slidesPerView: 1,
       spaceBetween: 0,
-      speed: 700,
-      loop: false,
+      speed: 600,
+      loop: true,
       watchOverflow: true,
       allowTouchMove: true,
       autoHeight: false,
+      effect: "fade",
+      fadeEffect: {
+        crossFade: true
+      },
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false
+      },
       on: {
         init(instance) {
-          updateActiveSwatch(instance.activeIndex);
+          updateActiveSwatch(instance.realIndex);
         },
         slideChange(instance) {
-          updateActiveSwatch(instance.activeIndex);
+          updateActiveSwatch(instance.realIndex);
         },
       },
     });

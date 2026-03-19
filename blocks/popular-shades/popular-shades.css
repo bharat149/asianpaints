@@ -13,7 +13,7 @@
 
 .popular-shades {
   width: 100%;
-  background: #f5f5f3;
+  /* background: #f5f5f3; */
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -31,7 +31,6 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  background: #f5f5f3;
   padding: 0 0 20px;
 }
 
@@ -49,7 +48,7 @@
   min-height: 520px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #f5f5f3;
+  /* background: #f5f5f3; */
 }
 
 .popular-shades__picture,
@@ -71,7 +70,6 @@
   justify-content: center;
   padding: 88px 64px 48px;
   box-sizing: border-box;
-  background: #f5f5f3;
 }
 
 .popular-shades__title {
@@ -99,7 +97,7 @@
 }
 
 .popular-shades__cta {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -113,12 +111,14 @@
   font-size: 18px;
   font-weight: 600;
   line-height: 1;
+  margin-top: 20px;
   transition: background 0.25s ease, color 0.25s ease;
 }
 
 .popular-shades__cta:hover {
-  background: #fff;
-  text-decoration: none;
+  background: #fff7e8;
+  border: 1px solid #232426;
+  color: inherit;
 }
 
 .popular-shades__cta-icon {
@@ -180,8 +180,8 @@
 .popular-shades__swatch-chip {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
   width: 96px;
   height: 96px;
   border-radius: 18px 18px 0 0;
@@ -213,6 +213,7 @@
   line-height: 1.35;
   font-weight: 500;
   color: #3f3f3f;
+  text-align: center;
 }
 
 .popular-shades__swatch-number {
@@ -221,6 +222,7 @@
   font-size: 14px;
   line-height: 1.3;
   color: #5b5b5b;
+  text-align: center;
 }
 
 .popular-shades__swatch.is-active .popular-shades__swatch-name,
@@ -241,9 +243,7 @@
 }
 
 @media (max-width: 991px) {
-  .popular-shades {
-    background: #f5f5f3;
-  }
+
 
   .popular-shades__wrapper {
     flex-direction: column;
@@ -258,13 +258,11 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    background: #f5f5f3;
   }
 
   .popular-shades__media {
     order: 2;
     padding-bottom: 16px;
-    background: #f5f5f3;
   }
 
   .popular-shades__title {
@@ -308,13 +306,13 @@
   }
 
   .popular-shades__swatch-item {
-    width: 56px;
-    min-width: 56px;
+    width: auto;
+    height: auto;
   }
 
   .popular-shades__swatch-chip {
-    width: 56px;
-    height: 60px;
+    /* width: 56px;
+    height: 60px; */
     border-radius: 14px 14px 0 0;
     padding: 8px;
   }
@@ -352,10 +350,15 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (min-width:992px) {
+  .popular-shades__media {
+    width: 70%;
+    flex: unset;
+    min-width: unset;
+  }
 
-  .popular-shades__swatch-name,
-  .popular-shades__swatch-number {
-    text-align: left;
+  .popular-shades__content {
+    width: 30%;
+    flex: unset;
   }
 }
