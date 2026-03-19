@@ -1,5 +1,9 @@
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
 
+const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
+const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
+const THANK_YOU_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
+
 /**
  * Create default form field
  */
@@ -172,20 +176,95 @@ function populateDescriptionCell(cell, headerCell) {
 }
 
 /**
+ * Create thank you overlay
+ */
+function createThankYouScreen(block) {
+  const overlay = document.createElement('div');
+  overlay.className = 'thank-you-overlay';
+
+  const isMobile = window.matchMedia('(max-width: 991px)').matches;
+  const videoSrc = isMobile ? THANK_YOU_MOBILE_VIDEO : THANK_YOU_DESKTOP_VIDEO;
+
+  overlay.innerHTML = `
+    <button type="button" class="thank-you-close" aria-label="Close thank you popup">✕</button>
+    <video
+      playsinline
+      autoplay
+      muted
+      preload="auto"
+      src="${videoSrc}"
+      class="thank-you-video"
+      aria-label="thank-you"
+    ></video>
+    <a
+      class="explore-now-rewamp"
+      href="${THANK_YOU_CTA_LINK}"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Explore now"
+    ></a>
+  `;
+
+  const closeBtn = overlay.querySelector('.thank-you-close');
+  const video = overlay.querySelector('.thank-you-video');
+
+  closeBtn?.addEventListener('click', () => {
+    if (video) {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    }
+
+    overlay.remove();
+    block.classList.remove('thank-you-active');
+    delete block.dataset.thankYouShown;
+  });
+
+  video?.addEventListener('ended', () => {
+    video.pause();
+  });
+
+  return overlay;
+}
+
+/**
+ * Show thank you overlay
+ */
+function showThankYouScreen(block) {
+  if (!block || block.dataset.thankYouShown === 'true') return;
+
+  const existingOverlay = block.querySelector('.thank-you-overlay');
+  if (existingOverlay) {
+    block.dataset.thankYouShown = 'true';
+    block.classList.add('thank-you-active');
+    return;
+  }
+
+  block.appendChild(createThankYouScreen(block));
+  block.dataset.thankYouShown = 'true';
+  block.classList.add('thank-you-active');
+}
+
+/**
  * Bind submit handler
  */
-function bindSubmitHandler(row, buttonCell) {
+function bindSubmitHandler(block, row, buttonCell) {
   const submitBtn = buttonCell?.querySelector('button.form-submit');
-  if (!submitBtn) return;
+  if (!submitBtn || submitBtn.dataset.submitBound === 'true') return;
+
+  submitBtn.dataset.submitBound = 'true';
 
   submitBtn.addEventListener('click', (event) => {
     event.preventDefault();
+
+    if (row.dataset.submitting === 'true') return;
 
     const inputs = row.querySelectorAll('.form-input');
     const isValid = [...inputs].every((input) => input.reportValidity());
 
     if (!isValid) return;
 
+    row.dataset.submitting = 'true';
     submitBtn.disabled = true;
 
     submitLeadFromForm(row, {
@@ -197,11 +276,15 @@ function bindSubmitHandler(row, buttonCell) {
         pincode: '#enquire-pincode',
       },
     })
+      .then(() => {
+        showThankYouScreen(block);
+      })
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Default form submission failed', err);
       })
       .finally(() => {
+        row.dataset.submitting = 'false';
         submitBtn.disabled = false;
       });
   });
@@ -296,7 +379,7 @@ function renderForm(block) {
 
     if (buttonCell) {
       fieldsArea.appendChild(buttonCell);
-      bindSubmitHandler(row, buttonCell);
+      bindSubmitHandler(block, row, buttonCell);
     }
 
     row.appendChild(fieldsArea);
@@ -309,5 +392,7 @@ export default function decorate(block) {
     section.classList.remove('dark-blue');
   }
 
+  block.style.position = 'relative';
+  block.style.overflow = 'hidden';
   renderForm(block);
 }

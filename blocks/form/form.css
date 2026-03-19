@@ -6,19 +6,21 @@
   padding: 0 40px;
 }
 
-.section.form-container > .form-wrapper {
+.section.form-container>.form-wrapper {
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-.section.form-container > .form-wrapper > div,
+.section.form-container>.form-wrapper>div,
 .section.form-container .form-wrapper {
   margin: 0 !important;
   max-width: none !important;
 }
 
 .form.block {
+  position: relative;
+  overflow: hidden;
   background-color: #fff;
   border-radius: 20px;
   padding: 50px 60px;
@@ -194,12 +196,12 @@
   transition: all 0.2s ease;
 }
 
-.form.block .form-consent-input:checked + .form-consent-box {
+.form.block .form-consent-input:checked+.form-consent-box {
   background: #fff;
   border-color: #53565a;
 }
 
-.form.block .form-consent-input:checked + .form-consent-box::after {
+.form.block .form-consent-input:checked+.form-consent-box::after {
   content: '';
   position: absolute;
   top: 4px;
@@ -233,11 +235,11 @@
   transition: transform 0.2s ease;
 }
 
-.form.block .form-consent-item--toggle .form-consent-input:checked + .form-consent-toggle {
+.form.block .form-consent-item--toggle .form-consent-input:checked+.form-consent-toggle {
   background: #14c759;
 }
 
-.form.block .form-consent-item--toggle .form-consent-input:checked + .form-consent-toggle::after {
+.form.block .form-consent-item--toggle .form-consent-input:checked+.form-consent-toggle::after {
   transform: translateX(19px);
 }
 
@@ -290,8 +292,63 @@
   display: none;
 }
 
+/* Hide form content when thank you is active */
+.form.block.thank-you-active>.form-row,
+.form.block.thank-you-active>div[style*='display: none'] {
+  visibility: hidden;
+}
+
+/* Thank you overlay */
+.form.block .thank-you-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: #ded7cb;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.form.block .thank-you-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.form.block .thank-you-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 80%);
+  color: #1a1a1a;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.form.block .thank-you-content .explore-now-rewamp,
+.form.block .thank-you-overlay .explore-now-rewamp {
+  position: absolute;
+  opacity: 0;
+  z-index: 2;
+  bottom: 36%;
+  right: 7%;
+  width: 11%;
+  height: 33%;
+  border-radius: 100%;
+}
+
 /* Tablet */
-@media (width <= 991px) {
+@media (width <=991px) {
   .form.block {
     padding: 40px;
   }
@@ -314,10 +371,18 @@
   .form.block .form-consent-options {
     gap: 22px 24px;
   }
+
+  .form.block .thank-you-overlay .explore-now-rewamp {
+    bottom: 50%;
+    right: 6%;
+    width: 31%;
+    height: 16%;
+    transform: translateY(93%);
+  }
 }
 
 /* Mobile */
-@media (width <= 600px) {
+@media (width <=600px) {
   .section.form-container {
     padding: 20px 16px;
   }
@@ -400,7 +465,7 @@
     flex-basis: 20px;
   }
 
-  .form.block .form-consent-input:checked + .form-consent-box::after {
+  .form.block .form-consent-input:checked+.form-consent-box::after {
     top: 3px;
     left: 7px;
     width: 5px;
@@ -426,5 +491,25 @@
   .form.block .form-submit {
     width: 100%;
     justify-content: center;
+  }
+
+  .form.block .thank-you-overlay {
+    border-radius: 16px;
+  }
+
+  .form.block .thank-you-close {
+    top: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+  }
+
+  .form.block .thank-you-overlay .explore-now-rewamp {
+    bottom: 50%;
+    right: 6%;
+    width: 31%;
+    height: 16%;
+    transform: translateY(93%);
   }
 }
