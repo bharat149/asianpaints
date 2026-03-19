@@ -32,7 +32,7 @@ export default function decorate(block) {
         <div class="project-field-inputs">
             <label tabindex="0" role="checkbox" aria-checked="false" class="focus-visible-auto-imp" for="freshPainting">
                 <input class="d-none" type="radio" id="freshPainting" name="project" value="Fresh Painting"
-                    data-gtm-form-interact-field-id="0">
+                    data-gtm-form-interact-field-id="0" style="display: none;">
                 <span class="radiobtn">
                     <div class="option-icon">
                         <img alt="Fresh Painting" title="Fresh Painting" loading="lazy" fetchpriority="auto"
@@ -44,7 +44,7 @@ export default function decorate(block) {
             </label>
             <label tabindex="0" role="checkbox" aria-checked="false" class="focus-visible-auto-imp" for="Repainting">
                 <input class="d-none" type="radio" id="Repainting" name="project" value="Repainting"
-                    data-gtm-form-interact-field-id="3">
+                    data-gtm-form-interact-field-id="3" style="display: none;">
                 <span class="radiobtn">
                     <div class="option-icon">
                         <img alt="Repainting" title="Repainting" loading="lazy" fetchpriority="auto"
@@ -60,7 +60,7 @@ export default function decorate(block) {
         <div class="space-field-inputs">
             <label tabindex="0" role="checkbox" aria-checked="false" class="focus-visible-auto-imp" for="Interior">
                 <input class="d-none" type="radio" id="Interior" name="space" value="Interior"
-                    data-gtm-form-interact-field-id="1">
+                    data-gtm-form-interact-field-id="1" style="display: none;">
                 <span class="radiobtn">
                     <div class="option-icon">
                         <img alt="Interior" title="Interior" loading="lazy" fetchpriority="auto"
@@ -71,7 +71,7 @@ export default function decorate(block) {
             </label>
             <label tabindex="0" role="checkbox" aria-checked="false" class="focus-visible-auto-imp" for="Exterior">
                 <input class="d-none" type="radio" id="Exterior" name="space" value="Exterior"
-                    data-gtm-form-interact-field-id="4">
+                    data-gtm-form-interact-field-id="4" style="display: none;">
                 <span class="radiobtn">
                     <div class="option-icon">
                         <img alt="Exterior" title="Exterior" loading="lazy" fetchpriority="auto"
