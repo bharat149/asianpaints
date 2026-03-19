@@ -399,11 +399,26 @@ main .section.grey {
   padding: 60px 0;
 }
 
-/* Grey section - Asian Paints */
-main .section.align-center {
+/* Center align section - Asian Paints */
+
+/* Desktop (default) */
+.section.align-center {
     text-align: center;
 }
 
+/* Mobile override */
+@media (max-width: 767px) {
+    .section.align-center {
+        text-align: left;
+    }
+}
+
+/* Adding section metadata for spacing*/
+
+main .section.sectionpadding {
+    padding-right: 4%;
+    padding-left: 4%;
+}
 /* Adding CTA Styling here*/
 /* ============================================
    READ T&C — AEM CTA migrated styles (EDS fix)
