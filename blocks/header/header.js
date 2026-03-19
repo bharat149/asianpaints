@@ -16,7 +16,8 @@ import { getMetadata, decorateIcons } from '../../scripts/aem.js';
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
-const CONFIG_URL = 'https://main--edspoc--aemedsap.aem.page/config.json';
+// Use relative URL for same-origin fetch (avoids CORS when on branch previews)
+const CONFIG_URL = '/config.json';
 const DEFAULT_API_BASE = 'https://beta.asianpaints.com';
 const DEFAULT_KEYCLOAK_AUTH = 'https://betaauth.asianpaints.com';
 
