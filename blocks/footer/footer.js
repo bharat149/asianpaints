@@ -325,17 +325,23 @@ function buildGlobalPresence(container, row) {
   anchors.forEach((a) => {
     const img = a.querySelector('img');
     if (!img) return;
-    const item = el('div', { className: 'country-item' });
+    const href = a.getAttribute('href') || '#';
+    const name = img.getAttribute('alt') || '';
+    const item = el('a', {
+      href,
+      className: 'country-item',
+      target: '_blank',
+      rel: 'noopener',
+      'aria-label': name,
+    });
     item.appendChild(el('img', {
       src: img.getAttribute('src'),
-      alt: img.getAttribute('alt') || '',
+      alt: name,
       width: '32',
       height: '32',
       loading: 'lazy',
       className: 'country-flag',
     }));
-    // Country name from alt text (since text nodes may not be reliable)
-    const name = img.getAttribute('alt') || '';
     item.appendChild(el('span', { className: 'country-name' }, name));
     countries.appendChild(item);
   });

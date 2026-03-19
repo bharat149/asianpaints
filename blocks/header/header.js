@@ -15,22 +15,29 @@
 import { getMetadata, decorateIcons } from '../../scripts/aem.js';
 
 const DESKTOP_BREAKPOINT = 992;
-const AP_ORIGIN = window.location.origin;
+const CURRENT_ORIGIN = window.location.origin;
+const AP_PRODUCTION_ORIGIN = 'https://beta.asianpaints.com/';
 const FORM_MODAL_PATH_SEGMENT = '/forms/';
 const BOOK_SITE_VISIT_HASH = '#book-site-visit';
 const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
 const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
 
 function isOnAsianPaintsDomain() {
-  return true;
+  const host = window.location.hostname.toLowerCase();
+  return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
 }
 
 /**
- * Same-domain mode: all AP paths resolve relative to current origin.
+ * Resolve AP paths relative on first-party domains and absolute elsewhere.
  */
 function apUrl(path) {
-  return path;
+  if (!path) return isOnAsianPaintsDomain() ? CURRENT_ORIGIN : AP_PRODUCTION_ORIGIN;
+  if (/^https?:\/\//i.test(path)) return path;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return isOnAsianPaintsDomain() ? normalizedPath : `${AP_PRODUCTION_ORIGIN}${normalizedPath}`;
 }
+
+const AP_ORIGIN = isOnAsianPaintsDomain() ? CURRENT_ORIGIN : AP_PRODUCTION_ORIGIN;
 
 function normalizeInternalPath(href) {
   if (!href) return '';
@@ -103,7 +110,7 @@ function resolveApLink(urlOrPath, fallback = AP_API.SHOP_URL) {
 async function fetchFromAp(pathOrUrl, options = {}) {
   let url = pathOrUrl;
   if (!/^https?:\/\//i.test(pathOrUrl)) {
-    url = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+    url = apUrl(pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`);
   }
   try {
     const response = await fetch(url, options);
@@ -344,7 +351,7 @@ async function fetchDealersByLocation(location) {
 
 async function fetchMiniCartCount() {
   try {
-    const resp = await fetchFromAp(`${AP_PATHS.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
+    const resp = await fetchFromAp(`${AP_API.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
     if (!resp) return 0;
     const data = await resp.json();
     if (data.status === 'failure') return 0;
@@ -2198,10 +2205,8 @@ function buildNavBar(navDiv, secondaryDiv) {
   return navBar;
 }
 
-/* Visual search assets: use AP static origin when on localhost (GIF won't exist locally) */
-const VS_ASSETS_ORIGIN = window.location.hostname === 'localhost'
-  ? 'https://www.asianpaints.com'
-  : window.location.origin;
+/* Visual search assets must come from AP origin outside first-party domains. */
+const VS_ASSETS_ORIGIN = AP_ORIGIN;
 /* eslint-disable max-len */
 const DRAG_DROP_GIF = `${VS_ASSETS_ORIGIN}/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/drag-drop-gif-desktop.gif`;
 const BROWSE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
@@ -2353,7 +2358,7 @@ async function refreshCartModal(block) {
   };
 
   try {
-    const resp = await fetchFromAp(`${AP_PATHS.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
+    const resp = await fetchFromAp(`${AP_API.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
     if (!resp) {
       setShopState();
       return;
