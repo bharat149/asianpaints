@@ -1,6 +1,3 @@
-/**
- * Handles the redirection logic based on cta.js implementation.
- */
 function handleRedirection(pincode, options = {}) {
   if (!pincode || pincode.length < 5) return;
 
@@ -68,6 +65,7 @@ function decorateSearch(block) {
   let description = '';
   let cardTitle = 'Find a contractor near you!';
   let placeholder = 'Enter pincode';
+  let redirectUrl = '';
 
   if (rows.length >= 1) {
     const headingEl = rows[0].querySelector('h2, h3, strong, p');
@@ -81,6 +79,9 @@ function decorateSearch(block) {
     const cols = [...rows[2].children];
     if (cols.length >= 1) cardTitle = cols[0].textContent.trim();
     if (cols.length >= 2) placeholder = cols[1].textContent.trim();
+  }
+  if (rows.length >= 4) {
+    redirectUrl = getCellLink(rows[3]);
   }
 
   block.textContent = '';
@@ -125,7 +126,10 @@ function decorateSearch(block) {
   card.appendChild(inputWrapper);
   block.appendChild(card);
 
-  const onSearch = () => handleRedirection(input.value.trim(), { type: 'pincode' });
+  const onSearch = () => handleRedirection(input.value.trim(), {
+    baseUrl: redirectUrl || undefined,
+    type: 'pincode',
+  });
 
   button.addEventListener('click', onSearch);
   input.addEventListener('keydown', (e) => {
@@ -142,7 +146,7 @@ function decorateCta(block) {
   const titleText = getCellText(cfg.title);
   const placeholderText = getCellText(cfg['input placeholder']) || 'Enter pincode';
   const ctaText = getCellText(cfg['cta text']) || 'Search';
-  const ctaLink = getCellLink(cfg['cta link']);
+  const ctaLink = getCellLink(cfg['cta link']) || getCellLink(cfg['redirect url']);
   const ctaTarget = getCellText(cfg['cta target']) || '_self';
 
   const wrapper = document.createElement('div');
