@@ -115,9 +115,23 @@ const loadEmbed = (block, link, autoplay, options = {}) => {
 
 export default function decorate(block) {
   const isMedia = block.classList.contains('media');
-  const placeholder = block.querySelector('picture');
-  const linkElement = block.querySelector('a');
-  let link = linkElement ? linkElement.href : null;
+  const rows = [...block.querySelectorAll(':scope > div')];
+
+  let link = '';
+  const placeholders = [];
+
+  rows.forEach((row) => {
+    const a = row.querySelector('a');
+    if (a && !link) {
+      link = a.href;
+    }
+    const pics = [...row.querySelectorAll('picture')];
+    if (pics.length > 0) {
+      placeholders.push(...pics);
+    }
+  });
+
+  // Fallback for media variant if link not found in <a>
   if (!link && isMedia) link = block.textContent.trim();
 
   const options = isMedia ? {
@@ -126,12 +140,12 @@ export default function decorate(block) {
     muted: block.classList.contains('muted'),
   } : {};
 
-  if (isMedia && (!link || (!linkElement && !link.startsWith('http')))) {
-    if (placeholder) {
+  if (isMedia && (!link || (!link.startsWith('http')))) {
+    if (placeholders.length > 0) {
       block.textContent = '';
       const wrapper = document.createElement('div');
       wrapper.className = 'embed-media-image-only';
-      wrapper.appendChild(placeholder);
+      wrapper.appendChild(placeholders[0]);
       block.appendChild(wrapper);
       block.classList.add('embed-media-banner');
     }
@@ -141,23 +155,35 @@ export default function decorate(block) {
   block.textContent = '';
 
   if (isMedia) {
-    const url = new URL(link);
-    if (isVideoFile(url) && options.autoplay) {
-      loadEmbed(block, link, true, options);
-      return;
+    try {
+      const url = new URL(link);
+      if (isVideoFile(url) && options.autoplay) {
+        loadEmbed(block, link, true, options);
+        return;
+      }
+    } catch (e) {
+      // invalid URL
     }
   }
 
-  if (placeholder) {
+  if (placeholders.length > 0) {
     const wrapper = document.createElement('div');
     wrapper.className = 'embed-placeholder';
-    wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" title="Play"></button></div>';
-    wrapper.prepend(placeholder);
+    wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" aria-label="Play Video"></button></div>';
+
+    if (placeholders.length >= 2) {
+      placeholders[0].classList.add('embed-placeholder-desktop');
+      placeholders[1].classList.add('embed-placeholder-mobile');
+      wrapper.prepend(placeholders[0], placeholders[1]);
+    } else {
+      wrapper.prepend(placeholders[0]);
+    }
+
     wrapper.addEventListener('click', () => {
       loadEmbed(block, link, true, options);
     });
     block.append(wrapper);
-  } else {
+  } else if (link) {
     const observer = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) {
         observer.disconnect();
