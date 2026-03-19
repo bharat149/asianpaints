@@ -1,0 +1,198 @@
+.banner-carousel-home-essentials-container {
+
+    .icons-container {
+        border-radius: 8px;
+        background-color: #fff;
+        padding: 30px 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        width: 30%;
+
+        @include tabToLarge() {
+             position: absolute;
+             top: 50%;
+             transform: translateY(-50%);
+             right: 60px;
+             @media (max-width: 1440px) {
+                 padding: 30px 20px;
+            }
+        }
+        
+        @include large-mediumScreen() {
+             transform: translateY(-50%) scale(0.7);
+             right: 0;
+        }
+        
+        @media (min-width: 1025px) and (max-width: 1280px) {
+            transform: translateY(-50%) scale(0.9);
+            right: 40px;
+        }
+
+        @media (min-width: 992px) and (max-width: 1100px) {
+            width: 40%;
+        }
+
+        @media (min-width: 1101px) and (max-width: 1280px) {
+            width: 35%;
+        }
+
+        @media (min-width: 1281px) and (max-width: 1440px) {
+            width: 32%;
+        }
+
+        @include forAllMobileScreen() {
+            position: relative;
+            gap: 10px;
+            width: calc(100% - 32px);
+            padding: 6px 12px 25px;
+            margin: -16px auto 50px;
+            box-shadow: 0px 4px 16px -2px #1018281a;
+        }
+
+        @media (min-width: 320px) and (max-width: 370px) {
+            width: calc(100% - 20px);
+        }
+
+        .icons-title {
+            font-weight: 300;
+            font-size: 60px;
+            line-height: 66px;
+            letter-spacing: 0;
+            color: #df0f29;
+            width: 90%;
+
+            @media (min-width: 1680px) {
+                width: 75%;
+            }
+
+            @include forAllMobileScreen() {
+                font-size: 31px;
+                line-height: 50px;
+                width: 100%;
+                text-align: center;
+            }
+
+            @media (min-width: 360px) and (max-width: 399px) {
+                font-size: 26px;
+            }
+        }
+
+        .icons-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 35px 20px;
+            align-items: flex-start;
+
+            @include forAllMobileScreen() {
+                 gap: 20px 10px;
+            }
+            
+            .icon-item {
+                flex: 0 0 calc((100% - 40px) / 3);
+                display: flex;
+                flex-direction: column;
+                text-align: center;
+                position: relative;
+
+                @include forAllMobileScreen() {
+                     flex: 0 0 calc((100% - 20px) / 3);
+                }
+                
+                figure {
+                    margin: 0;
+                    display: flex;
+                    flex-direction: column;
+                    row-gap: 12px;
+
+                    @include forAllMobileScreen() {
+                         row-gap: 10px;
+                         z-index: 1;
+                    }
+                    
+                    .icon-wrapper {
+                        height: 51px;
+
+                        @include forAllMobileScreen() {
+                             height: 43px;
+                        }
+                        
+                        img {
+                            max-width: 53px;
+                            max-height: 100%;
+                            width: auto;
+                            height: auto;
+                            flex-grow: 1;
+
+                            @include forAllMobileScreen() {
+                                max-width: 50px;
+                            }
+                        }
+                    }
+
+                    figcaption {
+                        width: auto;
+
+                        @media (min-width: 320px) and (max-width: 380px) {
+                            font-size: 11px;
+                        }
+
+                        @media (min-width: 381px) and (max-width: 400px) {
+                            font-size: 12px;
+                        }
+
+                        @media (min-width: 401px) and (max-width: 991px) {
+                            font-size: 13px;
+                        }
+
+                        @include large-mediumScreen() {
+                            font-size: 12px;
+                        }
+
+                        @media (min-width: 1025px) and (max-width: 1440px) {
+                            font-size: 13px;
+                        }
+
+                        .last-word {
+                            display: block;
+                        }
+                    }
+                }
+
+                @include tabToLarge() {
+                    &::after {
+                        content: "";
+                        width: 30px;
+                        height: 30px;
+                        background: #feda94;
+                        position: absolute;
+                        border-radius: 50%;
+                        top: 0;
+                        right: 24%;
+                        z-index: -1;
+                        opacity: 0;
+                        transition: opacity 0.3s ease-in-out;
+
+                        @media (min-width: 1600px) and (max-width: 1779px) {
+                            right: 28%;
+                        }
+
+                        @include largeMac-Screen() {
+                            right: 32%;
+                        }
+
+                        @media (min-width: 1920px) {
+                            right: 34%;
+                        }
+                    }
+
+                    &:hover {
+                        &::after {
+                            opacity: 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
