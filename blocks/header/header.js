@@ -16,7 +16,41 @@ import { getMetadata, decorateIcons } from '../../scripts/aem.js';
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
-const AP_PRODUCTION_ORIGIN = 'https://beta.asianpaints.com/';
+// Use relative URL for same-origin fetch (avoids CORS when on branch previews)
+const CONFIG_URL = '/config.json';
+const DEFAULT_API_BASE = 'https://beta.asianpaints.com';
+const DEFAULT_KEYCLOAK_AUTH = 'https://betaauth.asianpaints.com';
+
+const headerConfig = {
+  apiBaseUrl: DEFAULT_API_BASE,
+  keycloakAuthUrl: DEFAULT_KEYCLOAK_AUTH,
+};
+
+async function fetchHeaderConfig() {
+  try {
+    const resp = await fetch(CONFIG_URL);
+    if (!resp.ok) return;
+    const json = await resp.json();
+    const data = json?.data || [];
+    data.forEach(({ key, value }) => {
+      if (key && value) {
+        if (key === 'api-base-url') headerConfig.apiBaseUrl = value.replace(/\/$/, '');
+        if (key === 'keycloak-auth-url') headerConfig.keycloakAuthUrl = value.replace(/\/$/, '');
+      }
+    });
+  } catch (e) {
+    // use defaults
+  }
+}
+
+function getApiBaseUrl() {
+  return headerConfig.apiBaseUrl || DEFAULT_API_BASE;
+}
+
+function getApOrigin() {
+  return isOnAsianPaintsDomain() ? CURRENT_ORIGIN : getApiBaseUrl();
+}
+
 const FORM_MODAL_PATH_SEGMENT = '/forms/';
 const BOOK_SITE_VISIT_HASH = '#book-site-visit';
 const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
@@ -31,13 +65,11 @@ function isOnAsianPaintsDomain() {
  * Resolve AP paths relative on first-party domains and absolute elsewhere.
  */
 function apUrl(path) {
-  if (!path) return isOnAsianPaintsDomain() ? CURRENT_ORIGIN : AP_PRODUCTION_ORIGIN;
+  if (!path) return getApOrigin();
   if (/^https?:\/\//i.test(path)) return path;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  return isOnAsianPaintsDomain() ? normalizedPath : `${AP_PRODUCTION_ORIGIN}${normalizedPath}`;
+  return isOnAsianPaintsDomain() ? normalizedPath : `${getApiBaseUrl()}${normalizedPath}`;
 }
-
-const AP_ORIGIN = isOnAsianPaintsDomain() ? CURRENT_ORIGIN : AP_PRODUCTION_ORIGIN;
 
 function normalizeInternalPath(href) {
   if (!href) return '';
@@ -70,26 +102,28 @@ const AP_PATHS = {
 };
 /* eslint-enable max-len */
 
-const AP_API = {
-  DETECT_LOCATION: apUrl(AP_PATHS.DETECT_LOCATION),
-  CONTRACTOR_PROFILE: apUrl(AP_PATHS.CONTRACTOR_PROFILE),
-  MINI_CART: apUrl(AP_PATHS.MINI_CART),
-  SEARCH_RESULTS: apUrl('/content/ap/en/home/searchresult.html'),
-  DEALER_PAGE: apUrl('/content/ap/en/home/store-locator.html'),
-  CONTRACTOR_PAGE: apUrl('/content/ap/en/home/contractor-listing-page.html'),
-  KEYCLOAK_URL: 'https://betaauth.asianpaints.com',
-  KEYCLOAK_REALM: 'asianpaintsRealm',
-  KEYCLOAK_CLIENT: 'asianpaints',
-  KEYCLOAK_JS: 'https://cdn.jsdelivr.net/npm/keycloak-js@22.0.3/dist/keycloak.min.js',
-  KEYCLOAK_PAGE_URL: `${AP_ORIGIN}/content/ap/en/home/key-cloak.html`,
-  PROFILE_PAGE: apUrl('/content/ap/en/home/my-profile.html'),
-  WISHLIST_PAGE: apUrl('/content/ap/en/home/my-wishlist.html'),
-  SHOP_URL: apUrl('/paint-products.html'),
-  VISUAL_SEARCH_UPLOAD: apUrl(AP_PATHS.VISUAL_SEARCH_UPLOAD),
-  UNBXD_API_KEY: 'decd8e031bd76ff9fa152afeadcb1773',
-  UNBXD_SITE_KEY: 'ss-unbxd-prod-asianpaints46541696944854',
-  UNBXD_BASE: 'https://search.unbxd.io',
-};
+function getApApi() {
+  return {
+    DETECT_LOCATION: apUrl(AP_PATHS.DETECT_LOCATION),
+    CONTRACTOR_PROFILE: apUrl(AP_PATHS.CONTRACTOR_PROFILE),
+    MINI_CART: apUrl(AP_PATHS.MINI_CART),
+    SEARCH_RESULTS: apUrl('/content/ap/en/home/searchresult.html'),
+    DEALER_PAGE: apUrl('/content/ap/en/home/store-locator.html'),
+    CONTRACTOR_PAGE: apUrl('/content/ap/en/home/contractor-listing-page.html'),
+    KEYCLOAK_URL: headerConfig.keycloakAuthUrl || DEFAULT_KEYCLOAK_AUTH,
+    KEYCLOAK_REALM: 'asianpaintsRealm',
+    KEYCLOAK_CLIENT: 'asianpaints',
+    KEYCLOAK_JS: 'https://cdn.jsdelivr.net/npm/keycloak-js@22.0.3/dist/keycloak.min.js',
+    KEYCLOAK_PAGE_URL: `${getApOrigin()}/content/ap/en/home/key-cloak.html`,
+    PROFILE_PAGE: apUrl('/content/ap/en/home/my-profile.html'),
+    WISHLIST_PAGE: apUrl('/content/ap/en/home/my-wishlist.html'),
+    SHOP_URL: apUrl('/paint-products.html'),
+    VISUAL_SEARCH_UPLOAD: apUrl(AP_PATHS.VISUAL_SEARCH_UPLOAD),
+    UNBXD_API_KEY: 'decd8e031bd76ff9fa152afeadcb1773',
+    UNBXD_SITE_KEY: 'ss-unbxd-prod-asianpaints46541696944854',
+    UNBXD_BASE: 'https://search.unbxd.io',
+  };
+}
 
 const AP_GEO_PLACE = {
   API_URL: 'https://places.googleapis.com/v1/places:searchText',
@@ -101,7 +135,7 @@ const AP_GEO_PLACE = {
 const DEALER_LOCATOR_TYPE_FILTER = 'Beautiful Homes,Colour Ideas,EzyCR Prime,EZY CR,CR NXT Prime,CR NXT,Colour World,Non-colour world';
 /* eslint-enable max-len */
 
-function resolveApLink(urlOrPath, fallback = AP_API.SHOP_URL) {
+function resolveApLink(urlOrPath, fallback = getApApi().SHOP_URL) {
   if (!urlOrPath) return fallback;
   if (/^https?:\/\//i.test(urlOrPath)) return urlOrPath;
   return apUrl(urlOrPath.startsWith('/') ? urlOrPath : `/${urlOrPath}`);
@@ -185,7 +219,8 @@ function getUnbxdUid() {
 
 async function fetchUnbxdAutosuggest(query, options = {}) {
   const uid = getUnbxdUid();
-  const base = `${AP_API.UNBXD_BASE}/${AP_API.UNBXD_API_KEY}/${AP_API.UNBXD_SITE_KEY}`;
+  const api = getApApi();
+  const base = `${api.UNBXD_BASE}/${api.UNBXD_API_KEY}/${api.UNBXD_SITE_KEY}`;
   const fields = options.fields
     || 'title,price,imageUrl,sku,cfType,entityCode,computed_discount,productUrl,sellingPrice,priceAfterReduction,uniqueId,id,autosuggest,doctype';
   const params = new URLSearchParams({
@@ -218,7 +253,8 @@ async function fetchUnbxdAutosuggest(query, options = {}) {
 }
 
 async function fetchUnbxdSearch(query) {
-  const base = `${AP_API.UNBXD_BASE}/${AP_API.UNBXD_API_KEY}/${AP_API.UNBXD_SITE_KEY}`;
+  const api = getApApi();
+  const base = `${api.UNBXD_BASE}/${api.UNBXD_API_KEY}/${api.UNBXD_SITE_KEY}`;
   const fields = 'title,price,imageUrl,sku,cfType,entityCode,computed_discount,productUrl,sellingPrice,priceAfterReduction,uniqueId,id,autosuggest,doctype';
   const params = new URLSearchParams({
     q: query,
@@ -351,7 +387,7 @@ async function fetchDealersByLocation(location) {
 
 async function fetchMiniCartCount() {
   try {
-    const resp = await fetchFromAp(`${AP_API.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
+    const resp = await fetchFromAp(`${getApApi().MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
     if (!resp) return 0;
     const data = await resp.json();
     if (data.status === 'failure') return 0;
@@ -505,7 +541,7 @@ async function initKeycloak(block) {
   }
 
   try {
-    await loadScript(AP_API.KEYCLOAK_JS);
+    await loadScript(getApApi().KEYCLOAK_JS);
     /* global Keycloak */
     if (typeof Keycloak === 'undefined') {
       updateProfileUI(block, false);
@@ -515,14 +551,14 @@ async function initKeycloak(block) {
     const storedRefreshToken = localStorage.getItem('keycloak-refresh-token');
 
     keycloakInstance = new Keycloak({
-      url: AP_API.KEYCLOAK_URL,
-      realm: AP_API.KEYCLOAK_REALM,
-      clientId: AP_API.KEYCLOAK_CLIENT,
+      url: getApApi().KEYCLOAK_URL,
+      realm: getApApi().KEYCLOAK_REALM,
+      clientId: getApApi().KEYCLOAK_CLIENT,
       enablePersistent: true,
     });
 
     const ssoRedirect = isOnAsianPaintsDomain()
-      ? AP_API.KEYCLOAK_PAGE_URL
+      ? getApApi().KEYCLOAK_PAGE_URL
       : `${window.location.origin}/content/ap/en/home/key-cloak.html`;
 
     const authenticated = await keycloakInstance.init({
@@ -574,7 +610,7 @@ async function initKeycloak(block) {
 
 async function handleProfileClick(e) {
   if (keycloakInstance?.authenticated) {
-    window.location.href = AP_API.PROFILE_PAGE;
+    window.location.href = getApApi().PROFILE_PAGE;
     return;
   }
 
@@ -674,7 +710,7 @@ async function uploadVisualSearchImage(file, modal) {
 
       if (typeof data?.totalCount !== 'undefined') {
         localStorage.setItem('uploaded-image-search-name', fileName.replace(/\.[^.]+$/, ''));
-        window.location.href = `${AP_API.SEARCH_RESULTS}?variantType=visualsearch&ts=${Date.now()}`;
+        window.location.href = `${getApApi().SEARCH_RESULTS}?variantType=visualsearch&ts=${Date.now()}`;
         return;
       }
 
@@ -699,21 +735,21 @@ async function uploadVisualSearchImage(file, modal) {
 
 function navigateToSearchResults(query) {
   if (!query || !query.trim()) return;
-  window.location.href = `${AP_API.SEARCH_RESULTS}?q=${encodeURIComponent(query.trim())}`;
+  window.location.href = `${getApApi().SEARCH_RESULTS}?q=${encodeURIComponent(query.trim())}`;
 }
 
 function getSearchResultUrl(query) {
-  return `${AP_API.SEARCH_RESULTS}?q=${encodeURIComponent((query || '').trim())}`;
+  return `${getApApi().SEARCH_RESULTS}?q=${encodeURIComponent((query || '').trim())}`;
 }
 
 function getEntityExploreUrl(entity, query, location) {
   if (!location) return getSearchResultUrl(query);
   if (entity === 'contractor') {
     const mode = containsIndianPincode(query) ? 'pinCode' : 'area';
-    return `${AP_API.CONTRACTOR_PAGE}?cpListing=${mode}:${encodeURIComponent(location)}`;
+    return `${getApApi().CONTRACTOR_PAGE}?cpListing=${mode}:${encodeURIComponent(location)}`;
   }
   if (entity === 'dealer') {
-    return `${AP_API.DEALER_PAGE}?q=${encodeURIComponent(location)}`;
+    return `${getApApi().DEALER_PAGE}?q=${encodeURIComponent(location)}`;
   }
   return getSearchResultUrl(query);
 }
@@ -971,7 +1007,7 @@ function getSwatchFallbackUrl(product) {
   if (typeof rawCode !== 'string') return '';
   const normalized = rawCode.startsWith('en-') ? rawCode.slice(3) : rawCode;
   if (!/^[A-Za-z0-9]+$/.test(normalized)) return '';
-  return `${AP_ORIGIN}/content/dam/asian_paints/colours/swatches/${normalized}.png.transform/cc-width-221-height-260/image.png`;
+  return `${getApOrigin()}/content/dam/asian_paints/colours/swatches/${normalized}.png.transform/cc-width-221-height-260/image.png`;
 }
 
 function isLikelyShadeCode(value) {
@@ -1208,7 +1244,7 @@ function restoreInputResults(dialog) {
   const seeAll = dialog.querySelector('.sd-see-all');
   const query = (input?.value || '').trim();
   if (seeAll) {
-    seeAll.href = query ? getSearchResultUrl(query) : AP_API.SEARCH_RESULTS;
+    seeAll.href = query ? getSearchResultUrl(query) : getApApi().SEARCH_RESULTS;
   }
   if (query.length >= 3) {
     handleSearchDialogSearchResults(dialog, query); // eslint-disable-line no-use-before-define
@@ -1453,7 +1489,7 @@ function buildSearchDialog() {
 
   const seeAll = document.createElement('a');
   seeAll.className = 'sd-see-all';
-  seeAll.href = AP_API.SEARCH_RESULTS;
+  seeAll.href = getApApi().SEARCH_RESULTS;
   seeAll.textContent = 'See all results';
   const seeAllArrow = document.createElement('span');
   seeAllArrow.textContent = ' \u203A';
@@ -1511,7 +1547,7 @@ function buildSearchDialog() {
       handleSearchDialogQuery(dialog, rawQuery);
       seeAll.href = query
         ? getSearchResultUrl(query)
-        : AP_API.SEARCH_RESULTS;
+        : getApApi().SEARCH_RESULTS;
     }, SEARCH_DEBOUNCE_MS);
     searchDebounce = setTimeout(() => {
       handleSearchDialogSearchResults(dialog, rawQuery);
@@ -1565,8 +1601,14 @@ async function openSearchDialog(block) {
 //  Build Functions
 // ──────────────────────────────────────────────
 
-const AUTH_BASE = `${AP_API.KEYCLOAK_URL}/realms/${AP_API.KEYCLOAK_REALM}/protocol/openid-connect/auth`;
-const AUTH_LOGOUT_BASE = `${AP_API.KEYCLOAK_URL}/realms/${AP_API.KEYCLOAK_REALM}/protocol/openid-connect/logout`;
+function getAuthBase() {
+  const api = getApApi();
+  return `${api.KEYCLOAK_URL}/realms/${api.KEYCLOAK_REALM}/protocol/openid-connect/auth`;
+}
+function getAuthLogoutBase() {
+  const api = getApApi();
+  return `${api.KEYCLOAK_URL}/realms/${api.KEYCLOAK_REALM}/protocol/openid-connect/logout`;
+}
 // Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
 const AUTH_REDIRECT_URI = `${window.location.origin}/`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
@@ -1726,7 +1768,7 @@ async function buildProfileAuthUrl(redirectUri) {
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
   });
-  return `${AUTH_BASE}?${params.toString()}`;
+  return `${getAuthBase()}?${params.toString()}`;
 }
 
 function buildBrandBar(brandDiv) {
@@ -2035,7 +2077,7 @@ function buildCartModal() {
 
   const shopBtn = document.createElement('a');
   shopBtn.className = 'cart-modal-shop';
-  shopBtn.href = AP_API.SHOP_URL;
+  shopBtn.href = getApApi().SHOP_URL;
   shopBtn.textContent = 'Shop now';
 
   // Cart items list (populated when items exist)
@@ -2206,9 +2248,10 @@ function buildNavBar(navDiv, secondaryDiv) {
 }
 
 /* Visual search assets must come from AP origin outside first-party domains. */
-const VS_ASSETS_ORIGIN = AP_ORIGIN;
 /* eslint-disable max-len */
-const DRAG_DROP_GIF = `${VS_ASSETS_ORIGIN}/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/drag-drop-gif-desktop.gif`;
+function getDragDropGifUrl() {
+  return `${getApOrigin()}/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/drag-drop-gif-desktop.gif`;
+}
 const BROWSE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 /* eslint-enable max-len */
 
@@ -2238,7 +2281,7 @@ function buildVisualSearchModal() {
 
   const uploadIcon = document.createElement('div');
   uploadIcon.className = 'vs-upload-icon';
-  uploadIcon.style.setProperty('--drag-image-url', `url('${DRAG_DROP_GIF}')`);
+  uploadIcon.style.setProperty('--drag-image-url', `url('${getDragDropGifUrl()}')`);
 
   const dragText = document.createElement('p');
   dragText.className = 'vs-drag-text';
@@ -2353,12 +2396,12 @@ async function refreshCartModal(block) {
     if (itemsList) itemsList.innerHTML = '';
     if (shopBtn) {
       shopBtn.textContent = 'Shop now';
-      shopBtn.href = AP_API.SHOP_URL;
+      shopBtn.href = getApApi().SHOP_URL;
     }
   };
 
   try {
-    const resp = await fetchFromAp(`${AP_API.MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
+    const resp = await fetchFromAp(`${getApApi().MINI_CART}?_=${Date.now()}`, { credentials: 'include' });
     if (!resp) {
       setShopState();
       return;
@@ -2397,7 +2440,7 @@ async function refreshCartModal(block) {
         shopBtn.href = resolveApLink(cartPathOrUrl);
       } else {
         shopBtn.textContent = 'Shop now';
-        shopBtn.href = AP_API.SHOP_URL;
+        shopBtn.href = getApApi().SHOP_URL;
       }
     }
   } catch {
@@ -2571,7 +2614,7 @@ function addInteractions(block) {
         if (idToken) {
           params.set('id_token_hint', idToken);
         }
-        window.location.href = `${AUTH_LOGOUT_BASE}?${params.toString()}`;
+        window.location.href = `${getAuthLogoutBase()}?${params.toString()}`;
       }
     });
 
@@ -2687,6 +2730,8 @@ async function initIntegrations(block) {
 // ──────────────────────────────────────────────
 
 export default async function decorate(block) {
+  await fetchHeaderConfig();
+
   const hasSignedOut = typeof localStorage !== 'undefined' && localStorage.getItem(SIGNED_OUT_KEY) === '1';
 
   // 1. Real login: user returned from auth with token in URL hash
