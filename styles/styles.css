@@ -403,7 +403,12 @@ main .section.grey {
 main .section.align-center {
     text-align: center;
 }
+/* Adding section metadata for spacing*/
 
+main .section.sectionpadding {
+    padding-right: 4%;
+    padding-left: 4%;
+}
 /* Adding CTA Styling here*/
 /* ============================================
    READ T&C — AEM CTA migrated styles (EDS fix)

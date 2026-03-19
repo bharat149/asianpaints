@@ -25,7 +25,7 @@
     width: 100%;
     max-width: 1440px;
     margin: 0 auto;
-    padding: 0 24px;
+    /*padding: 0 24px;*/
     box-sizing: border-box;
 }
 
@@ -35,7 +35,7 @@
     border-bottom: 1px solid #CACBCC;
     border-radius: 0;
     background: transparent;
-    padding: 30px 0;
+    padding: 23px 0;
 }
 
 .accordion.faq details:first-of-type {
@@ -50,7 +50,7 @@
 /* SUMMARY = AEM accord row */
 .accordion.faq details summary {
     display: flex;
-    align-items: flex-start;
+    align-items: anchor-center;
     justify-content: space-between;
     gap: 16px;
 
@@ -138,9 +138,6 @@
     max-height: 0;
     opacity: 0;
     overflow: hidden;
-    transition:
-        max-height 1000ms ease,
-        opacity 1000ms ease;
 }
 
 /* Open state */
@@ -159,6 +156,7 @@
     font-weight: 400;
     line-height: 21px;
     color: #53565A;
+    padding-bottom: 13px;
 }
 
 /* Links inside answer */
