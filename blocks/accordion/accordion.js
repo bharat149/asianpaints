@@ -10,6 +10,143 @@
 
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+function prefersReducedMotion() {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Adds quick open/close animation to a <details> accordion item.
+ * This does NOT change any other behavior (no "close others" logic, etc.)
+ */
+function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
+  durationOpen = 180,
+  durationClose = 160,
+} = {}) {
+  if (!detailsEl || !summaryEl || !bodyEl) return;
+
+  // Avoid double-binding
+  if (detailsEl.dataset.animBound === 'true') return;
+  detailsEl.dataset.animBound = 'true';
+
+  let isAnimating = false;
+
+  const openWithAnimation = () => {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    // Open first so the content has layout
+    detailsEl.open = true;
+
+    // Prepare for animation
+    bodyEl.style.overflow = 'hidden';
+    bodyEl.style.willChange = 'height, opacity';
+
+    // Start from 0 height
+    bodyEl.style.height = '0px';
+    bodyEl.style.opacity = '0';
+
+    // Force reflow
+    // eslint-disable-next-line no-unused-expressions
+    bodyEl.offsetHeight;
+
+    const targetHeight = bodyEl.scrollHeight;
+
+    const anim = bodyEl.animate([
+      { height: '0px', opacity: 0 },
+      { height: `${targetHeight}px`, opacity: 1 },
+    ], {
+      duration: durationOpen,
+      easing: 'ease',
+    });
+
+    anim.onfinish = () => {
+      // Cleanup to allow natural height after animation
+      bodyEl.style.height = '';
+      bodyEl.style.opacity = '';
+      bodyEl.style.overflow = '';
+      bodyEl.style.willChange = '';
+      isAnimating = false;
+    };
+
+    anim.oncancel = () => {
+      bodyEl.style.height = '';
+      bodyEl.style.opacity = '';
+      bodyEl.style.overflow = '';
+      bodyEl.style.willChange = '';
+      isAnimating = false;
+    };
+  };
+
+  const closeWithAnimation = () => {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    bodyEl.style.overflow = 'hidden';
+    bodyEl.style.willChange = 'height, opacity';
+
+    // Current rendered height (can be 'auto', so measure)
+    const startHeight = bodyEl.getBoundingClientRect().height;
+
+    bodyEl.style.height = `${startHeight}px`;
+    bodyEl.style.opacity = '1';
+
+    // Force reflow
+    // eslint-disable-next-line no-unused-expressions
+    bodyEl.offsetHeight;
+
+    const anim = bodyEl.animate([
+      { height: `${startHeight}px`, opacity: 1 },
+      { height: '0px', opacity: 0 },
+    ], {
+      duration: durationClose,
+      easing: 'ease',
+    });
+
+    anim.onfinish = () => {
+      detailsEl.open = false; // close only after animation ends
+      bodyEl.style.height = '';
+      bodyEl.style.opacity = '';
+      bodyEl.style.overflow = '';
+      bodyEl.style.willChange = '';
+      isAnimating = false;
+    };
+
+    anim.oncancel = () => {
+      // Ensure a sane state
+      detailsEl.open = false;
+      bodyEl.style.height = '';
+      bodyEl.style.opacity = '';
+      bodyEl.style.overflow = '';
+      bodyEl.style.willChange = '';
+      isAnimating = false;
+    };
+  };
+
+  const toggle = () => {
+    if (prefersReducedMotion()) {
+      // No animation, keep native behavior
+      detailsEl.open = !detailsEl.open;
+      return;
+    }
+    if (detailsEl.open) closeWithAnimation();
+    else openWithAnimation();
+  };
+
+  // Intercept clicks so native toggle doesn't instantly open/close (we animate instead)
+  summaryEl.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggle();
+  });
+
+  // Keyboard accessibility: Enter / Space
+  summaryEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggle();
+    }
+  });
+}
+
 export default function decorate(block) {
   const isFaq = block.classList.contains('faq');
   const rows = [...block.children];
@@ -42,6 +179,12 @@ export default function decorate(block) {
       if (index === 0) details.open = true;
 
       details.append(summary, body);
+
+      // ✅ ADD: JS slide open/close animation (only for FAQ)
+      addDetailsAnimation(details, summary, body, {
+        durationOpen: 180,
+        durationClose: 160,
+      });
 
       if (index >= initialVisibleCount) {
         details.style.display = 'none';
@@ -78,6 +221,8 @@ export default function decorate(block) {
       moveInstrumentation(row, details);
       details.className = 'accordion-item';
       details.append(summary, body);
+
+      // (No animation for default variant — keeping behavior unchanged)
       row.replaceWith(details);
     });
   }

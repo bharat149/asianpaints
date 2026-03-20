@@ -352,7 +352,6 @@ main > .section:first-of-type {
 
 /* Constrained width for default content (text, etc.) */
 main > .section > .default-content-wrapper {
-  max-width: 1200px;
   margin: auto;
   padding: 0 24px;
 }
@@ -399,7 +398,103 @@ main .section.grey {
   padding: 60px 0;
 }
 
-main .section.dark-blue {
+/* Center align section - Asian Paints */
+
+/* Desktop (default) */
+.section.align-center {
+    text-align: center;
+}
+
+/* Mobile override */
+@media (max-width: 767px) {
+    .section.align-center {
+        text-align: left;
+    }
+}
+
+/* Adding section metadata for spacing*/
+
+main .section.sectionpadding {
+    padding-right: 4%;
+    padding-left: 4%;
+}
+/* Adding CTA Styling here*/
+/* ============================================
+   READ T&C — AEM CTA migrated styles (EDS fix)
+   ============================================ */
+
+main .section.read-tc-cta {
+    text-align: center;
+}
+
+main .section.read-tc-cta .button-container {
+    margin: 0;
+}
+
+/* Base button */
+main .section.read-tc-cta .button-container > a.button,
+main .section.read-tc-cta .button-container > a.button:link,
+main .section.read-tc-cta .button-container > a.button:visited {
+    display: inline-flex;                 /* better centering than inline-block */
+    align-items: center;
+    justify-content: center;
+    width: 270px;
+
+    background-color: #431a80;
+    border: 1px solid #431a80;
+    color: #fff;
+
+    font-family: Manrope, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.86px;
+    line-height: 16px;
+
+    padding: 16px 20px;
+    border-radius: 2px;
+    text-transform: uppercase;
+
+    margin: 0 auto;
+
+    /* Neutralize common EDS effects */
+    background-image: none;
+    box-shadow: none;
+    filter: none;
+    transform: none;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    text-decoration: none;
+    position: relative;                   /* for pseudo-element control */
+    overflow: hidden;                     /* avoids odd overlays bleeding */
+}
+
+/* Kill pseudo-element overlays that often create that “black block” on hover */
+main .section.read-tc-cta .button-container > a.button::before,
+main .section.read-tc-cta .button-container > a.button::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Hover (match live hover shade — adjust if needed) */
+main .section.read-tc-cta .button-container > a.button:hover {
+    background-color: #5a2bb3 !important;  /* <-- Image 2 looks lighter than base */
+    border-color: #5a2bb3 !important;
+    color: #fff !important;
+
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+    background-image: none !important;
+}
+
+/* Focus states (EDS often uses focus-visible styles that can look like hover artifacts) */
+main .section.read-tc-cta .button-container > a.button:focus,
+main .section.read-tc-cta .button-container > a.button:focus-visible {
+    outline: 2px solid rgba(90, 43, 179, 0.45) !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+}
+
+main .section.dark-blue  {
   background-color: var(--navy-blue);
   color: white;
   margin: 0;
@@ -605,3 +700,7 @@ main > .section:has(.embed-wrapper) > .default-content-wrapper:last-of-type a:ho
   color: var(--primary-color);
 }
 
+.align-center{
+    display: grid;
+    text-align: center;
+}

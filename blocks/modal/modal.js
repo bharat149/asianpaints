@@ -15,6 +15,9 @@ export async function createModal(contentNodes) {
   const dialogContent = document.createElement('div');
   dialogContent.classList.add('modal-content');
   dialogContent.append(...contentNodes);
+  if (dialogContent.querySelector('.book-free-site-visit-modal, .book-free-site-visit-form')) {
+    dialog.classList.add('book-free-site-visit-dialog');
+  }
   dialog.append(dialogContent);
 
   const closeButton = document.createElement('button');

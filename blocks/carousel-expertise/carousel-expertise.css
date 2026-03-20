@@ -1,252 +1,150 @@
-/* Carousel Expertise Block - 4x2 grid of expertise category cards */
-
-/* Pixel-perfect styling matching Asian Paints original design */
-
-/* Section container styling - center heading and subtitle */
+/* Carousel Expertise Block - Variant Five (Four Image in Row) */
 .carousel-expertise-container {
-  text-align: center;
-}
-
-.carousel-expertise-container .default-content-wrapper {
-  text-align: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.carousel-expertise-container .default-content-wrapper h2 {
-  font-size: 32px !important;
-  font-weight: 800;
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34);
-  line-height: 1.3;
-  text-align: center;
-  margin: 0 0 8px;
-}
-
-.carousel-expertise-container .default-content-wrapper p {
-  font-size: 14px;
-  font-weight: 400;
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34);
-  text-align: center;
-  margin: 0 0 32px;
+    padding: 0;
+    max-width: 100%;
 }
 
 .carousel-expertise {
-  padding: 40px 20px;
-  background: #fff;
+    padding: 20px 0;
+    background: transparent;
 }
 
-.carousel-expertise .carousel-expertise-slides-container {
-  max-width: 1200px;
-  margin: 0 auto;
+.fourimageinrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-left: 60px;
+    padding-right: 55px;
+    margin: 0 auto;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
-/* Section heading - Pixel perfect */
-.carousel-expertise .carousel-expertise-slides-container > h2,
-.carousel-expertise .carousel-expertise-slides-container > .carousel-expertise-heading {
-  font-size: 32px; /* Pixel-perfect */
-  font-weight: 800; /* Pixel-perfect */
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34); /* Pixel-perfect */
-  line-height: 22px; /* Pixel-perfect */
-  text-align: center;
-  margin: 0 0 8px;
+@media (width <= 991px) {
+    .fourimageinrow {
+        flex-wrap: nowrap;
+        padding-left: 16px;
+        padding-right: 0;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: 0;
+    }
+    
+    .fourimageinrow::-webkit-scrollbar {
+        display: none;
+    }
 }
 
-/* Subheading - Pixel perfect */
-.carousel-expertise .carousel-expertise-slides-container > p,
-.carousel-expertise .carousel-expertise-slides-container > .carousel-expertise-subheading {
-  font-size: 14px; /* Pixel-perfect */
-  font-weight: 400; /* Pixel-perfect */
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34); /* Pixel-perfect */
-  text-align: center;
-  margin: 0 0 32px;
+@media (width >= 768px) and (width <= 1024px) {
+    .fourimageinrow {
+        padding-left: 50px;
+        padding-right: 45px;
+    }
 }
 
-/* Grid container - 4x2 layout */
-.carousel-expertise .carousel-expertise-slides {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px; /* Pixel-perfect: 20px gap */
+.fourimageinrow .fourimageinrow-wraper {
+    position: relative;
+    width: 23.6%;
+    overflow: hidden;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
-/* Card item - wider cards for more horizontal space */
-.carousel-expertise .carousel-expertise-slide {
-  flex: 0 0 280px; /* Wider cards: 280px width */
-  width: 280px;
-  height: 234px; /* Proportionally taller */
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  text-decoration: none;
+@media (width <= 991px) {
+    .fourimageinrow .fourimageinrow-wraper {
+        width: 314px !important;
+        margin-right: 20px;
+        scroll-snap-align: start;
+    }
 }
 
-.carousel-expertise .carousel-expertise-slide a {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-decoration: none;
-  color: inherit;
+@media (width >= 768px) and (width <= 1024px) {
+    .fourimageinrow .fourimageinrow-wraper {
+        width: 23.3%;
+    }
 }
 
-/* Card image container */
-.carousel-expertise .carousel-expertise-slide-image {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.carousel-expertise .carousel-expertise-slide-image picture {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.carousel-expertise .carousel-expertise-slide-image img {
-  width: 280px; /* Wider cards */
-  height: 234px; /* Proportionally taller */
-  object-fit: cover;
-}
-
-/* Dark gradient overlay for text readability */
-.carousel-expertise .carousel-expertise-slide-image::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: linear-gradient(to top, rgb(0 0 0 / 70%) 0%, transparent 100%);
-  pointer-events: none;
-}
-
-/* Card content - positioned at bottom */
-.carousel-expertise .carousel-expertise-slide-content {
-  position: absolute;
-  bottom: 19px; /* Pixel-perfect */
-  left: 16px; /* Pixel-perfect */
-  right: 16px;
-  z-index: 2;
-}
-
-/* Card label text - Pixel perfect (only show category name) */
-.carousel-expertise .carousel-expertise-slide-content h2,
-.carousel-expertise .carousel-expertise-slide-content h3,
-.carousel-expertise .carousel-expertise-slide-content h4 {
-  margin: 0;
-  font-size: 24px; /* Pixel-perfect */
-  font-weight: 800; /* Pixel-perfect */
-  font-family: Manrope, sans-serif;
-  color: rgb(255 255 255); /* Pixel-perfect: white text */
-  line-height: 33.6px; /* Pixel-perfect */
-  text-align: left;
-}
-
-/* Hide descriptions and bullet lists - only show category name */
-.carousel-expertise .carousel-expertise-slide-content p,
-.carousel-expertise .carousel-expertise-slide-content ul {
-  display: none;
-}
-
-/* Hide tab indicators - this is a grid, not tabs */
-.carousel-expertise .carousel-expertise-slide-indicators {
-  display: none;
-}
-
-/* Hide navigation buttons - grid doesn't need them */
-.carousel-expertise .carousel-expertise-navigation-buttons {
-  display: none;
-}
-
-/* Responsive: tablet */
-@media (width <= 1100px) {
-  .carousel-expertise .carousel-expertise-slides {
-    justify-content: center;
-  }
-
-  .carousel-expertise .carousel-expertise-slide {
-    flex: 0 0 calc(25% - 15px);
-    width: auto;
-    min-width: 200px;
-    height: 180px;
-  }
-
-  .carousel-expertise .carousel-expertise-slide-image img {
+.fourimageinrow .fourimageinrow-img {
     width: 100%;
-    height: 180px;
-  }
-
-  .carousel-expertise .carousel-expertise-slide-content p,
-  .carousel-expertise .carousel-expertise-slide-content h3,
-  .carousel-expertise .carousel-expertise-slide-content h4 {
-    font-size: 20px;
-    line-height: 28px;
-  }
+    height: 100%;
+    object-fit: cover;
+    transition: transform .6s ease;
+    display: block;
 }
 
-/* Responsive: mobile */
-@media (width <= 768px) {
-  .carousel-expertise {
-    padding: 30px 16px;
-  }
+.fourimageinrow .fourimageinrow-wraper:hover .fourimageinrow-img {
+    transform: scale(1.1);
+}
 
-  .carousel-expertise .carousel-expertise-slides-container > h2,
-  .carousel-expertise .carousel-expertise-slides-container > .carousel-expertise-heading {
+.fourimageinrow .fourimageinrow-imagewithtext {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    outline: none;
+}
+
+/* Gradient overlay to make white text readable over images */
+.fourimageinrow .fourimageinrow-imagewithtext::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgb(0 0 0 / 60%) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.fourimageinrow .fourimageinrow-titlewitharrow {
+    position: absolute;
+    bottom: 19px;
+    left: 16px;
+    width: 85%;
+    z-index: 2;
+}
+
+@media (width >= 768px) and (width <= 1024px) {
+    .fourimageinrow .fourimageinrow-titlewitharrow {
+        width: 88%;
+        left: 12px;
+    }
+}
+
+.fourimageinrow .fourimageinrow-imgtitle {
+    color: #fff;
+    float: left;
     font-size: 24px;
-    line-height: 32px;
-  }
-
-  .carousel-expertise .carousel-expertise-slides {
-    gap: 12px;
-  }
-
-  .carousel-expertise .carousel-expertise-slide {
-    flex: 0 0 calc(50% - 6px);
-    min-width: 150px;
-    height: 160px;
-  }
-
-  .carousel-expertise .carousel-expertise-slide-image img {
-    width: 100%;
-    height: 160px;
-  }
-
-  .carousel-expertise .carousel-expertise-slide-content {
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-  }
-
-  .carousel-expertise .carousel-expertise-slide-content p,
-  .carousel-expertise .carousel-expertise-slide-content h3,
-  .carousel-expertise .carousel-expertise-slide-content h4 {
-    font-size: 16px;
-    line-height: 22px;
-  }
+    font-weight: 800;
+    line-height: 33.6px;
+    font-family: Manrope, sans-serif;
 }
 
-/* Responsive: small mobile */
-@media (width <= 480px) {
-  .carousel-expertise .carousel-expertise-slide {
-    flex: 0 0 calc(50% - 6px);
-    height: 140px;
-  }
+@media (width >= 768px) and (width <= 1024px) {
+    .fourimageinrow .fourimageinrow-imgtitle {
+        font-size: 20px;
+    }
+}
 
-  .carousel-expertise .carousel-expertise-slide-image img {
-    height: 140px;
-  }
+.fourimageinrow .fourimageinrow-imgarrow {
+    float: right;
+    position: absolute;
+    right: 0;
+    top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-  .carousel-expertise .carousel-expertise-slide-content p,
-  .carousel-expertise .carousel-expertise-slide-content h3,
-  .carousel-expertise .carousel-expertise-slide-content h4 {
-    font-size: 14px;
-    line-height: 20px;
-  }
+.fourimageinrow .fourimageinrow-imagewithtext.focus-visible-auto-imp:focus-visible .fourimageinrow-img {
+    transform: scale(1.1);
+}
+
+.fourimageinrow .fourimageinrow-imagewithtext.focus-visible-auto-imp:focus-visible {
+    outline-style: solid !important;
+    outline-color: inherit !important;
+    outline-width: 1px !important;
 }

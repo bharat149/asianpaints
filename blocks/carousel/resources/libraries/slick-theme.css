@@ -1,10 +1,12 @@
 @charset "UTF-8";
+
 /* Slider */
 .slick-loading .slick-list {
   /* background: #fff url("./ajax-loader.gif") center center no-repeat; */
 }
 
 /* Icons */
+
 /* @font-face {
   font-family: "slick";
   src: url("./fonts/slick.eot");
@@ -21,12 +23,12 @@
   height: 20px;
   width: 20px;
   line-height: 0px;
-  font-size: 0px;
+  font-size: 0;
   cursor: pointer;
   background: transparent;
   color: transparent;
   top: 50%;
-  -webkit-transform: translate(0, -50%);
+  transform: translate(0, -50%);
   transform: translate(0, -50%);
   padding: 0;
   border: none;
@@ -41,20 +43,20 @@
   color: transparent;
 }
 
-.slick-prev:hover:before, .slick-prev:focus:before,
-.slick-next:hover:before,
-.slick-next:focus:before {
+.slick-prev:hover::before, .slick-prev:focus::before,
+.slick-next:hover::before,
+.slick-next:focus::before {
   opacity: 1;
 }
 
-.slick-prev.slick-disabled:before,
-.slick-next.slick-disabled:before {
+.slick-prev.slick-disabled::before,
+.slick-next.slick-disabled::before {
   opacity: 0.25;
 }
 
-.slick-prev:before,
-.slick-next:before {
-  font-family: "slick";
+.slick-prev::before,
+.slick-next::before {
+  font-family: slick;
   font-size: 20px;
   line-height: 1;
   color: white;
@@ -72,11 +74,11 @@
   right: -25px;
 }
 
-.slick-prev:before {
+.slick-prev::before {
   content: "←";
 }
 
-[dir="rtl"] .slick-prev:before {
+[dir="rtl"] .slick-prev::before {
   content: "→";
 }
 
@@ -89,11 +91,11 @@
   right: auto;
 }
 
-.slick-next:before {
+.slick-next::before {
   content: "→";
 }
 
-[dir="rtl"] .slick-next:before {
+[dir="rtl"] .slick-next::before {
   content: "←";
 }
 
@@ -131,7 +133,7 @@
   width: 20px;
   outline: none;
   line-height: 0px;
-  font-size: 0px;
+  font-size: 0;
   color: transparent;
   padding: 5px;
   cursor: pointer;
@@ -141,18 +143,18 @@
   outline: none;
 }
 
-.slick-dots li button:hover:before, .slick-dots li button:focus:before {
+.slick-dots li button:hover::before, .slick-dots li button:focus::before {
   opacity: 1;
 }
 
-.slick-dots li button:before {
+.slick-dots li button::before {
   position: absolute;
   top: 0;
   left: 0;
   content: "•";
   width: 20px;
   height: 20px;
-  font-family: "slick";
+  font-family: slick;
   font-size: 6px;
   line-height: 20px;
   text-align: center;
@@ -162,17 +164,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.slick-dots li.slick-active button:before {
+.slick-dots li.slick-active button::before {
   color: black;
   opacity: 0.75;
 }
+
 /* slick mobile dots */
-@media (min-width: 320px) and (max-width: 991px) {
+@media (width >= 320px) and (width <= 991px) {
   .slick-dots li,
   .slick-dots li button{
       width: 8px !important;
       height: 8px !important;
   }
+
   .slick-dots li button::before{
       width: 8px !important;
       height: 8px !important;
@@ -180,4 +184,3 @@
       background-color: gray;
   }
   }
-/*# sourceMappingURL=slick-theme.css.map */
