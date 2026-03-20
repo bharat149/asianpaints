@@ -4,6 +4,11 @@ const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asia
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
 const THANK_YOU_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
 
+const ERROR_DESKTOP_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccess.webp';
+const ERROR_MOBILE_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccessMweb.webp';
+const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
+const ERROR_DOWNLOAD_LINK = 'https://static.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+
 /**
  * Ensure bootstrap utility classes where useful
  */
@@ -188,9 +193,9 @@ function populateDescriptionCell(cell, headerCell) {
 }
 
 /**
- * Clean up video
+ * Cleanup video
  */
-function cleanupThankYouVideo(video) {
+function cleanupVideo(video) {
   if (!video) return;
   video.pause();
   video.removeAttribute('src');
@@ -198,50 +203,131 @@ function cleanupThankYouVideo(video) {
 }
 
 /**
+ * Close active popup
+ */
+function closeActivePopup(block, overlay, video = null) {
+  cleanupVideo(video);
+  overlay?.remove();
+  block.classList.remove('thank-you-active', 'error-active', 'popup-active');
+  delete block.dataset.thankYouShown;
+  delete block.dataset.errorShown;
+}
+
+/**
+ * Create close button
+ */
+function createCloseButton(labelText) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'form-popup-close';
+  button.setAttribute('aria-label', labelText);
+  button.innerHTML = '&times;';
+  return button;
+}
+
+/**
  * Create thank you overlay
  */
 function createThankYouScreen(block) {
   const overlay = document.createElement('div');
-  overlay.className = 'thank-you-overlay position-absolute top-0 start-0 w-100 h-100';
+  overlay.className = 'form-popup-overlay form-popup-overlay--success';
 
   const isMobile = window.matchMedia('(max-width: 991px)').matches;
   const videoSrc = isMobile ? THANK_YOU_MOBILE_VIDEO : THANK_YOU_DESKTOP_VIDEO;
 
+  const closeBtn = createCloseButton('Close thank you popup');
+
+  const video = document.createElement('video');
+  video.className = 'form-popup-success-video';
+  video.setAttribute('playsinline', '');
+  video.setAttribute('autoplay', '');
+  video.setAttribute('muted', '');
+  video.setAttribute('preload', 'auto');
+  video.setAttribute('aria-label', 'thank-you');
+  video.src = videoSrc;
+  video.loop = false;
+
+  const cta = document.createElement('a');
+  cta.className = 'form-popup-success-cta';
+  cta.href = THANK_YOU_CTA_LINK;
+  cta.target = '_blank';
+  cta.rel = 'noopener noreferrer';
+  cta.setAttribute('aria-label', 'Explore now');
+
+  video.addEventListener('ended', () => {
+    video.pause();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    closeActivePopup(block, overlay, video);
+  });
+
+  overlay.append(closeBtn, video, cta);
+
+  return overlay;
+}
+
+/**
+ * Create error overlay
+ */
+function createErrorScreen(block) {
+  const overlay = document.createElement('div');
+  overlay.className = 'form-popup-overlay form-popup-overlay--error';
+
+  const closeBtn = createCloseButton('Close error popup');
+
   overlay.innerHTML = `
-    <button type="button" class="thank-you-close" aria-label="Close thank you popup">✕</button>
-    <video
-      playsinline
-      autoplay
-      muted
-      preload="auto"
-      src="${videoSrc}"
-      class="thank-you-video"
-      aria-label="thank-you"
-    ></video>
-    <a
-      class="explore-now-rewamp"
-      href="${THANK_YOU_CTA_LINK}"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Explore now"
-    ></a>
+    <div class="form-error-popup">
+      <div class="form-error-popup__left">
+        <div class="form-error-popup__copy">
+          <h2 class="form-error-popup__title">Try again!</h2>
+          <p class="form-error-popup__text">
+            Oops! Something went wrong. We couldn't process your request. Please try again?
+          </p>
+        </div>
+      </div>
+
+      <div class="form-error-popup__right">
+        <div
+          class="form-error-popup__media"
+          style="
+            --form-error-image-desktop: url('${ERROR_DESKTOP_IMAGE}');
+            --form-error-image-mobile: url('${ERROR_MOBILE_IMAGE}');
+          "
+        >
+          <div class="form-error-popup__content">
+            <p class="form-error-popup__content-title">
+              Are you looking for home interiors?
+            </p>
+            <p class="form-error-popup__content-subtitle">
+              Get expert execution for your dream home from Beautiful Homes Interior Design service by asian paints.
+            </p>
+            <div class="form-error-popup__actions">
+              <a
+                href="${ERROR_CTA_LINK}"
+                target="_self"
+                class="form-error-popup__button"
+              >
+                Get FREE Design Consultation
+              </a>
+            </div>
+            <a
+              class="form-error-popup__download"
+              href="${ERROR_DOWNLOAD_LINK}"
+              download
+            >
+              Download the asianpaints colour books
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 
-  const closeBtn = overlay.querySelector('.thank-you-close');
-  const video = overlay.querySelector('.thank-you-video');
+  overlay.prepend(closeBtn);
 
-  if (video) {
-    video.loop = false;
-    video.addEventListener('ended', () => {
-      video.pause();
-    });
-  }
-
-  closeBtn?.addEventListener('click', () => {
-    cleanupThankYouVideo(video);
-    overlay.remove();
-    block.classList.remove('thank-you-active');
-    delete block.dataset.thankYouShown;
+  closeBtn.addEventListener('click', () => {
+    closeActivePopup(block, overlay);
   });
 
   return overlay;
@@ -253,17 +339,36 @@ function createThankYouScreen(block) {
 function showThankYouScreen(block) {
   if (!block || block.dataset.thankYouShown === 'true') return;
 
-  const existingOverlay = block.querySelector('.thank-you-overlay');
+  const existingOverlay = block.querySelector('.form-popup-overlay--success');
   if (existingOverlay) {
     block.dataset.thankYouShown = 'true';
-    block.classList.add('thank-you-active');
+    block.classList.add('thank-you-active', 'popup-active');
     return;
   }
 
   const overlay = createThankYouScreen(block);
   block.appendChild(overlay);
   block.dataset.thankYouShown = 'true';
-  block.classList.add('thank-you-active');
+  block.classList.add('thank-you-active', 'popup-active');
+}
+
+/**
+ * Show error overlay
+ */
+function showErrorScreen(block) {
+  if (!block || block.dataset.errorShown === 'true') return;
+
+  const existingOverlay = block.querySelector('.form-popup-overlay--error');
+  if (existingOverlay) {
+    block.dataset.errorShown = 'true';
+    block.classList.add('error-active', 'popup-active');
+    return;
+  }
+
+  const overlay = createErrorScreen(block);
+  block.appendChild(overlay);
+  block.dataset.errorShown = 'true';
+  block.classList.add('error-active', 'popup-active');
 }
 
 /**
@@ -303,6 +408,7 @@ function bindSubmitHandler(block, row, buttonCell) {
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Default form submission failed', err);
+        showErrorScreen(block);
       })
       .finally(() => {
         row.dataset.submitting = 'false';
