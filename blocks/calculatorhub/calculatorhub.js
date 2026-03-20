@@ -24,7 +24,7 @@ export default function decorate(block) {
   -------------------------- */
 
   let formMarkup = `<form id="toolsMiniForm" class="pbc-mini-form"
-    data-attr-tool-link="/content/ap/en/home/resources/tools/paint-quotation-tool.html?source=PBC_miniform"
+    data-attr-tool-link="https://www.asianpaints.com/resources/tools/paint-quotation-tool.html?source=PBC_miniform"
     data-gtm-form-interact-id="0">
     <div class="form-group project-field">
         <div tabindex="0" class="focus-visible-auto-imp project-field-heading">1. Select your type of
@@ -95,4 +95,99 @@ export default function decorate(block) {
 
   $(".tool-fields div").remove();
   $(".tool-fields").append(formMarkup);
+
+  //WCAG
+  $(".project-field-inputs label , .space-field-inputs label").on(
+    "keydown",
+    function (event) {
+      if (event.key === "Enter") {
+        $(this).find('input[type="radio"]').prop("checked", true);
+      }
+    },
+  );
+
+  setTimeout(function () {
+    $("#toolsMiniForm").trigger("reset");
+  }, 100);
+
+  $(".project-field input[name='project']").prop("checked", false);
+  $(".space-field input[name='space']").prop("checked", false);
+  $(".area-field input[name='area']").val("");
+  $("#calculate-now").attr("disabled", "disabled");
+  $("#calculate-now").attr("aria-disabled", "true");
+
+  let miniFormValues = null;
+  miniFormValues = {
+    ProjectType: "Val1",
+    SpaceType: "Val2",
+    Area: "Val3",
+  };
+
+  $("#toolsMiniForm .form-actions #calculate-now").click(function () {
+    let project = $(".project-field input[name='project']:checked").val();
+    let space = $(".space-field input[name='space']:checked").val();
+    let area = $(".area-field input[name='area']").val();
+    miniFormValues.ProjectType = project;
+    miniFormValues.SpaceType = space;
+    miniFormValues.Area = area;
+    localStorage.setItem("miniFormValues", JSON.stringify(miniFormValues));
+
+    if (
+      $("#toolsMiniForm .space-field input[name=space]:checked").length &&
+      $("#toolsMiniForm .project-field input[name=project]:checked").length &&
+      parseInt($("#toolsMiniForm .area-field #area").val()) > 99
+    ) {
+      let toolURL = $("form#toolsMiniForm").attr("data-attr-tool-link");
+
+      let userInputValues =
+        miniFormValues.ProjectType +
+        "|" +
+        miniFormValues.SpaceType +
+        "|" +
+        miniFormValues.Area;
+
+      // ccAnalytics.calculateContinue(userInputValues);
+
+      // Redirect to the tool URL
+
+      window.location.href = toolURL;
+      $("#toolsMiniForm .form-actions .saving-progress-status").removeClass(
+        "d-none",
+      );
+    }
+  });
+
+  if ($(".mini-tools-form").length > 0) {
+    let formInteraction = false;
+
+    $(
+      "#toolsMiniForm .space-field input, #toolsMiniForm .project-field input, #toolsMiniForm .area-field #area",
+    ).on("change keyup", function (e) {
+      if (!formInteraction) {
+        // calculator start event fire
+        // ccAnalytics.calculateStart();
+        formInteraction = true;
+      }
+
+      if (
+        $("#toolsMiniForm .space-field input[name=space]:checked").length &&
+        $("#toolsMiniForm .project-field input[name=project]:checked").length &&
+        parseInt($("#toolsMiniForm .area-field #area").val()) > 99
+      ) {
+        $("#calculate-now").removeAttr("disabled");
+        $("#calculate-now").removeAttr("aria-disabled");
+      } else {
+        $("#calculate-now").attr("disabled", "disabled");
+        $("#calculate-now").attr("aria-disabled", "true");
+      }
+    });
+
+    $("#toolsMiniForm .area-field #area").on("blur keyup", function () {
+      if (parseInt($(this).val()) < 100) {
+        $("#toolsMiniForm .area-field .error-msg").css("visibility", "visible");
+      } else {
+        $("#toolsMiniForm .area-field .error-msg").css("visibility", "hidden");
+      }
+    });
+  }
 }

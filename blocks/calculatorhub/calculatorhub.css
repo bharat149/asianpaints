@@ -156,6 +156,27 @@
 /* ================== Responsive ================== */
 
 /* Tablet */
+@media screen and (max-width: 992px) {
+    main > .section.calculatorhub-container {
+        width: 90%;
+        margin: 40px auto;
+    }
+
+    .calculatorhub {
+        flex-direction: column;
+        padding: 40px 16px 30px;
+    }
+
+    .calculatorhub-subheading {
+        font-size: 40px;
+        line-height: 1;
+        margin-bottom: 20px;
+    }
+    .calculatorhub .tool-fields {
+        padding: 20px;
+    }
+}
+
 @media (max-width: 1200px) {
     .calculatorhub .radiobtn {
         width: 90px;

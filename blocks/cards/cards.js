@@ -4,7 +4,8 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
   const isRecommended = block.classList.contains('recommended');
-
+  const isGrid = block.classList.contains('grid');
+  
   const ul = document.createElement('ul');
   [...block.children].forEach((row) => {
     const li = document.createElement('li');
@@ -33,6 +34,11 @@ export default function decorate(block) {
       });
     }
 
+    // mobile view image
+    if (isGrid && li.children.length === 3 && li.children[1].classList.contains("cards-card-image")) {
+      li.children[1].classList.add("mob-view");
+    }
+    
     ul.append(li);
   });
 
