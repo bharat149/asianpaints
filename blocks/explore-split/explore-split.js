@@ -3,22 +3,19 @@ export default function decorate(block) {
   if (section) section.classList.add("explore-split-wrapper");
 
   const rows = [...block.children];
-  if (rows.length < 2) return;
+  if (rows.length < 1) return;
 
-  const desktopRow = rows[0];
-  const mobileRow = rows[1];
+  const desktopRow = rows[0] || null;
+  const mobileRow = rows[1] || null;
 
-  // Remove unused layout depending on screen
-  if (window.innerWidth >= 992) {
-    mobileRow.remove();
-  } else {
-    desktopRow.remove();
-  }
+  const isDesktop = window.matchMedia("(min-width: 992px)").matches;
+  const isMobile = window.matchMedia("(max-width: 991px)").matches;
 
   /* ---------------- DESKTOP SETUP ---------------- */
 
-  if (window.innerWidth >= 992) {
+  if (isDesktop && desktopRow) {
     const desktopCols = [...desktopRow.children];
+    if (desktopCols.length < 2) return;
 
     const texturesHeadingCol = desktopCols[0];
     const texturesImagesCol = desktopCols[1];
@@ -26,12 +23,15 @@ export default function decorate(block) {
     desktopRow.classList.add("explore-split-desktop");
     texturesHeadingCol.classList.add("textures-desktop");
     texturesImagesCol.classList.add("wallpapers-desktop");
+
+    if (mobileRow) mobileRow.remove();
   }
 
   /* ---------------- MOBILE SETUP ---------------- */
 
-  if (window.innerWidth < 992) {
+  if (isMobile && mobileRow) {
     const mobileCols = [...mobileRow.children];
+    if (mobileCols.length < 2) return;
 
     const texturesCol = mobileCols[0];
     const wallpapersCol = mobileCols[1];
@@ -49,31 +49,37 @@ export default function decorate(block) {
     const tabsNav = document.createElement("div");
     tabsNav.className = "explore-mobile-tabs";
 
-    tabsNav.appendChild(texturesTab);
-    tabsNav.appendChild(wallpapersTab);
+    // Clone instead of moving (important fix)
+    const texturesTabClone = texturesTab.cloneNode(true);
+    const wallpapersTabClone = wallpapersTab.cloneNode(true);
 
-    mobileRow.prepend(tabsNav);
+    tabsNav.append(texturesTabClone, wallpapersTabClone);
+
+    mobileRow.insertBefore(tabsNav, mobileRow.firstChild);
 
     /* default state */
     wallpapersCol.style.display = "none";
-    texturesTab.classList.add("active");
+    texturesCol.style.display = "block";
+    texturesTabClone.classList.add("active");
 
     /* tab click behaviour */
 
-    texturesTab.addEventListener("click", () => {
+    texturesTabClone.addEventListener("click", () => {
       texturesCol.style.display = "block";
       wallpapersCol.style.display = "none";
 
-      texturesTab.classList.add("active");
-      wallpapersTab.classList.remove("active");
+      texturesTabClone.classList.add("active");
+      wallpapersTabClone.classList.remove("active");
     });
 
-    wallpapersTab.addEventListener("click", () => {
+    wallpapersTabClone.addEventListener("click", () => {
       texturesCol.style.display = "none";
       wallpapersCol.style.display = "grid";
 
-      wallpapersTab.classList.add("active");
-      texturesTab.classList.remove("active");
+      wallpapersTabClone.classList.add("active");
+      texturesTabClone.classList.remove("active");
     });
+
+    if (desktopRow) desktopRow.remove();
   }
 }

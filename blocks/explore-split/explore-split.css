@@ -1,6 +1,6 @@
 /* Section title above the block */
 
-main > .section .explore-split-wrapper {
+main>.section .explore-split-wrapper {
   width: 90%;
   margin: 0 auto;
 }
@@ -71,7 +71,7 @@ main > .section .explore-split-wrapper {
 
 .textures-mobile p:nth-child(4) {
   right: 0;
-  top: 130px;
+  top: 250px;
 }
 
 .textures-mobile p.button-container,
@@ -301,7 +301,7 @@ main > .section .explore-split-wrapper {
 }
 
 .textures-desktop p:nth-child(7) picture {
-  height: 398px;
+  height: 318px;
 }
 
 .explore-split p.button-container a {
@@ -334,7 +334,15 @@ main > .section .explore-split-wrapper {
 }
 
 @media screen and (max-width: 992px) {
-  main > .section > .default-content-wrapper #explore-beyond-colours {
+  main>.section>.default-content-wrapper #explore-beyond-colours {
     font-size: 24px;
+  }
+
+  .explore-split .textures-mobile h3 {
+    display: none;
+  }
+
+  .explore-split .wallpapers-mobile h3 {
+    display: none;
   }
 }
