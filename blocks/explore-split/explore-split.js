@@ -70,7 +70,7 @@ export default function decorate(block) {
 
     wallpapersTab.addEventListener("click", () => {
       texturesCol.style.display = "none";
-      wallpapersCol.style.display = "block";
+      wallpapersCol.style.display = "grid";
 
       wallpapersTab.classList.add("active");
       texturesTab.classList.remove("active");

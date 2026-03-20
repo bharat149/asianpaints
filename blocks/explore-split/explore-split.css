@@ -1,5 +1,90 @@
 /* Section title above the block */
 
+main > .section .explore-split-wrapper {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.wallpapers-mobile {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.wallpapers-mobile p {
+  margin: 0;
+}
+
+.wallpapers-mobile p img {
+  border-radius: 10px;
+}
+
+.explore-mobile-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0 .2rem;
+}
+
+.explore-mobile-tabs h3 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  color: #6a6d70;
+  border-bottom: 3px solid transparent;
+  text-transform: uppercase;
+  padding-bottom: 5px;
+  margin: 0 5px
+}
+
+.explore-mobile-tabs h3.active {
+  font-weight: 700;
+  color: #2e2f32;
+  border-bottom: 3px solid #feb940;
+}
+
+.textures-mobile {
+  display: flex;
+  position: relative;
+  height: 470px;
+}
+
+.textures-mobile p {
+  position: absolute;
+  width: 48%;
+}
+
+.textures-mobile p:nth-child(1) {
+  left: 0;
+  top: 0;
+}
+
+.textures-mobile p:nth-child(2) {
+  right: 0;
+  top: 0;
+}
+
+.textures-mobile p:nth-child(3) {
+  left: 0;
+  top: 250px;
+}
+
+.textures-mobile p:nth-child(4) {
+  right: 0;
+  top: 130px;
+}
+
+.textures-mobile p.button-container,
+.wallpapers-mobile p.button-container {
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.wallpapers-mobile p.button-container {
+  grid-column: 1/-1;
+}
+
 .explore-split-wrapper h2 {
   color: rgb(39, 123, 212);
   font-size: 40px;
@@ -229,8 +314,9 @@
   font-weight: 700;
   display: inline-flex !important;
   gap: 10px;
-  height: 38px;
   cursor: pointer;
+  color: #222;
+  border-radius: 45px;
 }
 
 .explore-split p.button-container a:hover,
@@ -245,4 +331,10 @@
   width: 17px;
   height: 20px;
   filter: invert(1);
+}
+
+@media screen and (max-width: 992px) {
+  main > .section > .default-content-wrapper #explore-beyond-colours {
+    font-size: 24px;
+  }
 }
