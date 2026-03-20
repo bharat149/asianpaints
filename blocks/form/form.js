@@ -5,11 +5,23 @@ const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian
 const THANK_YOU_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
 
 /**
+ * Ensure bootstrap utility classes where useful
+ */
+function applyBootstrapHelpers(block) {
+  const section = block.closest('.section.form-container');
+  const wrapper = block.closest('.form-wrapper');
+
+  section?.classList.add('bg-transparent');
+  wrapper?.classList.add('m-0', 'p-0', 'w-100');
+  block.classList.add('position-relative', 'overflow-hidden', 'bg-white', 'w-100');
+}
+
+/**
  * Create default form field
  */
 function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const field = document.createElement('div');
-  field.className = 'form-field';
+  field.className = 'form-field position-relative w-100';
 
   const inputId = `form-input-${rowIdx}-${cellIdx}`;
 
@@ -34,7 +46,7 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   input.id = inputId;
   input.name = labelText || placeholderText;
   input.placeholder = placeholderText;
-  input.className = 'form-input';
+  input.className = 'form-input form-control';
   input.required = true;
 
   const updateFieldState = () => {
@@ -61,10 +73,10 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
  */
 function createConsentArea() {
   const consentArea = document.createElement('div');
-  consentArea.className = 'form-consent-area';
+  consentArea.className = 'form-consent-area d-flex flex-column';
 
   consentArea.innerHTML = `
-    <div class="form-consent-options">
+    <div class="form-consent-options d-flex flex-wrap align-items-center">
       <label class="form-consent-item form-consent-item--toggle">
         <input
           type="checkbox"
@@ -176,11 +188,21 @@ function populateDescriptionCell(cell, headerCell) {
 }
 
 /**
+ * Clean up video
+ */
+function cleanupThankYouVideo(video) {
+  if (!video) return;
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+}
+
+/**
  * Create thank you overlay
  */
 function createThankYouScreen(block) {
   const overlay = document.createElement('div');
-  overlay.className = 'thank-you-overlay';
+  overlay.className = 'thank-you-overlay position-absolute top-0 start-0 w-100 h-100';
 
   const isMobile = window.matchMedia('(max-width: 991px)').matches;
   const videoSrc = isMobile ? THANK_YOU_MOBILE_VIDEO : THANK_YOU_DESKTOP_VIDEO;
@@ -208,20 +230,18 @@ function createThankYouScreen(block) {
   const closeBtn = overlay.querySelector('.thank-you-close');
   const video = overlay.querySelector('.thank-you-video');
 
-  closeBtn?.addEventListener('click', () => {
-    if (video) {
+  if (video) {
+    video.loop = false;
+    video.addEventListener('ended', () => {
       video.pause();
-      video.removeAttribute('src');
-      video.load();
-    }
+    });
+  }
 
+  closeBtn?.addEventListener('click', () => {
+    cleanupThankYouVideo(video);
     overlay.remove();
     block.classList.remove('thank-you-active');
     delete block.dataset.thankYouShown;
-  });
-
-  video?.addEventListener('ended', () => {
-    video.pause();
   });
 
   return overlay;
@@ -240,7 +260,8 @@ function showThankYouScreen(block) {
     return;
   }
 
-  block.appendChild(createThankYouScreen(block));
+  const overlay = createThankYouScreen(block);
+  block.appendChild(overlay);
   block.dataset.thankYouShown = 'true';
   block.classList.add('thank-you-active');
 }
@@ -308,8 +329,7 @@ function renderForm(block) {
       return;
     }
 
-    row.classList.add('form-row');
-    row.classList.add('form-attributes');
+    row.classList.add('form-row', 'form-attributes');
     row.setAttribute('data-attr-resourcePath', window.location.pathname || '');
 
     const cells = [...row.children];
@@ -339,7 +359,7 @@ function renderForm(block) {
       if (headerLink && !content) {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'form-submit';
+        button.className = 'form-submit btn';
         button.textContent = headerLink.textContent.trim();
 
         cell.textContent = '';
@@ -365,7 +385,7 @@ function renderForm(block) {
     if (!inputCells.length || !descriptionCell) return;
 
     const fieldsArea = document.createElement('div');
-    fieldsArea.className = 'form-fields-area';
+    fieldsArea.className = 'form-fields-area d-flex flex-column';
 
     const inputsGrid = document.createElement('div');
     inputsGrid.className = 'form-inputs-grid';
@@ -392,7 +412,6 @@ export default function decorate(block) {
     section.classList.remove('dark-blue');
   }
 
-  block.style.position = 'relative';
-  block.style.overflow = 'hidden';
+  applyBootstrapHelpers(block);
   renderForm(block);
 }
