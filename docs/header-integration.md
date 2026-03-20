@@ -49,11 +49,14 @@ The header uses domain-aware URL resolution:
   - API and page URLs resolve to relative paths.
   - Browser stays first-party; existing session cookies work naturally.
 - On non-Asian Paints domains (for example `http://localhost:3000`)
-  - URLs resolve to `https://www.asianpaints.com/...`.
+  - URLs resolve to `AP_PRODUCTION_ORIGIN`.
+  - Current configured fallback origin in code: `https://beta.asianpaints.com/`.
   - Useful for migration testing, with known browser CORS constraints for credentialed calls.
 
 Implemented via:
 - `apUrl(path)`
+- `isOnAsianPaintsDomain()`
+- `fetchFromAp(pathOrUrl, options)`
 - `AP_API` constant map
 
 ## 2.2 API endpoints used
@@ -69,7 +72,7 @@ Implemented via:
 - `PROFILE_PAGE`: `/content/ap/en/home/my-profile.html`
 - `WISHLIST_PAGE`: `/content/ap/en/home/my-wishlist.html`
 - `SHOP_URL`: `/paint-products.html`
-- `VISUAL_SEARCH_UPLOAD`: `/apcolourcatalogue/visual-search/upload`
+- `VISUAL_SEARCH_UPLOAD`: `/apcolourcatalogue/visualSearch`
 - Unbxd:
   - `UNBXD_BASE`
   - `UNBXD_API_KEY`
@@ -354,12 +357,20 @@ Validation errors surface inline before upload call.
 
 ## 7.3 Upload flow
 
-- `POST /apcolourcatalogue/visual-search/upload`
-- Body: `FormData` with `file`
+- On `*.asianpaints.com`: `POST /apcolourcatalogue/visualSearch`
+- On non-Asian Paints domains (for example `http://localhost:3000`): `POST https://beta.asianpaints.com/apcolourcatalogue/visualSearch`
+- Body: `application/x-www-form-urlencoded`
+  - `imageDetails` (base64 data URL, URI-encoded)
+  - `referer`
+  - `pageUrl`
+  - `uid`
+  - `visit`
+  - `visitId`
 - `credentials: include`
 
 Response handling:
 - If `redirectUrl` present: browser navigates there.
+- Else if `totalCount` present: browser navigates to search results with `variantType=visualsearch`.
 - Else success message shown.
 - Any failed response/network error shows user-facing failure message.
 
@@ -417,11 +428,15 @@ Design principles applied:
 
 ## 10.3 Environment caveat
 
-This implementation assumes same-domain API availability for:
+On `*.asianpaints.com`, API calls stay relative and first-party.
+
+On non-Asian Paints domains, AP routes are resolved against `AP_PRODUCTION_ORIGIN` (currently `https://beta.asianpaints.com/`):
 - `/apcolourcatalogue/*`
 - store-locator JSON endpoint
 
-If these routes are missing in a local environment, API-backed features may return empty states until the same-domain backend is available.
+This avoids accidental `POST` requests to local `aem up` routes such as `/apcolourcatalogue/visualSearch`.
+
+Local/dev environments can still hit browser CORS restrictions for credentialed cross-origin calls, so some API-backed features may return empty states or upload failures unless the backend explicitly allows that origin.
 
 ## 11) Validation Playbook
 
