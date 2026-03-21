@@ -1,5 +1,4 @@
 export default function decorate(block) {
-  console.log("ICON BLOCK DECORATE RUNNING");
 
   /* =========================
        STEP 1: FIND SECTION + SIBLINGS

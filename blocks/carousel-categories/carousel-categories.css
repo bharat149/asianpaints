@@ -7,24 +7,24 @@
 .carousel-categories .carousel-categories-container {
   display: flex;
   gap: 40px;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
 /* Left column - Tabs */
 .carousel-categories .carousel-categories-left {
-  flex: 0 0 280px;
-  max-width: 280px;
+  max-width: 18%;
 }
 
 .carousel-categories .carousel-categories-heading {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--heading-color, #222);
   margin: 0 0 24px;
   font-family: var(--heading-font-family);
-  line-height: 1.2;
+  line-height: 1.4;
+  max-width: 80%;
 }
 
 .carousel-categories .carousel-categories-tabs {
@@ -34,38 +34,42 @@
 }
 
 .carousel-categories .carousel-categories-tab {
-  display: block;
-  width: 100%;
-  padding: 16px 20px;
+  width: 162px;
   border: none;
   border-left: 4px solid transparent;
   background: transparent;
   text-align: left;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 300;
   color: var(--text-color, #333);
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: var(--body-font-family);
+  display: flex;
+  align-items: center;
+  padding: 15px 0;
 }
 
-.carousel-categories .carousel-categories-tab:hover {
+/* .carousel-categories .carousel-categories-tab:hover {
   background: rgb(0 0 0 / 3%);
   color: #1a8c1a;
-}
+} */
 
 .carousel-categories .carousel-categories-tab.active {
-  border: 2px solid #1a8c1a;
   border-radius: 8px;
-  color: #1a8c1a;
   background: transparent;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid #00c853;
+  background: rgba(0, 200, 83, .06);
+  pointer-events: none;
+  padding: 19px 0 19px 19px;
+  height: 70px;
 }
 
 /* Right column - Image display */
 .carousel-categories .carousel-categories-right {
-  flex: 1;
-  min-width: 0;
+  width: 74%;
+  margin-left: auto;
 }
 
 .carousel-categories .carousel-categories-image-container {
@@ -113,6 +117,22 @@
   background: #1a8c1a;
 }
 
+
+@media screen and (max-width: 992px) {
+  .carousel-categories .carousel-categories-heading {
+    max-width: 100%;
+    margin-bottom: 25px;
+  }
+
+  .carousel-categories .carousel-categories-tab.active {
+    height: auto;
+    padding: 10px;
+  }
+
+  .carousel-categories .carousel-categories-right {
+    width: 100%;
+  }
+}
 /* Responsive - Tablet */
 @media (width <= 991px) {
   .carousel-categories .carousel-categories-container {

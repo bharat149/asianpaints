@@ -704,3 +704,29 @@ main > .section:has(.embed-wrapper) > .default-content-wrapper:last-of-type a:ho
     display: grid;
     text-align: center;
 }
+
+/* interior-design-solutions-for-your-home */
+.section:has(#interior-design-solutions-for-your-home) {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section:has(#interior-design-solutions-for-your-home)> .default-content-wrapper {
+  padding: 0;
+  margin-top: 5rem;
+}
+
+.section:has(#interior-design-solutions-for-your-home)> .default-content-wrapper h2{
+  text-align: center;
+}
+
+@media screen and (max-width:992px) {
+  .section:has(#interior-design-solutions-for-your-home)> .default-content-wrapper {
+    margin-top: 2rem;
+  }
+
+  .section:has(#interior-design-solutions-for-your-home)> .default-content-wrapper h2 {
+    font-size: 22px;
+  }
+}
