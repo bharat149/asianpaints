@@ -128,8 +128,35 @@
 .carousel-hero-banner-container .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .swiper-button-prev {
     rotate: 180deg;
 }
+.carousel-hero-banner-container .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .custom-arrow::after {
+    content: " " !important;
+}
+
+.hero-image {
+    position: absolute;
+}
+
+.hero-image {
+    top: 15%;
+    left: 4%;
+    height: auto;
+    z-index: 2;
+    width: 373px;
+    height: auto;
+}
 
 @media(max-width: 991px) {
+    .hero-image {
+        width: 100%;
+        height: auto;
+        top: 50px;
+        left: 5%;
+    }
+
+    .hero-image img {
+        width: 90% !important;
+        min-height: unset !important;
+    }
 
     .carousel-hero-banner-wrapper .swiper-slide video,
     .carousel-hero-banner-wrapper .swiper-slide img {

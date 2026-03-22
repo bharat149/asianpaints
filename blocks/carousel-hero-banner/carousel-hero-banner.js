@@ -26,6 +26,23 @@ function getVideo(url) {
   return video;
 }
 
+// ✅ fallback only for mobile (video case)
+const FALLBACK_MOBILE =
+  "https://static.asianpaints.com/content/dam/asian_paints/home-ph2/banner/desktop/mob-text-image-overlay.webp";
+
+function createPictureFromURL(url) {
+  if (!url) return null;
+
+  const picture = document.createElement("picture");
+  const img = document.createElement("img");
+
+  img.src = url;
+  img.alt = "";
+
+  picture.appendChild(img);
+  return picture;
+}
+
 export default async function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
@@ -57,22 +74,39 @@ export default async function decorate(block) {
     const mediaWrap = document.createElement("div");
     mediaWrap.className = "hero-media";
 
-    // VIDEO priority
+    const isMobile = window.innerWidth < 768;
+    // ✅ VIDEO CASE
     if (desktopVideo || mobileVideo) {
       const video = getVideo(
-        window.innerWidth < 768 ? mobileVideo : desktopVideo,
+        isMobile ? mobileVideo : desktopVideo,
       );
       if (video) {
         mediaWrap.appendChild(video);
-        // ✅ Add sibling div
-        const overlay = document.createElement("div");
-        overlay.className = "video-overlay"; // your class
-
-        mediaWrap.appendChild(overlay);
       }
+
+      // ✅ SAME image logic + fallback ONLY for mobile
+      let picture;
+      if (isMobile) {
+        picture = mobileImg || createPictureFromURL(FALLBACK_MOBILE);
+      } else {
+        picture = desktopImg;
+      }
+
+      if (picture) {
+        const imgWrap = document.createElement("div");
+        imgWrap.className = "hero-image";
+        imgWrap.appendChild(picture);
+        mediaWrap.appendChild(imgWrap);
+      }
+
+      // overlay
+      const overlay = document.createElement("div");
+      overlay.className = "video-overlay";
+      mediaWrap.appendChild(overlay);
+
     } else {
       const picture =
-        window.innerWidth < 768 && mobileImg ? mobileImg : desktopImg;
+        isMobile && mobileImg ? mobileImg : desktopImg;
 
       if (picture) mediaWrap.appendChild(picture);
     }
@@ -145,6 +179,7 @@ export default async function decorate(block) {
         init(swiper) {
           handleVideo(swiper);
           bindArrowEvents(swiper);
+          toggleArrows(swiper);
         },
 
         slideChange(swiper) {
@@ -194,7 +229,7 @@ export default async function decorate(block) {
       if (!prevEl || !nextEl) return;
 
       const current = swiper.activeIndex;
-      const last = swiper.slides.length - 1;
+      const last = swiper.snapGrid.length - 1;
 
       if (current === 0) {
         prevEl.classList.add("swiper-button-disabled");
