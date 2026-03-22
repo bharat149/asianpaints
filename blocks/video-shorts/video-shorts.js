@@ -5,7 +5,6 @@ export default function decorate(block) {
   
 
   const columns = [...row.children];
-  console.log(columns);
   if (columns.length < 2) return;
 
   // Column 1 = text

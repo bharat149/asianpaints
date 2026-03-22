@@ -23,9 +23,9 @@
 /* Container */
 .accordion.faq {
     width: 100%;
-    max-width: 1440px;
+    max-width: 1400px;
     margin: 0 auto;
-    /*padding: 0 24px;*/
+    padding: 0 24px;
     box-sizing: border-box;
 }
 
@@ -38,9 +38,13 @@
     padding: 23px 0;
 }
 
-.accordion.faq details:first-of-type {
-    border-top: 1px solid #CACBCC;
+.accordion.faq details:last-child {
+    border-bottom: none;
 }
+
+/* .accordion.faq details:first-of-type {
+    border-top: 1px solid #CACBCC;
+} */
 
 /* No extra gap between items */
 .accordion.faq details + details {
@@ -211,12 +215,20 @@
 
 /* Mobile parity */
 @media (width <= 600px) {
+    .section.accordion-container:has(.accordion.faq) {
+        margin-top: 4rem;
+    }
+
+    .section.accordion-container:has(.accordion.faq) > .default-content-wrapper {
+        padding-bottom: 0;
+    }
+
     .section.accordion-container:has(.accordion.faq) > .default-content-wrapper h2 {
         font-size: 20px;
         font-weight: 700;
         line-height: 28px;
         text-align: left;
-        margin-bottom: 10px;
+        margin-bottom: 0px;
     }
 
     .accordion.faq {

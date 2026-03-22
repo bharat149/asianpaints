@@ -4,7 +4,8 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
   const isRecommended = block.classList.contains('recommended');
-
+  const isGrid = block.classList.contains('grid');
+  
   const ul = document.createElement('ul');
   [...block.children].forEach((row) => {
     const li = document.createElement('li');
@@ -33,6 +34,11 @@ export default function decorate(block) {
       });
     }
 
+    // mobile view image
+    if (isGrid && li.children.length === 3 && li.children[1].classList.contains("cards-card-image")) {
+      li.children[1].classList.add("mob-view");
+    }
+    
     ul.append(li);
   });
 
@@ -43,6 +49,22 @@ export default function decorate(block) {
     img.closest('picture').replaceWith(optimizedPic);
   });
 
+
+
+  ul.querySelectorAll('.cards-card-body p').forEach((p) => {
+    [...p.childNodes].forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.remove(); // remove plain text
+      } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A') {
+        node.remove(); // remove elements like <strong>, <em>, etc. but keep <a>
+      }
+    });
+    // Optional: if no <a> remains, remove the empty <p>
+    // if (!p.querySelector('a')) p.remove();
+  });
+
+
   block.textContent = '';
   block.append(ul);
+
 }

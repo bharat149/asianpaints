@@ -1,4 +1,3 @@
-
 import {
   loadHeader,
   loadFooter,
@@ -20,9 +19,61 @@ import { initAnalytics } from './analytics.js';
 
   const script = document.createElement('script');
   script.src = '/scripts/crypto.js';
-  script.async = false; // critical: preserve execution order
+  script.async = false;
   document.head.appendChild(script);
 }());
+
+/**
+ * Global Bootstrap loader
+ * - loads Bootstrap CSS once
+ * - optionally loads Bootstrap JS bundle once
+ */
+window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
+  if (!window.__bootstrapCssPromise) {
+    window.__bootstrapCssPromise = new Promise((resolve, reject) => {
+      if (document.querySelector('link[data-bootstrap-css]')) {
+        resolve();
+        return;
+      }
+
+      const bootstrapCss = document.createElement('link');
+      bootstrapCss.rel = 'stylesheet';
+      bootstrapCss.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+      bootstrapCss.setAttribute('data-bootstrap-css', 'true');
+      bootstrapCss.onload = () => resolve();
+      bootstrapCss.onerror = reject;
+      document.head.appendChild(bootstrapCss);
+    });
+  }
+
+  if (!withJS) return window.__bootstrapCssPromise;
+
+  if (!window.__bootstrapJsPromise) {
+    window.__bootstrapJsPromise = new Promise((resolve, reject) => {
+      if (window.bootstrap) {
+        resolve(window.bootstrap);
+        return;
+      }
+
+      const existingScript = document.querySelector('script[data-bootstrap-js]');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(window.bootstrap), { once: true });
+        existingScript.addEventListener('error', reject, { once: true });
+        return;
+      }
+
+      const bootstrapScript = document.createElement('script');
+      bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
+      bootstrapScript.async = true;
+      bootstrapScript.setAttribute('data-bootstrap-js', 'true');
+      bootstrapScript.onload = () => resolve(window.bootstrap);
+      bootstrapScript.onerror = reject;
+      document.head.appendChild(bootstrapScript);
+    });
+  }
+
+  return Promise.all([window.__bootstrapCssPromise, window.__bootstrapJsPromise]);
+};
 
 /**
  * Global Swiper loader
@@ -110,7 +161,7 @@ async function loadFonts() {
       sessionStorage.setItem('fonts-loaded', 'true');
     }
   } catch (e) {
-    // sessionStorage may be unavailable (e.g. Safari private browsing)
+    // sessionStorage may be unavailable
   }
 }
 
@@ -148,7 +199,7 @@ export function decorateMain(main) {
  */
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
-   initAnalytics();
+  initAnalytics();
   decorateTemplateAndTheme();
 
   const main = doc.querySelector('main');
@@ -174,6 +225,9 @@ async function loadEager(doc) {
 async function loadLazy(doc) {
   const main = doc.querySelector('main');
   await loadSections(main);
+
+  // Load Bootstrap CSS globally
+  await window.loadBootstrap?.({ withJS: false });
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
@@ -205,8 +259,14 @@ function loadDelayed() {
       console.error('Failed to preload Swiper', e);
     });
   }, 3000);
-}
 
+  window.setTimeout(() => {
+    window.loadBootstrap?.({ withJS: false }).catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload Bootstrap', e);
+    });
+  }, 3000);
+}
 
 async function loadPage() {
   await loadEager(document);

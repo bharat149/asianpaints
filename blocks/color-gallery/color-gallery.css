@@ -210,6 +210,11 @@
   bottom: auto !important;
   margin-top: 0 !important;
   box-sizing: border-box;
+  width: 50px !important;
+}
+
+.color-gallery-nav .swiper-navigation-icon {
+  display: none;
 }
 
 .color-gallery-nav:hover:not(:disabled) {

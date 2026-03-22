@@ -2,7 +2,7 @@
  * Carousel Collections Block
  * Supports two variants:
  *
- * 1. Video Collage Variant (single row with video URLs + text):
+ * 1. Video Collage Variant (single row with video URLs + text):(REMOVED FROM PAGE AND CREATED NEW BLOCK)
  * <div class="carousel-collections">
  *   <div>
  *     <div>url1.webm url2.webm url3.webm url4.webm</div>  <!-- video URLs -->
