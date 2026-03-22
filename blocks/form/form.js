@@ -18,7 +18,7 @@ function applyBootstrapHelpers(block) {
 
   section?.classList.add('bg-transparent');
   wrapper?.classList.add('m-0', 'p-0', 'w-100');
-  block.classList.add('position-relative', 'overflow-hidden', 'bg-white', 'w-100');
+  block.classList.add('position-relative', 'overflow-hidden', 'w-100');
 }
 
 /**
