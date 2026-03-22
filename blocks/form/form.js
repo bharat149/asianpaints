@@ -1,3 +1,13 @@
+/*
+** Authoring format **
+Row 1, col 1–3 → used for form-description-cell
+Row 2, col 1–4 → used as form-field-label
+Row 2, col 5 → used as submit button label
+Row 3, col 1–4 → used as input placeholder/content
+
+Two variant: White form, Blue form
+*/
+
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
 
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
@@ -18,7 +28,7 @@ function applyBootstrapHelpers(block) {
 
   section?.classList.add('bg-transparent');
   wrapper?.classList.add('m-0', 'p-0', 'w-100');
-  block.classList.add('position-relative', 'overflow-hidden', 'bg-white', 'w-100');
+  block.classList.add('position-relative', 'overflow-hidden', 'w-100');
 }
 
 /**
@@ -92,7 +102,7 @@ function createConsentArea() {
         <span class="form-consent-toggle" aria-hidden="true"></span>
         <span class="form-consent-text">Update me on WhatsApp</span>
       </label>
-
+  <div class = "form-consent-options-right" >
       <label class="form-consent-item">
         <input
           type="checkbox"
@@ -114,6 +124,7 @@ function createConsentArea() {
         <span class="form-consent-box" aria-hidden="true"></span>
         <span class="form-consent-text">Local painter hired</span>
       </label>
+      </div>
     </div>
 
     <div class="form-consent-note">
@@ -162,34 +173,37 @@ function applyFieldConfig(input, headerCell, content) {
 }
 
 /**
- * Format description cell content
+ * Create one description item inside description cell
  */
-function populateDescriptionCell(cell, headerCell) {
-  const descContent = headerCell?.innerHTML;
-  if (!descContent) return;
 
-  if (descContent.includes('Painting Service')) {
-    const strongMatch = descContent.match(/<strong>(.*?)<\/strong>/);
+function createDescriptionItem(cell, className) {
+  const item = document.createElement('div');
+  item.className = className;
+  item.innerHTML = cell?.innerHTML || '';
+  return item;
+}
 
-    if (strongMatch) {
-      const titleText = strongMatch[1];
+/**
+ * Populate description cell using row 1 col 1, 2, 3
+ */
+function populateDescriptionCell(cell, descriptionCells) {
+  cell.textContent = '';
 
-      if (titleText.includes('Painting Service')) {
-        const parts = titleText.split('Painting Service');
-        const beforeText = parts[0].trim();
-        const afterText = headerCell.textContent.replace(titleText, '').trim();
+  const smallTitle = createDescriptionItem(descriptionCells[0], 'form-title-small');
+  const largeTitle = createDescriptionItem(descriptionCells[1], 'form-title-large');
+  const subtitle = createDescriptionItem(descriptionCells[2], 'form-subtitle');
 
-        cell.innerHTML = `
-          <div class="form-title-small">${beforeText}</div>
-          <div class="form-title-large">Painting<br>Service</div>
-          <div class="form-subtitle">${afterText}</div>
-        `;
-        return;
-      }
-    }
+  if (descriptionCells[0]?.innerHTML?.trim()) {
+    cell.appendChild(smallTitle);
   }
 
-  cell.innerHTML = descContent;
+  if (descriptionCells[1]?.innerHTML?.trim()) {
+    cell.appendChild(largeTitle);
+  }
+
+  if (descriptionCells[2]?.innerHTML?.trim()) {
+    cell.appendChild(subtitle);
+  }
 }
 
 /**
@@ -422,94 +436,85 @@ function bindSubmitHandler(block, row, buttonCell) {
  */
 function renderForm(block) {
   const rows = [...block.children];
-  if (!rows.length) return;
+  if (rows.length < 3) return;
 
-  const headerRow = rows[0];
-  if (!headerRow) return;
+  const descriptionRow = rows[0];
+  const labelsRow = rows[1];
+  const inputsRow = rows[2];
 
-  const headerCells = [...headerRow.children];
+  if (!descriptionRow || !labelsRow || !inputsRow) return;
 
-  rows.forEach((row, rowIdx) => {
-    if (rowIdx === 0) {
-      row.style.display = 'none';
-      return;
-    }
+  const descriptionCells = [...descriptionRow.children];
+  const labelCells = [...labelsRow.children];
+  const inputCellsSource = [...inputsRow.children];
 
-    row.classList.add('form-row', 'form-attributes');
-    row.setAttribute('data-attr-resourcePath', window.location.pathname || '');
+  descriptionRow.style.display = 'none';
+  labelsRow.style.display = 'none';
+  inputsRow.style.display = 'none';
 
-    const cells = [...row.children];
+  const formRow = document.createElement('div');
+  formRow.className = 'form-row form-attributes';
+  formRow.setAttribute('data-attr-resourcePath', window.location.pathname || '');
 
-    let descriptionCell = null;
-    let buttonCell = null;
-    const inputCells = [];
+  const descriptionCell = document.createElement('div');
+  descriptionCell.className = 'form-description-cell';
+  populateDescriptionCell(descriptionCell, descriptionCells);
 
-    cells.forEach((cell, cellIdx) => {
-      const content = cell.textContent.trim();
-      const headerCell = headerCells[cellIdx];
-      const headerText = headerCell ? headerCell.textContent.trim() : '';
+  const fieldsArea = document.createElement('div');
+  fieldsArea.className = 'form-fields-area d-flex flex-column';
 
-      if (cellIdx === 0) {
-        cell.classList.add('form-description-cell');
-        descriptionCell = cell;
+  const inputsGrid = document.createElement('div');
+  inputsGrid.className = 'form-inputs-grid';
 
-        if (!content && headerCell) {
-          populateDescriptionCell(cell, headerCell);
-        }
+  for (let i = 0; i < 4; i += 1) {
+    const labelCell = labelCells[i];
+    const inputSourceCell = inputCellsSource[i];
+    const content = inputSourceCell?.textContent.trim();
 
-        return;
-      }
+    if (!content) continue;
 
-      const headerLink = headerCell?.querySelector('a');
+    const inputCell = document.createElement('div');
+    inputCell.className = 'form-input-cell';
 
-      if (headerLink && !content) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'form-submit btn';
-        button.textContent = headerLink.textContent.trim();
+    const headerText = labelCell ? labelCell.textContent.trim() : '';
+    createDefaultField(inputCell, 2, i, headerText, content);
 
-        cell.textContent = '';
-        cell.appendChild(button);
-        cell.classList.add('form-button-cell');
-        buttonCell = cell;
-        return;
-      }
+    const input = inputCell.querySelector('.form-input');
+    applyFieldConfig(input, labelCell, content);
 
-      if (content) {
-        cell.classList.add('form-input-cell');
-        createDefaultField(cell, rowIdx, cellIdx, headerText, content);
+    inputsGrid.appendChild(inputCell);
+  }
 
-        const input = cell.querySelector('.form-input');
-        applyFieldConfig(input, headerCell, content);
+  const buttonCell = document.createElement('div');
+  buttonCell.className = 'form-button-cell';
 
-        inputCells.push(cell);
-      } else {
-        cell.classList.add('form-empty-cell');
-      }
-    });
+  const buttonLabelCell = labelCells[4];
+  const buttonLabel = buttonLabelCell?.textContent.trim();
 
-    if (!inputCells.length || !descriptionCell) return;
+  if (buttonLabel) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'form-submit btn';
+    button.textContent = buttonLabel;
+    buttonCell.appendChild(button);
+  }
 
-    const fieldsArea = document.createElement('div');
-    fieldsArea.className = 'form-fields-area d-flex flex-column';
+  if (!inputsGrid.children.length) return;
 
-    const inputsGrid = document.createElement('div');
-    inputsGrid.className = 'form-inputs-grid';
+  fieldsArea.appendChild(inputsGrid);
+  fieldsArea.appendChild(createConsentArea());
 
-    inputCells.forEach((inputCell) => {
-      inputsGrid.appendChild(inputCell);
-    });
+  if (buttonCell.children.length) {
+    fieldsArea.appendChild(buttonCell);
+  }
 
-    fieldsArea.appendChild(inputsGrid);
-    fieldsArea.appendChild(createConsentArea());
+  formRow.appendChild(descriptionCell);
+  formRow.appendChild(fieldsArea);
+  block.appendChild(formRow);
 
-    if (buttonCell) {
-      fieldsArea.appendChild(buttonCell);
-      bindSubmitHandler(block, row, buttonCell);
-    }
-
-    row.appendChild(fieldsArea);
-  });
+  if (buttonCell.children.length) {
+    bindSubmitHandler(block, formRow, buttonCell);
+  }
 }
 
 export default function decorate(block) {
