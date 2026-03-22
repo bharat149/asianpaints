@@ -57,15 +57,19 @@
 }
 
 .featured-products-prev::before {
-  content: '←';
-  font-size: 18px;
-  color: #1a1a1a;
+  content: " ";
+  background-image: url('/icons/Icons-Sprite-firstFold.webp');
+  width: 22px;
+  height: 13px;
+  background-position: -115px -126px;
 }
 
 .featured-products-next::before {
-  content: '→';
-  font-size: 18px;
-  color: #1a1a1a;
+   content: " ";
+  background-image: url('/icons/Icons-Sprite-firstFold.webp');
+  width: 22px;
+  height: 13px;
+  background-position: -148px -126px;
 }
 
 .featured-products-carousel {

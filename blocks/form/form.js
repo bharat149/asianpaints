@@ -92,7 +92,7 @@ function createConsentArea() {
         <span class="form-consent-toggle" aria-hidden="true"></span>
         <span class="form-consent-text">Update me on WhatsApp</span>
       </label>
-
+  <div class = "form-consent-options-right" >
       <label class="form-consent-item">
         <input
           type="checkbox"
@@ -114,6 +114,7 @@ function createConsentArea() {
         <span class="form-consent-box" aria-hidden="true"></span>
         <span class="form-consent-text">Local painter hired</span>
       </label>
+      </div>
     </div>
 
     <div class="form-consent-note">
