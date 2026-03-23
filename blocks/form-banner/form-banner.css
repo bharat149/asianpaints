@@ -5,7 +5,7 @@
 .form-banner__wrapper {
   position: relative;
   overflow: hidden;
-  min-height: 570px;
+  height: auto;
   background: #8b8172;
 }
 
@@ -17,35 +17,25 @@
   height: 100%;
 }
 
-.form-banner__media {
-  position: absolute;
-  inset: 0;
-}
-
 .form-banner__picture img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
-.form-banner__media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgb(0 0 0 / 20%);
-}
 
 .form-banner__overlay {
-  position: relative;
+  position: absolute;
   z-index: 2;
-  min-height: 570px;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 32px 40px;
+  top: 10px;
+  right: 50px;
 }
 
 .form-banner__card {
   width: 100%;
-  max-width: 560px;
+  max-width: 440px;
   margin-left: auto;
   padding: 28px 28px 30px;
   border-radius: 14px;
@@ -302,6 +292,8 @@
     display: block;
     min-height: auto;
     padding: 0;
+    top: 96%;
+    right: 0;
   }
 
   .form-banner__card {
@@ -357,14 +349,16 @@
 }
 
 @media (width <= 600px) {
+  .form-banner.block{
+    margin-bottom: 25rem;
+  }
+  
   .form-banner__media {
     min-height: 310px;
   }
 
   .form-banner__card {
     max-width: calc(100% - 16px);
-    margin-top: -34px;
-    margin-bottom: 12px;
     padding: 16px 14px 20px;
   }
 
