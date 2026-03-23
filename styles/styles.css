@@ -82,9 +82,17 @@
   }
 }
 
+/* Stops horizontal scrollbar from off-canvas nav (translateX) and wide descendants */
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   display: none;
   margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--body-font-family);

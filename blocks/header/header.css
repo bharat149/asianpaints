@@ -725,6 +725,7 @@
    ======================================== */
 body.nav-open {
   overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* ========================================
@@ -902,7 +903,7 @@ body.nav-open {
     transition: transform 0.35s ease-in-out;
     background: var(--header-white);
     z-index: 2;
-    overflow-y: auto;
+    overflow: hidden auto;
     min-width: 0;
     pointer-events: none;
   }
