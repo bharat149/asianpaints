@@ -27,8 +27,6 @@ const headerConfig = {
 };
 
 const HEADER_ICON_PATHS = {
-  PROFILE_LOGGED_OUT: '/icons/profile-icon-gray-brown.png',
-  PROFILE_LOGGED_IN: '/icons/profile-icon-logged-in.png',
   STORE: '/icons/store-icon-gray-brown.png',
 };
 
@@ -58,6 +56,11 @@ function getApiBaseUrl() {
   return headerConfig.apiBaseUrl || DEFAULT_API_BASE;
 }
 
+function isOnAsianPaintsDomain() {
+  const host = window.location.hostname.toLowerCase();
+  return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
+}
+
 function getApOrigin() {
   return isOnAsianPaintsDomain() ? CURRENT_ORIGIN : getApiBaseUrl();
 }
@@ -66,11 +69,6 @@ const FORM_MODAL_PATH_SEGMENT = '/forms/';
 const BOOK_SITE_VISIT_HASH = '#book-site-visit';
 const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
 const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
-
-function isOnAsianPaintsDomain() {
-  const host = window.location.hostname.toLowerCase();
-  return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
-}
 
 /**
  * Resolve AP paths relative on first-party domains and absolute elsewhere.
@@ -1620,10 +1618,6 @@ function getAuthLogoutBase() {
   const api = getApApi();
   return `${api.KEYCLOAK_URL}/realms/${api.KEYCLOAK_REALM}/protocol/openid-connect/logout`;
 }
-// Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
-const AUTH_REDIRECT_URI = `${window.location.origin}/`;
-const SIGNED_OUT_KEY = 'ap_signed_out';
-const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
 function parseJwtPayload(token) {
   try {
