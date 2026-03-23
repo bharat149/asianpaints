@@ -308,7 +308,7 @@ main>.section .explore-split-wrapper {
   border: 1px solid #232426 !important;
   transform: none !important;
   width: fit-content !important;
-  padding: 14px 20px !important;
+  padding: 10px 20px !important;
   align-items: center;
   font-size: 14px !important;
   font-weight: 700;
@@ -325,12 +325,16 @@ main>.section .explore-split-wrapper {
   border: 1px solid #232426 !important;
 }
 
-.explore-split p.button-container::after {
+.explore-split p.button-container {
+  margin-top: 10px;
+}
+.explore-split p.button-container a::after {
   content: "";
-  background: url('https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/arrow-icon.svg');
+  background: url('/icons/arrow-icon-new.svg');
   width: 17px;
   height: 20px;
   filter: invert(1);
+  display: inline-flex;
 }
 
 @media screen and (max-width: 992px) {
@@ -348,6 +352,10 @@ main>.section .explore-split-wrapper {
 }
 
 @media (min-width:992px) {
+   main>.section>.default-content-wrapper #explore-beyond-colours {
+    font-size: 40px;
+    line-height: 54px;
+   }
   .textures-desktop #textures,
 .wallpapers-desktop #wallpapers {
   margin-bottom: 0;
@@ -356,4 +364,16 @@ main>.section .explore-split-wrapper {
 .textures-desktop p:nth-child(3n) {
   top: unset;
 }
+}
+@media (min-width: 1025px) and (max-width: 1365px) {
+  .textures-desktop #textures, .wallpapers-desktop #wallpapers { 
+    font-size: 40px;
+        line-height: 44px;
+  }
+}
+@media (min-width: 1366px) and (max-width: 1600px) {
+  .textures-desktop #textures, .wallpapers-desktop #wallpapers {
+    font-size: 50px;
+        line-height: 66px;
+  }
 }
