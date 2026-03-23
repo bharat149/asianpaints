@@ -1,7 +1,7 @@
 /* Section title above the block */
 
 main>.section .explore-split-wrapper {
-  width: 90%;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -338,6 +338,10 @@ main>.section .explore-split-wrapper {
 }
 
 @media screen and (max-width: 992px) {
+  main>.section .explore-split-wrapper {
+  width: 90%;
+  margin: 0 auto;
+}
   main>.section>.default-content-wrapper #explore-beyond-colours {
     font-size: 24px;
   }
