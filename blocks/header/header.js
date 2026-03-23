@@ -478,6 +478,9 @@ function updateProfileUI(block, authenticated) {
       || keycloakInstance.tokenParsed.name
       || '';
     profileBtn.classList.add('logged-in');
+    // Swap to AEM icon (has green dot)
+    const profileImg = profileBtn.querySelector('img');
+    if (profileImg?.dataset.loggedInSrc) profileImg.src = profileImg.dataset.loggedInSrc;
     block.querySelector('.profile-dropdown-wrapper')?.classList.add('is-logged-in');
     // Shared code: showWelcomeUserPopup only when returning from auth (hash has iss)
     showWelcomeUserPopup(block, name || keycloakInstance.tokenParsed.preferred_username || '');
@@ -494,6 +497,9 @@ function updateProfileUI(block, authenticated) {
     } catch (err) { /* ignore */ }
   } else {
     profileBtn.classList.remove('logged-in');
+    // Swap to clean local icon (no green dot)
+    const profileImg = profileBtn.querySelector('img');
+    if (profileImg) profileImg.src = '/icons/profile-icon.svg';
     block.querySelector('.profile-dropdown-wrapper')?.classList.remove('is-logged-in');
     if (greeting) greeting.classList.remove('visible');
     clearKeycloakTokens();
@@ -1926,9 +1932,15 @@ function buildMainHeader(mainDiv) {
 
       const altText = (img?.alt || '').toLowerCase();
 
-      // Profile button
+      // Profile button — save original (logged-in) icon src,
+      // start with clean local icon (no green dot) for logged-out state.
       if (altText.includes('profile') || altText.includes('user') || altText.includes('login')) {
         actionLink.classList.add('profile-btn');
+        const existingImg = actionLink.querySelector('img');
+        if (existingImg) {
+          existingImg.dataset.loggedInSrc = existingImg.src;
+          existingImg.src = '/icons/profile-icon.svg';
+        }
         const greeting = document.createElement('span');
         greeting.className = 'profile-greeting';
         actionLink.appendChild(greeting);
@@ -2572,8 +2584,6 @@ function addInteractions(block) {
       const user = getUser();
       profileWrapper?.classList.toggle('is-logged-in', !!user);
     };
-
-    updateProfileButton();
 
     const closeDropdown = () => {
       dropdown?.classList.remove('active');
