@@ -196,8 +196,10 @@
 
 .designer-collections-nav {
   position: static !important;
-  background: white;
-  border: 1px solid #ddd;
+  /* background: white; */
+  background: transparent;
+  /* border: 1px solid #ddd; */
+  
   width: 48px;
   height: 48px;
   min-width: 48px;
@@ -211,16 +213,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333;
-  font-weight: 300;
+  /* color: #333;
+  font-weight: 300; */
   margin: 0 !important;
   padding: 0;
 }
 
 .designer-collections-nav:hover {
-  background: #000;
-  color: white;
-  border-color: #000;
+  background: transparent;
 }
 
 .designer-collections-nav:disabled {
@@ -234,11 +234,19 @@
 }
 
 .designer-collections-prev::before {
-  content: '←';
+  content: " ";
+    background-image: url(/icons/Icons-Sprite-firstFold.webp);
+    width: 22px;
+    height: 13px;
+    background-position: -115px -126px;
 }
 
 .designer-collections-next::before {
-  content: '→';
+ content: " ";
+    background-image: url(/icons/Icons-Sprite-firstFold.webp);
+    width: 22px;
+    height: 13px;
+    background-position: -148px -126px;
 }
 
 .designer-collections-pagination {
