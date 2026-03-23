@@ -90,8 +90,8 @@
 .bannerWithGreybackground {
     margin: 0 auto;
     position: relative;
-    margin-bottom: 60px;
-    padding-bottom: 30px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
 }
 
 /* forAllMobileScreen() */

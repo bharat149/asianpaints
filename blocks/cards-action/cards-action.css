@@ -56,11 +56,6 @@
   margin-right: 20px;
 }
 
-.cards-action-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
 /* ---------------- DESKTOP GRID ---------------- */
 
 @media (min-width: 600px) {
@@ -172,9 +167,7 @@
 
 .cards-action-cta:hover {
   background: #fff7e8;
-  border: 1px solid #232426;
   color: inherit;
-  /* color: #fff; */
 }
 
 .cards-action-cta::after {
@@ -188,10 +181,6 @@
   height: 20px;
   filter: invert(1);
 
-}
-
-.cards-action-cta:hover::after {
-  transform: translateX(3px);
 }
 
 @media (min-width:992px) {

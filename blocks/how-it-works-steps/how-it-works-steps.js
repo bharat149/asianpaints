@@ -1,90 +1,122 @@
 /**
- * How It Works Steps Block
- * Displays numbered process steps in a two-column layout
+ * How It Works Steps Block (EDS)
+ * - Row 1: Title | Desktop Image | (Optional) Mobile Image
+ * - Next rows: Step title | Step description
  */
-
 export default function decorate(block) {
-  const rows = [...block.children];
+  const rows = Array.from(block.children);
 
-  // Create wrapper structure
-  const wrapper = document.createElement('div');
-  wrapper.className = 'how-it-works-steps-wrapper';
+  block.innerHTML = '';
+  block.classList.add('how-works-container', 'focus-visible-auto-imp');
+  block.setAttribute('tabindex', '0');
+  block.setAttribute('aria-label', 'How it Works Section');
 
-  // First row contains the left column (heading + image)
+  function buildPicture(desktopUrl, mobileUrl) {
+    const picture = document.createElement('picture');
+    picture.classList.add('title-image');
+
+    // Mobile source (only if provided)
+    if (mobileUrl) {
+      const mobSource = document.createElement('source');
+      mobSource.setAttribute('media', '(max-width: 991px)');
+      mobSource.setAttribute('srcset', mobileUrl);
+      mobSource.setAttribute('type', 'image/webp');
+      picture.appendChild(mobSource);
+    }
+
+    // Desktop fallback img
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.setAttribute('alt', '');
+    img.setAttribute('aria-hidden', 'true');
+    img.src = desktopUrl || mobileUrl || '';
+    picture.appendChild(img);
+
+    return picture;
+  }
+
+  // Left column (title + image)
   if (rows.length > 0) {
+    const firstRowColumns = Array.from(rows[0].children);
     const leftCol = document.createElement('div');
-    leftCol.className = 'how-it-works-steps-left';
+    leftCol.className = 'how-works-img-section';
 
-    const firstRow = rows[0];
-    const cols = [...firstRow.children];
-
-    if (cols.length >= 1) {
-      // Get heading
-      const heading = cols[0].querySelector('h2, h3, p');
-      if (heading) {
-        const h2 = document.createElement('h2');
-        h2.textContent = heading.textContent;
-        leftCol.appendChild(h2);
+    // Title (col 1)
+    if (firstRowColumns[0]) {
+      const titleSource = firstRowColumns[0].querySelector('h1,h2,h3,p');
+      const titleText = titleSource ? titleSource.textContent.trim() : firstRowColumns[0].textContent.trim();
+      if (titleText) {
+        const titleEl = document.createElement('h2');
+        titleEl.className = 'title';
+        titleEl.textContent = titleText;
+        leftCol.appendChild(titleEl);
       }
     }
 
-    if (cols.length >= 2) {
-      // Get image
-      const picture = cols[1].querySelector('picture');
-      if (picture) {
-        leftCol.appendChild(picture.cloneNode(true));
-      }
+    // Desktop image (col 2)
+    let desktopUrl = '';
+    if (firstRowColumns[1]) {
+      const link = firstRowColumns[1].querySelector('a');
+      const img = firstRowColumns[1].querySelector('img');
+      desktopUrl = (link && link.getAttribute('href')) || (img && img.getAttribute('src')) || firstRowColumns[1].textContent.trim();
     }
 
-    wrapper.appendChild(leftCol);
+    // Mobile image (col 3 - optional)
+    let mobileUrl = '';
+    if (firstRowColumns[2]) {
+      const link = firstRowColumns[2].querySelector('a');
+      const img = firstRowColumns[2].querySelector('img');
+      mobileUrl = (link && link.getAttribute('href')) || (img && img.getAttribute('src')) || firstRowColumns[2].textContent.trim();
+    }
+
+    // Build picture from urls (no flip here)
+    if (desktopUrl || mobileUrl) {
+      leftCol.appendChild(buildPicture(desktopUrl, mobileUrl));
+    }
+
+    block.appendChild(leftCol);
   }
 
-  // Create right column for steps
+  // Right column (steps)
   const rightCol = document.createElement('div');
-  rightCol.className = 'how-it-works-steps-right';
+  rightCol.className = 'how-works-text-section';
 
-  // Process remaining rows as steps (starting from row 2)
-  let stepNumber = 1;
   for (let i = 1; i < rows.length; i += 1) {
-    const row = rows[i];
-    const cols = [...row.children];
-
+    const cols = Array.from(rows[i].children);
     if (cols.length >= 2) {
-      const stepDiv = document.createElement('div');
-      stepDiv.className = 'how-it-works-step';
+      const stepWrap = document.createElement('div');
+      stepWrap.className = 'text-section-wraper';
 
-      // Step number
-      const numberDiv = document.createElement('div');
-      numberDiv.className = 'how-it-works-step-number';
-      numberDiv.textContent = String(stepNumber).padStart(2, '0');
-      stepDiv.appendChild(numberDiv);
+      const numberEl = document.createElement('p');
+      numberEl.className = 'text-section-number';
+      numberEl.textContent = String(i).padStart(2, '0');
+      stepWrap.appendChild(numberEl);
 
-      // Step content
-      const contentDiv = document.createElement('div');
-      contentDiv.className = 'how-it-works-step-content';
+      const innerWrap = document.createElement('div');
+      innerWrap.className = 'inner-text-wraper';
 
-      // Title (first column)
-      const title = cols[0].textContent.trim();
-      const titleEl = document.createElement('h3');
-      titleEl.textContent = title;
-      contentDiv.appendChild(titleEl);
+      const stepTitleText = cols[0].textContent.trim();
+      if (stepTitleText) {
+        const stepTitleEl = document.createElement('p');
+        stepTitleEl.className = 'text-title focus-visible-auto-imp';
+        stepTitleEl.setAttribute('tabindex', '0');
+        stepTitleEl.setAttribute('aria-label', stepTitleText);
+        stepTitleEl.textContent = stepTitleText;
+        innerWrap.appendChild(stepTitleEl);
+      }
 
-      // Description (second column)
-      const desc = cols[1].textContent.trim();
-      const descEl = document.createElement('p');
-      descEl.textContent = desc;
-      contentDiv.appendChild(descEl);
+      const stepDescText = cols[1].textContent.trim();
+      if (stepDescText) {
+        const stepDescEl = document.createElement('p');
+        stepDescEl.className = 'text-description';
+        stepDescEl.textContent = stepDescText;
+        innerWrap.appendChild(stepDescEl);
+      }
 
-      stepDiv.appendChild(contentDiv);
-      rightCol.appendChild(stepDiv);
-
-      stepNumber += 1;
+      stepWrap.appendChild(innerWrap);
+      rightCol.appendChild(stepWrap);
     }
   }
 
-  wrapper.appendChild(rightCol);
-
-  // Clear and append new structure
-  block.textContent = '';
-  block.appendChild(wrapper);
+  block.appendChild(rightCol);
 }
