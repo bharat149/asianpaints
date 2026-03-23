@@ -6,6 +6,9 @@ export default function decorate(block) {
   const isRecommended = block.classList.contains('recommended');
   const isGrid = block.classList.contains('grid');
   const isStats = block.classList.contains('stats');
+  const isServicesBlock = block.classList.contains('services');
+  const isRoomBlock = block.classList.contains('room');
+  const isBenefitsBlock = block.classList.contains('benefits');
 
   const ul = document.createElement('ul');
 
@@ -75,17 +78,20 @@ export default function decorate(block) {
    * Run it ONLY when the paragraph contains an <a>.
    * This preserves text-only paragraphs used by features/stats variants.
    */
-  ul.querySelectorAll('.cards-card-body p').forEach((p) => {
-    if (!p.querySelector('a')) return; // <-- key fix to stop nuking stats/features text
 
-    [...p.childNodes].forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        node.remove();
-      } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A') {
-        node.remove();
-      }
-    });
-  });
+    if (!isServicesBlock && !isRoomBlock && !isBenefitsBlock) {
+      ul.querySelectorAll('.cards-card-body p').forEach((p) => {
+        if (!p.querySelector('a')) return; // <-- key fix to stop nuking stats/features text
+    
+        [...p.childNodes].forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            node.remove();
+          } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A') {
+            node.remove();
+          }
+        });
+      });
+    }
 
   block.textContent = '';
   block.append(ul);

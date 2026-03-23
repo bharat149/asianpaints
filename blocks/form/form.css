@@ -218,7 +218,7 @@
   content: '';
   position: absolute;
   top: 4px;
-  left: 9px;
+  left: 7px;
   width: 6px;
   height: 12px;
   border-right: 2px solid #011c5f;
@@ -521,6 +521,12 @@ align-self: center;
 
 /* Tablet */
 @media (width <=991px) {
+  .form.block .form-title-small {
+    margin: 0;
+  }
+  .form.block .form-title-small p {
+    margin: 0;
+  }
   .form.block {
     padding: 40px;
   }
@@ -629,7 +635,8 @@ align-self: center;
 /* Mobile */
 @media (width <=600px) {
   .section.form-container {
-    padding: 20px 16px;
+    /* padding: 20px 16px; */
+    padding: 0;
   }
 
   .form.block {
@@ -661,7 +668,10 @@ align-self: center;
   }
 
   .form.block .form-subtitle {
-    font-size: 10px;
+    font-size: 14px;
+  }
+  .form.block .form-subtitle p {
+    font-size: inherit;
   }
 
   .form.block .form-inputs-grid {
@@ -801,7 +811,7 @@ align-self: center;
 
 @media (min-width: 1201px) and (max-width: 1440px) {
   .section.form-container .form.block {
-    padding: 51px 47px 38px 70px;
+    padding: 51px 50px 38px 50px;
   }
 
   .form.block .form-row .form-description-cell {
@@ -861,10 +871,14 @@ align-self: center;
   color: #fff;
 }
 
+.form.block.blue-form .form-consent-box {
+  border: 1px solid #fff;
+}
+
 .form.block.blue-form .form-title-small {
   color: #fff;
   font-size: 40px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: capitalize;
   line-height: 48px;
 }

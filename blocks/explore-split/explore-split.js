@@ -22,6 +22,7 @@ export default function decorate(block) {
 
     desktopRow.classList.add("explore-split-desktop");
     texturesHeadingCol.classList.add("textures-desktop");
+    
     texturesImagesCol.classList.add("wallpapers-desktop");
 
     if (mobileRow) mobileRow.remove();

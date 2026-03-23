@@ -155,8 +155,11 @@ export default async function decorate(block) {
   if (block.dataset.categoriesOfferInitialized === 'true') return;
 
   const section = block.closest('.section');
+  let sectionTitle = null
+
   if (section) {
     section.classList.add('categories-offer-section');
+    sectionTitle = section.children[0]
   }
 
   const originalRows = getDirectRows(block);
@@ -255,7 +258,12 @@ export default async function decorate(block) {
 
   if (!tabButtons.length || !carouselWrappers.length) return;
 
-  sidebar.appendChild(tabs);
+  const tabsContainer = document.createElement('div');
+  tabsContainer.className = 'categories-offer__tabs-container';
+  tabsContainer.append(tabs)
+  
+  sidebar.prepend(sectionTitle)
+  sidebar.appendChild(tabsContainer);
   content.appendChild(carouselsContainer);
   wrapper.append(sidebar, content);
   block.appendChild(wrapper);
