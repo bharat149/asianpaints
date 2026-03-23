@@ -521,6 +521,12 @@ align-self: center;
 
 /* Tablet */
 @media (width <=991px) {
+  .form.block .form-title-small {
+    margin: 0;
+  }
+  .form.block .form-title-small p {
+    margin: 0;
+  }
   .form.block {
     padding: 40px;
   }
@@ -629,7 +635,8 @@ align-self: center;
 /* Mobile */
 @media (width <=600px) {
   .section.form-container {
-    padding: 20px 16px;
+    /* padding: 20px 16px; */
+    padding: 0;
   }
 
   .form.block {
@@ -661,7 +668,10 @@ align-self: center;
   }
 
   .form.block .form-subtitle {
-    font-size: 10px;
+    font-size: 14px;
+  }
+  .form.block .form-subtitle p {
+    font-size: inherit;
   }
 
   .form.block .form-inputs-grid {
