@@ -26,22 +26,7 @@ function getVideo(url) {
   return video;
 }
 
-// ✅ fallback only for mobile (video case)
-const FALLBACK_MOBILE =
-  "https://static.asianpaints.com/content/dam/asian_paints/home-ph2/banner/desktop/mob-text-image-overlay.webp";
 
-function createPictureFromURL(url) {
-  if (!url) return null;
-
-  const picture = document.createElement("picture");
-  const img = document.createElement("img");
-
-  img.src = url;
-  img.alt = "";
-
-  picture.appendChild(img);
-  return picture;
-}
 
 export default async function decorate(block) {
   const rows = [...block.children];
@@ -87,7 +72,7 @@ export default async function decorate(block) {
       // ✅ SAME image logic + fallback ONLY for mobile
       let picture;
       if (isMobile) {
-        picture = mobileImg || createPictureFromURL(FALLBACK_MOBILE);
+        picture = mobileImg 
       } else {
         picture = desktopImg;
       }
