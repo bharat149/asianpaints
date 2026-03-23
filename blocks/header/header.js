@@ -1888,7 +1888,7 @@ function buildMainHeader(mainDiv) {
   searchBar.appendChild(cameraBtn);
   inner.appendChild(searchBar);
 
-  // Mobile search icon
+  // Mobile search icon — created here, appended into actions container below
   const mobileSearchBtn = document.createElement('button');
   mobileSearchBtn.className = 'mobile-search-btn';
   mobileSearchBtn.type = 'button';
@@ -1899,11 +1899,13 @@ function buildMainHeader(mainDiv) {
       mobileSearchBtn.appendChild(imgs[0].cloneNode(true));
     }
   }
-  inner.appendChild(mobileSearchBtn);
 
   // Action icons — from p.header-actions or <ul> in mainDiv
   const actionsContainer = document.createElement('div');
   actionsContainer.className = 'header-actions';
+
+  // Insert mobile search icon as first item in actions (visible only on mobile)
+  actionsContainer.appendChild(mobileSearchBtn);
   const actionsP = mainDiv.querySelector('p.header-actions');
 
   // Action icons
