@@ -74,7 +74,7 @@
 .quick-links .ql-icon {
     width: var(--ql-icon-size);
     height: var(--ql-icon-size);
-    transform: translateY(var(--ql-icon-y));
+    /*transform: translateY(var(--ql-icon-y));*/
 }
 
 .quick-links .ql-card--call { --ql-icon-y: 12px; }
