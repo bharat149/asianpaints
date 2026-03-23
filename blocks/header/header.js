@@ -1850,6 +1850,7 @@ function buildMainHeader(mainDiv) {
 
   const inner = document.createElement('div');
   inner.className = 'header-main-inner';
+  let homeHref = '/';
 
   // Hamburger (mobile)
   const hamburger = document.createElement('button');
@@ -1866,9 +1867,10 @@ function buildMainHeader(mainDiv) {
   if (paragraphs[0]) {
     const logoAnchor = paragraphs[0].querySelector('a');
     if (logoAnchor) {
+      homeHref = resolveApLink(logoAnchor.getAttribute('href'));
       const logoLink = document.createElement('a');
       logoLink.className = 'header-logo';
-      logoLink.href = logoAnchor.getAttribute('href');
+      logoLink.href = homeHref;
       const logoImg = logoAnchor.querySelector('img');
       if (logoImg) logoLink.appendChild(logoImg.cloneNode(true));
       inner.appendChild(logoLink);
@@ -2072,6 +2074,12 @@ function buildMainHeader(mainDiv) {
     }
   }
 
+  const mobileHomeBtn = document.createElement('a');
+  mobileHomeBtn.className = 'mobile-home-btn';
+  mobileHomeBtn.href = homeHref;
+  mobileHomeBtn.setAttribute('aria-label', 'Home');
+  inner.appendChild(mobileHomeBtn);
+
   mainHeader.appendChild(inner);
   return mainHeader;
 }
@@ -2207,6 +2215,10 @@ function buildMegamenuPanel(submenuUl) {
   return dropdown;
 }
 
+function normalizeNavLabel(text) {
+  return text.trim().replace(/\u2026$/, '').replace(/\.\.\.$/, '');
+}
+
 function buildNavBar(navDiv, secondaryDiv) {
   const navBar = document.createElement('div');
   navBar.className = 'header-nav-bar';
@@ -2237,7 +2249,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       const link = document.createElement('a');
       link.className = 'nav-link';
       link.href = anchor.getAttribute('href');
-      link.textContent = anchor.textContent.trim();
+      link.textContent = normalizeNavLabel(anchor.textContent);
 
       if (link.textContent === 'Home') {
         navItem.classList.add('nav-home');
@@ -2516,6 +2528,19 @@ function closeMobilePanel(block) {
   if (navInner) navInner.classList.remove('has-active-panel');
 }
 
+function openMobilePanel(block, item) {
+  const navInner = block.querySelector('.header-nav-inner');
+  block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
+    if (other !== item) other.classList.remove('active');
+  });
+  item.classList.add('active');
+  if (navInner) navInner.classList.add('has-active-panel');
+}
+
+function isDesktopViewport() {
+  return window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
+}
+
 function addInteractions(block) {
   const hamburger = block.querySelector('.nav-hamburger');
   const navBar = block.querySelector('.header-nav-bar');
@@ -2525,11 +2550,21 @@ function addInteractions(block) {
     hamburger.addEventListener('click', () => {
       const expanded = hamburger.getAttribute('aria-expanded') === 'true';
       hamburger.setAttribute('aria-expanded', String(!expanded));
+      hamburger.setAttribute('aria-label', expanded ? 'Open navigation' : 'Close navigation');
       hamburger.classList.toggle('is-open', !expanded);
       navBar.classList.toggle('mobile-open', !expanded);
       document.body.classList.toggle('nav-open', !expanded);
       if (expanded) closeMobilePanel(block);
     });
+
+    navBar.addEventListener('click', (e) => {
+      const link = e.target.closest('.nav-link');
+      const item = link?.parentElement;
+      if (!link || !item?.classList.contains('has-dropdown')) return;
+      if (isDesktopViewport()) return;
+      e.preventDefault();
+      openMobilePanel(block, item);
+    }, true);
   }
 
   // Back buttons for mobile dropdown panels
@@ -2557,7 +2592,7 @@ function addInteractions(block) {
     let hoverTimeout;
 
     item.addEventListener('mouseenter', () => {
-      if (window.innerWidth < DESKTOP_BREAKPOINT) return;
+      if (!isDesktopViewport()) return;
       clearTimeout(hoverTimeout);
       block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
         if (other !== item) other.classList.remove('active');
@@ -2566,7 +2601,7 @@ function addInteractions(block) {
     });
 
     item.addEventListener('mouseleave', () => {
-      if (window.innerWidth < DESKTOP_BREAKPOINT) return;
+      if (!isDesktopViewport()) return;
       hoverTimeout = setTimeout(() => {
         item.classList.remove('active');
       }, 100);
@@ -2575,14 +2610,9 @@ function addInteractions(block) {
     const link = item.querySelector('.nav-link');
     if (link) {
       link.addEventListener('click', (e) => {
-        if (window.innerWidth < DESKTOP_BREAKPOINT) {
+        if (!isDesktopViewport()) {
           e.preventDefault();
-          const navInner = block.querySelector('.header-nav-inner');
-          block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
-            if (other !== item) other.classList.remove('active');
-          });
-          item.classList.add('active');
-          if (navInner) navInner.classList.add('has-active-panel');
+          openMobilePanel(block, item);
         }
       });
     }
@@ -2756,6 +2786,7 @@ function addInteractions(block) {
     if (e.matches) {
       if (hamburger) {
         hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.setAttribute('aria-label', 'Open navigation');
         hamburger.classList.remove('is-open');
       }
       if (navBar) navBar.classList.remove('mobile-open');
