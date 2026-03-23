@@ -2522,6 +2522,18 @@ function addInteractions(block) {
       if (expanded) closeMobilePanel(block);
     });
 
+    const mobileHomeBtn = block.querySelector('.mobile-home-btn');
+    if (mobileHomeBtn) {
+      mobileHomeBtn.addEventListener('click', () => {
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.setAttribute('aria-label', 'Open navigation');
+        hamburger.classList.remove('is-open');
+        navBar.classList.remove('mobile-open');
+        document.body.classList.remove('nav-open');
+        closeMobilePanel(block);
+      });
+    }
+
     navBar.addEventListener('click', (e) => {
       const link = e.target.closest('.nav-link');
       const item = link?.parentElement;
