@@ -29,6 +29,7 @@ const headerConfig = {
 const HEADER_ICON_PATHS = {
   PROFILE_LOGGED_OUT: '/icons/profile-icon-gray-brown.png',
   PROFILE_LOGGED_IN: '/icons/profile-icon-logged-in.png',
+  STORE: '/icons/store-icon-gray-brown.png',
 };
 
 // Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
@@ -494,9 +495,6 @@ function updateProfileUI(block, authenticated) {
       || keycloakInstance.tokenParsed.name
       || '';
     profileBtn.classList.add('logged-in');
-    // Swap to AEM icon (has green dot)
-    const profileImg = profileBtn.querySelector('img');
-    if (profileImg?.dataset.loggedInSrc) profileImg.src = profileImg.dataset.loggedInSrc;
     block.querySelector('.profile-dropdown-wrapper')?.classList.add('is-logged-in');
     setProfileIcon(true);
     // Shared code: showWelcomeUserPopup only when returning from auth (hash has iss)
@@ -514,9 +512,6 @@ function updateProfileUI(block, authenticated) {
     } catch (err) { /* ignore */ }
   } else {
     profileBtn.classList.remove('logged-in');
-    // Swap to clean local icon (no green dot)
-    const profileImg = profileBtn.querySelector('img');
-    if (profileImg) profileImg.src = '/icons/profile-icon.svg';
     block.querySelector('.profile-dropdown-wrapper')?.classList.remove('is-logged-in');
     setProfileIcon(false);
     if (greeting) greeting.classList.remove('visible');
@@ -1997,6 +1992,14 @@ function buildMainHeader(mainDiv) {
         badge.className = 'cart-badge';
         badge.textContent = '0';
         actionLink.appendChild(badge);
+      }
+
+      if (altText.includes('store')) {
+        actionLink.classList.add('store-btn');
+        const storeImg = actionLink.querySelector('img');
+        if (storeImg) {
+          storeImg.src = HEADER_ICON_PATHS.STORE;
+        }
       }
 
       // Profile button — dropdown when logged in, auth redirect when not
