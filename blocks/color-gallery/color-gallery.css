@@ -341,7 +341,7 @@
   }
 
   .color-gallery-swiper .swiper-slide {
-    width: 240px !important;
+    /* width: 240px !important; */
   }
 
   .color-gallery-card {
