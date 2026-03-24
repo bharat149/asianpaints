@@ -23,7 +23,7 @@ main>.section .explore-split-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1.5rem 0 .2rem;
+  margin: 1.5rem 0
 }
 
 .explore-mobile-tabs h3 {
@@ -367,6 +367,15 @@ main>.section .explore-split-wrapper {
 }
 .textures-desktop p:nth-child(3n) {
   top: unset;
+}
+p.img-5 {
+  top: 0 !important;
+}
+p.img-5 picture {
+  height: 220px !important;
+}
+.img-6 {
+  height: 240px;
 }
 }
 @media (min-width: 1025px) and (max-width: 1365px) {
