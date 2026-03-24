@@ -51,8 +51,8 @@
   --heading-font-size-s: 24px;
   --heading-font-size-xs: 22px;
 
-  /* Header height - mobile first: 40px brand bar + 56px main header = 96px */
-  --nav-height: 96px;
+  /* Header height - mobile first: 38px brand bar + 56px main header = 94px */
+  --nav-height: 94px;
   --header-height: var(--nav-height);
 }
 
@@ -77,22 +77,14 @@
 
 @media (width >= 992px) {
   :root {
-    /* Desktop header: 48px brand bar + 56px main header + 48px nav bar = 152px */
-    --nav-height: 152px;
+    /* Desktop header: 40px brand bar + 60px main header + 40px nav bar = 140px */
+    --nav-height: 140px;
   }
-}
-
-/* Stops horizontal scrollbar from off-canvas nav (translateX) and wide descendants */
-html {
-  overflow-x: hidden;
-  max-width: 100%;
 }
 
 body {
   display: none;
   margin: 0;
-  max-width: 100%;
-  overflow-x: hidden;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--body-font-family);
@@ -112,8 +104,8 @@ header {
   right: 0;
   z-index: 1000;
 
-  /* 48px brand bar + 56px main header + 48px nav bar = 152px */
-  height: 152px;
+  /* 40px brand bar + 60px main header + 40px nav bar = 140px */
+  height: 140px;
 
   /* Prevent header layout changes from affecting main content */
   contain: strict;
@@ -122,10 +114,8 @@ header {
 
 @media (width < 992px) {
   header {
-    /* Mobile: 40px brand bar + 56px main header = 96px (nav bar hidden) */
-    height: 96px;
-    contain: none;
-    overflow: visible;
+    /* Mobile: 38px brand bar + 56px main header = 94px (nav bar hidden) */
+    height: 94px;
   }
 }
 

@@ -27,6 +27,8 @@ const headerConfig = {
 };
 
 const HEADER_ICON_PATHS = {
+  PROFILE_LOGGED_OUT: '/icons/profile-icon-gray-brown.png',
+  PROFILE_LOGGED_IN: '/icons/profile-icon-logged-in.png',
   STORE: '/icons/store-icon-gray-brown.png',
 };
 
@@ -56,6 +58,11 @@ function getApiBaseUrl() {
   return headerConfig.apiBaseUrl || DEFAULT_API_BASE;
 }
 
+const FORM_MODAL_PATH_SEGMENT = '/forms/';
+const BOOK_SITE_VISIT_HASH = '#book-site-visit';
+const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
+const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
+
 function isOnAsianPaintsDomain() {
   const host = window.location.hostname.toLowerCase();
   return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
@@ -64,11 +71,6 @@ function isOnAsianPaintsDomain() {
 function getApOrigin() {
   return isOnAsianPaintsDomain() ? CURRENT_ORIGIN : getApiBaseUrl();
 }
-
-const FORM_MODAL_PATH_SEGMENT = '/forms/';
-const BOOK_SITE_VISIT_HASH = '#book-site-visit';
-const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
-const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
 
 /**
  * Resolve AP paths relative on first-party domains and absolute elsewhere.
@@ -481,6 +483,12 @@ function updateProfileUI(block, authenticated) {
   if (!profileBtn) return;
 
   const greeting = block.querySelector('.profile-greeting');
+  const profileImg = profileBtn.querySelector('img');
+  const setProfileIcon = (loggedIn) => {
+    if (!profileImg) return;
+    const nextSrc = loggedIn ? profileImg.dataset.loggedInSrc : profileImg.dataset.loggedOutSrc;
+    if (nextSrc) profileImg.src = nextSrc;
+  };
 
   if (authenticated && keycloakInstance?.tokenParsed) {
     const name = keycloakInstance.tokenParsed.given_name
@@ -488,6 +496,7 @@ function updateProfileUI(block, authenticated) {
       || '';
     profileBtn.classList.add('logged-in');
     block.querySelector('.profile-dropdown-wrapper')?.classList.add('is-logged-in');
+    setProfileIcon(true);
     // Shared code: showWelcomeUserPopup only when returning from auth (hash has iss)
     showWelcomeUserPopup(block, name || keycloakInstance.tokenParsed.preferred_username || '');
     try {
@@ -504,6 +513,7 @@ function updateProfileUI(block, authenticated) {
   } else {
     profileBtn.classList.remove('logged-in');
     block.querySelector('.profile-dropdown-wrapper')?.classList.remove('is-logged-in');
+    setProfileIcon(false);
     if (greeting) greeting.classList.remove('visible');
     clearKeycloakTokens();
     window.dispatchEvent(new CustomEvent('keycloakLoginNotReady', {
@@ -522,6 +532,15 @@ function shouldInitKeycloak() {
   if (isOnAsianPaintsDomain()) return true;
   const params = new URLSearchParams(window.location.search);
   return params.get('keycloak') === 'force';
+}
+
+function canUsePersistedAuth() {
+  if (isOnAsianPaintsDomain()) return true;
+  try {
+    return sessionStorage.getItem(AUTH_REDIRECTED_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 function refreshToken(block) {
@@ -545,7 +564,25 @@ function refreshToken(block) {
 
 async function initKeycloak(block) {
   if (!shouldInitKeycloak()) {
-    updateProfileUI(block, false);
+    const storedUser = (() => {
+      if (keycloakInstance?.authenticated && keycloakInstance?.tokenParsed) return true;
+      if (!canUsePersistedAuth()) return false;
+      try {
+        return !!(localStorage.getItem('userProfile') && localStorage.getItem('keycloak-token'));
+      } catch {
+        return false;
+      }
+    })();
+    const profileBtn = block.querySelector('.action-btn.profile-btn');
+    const profileImg = profileBtn?.querySelector('img');
+    const setProfileIcon = (loggedIn) => {
+      if (!profileImg) return;
+      const nextSrc = loggedIn ? profileImg.dataset.loggedInSrc : profileImg.dataset.loggedOutSrc;
+      if (nextSrc) profileImg.src = nextSrc;
+    };
+    profileBtn?.classList.toggle('logged-in', !!storedUser);
+    block.querySelector('.profile-dropdown-wrapper')?.classList.toggle('is-logged-in', !!storedUser);
+    setProfileIcon(!!storedUser);
     return;
   }
 
@@ -1697,6 +1734,7 @@ function getUser() {
     const name = p.given_name || p.name || p.preferred_username || '';
     return { name, email: p.email || '', id_token: keycloakInstance.token };
   }
+  if (!canUsePersistedAuth()) return null;
   try {
     const userProfile = localStorage.getItem('userProfile');
     if (userProfile) {
@@ -1974,13 +2012,15 @@ function buildMainHeader(mainDiv) {
       if (isProfile) {
         actionLink.classList.add('profile-auth-link');
         actionLink.href = '#'; // Prevent default nav; click handler shows dropdown or redirects to auth
+        const profileImg = actionLink.querySelector('img');
+        if (profileImg) {
+          profileImg.dataset.loggedOutSrc = HEADER_ICON_PATHS.PROFILE_LOGGED_OUT;
+          profileImg.dataset.loggedInSrc = HEADER_ICON_PATHS.PROFILE_LOGGED_IN;
+          profileImg.src = HEADER_ICON_PATHS.PROFILE_LOGGED_OUT;
+        }
 
         const wrapper = document.createElement('div');
         wrapper.className = 'profile-dropdown-wrapper';
-        const profileBadge = document.createElement('span');
-        profileBadge.className = 'profile-badge';
-        profileBadge.setAttribute('aria-hidden', 'true');
-        actionLink.appendChild(profileBadge);
         wrapper.appendChild(actionLink);
 
         const profileIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21V19a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>';
@@ -2028,11 +2068,6 @@ function buildMainHeader(mainDiv) {
         ctaLink.dataset.modalPath = modalPath;
         ctaLink.setAttribute('aria-haspopup', 'dialog');
       }
-
-      const arrow = document.createElement('span');
-      arrow.className = 'cta-arrow';
-      arrow.innerHTML = '&#8594;';
-      ctaLink.appendChild(arrow);
 
       ctaContainer.appendChild(ctaLink);
       inner.appendChild(ctaContainer);
@@ -2522,18 +2557,6 @@ function addInteractions(block) {
       if (expanded) closeMobilePanel(block);
     });
 
-    const mobileHomeBtn = block.querySelector('.mobile-home-btn');
-    if (mobileHomeBtn) {
-      mobileHomeBtn.addEventListener('click', () => {
-        hamburger.setAttribute('aria-expanded', 'false');
-        hamburger.setAttribute('aria-label', 'Open navigation');
-        hamburger.classList.remove('is-open');
-        navBar.classList.remove('mobile-open');
-        document.body.classList.remove('nav-open');
-        closeMobilePanel(block);
-      });
-    }
-
     navBar.addEventListener('click', (e) => {
       const link = e.target.closest('.nav-link');
       const item = link?.parentElement;
@@ -2655,6 +2678,9 @@ function addInteractions(block) {
         openDropdown();
       } else {
         // Production: redirect to OIDC auth URL (auth.asianpaints.com)
+        try {
+          sessionStorage.setItem(AUTH_REDIRECTED_KEY, '1');
+        } catch (err) { /* ignore */ }
         const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
         window.location.href = url;
       }
@@ -2665,6 +2691,9 @@ function addInteractions(block) {
       const idToken = user?.id_token || (typeof localStorage !== 'undefined' ? localStorage.getItem('keycloak-token') : null);
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       clearUser();
+      try {
+        sessionStorage.removeItem(AUTH_REDIRECTED_KEY);
+      } catch (err) { /* ignore */ }
       closeDropdown();
       updateProfileButton();
       if (!isLocalhost) {
@@ -2812,8 +2841,8 @@ export default async function decorate(block) {
   // 3. Auth redirect return: clear flags only (no mock user)
   if (!getUser()) {
     try {
-      if (localStorage.getItem(AUTH_REDIRECTED_KEY) === '1') {
-        localStorage.removeItem(AUTH_REDIRECTED_KEY);
+      if (sessionStorage.getItem(AUTH_REDIRECTED_KEY) === '1') {
+        sessionStorage.removeItem(AUTH_REDIRECTED_KEY);
         localStorage.removeItem(SIGNED_OUT_KEY);
       }
     } catch (err) { /* ignore */ }
