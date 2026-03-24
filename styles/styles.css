@@ -77,8 +77,8 @@
 
 @media (width >= 992px) {
   :root {
-    /* Desktop header: 48px brand bar + 56px main header + 48px nav bar = 152px */
-    --nav-height: 152px;
+    /* Desktop header: 40px brand bar + 60px main header + 40px nav bar = 140px */
+    --nav-height: 140px;
   }
 }
 
@@ -104,8 +104,8 @@ header {
   right: 0;
   z-index: 1000;
 
-  /* 48px brand bar + 56px main header + 48px nav bar = 152px */
-  height: 152px;
+  /* 40px brand bar + 60px main header + 40px nav bar = 140px */
+  height: 140px;
 
   /* Prevent header layout changes from affecting main content */
   contain: strict;

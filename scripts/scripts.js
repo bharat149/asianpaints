@@ -12,7 +12,6 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
-import { initAnalytics } from './analytics.js';
 
 (function loadCryptoJSGlobally() {
   if (window.CryptoJS) return;
@@ -22,6 +21,40 @@ import { initAnalytics } from './analytics.js';
   script.async = false;
   document.head.appendChild(script);
 }());
+
+/**
+ * Global jQuery loader
+ * - loads jQuery only once
+ * - returns a promise so dependent code can await it
+ * - useful for legacy modules such as analytics or older blocks
+ */
+window.loadJQuery = function loadJQuery() {
+  if (window.__jqueryPromise) return window.__jqueryPromise;
+
+  window.__jqueryPromise = new Promise((resolve, reject) => {
+    if (window.jQuery) {
+      resolve(window.jQuery);
+      return;
+    }
+
+    const existingScript = document.querySelector('script[data-jquery-js]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(window.jQuery), { once: true });
+      existingScript.addEventListener('error', reject, { once: true });
+      return;
+    }
+
+    const jqueryScript = document.createElement('script');
+    jqueryScript.src = '/scripts/jquery.min.js';
+    jqueryScript.async = true;
+    jqueryScript.setAttribute('data-jquery-js', 'true');
+    jqueryScript.onload = () => resolve(window.jQuery);
+    jqueryScript.onerror = reject;
+    document.head.appendChild(jqueryScript);
+  });
+
+  return window.__jqueryPromise;
+};
 
 /**
  * Global Bootstrap loader
@@ -152,7 +185,8 @@ export function moveInstrumentation(from, to) {
 }
 
 /**
- * load fonts.css and set a session storage flag
+ * Loads fonts.css and sets a session storage flag.
+ * Fonts are intentionally not forced into the critical path.
  */
 async function loadFonts() {
   await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
@@ -194,12 +228,13 @@ export function decorateMain(main) {
 }
 
 /**
- * Loads everything needed to get to LCP.
+ * Loads only the assets and logic required for the initial render / LCP.
+ * Analytics is intentionally excluded from this phase to avoid blocking
+ * rendering and to keep jQuery out of the critical path.
  * @param {Element} doc The container element
  */
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
-  initAnalytics();
   decorateTemplateAndTheme();
 
   const main = doc.querySelector('main');
@@ -219,14 +254,15 @@ async function loadEager(doc) {
 }
 
 /**
- * Loads everything that doesn't need to be delayed.
+ * Loads everything that is needed soon after the first paint,
+ * but is still non-critical compared to the eager phase.
  * @param {Element} doc The container element
  */
 async function loadLazy(doc) {
   const main = doc.querySelector('main');
   await loadSections(main);
 
-  // Load Bootstrap CSS globally
+  /* Load Bootstrap CSS globally once the page is usable */
   await window.loadBootstrap?.({ withJS: false });
 
   const { hash } = window.location;
@@ -243,16 +279,26 @@ async function loadLazy(doc) {
 }
 
 /**
- * Loads everything that happens a lot later,
- * without impacting the user experience.
+ * Loads delayed resources that should not compete with the initial render.
+ * This includes:
+ * - delayed.js
+ * - Swiper preload
+ * - Bootstrap preload
+ * - jQuery preload for legacy code
+ * - analytics initialization
+ *
+ * Analytics is loaded here on purpose because it depends on jQuery,
+ * and neither should block LCP / initial page rendering.
  */
 function loadDelayed() {
   window.setTimeout(() => {
     import('./delayed.js');
   }, 3000);
 
-  // Preload Swiper later so it doesn't affect LCP,
-  // but keep window.loadSwiper available for on-demand block usage.
+  /**
+   * Preload Swiper later so it does not affect LCP,
+   * while still keeping window.loadSwiper available for on-demand block usage.
+   */
   window.setTimeout(() => {
     window.loadSwiper?.().catch((e) => {
       // eslint-disable-next-line no-console
@@ -260,11 +306,43 @@ function loadDelayed() {
     });
   }, 3000);
 
+  /**
+   * Preload Bootstrap CSS later so frequently used components
+   * can benefit without moving Bootstrap into the eager phase.
+   */
   window.setTimeout(() => {
     window.loadBootstrap?.({ withJS: false }).catch((e) => {
       // eslint-disable-next-line no-console
       console.error('Failed to preload Bootstrap', e);
     });
+  }, 3000);
+
+  /**
+   * Load jQuery only in the delayed phase.
+   * This keeps jQuery out of the critical rendering path,
+   * but still makes it available for legacy modules such as analytics.
+   */
+  window.setTimeout(() => {
+    window.loadJQuery?.().catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload jQuery', e);
+    });
+  }, 3000);
+
+  /**
+   * Lazy load analytics after jQuery is available.
+   * This prevents analytics from failing due to missing window.jQuery
+   * and avoids eager-loading analytics during initial page render.
+   */
+  window.setTimeout(async () => {
+    try {
+      await window.loadJQuery?.();
+      const { initAnalytics } = await import('./analytics.js');
+      initAnalytics();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize analytics', e);
+    }
   }, 3000);
 }
 
@@ -289,7 +367,7 @@ export const NX_ORIGIN = branch === 'local' || origin.includes('localhost')
     await import('https://da.live/scripts/dapreview.js').then(async ({ default: daPreview }) => {
       await daPreview(loadPage);
 
-      // add class to body to be used for restricting vh metric
+      /* add class to body to be used for restricting vh metric */
       document.body.classList.add('da-live-preview');
 
       const observer = new MutationObserver((mutations) => {
