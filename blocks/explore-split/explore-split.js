@@ -22,8 +22,13 @@ export default function decorate(block) {
 
     desktopRow.classList.add("explore-split-desktop");
     texturesHeadingCol.classList.add("textures-desktop");
-    
     texturesImagesCol.classList.add("wallpapers-desktop");
+
+    // 🔥 ADD CLASSES TO ALL <p>
+    const paragraphs = texturesHeadingCol.querySelectorAll("p");
+    paragraphs.forEach((p, index) => {
+      p.classList.add(`img-${index + 1}`);
+    });
 
     if (mobileRow) mobileRow.remove();
   }
@@ -41,6 +46,11 @@ export default function decorate(block) {
     texturesCol.classList.add("textures-mobile");
     wallpapersCol.classList.add("wallpapers-mobile");
 
+     const paragraphs = texturesCol.querySelectorAll("p");
+    paragraphs.forEach((p, index) => {
+      p.classList.add(`img-${index + 1}`);
+    });
+
     const texturesTab = texturesCol.querySelector("h3");
     const wallpapersTab = wallpapersCol.querySelector("h3");
 
@@ -50,12 +60,10 @@ export default function decorate(block) {
     const tabsNav = document.createElement("div");
     tabsNav.className = "explore-mobile-tabs";
 
-    // Clone instead of moving (important fix)
     const texturesTabClone = texturesTab.cloneNode(true);
     const wallpapersTabClone = wallpapersTab.cloneNode(true);
 
     tabsNav.append(texturesTabClone, wallpapersTabClone);
-
     mobileRow.insertBefore(tabsNav, mobileRow.firstChild);
 
     /* default state */
@@ -75,7 +83,7 @@ export default function decorate(block) {
 
     wallpapersTabClone.addEventListener("click", () => {
       texturesCol.style.display = "none";
-      wallpapersCol.style.display = "grid";
+      wallpapersCol.style.display = "grid"; // ✅ keep block/grid as per CSS
 
       wallpapersTabClone.classList.add("active");
       texturesTabClone.classList.remove("active");
