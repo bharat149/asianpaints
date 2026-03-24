@@ -236,7 +236,7 @@ export default async function decorate(block) {
     if (!Swiper) return;
 
     const swiper = new Swiper(swiperEl, {
-      slidesPerView: 1.15,
+      slidesPerView: 1.3,
       spaceBetween: 12,
       speed: 500,
       loop: false,
@@ -250,6 +250,7 @@ export default async function decorate(block) {
       pagination: {
         el: paginationEl,
         clickable: true,
+        enabled: false,
       },
     
       breakpoints: {
