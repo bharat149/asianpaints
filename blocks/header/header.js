@@ -26,15 +26,6 @@ const headerConfig = {
   keycloakAuthUrl: DEFAULT_KEYCLOAK_AUTH,
 };
 
-const HEADER_ICON_PATHS = {
-  STORE: '/icons/store-icon-gray-brown.png',
-};
-
-// Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
-const AUTH_REDIRECT_URI = `${window.location.origin}/`;
-const SIGNED_OUT_KEY = 'ap_signed_out';
-const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
-
 async function fetchHeaderConfig() {
   try {
     const resp = await fetch(CONFIG_URL);
@@ -56,11 +47,6 @@ function getApiBaseUrl() {
   return headerConfig.apiBaseUrl || DEFAULT_API_BASE;
 }
 
-function isOnAsianPaintsDomain() {
-  const host = window.location.hostname.toLowerCase();
-  return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
-}
-
 function getApOrigin() {
   return isOnAsianPaintsDomain() ? CURRENT_ORIGIN : getApiBaseUrl();
 }
@@ -69,6 +55,11 @@ const FORM_MODAL_PATH_SEGMENT = '/forms/';
 const BOOK_SITE_VISIT_HASH = '#book-site-visit';
 const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
 const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
+
+function isOnAsianPaintsDomain() {
+  const host = window.location.hostname.toLowerCase();
+  return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
+}
 
 /**
  * Resolve AP paths relative on first-party domains and absolute elsewhere.
@@ -1618,6 +1609,10 @@ function getAuthLogoutBase() {
   const api = getApApi();
   return `${api.KEYCLOAK_URL}/realms/${api.KEYCLOAK_REALM}/protocol/openid-connect/logout`;
 }
+// Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
+const AUTH_REDIRECT_URI = `${window.location.origin}/`;
+const SIGNED_OUT_KEY = 'ap_signed_out';
+const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
 function parseJwtPayload(token) {
   try {
@@ -1812,7 +1807,6 @@ function buildMainHeader(mainDiv) {
 
   const inner = document.createElement('div');
   inner.className = 'header-main-inner';
-  let homeHref = '/';
 
   // Hamburger (mobile)
   const hamburger = document.createElement('button');
@@ -1829,10 +1823,9 @@ function buildMainHeader(mainDiv) {
   if (paragraphs[0]) {
     const logoAnchor = paragraphs[0].querySelector('a');
     if (logoAnchor) {
-      homeHref = resolveApLink(logoAnchor.getAttribute('href'));
       const logoLink = document.createElement('a');
       logoLink.className = 'header-logo';
-      logoLink.href = homeHref;
+      logoLink.href = logoAnchor.getAttribute('href');
       const logoImg = logoAnchor.querySelector('img');
       if (logoImg) logoLink.appendChild(logoImg.cloneNode(true));
       inner.appendChild(logoLink);
@@ -1889,7 +1882,7 @@ function buildMainHeader(mainDiv) {
   searchBar.appendChild(cameraBtn);
   inner.appendChild(searchBar);
 
-  // Mobile search icon — created here, appended into actions container below
+  // Mobile search icon
   const mobileSearchBtn = document.createElement('button');
   mobileSearchBtn.className = 'mobile-search-btn';
   mobileSearchBtn.type = 'button';
@@ -1900,13 +1893,11 @@ function buildMainHeader(mainDiv) {
       mobileSearchBtn.appendChild(imgs[0].cloneNode(true));
     }
   }
+  inner.appendChild(mobileSearchBtn);
 
   // Action icons — from p.header-actions or <ul> in mainDiv
   const actionsContainer = document.createElement('div');
   actionsContainer.className = 'header-actions';
-
-  // Insert mobile search icon as first item in actions (visible only on mobile)
-  actionsContainer.appendChild(mobileSearchBtn);
   const actionsP = mainDiv.querySelector('p.header-actions');
 
   // Action icons
@@ -1935,15 +1926,9 @@ function buildMainHeader(mainDiv) {
 
       const altText = (img?.alt || '').toLowerCase();
 
-      // Profile button — save original (logged-in) icon src,
-      // start with clean local icon (no green dot) for logged-out state.
+      // Profile button
       if (altText.includes('profile') || altText.includes('user') || altText.includes('login')) {
         actionLink.classList.add('profile-btn');
-        const existingImg = actionLink.querySelector('img');
-        if (existingImg) {
-          existingImg.dataset.loggedInSrc = existingImg.src;
-          existingImg.src = '/icons/profile-icon.svg';
-        }
         const greeting = document.createElement('span');
         greeting.className = 'profile-greeting';
         actionLink.appendChild(greeting);
@@ -1956,14 +1941,6 @@ function buildMainHeader(mainDiv) {
         badge.className = 'cart-badge';
         badge.textContent = '0';
         actionLink.appendChild(badge);
-      }
-
-      if (altText.includes('store')) {
-        actionLink.classList.add('store-btn');
-        const storeImg = actionLink.querySelector('img');
-        if (storeImg) {
-          storeImg.src = HEADER_ICON_PATHS.STORE;
-        }
       }
 
       // Profile button — dropdown when logged in, auth redirect when not
@@ -2038,12 +2015,6 @@ function buildMainHeader(mainDiv) {
       inner.appendChild(ctaContainer);
     }
   }
-
-  const mobileHomeBtn = document.createElement('a');
-  mobileHomeBtn.className = 'mobile-home-btn';
-  mobileHomeBtn.href = homeHref;
-  mobileHomeBtn.setAttribute('aria-label', 'Home');
-  inner.appendChild(mobileHomeBtn);
 
   mainHeader.appendChild(inner);
   return mainHeader;
@@ -2180,10 +2151,6 @@ function buildMegamenuPanel(submenuUl) {
   return dropdown;
 }
 
-function normalizeNavLabel(text) {
-  return text.trim().replace(/\u2026$/, '').replace(/\.\.\.$/, '');
-}
-
 function buildNavBar(navDiv, secondaryDiv) {
   const navBar = document.createElement('div');
   navBar.className = 'header-nav-bar';
@@ -2214,7 +2181,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       const link = document.createElement('a');
       link.className = 'nav-link';
       link.href = anchor.getAttribute('href');
-      link.textContent = normalizeNavLabel(anchor.textContent);
+      link.textContent = anchor.textContent.trim();
 
       if (link.textContent === 'Home') {
         navItem.classList.add('nav-home');
@@ -2493,19 +2460,6 @@ function closeMobilePanel(block) {
   if (navInner) navInner.classList.remove('has-active-panel');
 }
 
-function openMobilePanel(block, item) {
-  const navInner = block.querySelector('.header-nav-inner');
-  block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
-    if (other !== item) other.classList.remove('active');
-  });
-  item.classList.add('active');
-  if (navInner) navInner.classList.add('has-active-panel');
-}
-
-function isDesktopViewport() {
-  return window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
-}
-
 function addInteractions(block) {
   const hamburger = block.querySelector('.nav-hamburger');
   const navBar = block.querySelector('.header-nav-bar');
@@ -2515,33 +2469,11 @@ function addInteractions(block) {
     hamburger.addEventListener('click', () => {
       const expanded = hamburger.getAttribute('aria-expanded') === 'true';
       hamburger.setAttribute('aria-expanded', String(!expanded));
-      hamburger.setAttribute('aria-label', expanded ? 'Open navigation' : 'Close navigation');
       hamburger.classList.toggle('is-open', !expanded);
       navBar.classList.toggle('mobile-open', !expanded);
       document.body.classList.toggle('nav-open', !expanded);
       if (expanded) closeMobilePanel(block);
     });
-
-    const mobileHomeBtn = block.querySelector('.mobile-home-btn');
-    if (mobileHomeBtn) {
-      mobileHomeBtn.addEventListener('click', () => {
-        hamburger.setAttribute('aria-expanded', 'false');
-        hamburger.setAttribute('aria-label', 'Open navigation');
-        hamburger.classList.remove('is-open');
-        navBar.classList.remove('mobile-open');
-        document.body.classList.remove('nav-open');
-        closeMobilePanel(block);
-      });
-    }
-
-    navBar.addEventListener('click', (e) => {
-      const link = e.target.closest('.nav-link');
-      const item = link?.parentElement;
-      if (!link || !item?.classList.contains('has-dropdown')) return;
-      if (isDesktopViewport()) return;
-      e.preventDefault();
-      openMobilePanel(block, item);
-    }, true);
   }
 
   // Back buttons for mobile dropdown panels
@@ -2569,7 +2501,7 @@ function addInteractions(block) {
     let hoverTimeout;
 
     item.addEventListener('mouseenter', () => {
-      if (!isDesktopViewport()) return;
+      if (window.innerWidth < DESKTOP_BREAKPOINT) return;
       clearTimeout(hoverTimeout);
       block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
         if (other !== item) other.classList.remove('active');
@@ -2578,7 +2510,7 @@ function addInteractions(block) {
     });
 
     item.addEventListener('mouseleave', () => {
-      if (!isDesktopViewport()) return;
+      if (window.innerWidth < DESKTOP_BREAKPOINT) return;
       hoverTimeout = setTimeout(() => {
         item.classList.remove('active');
       }, 100);
@@ -2587,9 +2519,14 @@ function addInteractions(block) {
     const link = item.querySelector('.nav-link');
     if (link) {
       link.addEventListener('click', (e) => {
-        if (!isDesktopViewport()) {
+        if (window.innerWidth < DESKTOP_BREAKPOINT) {
           e.preventDefault();
-          openMobilePanel(block, item);
+          const navInner = block.querySelector('.header-nav-inner');
+          block.querySelectorAll('.nav-item.has-dropdown.active').forEach((other) => {
+            if (other !== item) other.classList.remove('active');
+          });
+          item.classList.add('active');
+          if (navInner) navInner.classList.add('has-active-panel');
         }
       });
     }
@@ -2635,6 +2572,8 @@ function addInteractions(block) {
       const user = getUser();
       profileWrapper?.classList.toggle('is-logged-in', !!user);
     };
+
+    updateProfileButton();
 
     const closeDropdown = () => {
       dropdown?.classList.remove('active');
@@ -2757,7 +2696,6 @@ function addInteractions(block) {
     if (e.matches) {
       if (hamburger) {
         hamburger.setAttribute('aria-expanded', 'false');
-        hamburger.setAttribute('aria-label', 'Open navigation');
         hamburger.classList.remove('is-open');
       }
       if (navBar) navBar.classList.remove('mobile-open');

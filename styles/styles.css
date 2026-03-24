@@ -51,8 +51,8 @@
   --heading-font-size-s: 24px;
   --heading-font-size-xs: 22px;
 
-  /* Header height - mobile first: 40px brand bar + 56px main header = 96px */
-  --nav-height: 96px;
+  /* Header height - mobile first: 38px brand bar + 56px main header = 94px */
+  --nav-height: 94px;
   --header-height: var(--nav-height);
 }
 
@@ -82,17 +82,9 @@
   }
 }
 
-/* Stops horizontal scrollbar from off-canvas nav (translateX) and wide descendants */
-html {
-  overflow-x: hidden;
-  max-width: 100%;
-}
-
 body {
   display: none;
   margin: 0;
-  max-width: 100%;
-  overflow-x: hidden;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--body-font-family);
@@ -122,10 +114,8 @@ header {
 
 @media (width < 992px) {
   header {
-    /* Mobile: 40px brand bar + 56px main header = 96px (nav bar hidden) */
-    height: 96px;
-    contain: none;
-    overflow: visible;
+    /* Mobile: 38px brand bar + 56px main header = 94px (nav bar hidden) */
+    height: 94px;
   }
 }
 
