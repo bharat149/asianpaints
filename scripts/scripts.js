@@ -24,6 +24,39 @@ import { initAnalytics } from './analytics.js';
 }());
 
 /**
+ * Global jQuery loader
+ * - loads jQuery only once
+ * - returns a promise so blocks can await it
+ */
+window.loadJQuery = function loadJQuery() {
+  if (window.__jqueryPromise) return window.__jqueryPromise;
+
+  window.__jqueryPromise = new Promise((resolve, reject) => {
+    if (window.jQuery) {
+      resolve(window.jQuery);
+      return;
+    }
+
+    const existingScript = document.querySelector('script[data-jquery-js]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(window.jQuery), { once: true });
+      existingScript.addEventListener('error', reject, { once: true });
+      return;
+    }
+
+    const jqueryScript = document.createElement('script');
+    jqueryScript.src = '/scripts/jquery.min.js';
+    jqueryScript.async = true;
+    jqueryScript.setAttribute('data-jquery-js', 'true');
+    jqueryScript.onload = () => resolve(window.jQuery);
+    jqueryScript.onerror = reject;
+    document.head.appendChild(jqueryScript);
+  });
+
+  return window.__jqueryPromise;
+};
+
+/**
  * Global Bootstrap loader
  * - loads Bootstrap CSS once
  * - optionally loads Bootstrap JS bundle once
@@ -226,7 +259,7 @@ async function loadLazy(doc) {
   const main = doc.querySelector('main');
   await loadSections(main);
 
-  // Load Bootstrap CSS globally
+  /* Load Bootstrap CSS globally */
   await window.loadBootstrap?.({ withJS: false });
 
   const { hash } = window.location;
@@ -251,8 +284,9 @@ function loadDelayed() {
     import('./delayed.js');
   }, 3000);
 
-  // Preload Swiper later so it doesn't affect LCP,
-  // but keep window.loadSwiper available for on-demand block usage.
+  /* Preload Swiper later so it doesn't affect LCP,
+   but keep window.loadSwiper available for on-demand block usage.
+   */
   window.setTimeout(() => {
     window.loadSwiper?.().catch((e) => {
       // eslint-disable-next-line no-console
@@ -264,6 +298,14 @@ function loadDelayed() {
     window.loadBootstrap?.({ withJS: false }).catch((e) => {
       // eslint-disable-next-line no-console
       console.error('Failed to preload Bootstrap', e);
+    });
+  }, 3000);
+
+  // Optional: preload jQuery later if some legacy blocks may need it
+  window.setTimeout(() => {
+    window.loadJQuery?.().catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload jQuery', e);
     });
   }, 3000);
 }
@@ -289,7 +331,7 @@ export const NX_ORIGIN = branch === 'local' || origin.includes('localhost')
     await import('https://da.live/scripts/dapreview.js').then(async ({ default: daPreview }) => {
       await daPreview(loadPage);
 
-      // add class to body to be used for restricting vh metric
+      /* add class to body to be used for restricting vh metric*/
       document.body.classList.add('da-live-preview');
 
       const observer = new MutationObserver((mutations) => {
