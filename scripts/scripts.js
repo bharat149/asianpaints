@@ -337,8 +337,8 @@ function loadDelayed() {
   window.setTimeout(async () => {
     try {
       await window.loadJQuery?.();
-      //const { initAnalytics } = await import('./analytics.js');
-     // initAnalytics();
+      const { initAnalytics } = await import('./analytics.js');
+      initAnalytics();
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error('Failed to initialize analytics', e);
