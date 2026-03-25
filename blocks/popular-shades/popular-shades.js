@@ -252,10 +252,6 @@ export default async function decorate(block) {
       fadeEffect: {
         crossFade: true
       },
-      autoplay: {
-        delay: 3000,
-        disableOnInteraction: false
-      },
       on: {
         init(instance) {
           updateActiveSwatch(instance.realIndex);
