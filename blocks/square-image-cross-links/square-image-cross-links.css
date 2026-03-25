@@ -1,0 +1,134 @@
+.square-image-cross-links {
+    width: 100%;
+}
+
+.square-image-cross-links__wrapper {
+    width: 100%;
+}
+
+.square-image-cross-links__header {
+    margin-bottom: 18px;
+}
+
+.square-image-cross-links__heading {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.2;
+    font-size: 24px;
+    color: var(--text-color, #111);
+}
+
+.square-image-cross-links__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.square-image-cross-links__item {
+    margin: 0;
+}
+
+.square-image-cross-links__card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.square-image-cross-links__media picture,
+.square-image-cross-links__media img {
+    display: block;
+    width: 100%;
+}
+
+.square-image-cross-links__media img {
+    height: auto;
+    object-fit: cover;
+}
+
+.square-image-cross-links__body {
+    padding-top: 10px;
+}
+
+.square-image-cross-links__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.square-image-cross-links__title {
+    margin: 0;
+    letter-spacing: 1.08px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 16px;
+    color: var(--text-color, #111);
+}
+
+.square-image-cross-links__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color, #111);
+    flex: 0 0 auto;
+}
+
+.sicls-arrow-icon {
+    display: block;
+}
+
+.square-image-cross-links__desc {
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #000000;
+}
+
+/* Mobile-only CTA (VIEW PRODUCTS) */
+.square-image-cross-links__mobile-cta {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-color, #111);
+    text-decoration-color: #6a1b9a;
+    border-bottom: 2px solid #5e25b2;
+    text-underline-offset: 3px;
+}
+
+/* Desktop layout: 3 columns */
+@media (min-width: 768px) {
+    .square-image-cross-links__list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 26px;
+    }
+
+    .square-image-cross-links__heading {
+        font-size: 28px;
+    }
+
+    .square-image-cross-links__title {
+        font-size: 16px;
+    }
+
+    .square-image-cross-links__desc {
+        font-size: 14px;
+    }
+
+    /* Hide VIEW PRODUCTS on desktop (per your screenshot) */
+    .square-image-cross-links__mobile-cta {
+        display: none;
+    }
+}
+
+/* Slightly larger desktop text */
+@media (min-width: 1024px) {
+    .square-image-cross-links__title {
+        font-size: 20px;
+    }
+}

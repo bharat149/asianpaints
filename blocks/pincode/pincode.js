@@ -1,9 +1,63 @@
-/**
- * Pincode Block
- * Variants:
- * - search: Interactive pincode search card for finding contractors
- * - cta: Two-column layout with image + pincode input
- */
+function handleRedirection(pincode, options = {}) {
+  if (!pincode || pincode.length < 5) return;
+
+  const {
+    baseUrl = 'https://www.asianpaints.com/contractor-listing-page.html',
+    target = '_self',
+    type = 'pincode',
+  } = options;
+
+  let url = '';
+  if (type === 'pincode') {
+    url = `${baseUrl}?cpListing=pinCode:${encodeURIComponent(pincode)}`;
+  } else if (type === 'mobile') {
+    url = `${baseUrl}?cpListing=contactNumber:${encodeURIComponent(pincode)}`;
+  } else {
+    url = `${baseUrl}?q=${encodeURIComponent(pincode)}`;
+  }
+
+  if (target === '_blank') {
+    window.open(url, target);
+  } else {
+    window.location.href = url;
+  }
+}
+
+function normalizeKey(s) {
+  return (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function getCellText(cell) {
+  if (!cell) return '';
+  const el = cell.querySelector('h1,h2,h3,h4,h5,p,strong,em,span,a');
+  return (el ? el.textContent : cell.textContent).trim();
+}
+
+function getCellLink(cell) {
+  if (!cell) return '';
+  const a = cell.querySelector('a');
+  return a ? a.href : cell.textContent.trim();
+}
+
+function readKeyValueRows(block) {
+  const rows = [...block.children];
+  const map = {};
+  rows.forEach((row) => {
+    const cols = [...row.children];
+    if (cols.length < 2) return;
+    const [col0, col1] = cols;
+    const k = normalizeKey(col0.textContent);
+    if (!k) return;
+    map[k] = col1;
+  });
+  return map;
+}
+
+function getPicture(cell) {
+  if (!cell) return null;
+  const picture = cell.querySelector('picture');
+  return picture ? picture.cloneNode(true) : null;
+}
 
 function decorateSearch(block) {
   const rows = [...block.children];
@@ -11,6 +65,7 @@ function decorateSearch(block) {
   let description = '';
   let cardTitle = 'Find a contractor near you!';
   let placeholder = 'Enter pincode';
+  let redirectUrl = '';
 
   if (rows.length >= 1) {
     const headingEl = rows[0].querySelector('h2, h3, strong, p');
@@ -22,12 +77,14 @@ function decorateSearch(block) {
   }
   if (rows.length >= 3) {
     const cols = [...rows[2].children];
-    if (cols.length >= 1) cardTitle = cols[0].textContent.trim() || cardTitle;
-    if (cols.length >= 2) placeholder = cols[1].textContent.trim() || placeholder;
+    if (cols.length >= 1) cardTitle = cols[0].textContent.trim();
+    if (cols.length >= 2) placeholder = cols[1].textContent.trim();
+  }
+  if (rows.length >= 4) {
+    redirectUrl = getCellLink(rows[3]);
   }
 
   block.textContent = '';
-
   if (heading) {
     const h2 = document.createElement('h2');
     h2.textContent = heading;
@@ -48,7 +105,7 @@ function decorateSearch(block) {
   card.appendChild(titleEl);
 
   const inputWrapper = document.createElement('div');
-  inputWrapper.className = 'pincode-input-wrapper';
+  inputWrapper.className = 'pincode-input-wrapper cpListing-pincode--div';
 
   const input = document.createElement('input');
   input.type = 'text';
@@ -62,22 +119,21 @@ function decorateSearch(block) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'pincode-search-button';
+  button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M9.11103 1.1665L14.6666 6.99984M14.6666 6.99984L9.11103 12.8332M14.6666 6.99984L1.33325 6.99984" stroke="#232426" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   button.setAttribute('aria-label', 'Search');
   inputWrapper.appendChild(button);
 
   card.appendChild(inputWrapper);
   block.appendChild(card);
 
-  const handleSearch = () => {
-    const pincode = input.value.trim();
-    if (pincode && pincode.length >= 5) {
-      window.location.href = `https://www.asianpaints.com/contractor-listing-page.html?pincode=${encodeURIComponent(pincode)}`;
-    }
-  };
+  const onSearch = () => handleRedirection(input.value.trim(), {
+    baseUrl: redirectUrl || undefined,
+    type: 'pincode',
+  });
 
-  button.addEventListener('click', handleSearch);
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleSearch();
+  button.addEventListener('click', onSearch);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') onSearch();
   });
   input.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
@@ -85,58 +141,80 @@ function decorateSearch(block) {
 }
 
 function decorateCta(block) {
-  const rows = [...block.children];
-  if (rows.length === 0) return;
-
-  const row = rows[0];
-  const cols = [...row.children];
+  const cfg = readKeyValueRows(block);
+  const picture = getPicture(cfg.image);
+  const titleText = getCellText(cfg.title);
+  const placeholderText = getCellText(cfg['input placeholder']) || 'Enter pincode';
+  const ctaText = getCellText(cfg['cta text']) || 'Search';
+  const ctaLink = getCellLink(cfg['cta link']) || getCellLink(cfg['redirect url']);
+  const ctaTarget = getCellText(cfg['cta target']) || '_self';
 
   const wrapper = document.createElement('div');
-  wrapper.className = 'pincode-cta-wrapper';
+  wrapper.className = 'swapimagewithcta imageWithRightTextComp';
 
-  if (cols.length >= 1) {
-    const leftCol = document.createElement('div');
-    leftCol.className = 'pincode-cta-image';
-    const picture = cols[0].querySelector('picture');
-    if (picture) leftCol.appendChild(picture.cloneNode(true));
-    wrapper.appendChild(leftCol);
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'img-wrapper img-left';
+  if (picture) imgWrap.appendChild(picture);
+
+  const rightWrap = document.createElement('div');
+  rightWrap.className = 'righttext-wrapper text-align-right';
+
+  const headingWrap = document.createElement('div');
+  headingWrap.className = 'righttext-heading';
+  if (titleText) {
+    const h1 = document.createElement('h1');
+    h1.textContent = titleText;
+    headingWrap.appendChild(h1);
   }
+  rightWrap.appendChild(headingWrap);
 
-  if (cols.length >= 2) {
-    const rightCol = document.createElement('div');
-    rightCol.className = 'pincode-cta-content';
+  const findWrap = document.createElement('div');
+  findWrap.className = 'findcontractor-wraper';
 
-    const heading = cols[1].querySelector('h2, h3');
-    if (heading) {
-      const h2 = document.createElement('h2');
-      h2.textContent = heading.textContent;
-      rightCol.appendChild(h2);
-    }
+  const pinWrap = document.createElement('div');
+  pinWrap.className = 'pin-code-city-search-wp';
 
-    const formContainer = document.createElement('div');
-    formContainer.className = 'pincode-cta-form';
+  const inputWithCta = document.createElement('div');
+  inputWithCta.className = 'input-with-cta cpListing-pincode--div';
 
-    const inputWrapper = document.createElement('div');
-    inputWrapper.className = 'pincode-input-wrapper';
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Enter pincode';
-    input.className = 'pincode-input';
-    input.maxLength = 6;
-    input.pattern = '[0-9]*';
-    input.inputMode = 'numeric';
-    inputWrapper.appendChild(input);
-    formContainer.appendChild(inputWrapper);
+  const inputWp = document.createElement('div');
+  inputWp.className = 'pincode-input-wp';
 
-    const button = document.createElement('button');
-    button.className = 'pincode-cta-button';
-    button.textContent = 'Search';
-    button.type = 'button';
-    formContainer.appendChild(button);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'pincode-input ctaPincode';
+  input.placeholder = placeholderText;
+  input.maxLength = 6;
+  input.pattern = '[0-9]*';
+  input.inputMode = 'numeric';
+  inputWp.appendChild(input);
 
-    rightCol.appendChild(formContainer);
-    wrapper.appendChild(rightCol);
-  }
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'pincode-cta-button js-pincode-cta';
+  button.innerHTML = `${ctaText} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M9.11103 1.1665L14.6666 6.99984M14.6666 6.99984L9.11103 12.8332M14.6666 6.99984L1.33325 6.99984" stroke="#232426" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  inputWithCta.appendChild(inputWp);
+  inputWithCta.appendChild(button);
+  pinWrap.appendChild(inputWithCta);
+  findWrap.appendChild(pinWrap);
+  rightWrap.appendChild(findWrap);
+  wrapper.appendChild(imgWrap);
+  wrapper.appendChild(rightWrap);
+
+  const onGo = () => handleRedirection(input.value.trim(), {
+    baseUrl: ctaLink || undefined,
+    target: ctaTarget,
+    type: 'pincode',
+  });
+
+  button.addEventListener('click', onGo);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') onGo();
+  });
+  input.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+  });
 
   block.textContent = '';
   block.appendChild(wrapper);
@@ -145,7 +223,7 @@ function decorateCta(block) {
 export default function decorate(block) {
   if (block.classList.contains('cta')) {
     decorateCta(block);
-  } else {
-    decorateSearch(block);
+    return;
   }
+  decorateSearch(block);
 }

@@ -1,97 +1,94 @@
 export default function decorate(block) {
-  // Add wrapper class to parent section for styling the title
-  const section = block.closest('.section');
-  if (section) {
-    section.classList.add('explore-split-wrapper');
-  }
+  const section = block.closest(".section");
+  if (section) section.classList.add("explore-split-wrapper");
 
-  const row = block.querySelector(':scope > div');
-  if (!row) return;
+  const rows = [...block.children];
+  if (rows.length < 1) return;
 
-  const columns = [...row.children];
-  if (columns.length < 2) return;
+  const desktopRow = rows[0] || null;
+  const mobileRow = rows[1] || null;
 
-  // First column is Textures (three-column layout)
-  const texturesCol = columns[0];
-  texturesCol.classList.add('explore-split-section', 'three-column');
+  const isDesktop = window.matchMedia("(min-width: 992px)").matches;
+  const isMobile = window.matchMedia("(max-width: 991px)").matches;
 
-  const texturesHeading = texturesCol.querySelector('h3');
-  const texturesImages = [...texturesCol.querySelectorAll('img')];
+  /* ---------------- DESKTOP SETUP ---------------- */
 
-  if (texturesHeading && texturesImages.length > 0) {
-    // Create text section with title and button
-    const textSection = document.createElement('div');
-    textSection.className = 'explore-split-text-section';
+  if (isDesktop && desktopRow) {
+    const desktopCols = [...desktopRow.children];
+    if (desktopCols.length < 2) return;
 
-    const title = document.createElement('h3');
-    title.textContent = texturesHeading.textContent;
+    const texturesHeadingCol = desktopCols[0];
+    const texturesImagesCol = desktopCols[1];
 
-    const viewAllBtn = document.createElement('a');
-    viewAllBtn.href = 'https://www.asianpaints.com/products/paints-and-textures/interior-walls/royale-play.html';
-    viewAllBtn.className = 'explore-split-view-all';
-    viewAllBtn.innerHTML = 'View all <span>→</span>';
+    desktopRow.classList.add("explore-split-desktop");
+    texturesHeadingCol.classList.add("textures-desktop");
+    texturesImagesCol.classList.add("wallpapers-desktop");
 
-    textSection.appendChild(title);
-    textSection.appendChild(viewAllBtn);
-
-    // Create grid for images with mixed heights
-    const grid = document.createElement('div');
-    grid.className = 'explore-split-grid mixed-height';
-
-    texturesImages.forEach((img, index) => {
-      const card = document.createElement('div');
-      card.className = `explore-split-card item-${index + 1}`;
-      card.appendChild(img.cloneNode(true));
-      grid.appendChild(card);
+    // 🔥 ADD CLASSES TO ALL <p>
+    const paragraphs = texturesHeadingCol.querySelectorAll("p");
+    paragraphs.forEach((p, index) => {
+      p.classList.add(`img-${index + 1}`);
     });
 
-    // Clear and rebuild
-    texturesCol.innerHTML = '';
-    texturesCol.appendChild(textSection);
-    texturesCol.appendChild(grid);
+    if (mobileRow) mobileRow.remove();
   }
 
-  // Second column is Wallpapers (two-column layout)
-  const wallpapersCol = columns[1];
-  wallpapersCol.classList.add('explore-split-section', 'two-column');
+  /* ---------------- MOBILE SETUP ---------------- */
 
-  const wallpapersHeading = wallpapersCol.querySelector('h3');
-  const wallpapersImages = [...wallpapersCol.querySelectorAll('img')];
+  if (isMobile && mobileRow) {
+    const mobileCols = [...mobileRow.children];
+    if (mobileCols.length < 2) return;
 
-  if (wallpapersHeading && wallpapersImages.length > 0) {
-    // Create text section with title and button
-    const textSection = document.createElement('div');
-    textSection.className = 'explore-split-text-section';
+    const texturesCol = mobileCols[0];
+    const wallpapersCol = mobileCols[1];
 
-    const title = document.createElement('h3');
-    title.textContent = wallpapersHeading.textContent;
+    mobileRow.classList.add("explore-split-mobile");
+    texturesCol.classList.add("textures-mobile");
+    wallpapersCol.classList.add("wallpapers-mobile");
 
-    const viewAllBtn = document.createElement('a');
-    viewAllBtn.href = 'https://www.asianpaints.com/products/wall-coverings.html';
-    viewAllBtn.className = 'explore-split-view-all';
-    viewAllBtn.innerHTML = 'View all <span>→</span>';
-
-    textSection.appendChild(title);
-    textSection.appendChild(viewAllBtn);
-
-    // Create grid for images
-    const grid = document.createElement('div');
-    grid.className = 'explore-split-grid mixed-height';
-
-    wallpapersImages.forEach((img, index) => {
-      const card = document.createElement('div');
-      card.className = `explore-split-card item-${index + 1}`;
-      card.appendChild(img.cloneNode(true));
-      grid.appendChild(card);
+     const paragraphs = texturesCol.querySelectorAll("p");
+    paragraphs.forEach((p, index) => {
+      p.classList.add(`img-${index + 1}`);
     });
 
-    // Clear and rebuild
-    wallpapersCol.innerHTML = '';
-    wallpapersCol.appendChild(textSection);
-    wallpapersCol.appendChild(grid);
-  }
+    const texturesTab = texturesCol.querySelector("h3");
+    const wallpapersTab = wallpapersCol.querySelector("h3");
 
-  // Move columns to be direct children of block
-  block.append(texturesCol, wallpapersCol);
-  row.remove();
+    if (!texturesTab || !wallpapersTab) return;
+
+    /* create tab container */
+    const tabsNav = document.createElement("div");
+    tabsNav.className = "explore-mobile-tabs";
+
+    const texturesTabClone = texturesTab.cloneNode(true);
+    const wallpapersTabClone = wallpapersTab.cloneNode(true);
+
+    tabsNav.append(texturesTabClone, wallpapersTabClone);
+    mobileRow.insertBefore(tabsNav, mobileRow.firstChild);
+
+    /* default state */
+    wallpapersCol.style.display = "none";
+    texturesCol.style.display = "block";
+    texturesTabClone.classList.add("active");
+
+    /* tab click behaviour */
+
+    texturesTabClone.addEventListener("click", () => {
+      texturesCol.style.display = "block";
+      wallpapersCol.style.display = "none";
+
+      texturesTabClone.classList.add("active");
+      wallpapersTabClone.classList.remove("active");
+    });
+
+    wallpapersTabClone.addEventListener("click", () => {
+      texturesCol.style.display = "none";
+      wallpapersCol.style.display = "grid"; // ✅ keep block/grid as per CSS
+
+      wallpapersTabClone.classList.add("active");
+      texturesTabClone.classList.remove("active");
+    });
+
+    if (desktopRow) desktopRow.remove();
+  }
 }

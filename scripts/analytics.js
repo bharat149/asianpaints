@@ -26,7 +26,7 @@ export async function initAnalytics() {
 
   // Load the Launch script
   const siteConfig = await getSiteConfig();
-  const launchUrl = siteConfig?.launchUrl;
+  const launchUrl = siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
   if (!launchUrl) {
     return;
   }

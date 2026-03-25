@@ -1,3 +1,8 @@
+import {
+  readBlockConfig,
+  toCamelCase,
+  toClassName,
+} from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
 
 const AMS_BASE = 'https://beta.asianpaints.com';
@@ -23,19 +28,22 @@ function getUtmParams() {
   };
 }
 
-function getVisitorId() {
+export function getVisitorId() {
   try {
-    if (
-      typeof window._satellite !== 'undefined'
-      && window._satellite.getVisitorId
-      && window._satellite.getVisitorId().getMarketingCloudVisitorID
-    ) {
-      return window._satellite.getVisitorId().getMarketingCloudVisitorID() || '';
+    // eslint-disable-next-line no-underscore-dangle
+    if (window._satellite && window._satellite.getVisitorId) {
+      // eslint-disable-next-line no-underscore-dangle
+      return window._satellite.getVisitorId().getMarketingCloudVisitorID() || ' ';
     }
   } catch (e) {
-    // ignore
+    return '';
   }
   return '';
+}
+
+export function getCampaignIdFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return (urlParams.get('utm_campaign') || '').trim();
 }
 
 function limitDigits(input, maxLen) {
@@ -63,59 +71,59 @@ function setError(fieldWrap, msg) {
 function setLabelTop(fieldWrap, top) {
   const label = fieldWrap.querySelector('.input-label');
   if (!label) return;
-  label.classList.toggle('top', top);
-  label.classList.toggle('d-none', !top);
+  if (top) {
+    label.classList.add('top');
+    label.classList.remove('d-none');
+  } else {
+    label.classList.remove('top');
+    label.classList.add('d-none');
+  }
 }
 
-/**
- * Keep headers minimal to reduce preflight issues cross-origin.
- */
 async function postFormUrlEncoded(url, data) {
   const body = new URLSearchParams();
   Object.entries(data).forEach(([k, v]) => body.append(k, v ?? ''));
-
   const res = await fetch(url, {
     method: 'POST',
     mode: 'cors',
     credentials: 'omit',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      'Accept': '*/*',
+      Accept: '*/*',
     },
     body,
   });
-
   const text = await res.text();
-  try { return JSON.parse(text); } catch { return text; }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 function buildMarkup(cfg) {
-  const thankyouCta =
-    (cfg.exploreCtaLink && cfg.exploreCtaLabel)
-      ? `
-        <div class="cta animated-btn-yellow-onhover-black round-corner-radius-button">
-          <a href="${cfg.exploreCtaLink}" class="animated-arrow-button explore-painting-btn" target="_self"
-             aria-label="${cfg.exploreCtaLabel}">
-            ${cfg.exploreCtaLabel}<span class="arrow"></span>
-          </a>
-        </div>`
-      : '';
+  const thankyouCta = (cfg.exploreCtaLink && cfg.exploreCtaLabel)
+    ? `
+      <div class="cta animated-btn-yellow-onhover-black round-corner-radius-button">
+        <a href="${cfg.exploreCtaLink}" class="animated-arrow-button explore-painting-btn" target="_self"
+          aria-label="${cfg.exploreCtaLabel}">
+          ${cfg.exploreCtaLabel}<span class="arrow"></span>
+        </a>
+      </div>`
+    : '';
 
   return `
     <div class="miniform hero-miniform">
-
       <div class="find-contractor-form-container ${cfg.alignment || ''} track_field_focus"
-        data-attr-respath="${cfg.node || ''}"
+        data-attr-respath="${cfg.node || ' '}"
         data-attr-campaignId="${cfg.campaignId || ''}"
         data-attr-emptyFieldError="${cfg.emptyFieldErrorMessage || 'Field is required'}"
         data-attr-mobileError="${cfg.mobileNumberErrorMessage || 'Phone number is invalid'}"
         data-attr-pincodeError="${cfg.pincodeErrorMessage || 'Enter a valid 6 digit Zip Code'}"
-        data-attr-redirection="${cfg.redirectionUrl || ''}"
-      >
+        data-attr-redirection="${cfg.redirectionUrl || ''}">
         <div class="title-section">
           ${cfg.formTitle || '<p>Let our experts help you!</p>'}
         </div>
-
         <form class="hero-form-contact" novalidate>
           <div class="mobile-input-section">
             <label class="input-label d-none" for="mobile-number">Mobile Number*</label>
@@ -123,14 +131,12 @@ function buildMarkup(cfg) {
               name="mobile-number" id="mobile-number" placeholder="Enter mobile number" />
             <div class="error-msg d-none"></div>
           </div>
-
           <div class="pincode-input-section">
             <label class="input-label d-none" for="pincode">Pincode*</label>
             <input type="tel" inputmode="numeric" autocomplete="postal-code"
               name="pincode" id="pincode" placeholder="Enter pincode" />
             <div class="error-msg d-none"></div>
           </div>
-
           <div class="whatsapp-update-consent-section">
             <input type="checkbox" id="whatsapp-consent-input" name="whatsapp-consent-input" checked />
             <label class="whatsapp-consent-label" for="whatsapp-consent-input">
@@ -139,27 +145,25 @@ function buildMarkup(cfg) {
             <span class="whatsapp-consent-checkmark" tabindex="0" role="checkbox"
               aria-label="${cfg.whatsappConsentText || 'Update me on WhatsApp'}"></span>
           </div>
-
-          <!-- Disclaimer stays exactly here (below WhatsApp) -->
           <div class="disclaimer-section">
             ${cfg.disclaimerHtml || ''}
           </div>
-
-          <button type="submit" class="get-contractors-button hero-form-submit">
-            ${cfg.ctaLabel || 'Get recommended contractor'}
-            <span class="rotating js-rotatingLeadForm get-contractor-progress-status d-none">↻</span>
-          </button>
+          <div class="cta animated-btn-yellow-onhover-black round-corner-radius-button">
+            <button type="submit" class="get-contractors-button hero-form-submit animated-arrow-button">
+              ${cfg.ctaLabel || 'Get recommended contractor'}
+              <span class="arrow"></span>
+              <span class="rotating js-rotatingLeadForm get-contractor-progress-status d-none">↻</span>
+            </button>
+          </div>
         </form>
       </div>
 
-      <!-- THANK YOU (structure mirrors AMS miniform-thankyou.html) -->
       <div class="mf-thankyou-revamp-container" style="display:none">
         <div class="mf__dismissible-container--head" role="button" tabindex="0" aria-label="Close">
-          <span class="mf-close-icon">×</span>
+          <img loading="lazy" id="mf-close-icon" src="https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/cross-icon.svg" alt="closeIcon"/>
         </div>
-
         <div class="row no-gutters mf-revamp-thankyou">
-          <div class="col-lg-4 col-12 mf-revamp-thankyou-left">
+          <div class="mf-revamp-thankyou-left">
             <div class="mf-thank-you-left-content" style="display:block">
               <h2>${cfg.thankYouLeftSuccessHeading || ''}</h2>
               <p>${cfg.thankYouLeftSuccessDescription || ''}</p>
@@ -169,20 +173,20 @@ function buildMarkup(cfg) {
               <p>${cfg.thankYouLeftErrorDescription || ''}</p>
             </div>
           </div>
-
-          <div class="col-lg-8 col-12 mf-revamp-thankyou-right"
-            style="--bg-image-desktop: url('${cfg.thankYouBgDesktop || ''}');
-                   --bg-image-mob: url('${cfg.thankYouBgMobile || ''}');">
+          <div class="mf-revamp-thankyou-right">
+            <picture class="thankyou-bg-picture">
+              <source media="(min-width: 992px)" srcset="${cfg.thankYouBgDesktop || ''}">
+              <img src="${cfg.thankYouBgMobile || cfg.thankYouBgDesktop || ''}" alt="Thank You Background" class="thankyou-bg-img">
+            </picture>
             <div class="mf-thank-you-message" style="display:block">
-              <p class="mf-thank-you-message-title">${cfg.thankYouRightHeading || ''}</p>
-              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingOne || ''}</p>
-              <p class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingTwo || ''}</p>
+              <div class="mf-thank-you-message-title">${cfg.thankYouRightHeading || ''}</div>
+              <div class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingOne || ''}</div>
+              <div class="mf-thank-you-message-subtitle">${cfg.thankYouRightSubHeadingTwo || ''}</div>
               ${thankyouCta}
             </div>
           </div>
         </div>
       </div>
-
     </div>
   `;
 }
@@ -241,58 +245,80 @@ function buildBasePayload() {
 }
 
 export default function decorate(block) {
-  // --- 1) Pull authored values from block.dataset (maps 1:1 to _hero-form.json field names) ---
+  const config = readBlockConfig(block);
   const ds = block.dataset;
 
-  const cfg = {
-    classes: ds.classes || '',
-    alignment: ds.alignment || '',
-    node: ds.node || '',
-    campaignId: ds.campaignid || ds.campaignId || '',
-    redirectionUrl: ds.redirectionurl || ds.redirectionUrl || '',
+  // Normalize config keys to camelCase and merge with dataset
+  const cfg = {};
+  Object.keys(config).forEach((key) => {
+    cfg[toCamelCase(key)] = config[key];
+  });
 
-    heroBgDesktop: ds.herobgdesktop || ds.heroBgDesktop || '',
-    heroBgMobile: ds.herobgmobile || ds.heroBgMobile || '',
-    heroBgAlt: ds.herobgalt || ds.heroBgAlt || '',
+  // Special handling for RichText fields to preserve HTML
+  const richTextFields = [
+    'formTitle', 'disclaimerHtml', 'thankYouRightHeading',
+    'thankYouRightSubHeadingOne', 'thankYouRightSubHeadingTwo',
+    'thankYouRightHeadingSubOne',
+  ];
+  block.querySelectorAll(':scope > div').forEach((row) => {
+    const name = toCamelCase(toClassName(row.children[0]?.textContent));
+    if (richTextFields.includes(name)) {
+      cfg[name] = row.children[1]?.innerHTML;
+    }
+    // Better image extraction: check for <img> first, then fallback to text
+    if (['heroBgDesktop', 'heroBgMobile', 'thankYouBgDesktop', 'thankYouBgMobile', 'thankYouBackgroundDesktop', 'thankYouBackgroundMobile', 'heroBackgroundDesktop', 'heroBackgroundMobile'].includes(name)) {
+      const img = row.children[1]?.querySelector('img');
+      if (img) {
+        cfg[name] = img.src;
+      } else {
+        const text = row.children[1]?.textContent?.trim();
+        if (text) cfg[name] = text;
+      }
+    }
+  });
 
-    formTitle: ds.formtitle || ds.formTitle || '',
-    ctaLabel: ds.ctalabel || ds.ctaLabel || '',
-    whatsappConsentText: ds.whatsappconsenttext || ds.whatsappConsentText || '',
-    disclaimerHtml: ds.disclaimerhtml || ds.disclaimerHtml || '',
+  // Normalize specific long labels to standard keys
+  if (cfg.thankYouBackgroundDesktop) cfg.thankYouBgDesktop = cfg.thankYouBackgroundDesktop;
+  if (cfg.thankYouBackgroundMobile) cfg.thankYouBgMobile = cfg.thankYouBackgroundMobile;
+  if (cfg.heroBackgroundDesktop) cfg.heroBgDesktop = cfg.heroBackgroundDesktop;
+  if (cfg.heroBackgroundMobile) cfg.heroBgMobile = cfg.heroBackgroundMobile;
 
-    emptyFieldErrorMessage: ds.emptyfielderrormessage || ds.emptyFieldErrorMessage || '',
-    mobileNumberErrorMessage: ds.mobilenumbererrormessage || ds.mobileNumberErrorMessage || '',
-    pincodeErrorMessage: ds.pincodeerrormessage || ds.pincodeErrorMessage || '',
+  // Mapping for subtitle variant labels
+  if (cfg.thankYouRightHeadingSubOne) {
+    cfg.thankYouRightSubHeadingOne = cfg.thankYouRightHeadingSubOne;
+  }
+  if (cfg.thankYouRightSubheadingOne) {
+    cfg.thankYouRightSubHeadingOne = cfg.thankYouRightSubheadingOne;
+  }
 
-    thankYouLeftSuccessHeading: ds.thankyuleftsuccessheading || ds.thankYouLeftSuccessHeading || '',
-    thankYouLeftSuccessDescription: ds.thankyuleftsuccessdescription || ds.thankYouLeftSuccessDescription || '',
-    thankYouLeftErrorHeading: ds.thankyulefterrorheading || ds.thankYouLeftErrorHeading || '',
-    thankYouLeftErrorDescription: ds.thankyulefterrordescription || ds.thankYouLeftErrorDescription || '',
+  // Apply fallback from dataset and set defaults for all expected fields
+  [
+    'classes', 'alignment', 'campaignId', 'redirectionUrl', 'heroBgDesktop',
+    'heroBgMobile', 'heroBgAlt', 'formTitle', 'ctaLabel', 'whatsappConsentText',
+    'disclaimerHtml', 'emptyFieldErrorMessage', 'mobileNumberErrorMessage',
+    'pincodeErrorMessage', 'thankYouLeftSuccessHeading',
+    'thankYouLeftSuccessDescription', 'thankYouLeftErrorHeading',
+    'thankYouLeftErrorDescription', 'thankYouRightHeading', 'thankYouRightSubHeadingOne',
+    'thankYouRightSubHeadingTwo', 'thankYouBgDesktop', 'thankYouBgMobile',
+    'exploreCtaLabel', 'exploreCtaLink', 'node',
+  ].forEach((f) => {
+    if (!cfg[f]) {
+      cfg[f] = ds[f.toLowerCase()] || ds[f] || '';
+    }
+    // Set back to dataset for visibility in dev tools
+    if (cfg[f]) ds[f] = cfg[f];
+  });
 
-    thankYouRightHeading: ds.thankyourightheading || ds.thankYouRightHeading || '',
-    thankYouRightSubHeadingOne: ds.thankyourightsubheadingone || ds.thankYouRightSubHeadingOne || '',
-    thankYouRightSubHeadingTwo: ds.thankyourightsubheadingtwo || ds.thankYouRightSubHeadingTwo || '',
-
-    thankYouBgDesktop: ds.thankyoubgdesktop || ds.thankYouBgDesktop || '',
-    thankYouBgMobile: ds.thankyoubgmobile || ds.thankYouBgMobile || '',
-
-    exploreCtaLabel: ds.explorectalabel || ds.exploreCtaLabel || '',
-    exploreCtaLink: ds.explorectalink || ds.exploreCtaLink || '',
-  };
-
-  // --- 2) Preserve existing authored picture if present, else build from heroBgDesktop/Mobile ---
-  const picture = block.querySelector('picture');
+  // Default values and final overrides
+  cfg.node = cfg.node || window.location.pathname || ' ';
+  cfg.campaignId = cfg.campaignId || getCampaignIdFromUrl();
 
   block.innerHTML = '';
 
-  // Background container
   const bgContainer = document.createElement('div');
   bgContainer.className = 'hero-form-background';
 
-  if (picture) {
-    bgContainer.appendChild(picture);
-  } else if (cfg.heroBgDesktop || cfg.heroBgMobile) {
-    // Build picture similar to AMS miniform background markup style [3](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.html)
+  if (cfg.heroBgDesktop || cfg.heroBgMobile) {
     const pic = document.createElement('picture');
 
     if (cfg.heroBgDesktop) {
@@ -301,41 +327,37 @@ export default function decorate(block) {
       s.srcset = cfg.heroBgDesktop;
       pic.appendChild(s);
     }
+
     if (cfg.heroBgMobile) {
       const s = document.createElement('source');
-      s.media = '(min-width:320px)';
+      s.media = '(max-width:991px)';
       s.srcset = cfg.heroBgMobile;
       pic.appendChild(s);
     }
+
     const img = document.createElement('img');
     img.src = cfg.heroBgDesktop || cfg.heroBgMobile;
     img.alt = cfg.heroBgAlt || '';
-    img.loading = 'lazy';
+    img.loading = 'eager';
     pic.appendChild(img);
-
     bgContainer.appendChild(pic);
   }
 
   block.appendChild(bgContainer);
 
-  // Panel wrapper (overlay)
   const formWrapper = document.createElement('div');
   formWrapper.className = 'hero-form-panel-wrapper';
   formWrapper.appendChild(htmlToEl(buildMarkup(cfg)));
   block.appendChild(formWrapper);
 
-  // --- 3) Wiring: validation + submit + thankyou toggle (AMS-equivalent) ---
   const container = block.querySelector('.find-contractor-form-container');
   const form = block.querySelector('.hero-form-contact');
-
   const mobileWrap = block.querySelector('.mobile-input-section');
   const pinWrap = block.querySelector('.pincode-input-section');
   const mobileInput = block.querySelector('#mobile-number');
   const pinInput = block.querySelector('#pincode');
-
   const consentInput = block.querySelector('#whatsapp-consent-input');
   const spinner = block.querySelector('.get-contractor-progress-status');
-
   const thankyou = block.querySelector('.mf-thankyou-revamp-container');
   const closeBtn = thankyou?.querySelector('.mf__dismissible-container--head');
 
@@ -356,7 +378,9 @@ export default function decorate(block) {
   }
 
   function onChange(fieldWrap, input) {
-    setLabelTop(fieldWrap, !!input.value.trim());
+    if (input.value.trim()) {
+      setLabelTop(fieldWrap, true);
+    }
   }
 
   mobileInput?.addEventListener('focus', () => onFocus(mobileWrap));
@@ -364,9 +388,9 @@ export default function decorate(block) {
   mobileInput?.addEventListener('input', () => {
     limitDigits(mobileInput, 10);
     onChange(mobileWrap, mobileInput);
-    // eslint-disable-next-line max-len
-    if (mobileInput.value.trim() && !isMobileValid(mobileInput.value)) setError(mobileWrap, validMobNoMsg);
-    else setError(mobileWrap, '');
+    if (mobileInput.value.trim() && !isMobileValid(mobileInput.value)) {
+      setError(mobileWrap, validMobNoMsg);
+    } else setError(mobileWrap, '');
   });
 
   pinInput?.addEventListener('focus', () => onFocus(pinWrap));
@@ -374,25 +398,37 @@ export default function decorate(block) {
   pinInput?.addEventListener('input', () => {
     limitDigits(pinInput, 6);
     onChange(pinWrap, pinInput);
-    // eslint-disable-next-line max-len
-    if (pinInput.value.trim() && !isPincodeValid(pinInput.value)) setError(pinWrap, validPincodeMsg);
-    else setError(pinWrap, '');
+    if (pinInput.value.trim() && !isPincodeValid(pinInput.value)) {
+      setError(pinWrap, validPincodeMsg);
+    } else setError(pinWrap, '');
   });
 
   const checkmark = block.querySelector('.whatsapp-consent-checkmark');
   checkmark?.addEventListener('click', () => consentInput?.click());
-  checkmark?.addEventListener('keydown', (e) => { if (e.key === 'Enter') consentInput?.click(); });
+  checkmark?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') consentInput?.click();
+  });
 
   function isFormValid() {
     const m = mobileInput.value.trim();
     const p = pinInput.value.trim();
     let ok = true;
 
-    if (!m) { setError(mobileWrap, fieldIsReqMsg); ok = false; }
-    else if (!isMobileValid(m)) { setError(mobileWrap, validMobNoMsg); ok = false; }
+    if (!m) {
+      setError(mobileWrap, fieldIsReqMsg);
+      ok = false;
+    } else if (!isMobileValid(m)) {
+      setError(mobileWrap, validMobNoMsg);
+      ok = false;
+    }
 
-    if (!p) { setError(pinWrap, fieldIsReqMsg); ok = false; }
-    else if (!isPincodeValid(p)) { setError(pinWrap, validPincodeMsg); ok = false; }
+    if (!p) {
+      setError(pinWrap, fieldIsReqMsg);
+      ok = false;
+    } else if (!isPincodeValid(p)) {
+      setError(pinWrap, validPincodeMsg);
+      ok = false;
+    }
 
     return ok;
   }
@@ -400,13 +436,14 @@ export default function decorate(block) {
   function showThankYou(success) {
     if (!thankyou || !container) return;
 
-    // Like AMS: hide form & hero background, show thankyou [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
+    block.classList.add('is-thankyou');
     container.style.display = 'none';
     bgContainer.style.display = 'none';
     thankyou.style.display = 'block';
 
     const okLeft = thankyou.querySelector('.mf-thank-you-left-content');
     const errLeft = thankyou.querySelector('.mf-error-left-content');
+
     if (okLeft && errLeft) {
       okLeft.style.display = success ? 'block' : 'none';
       errLeft.style.display = success ? 'none' : 'block';
@@ -415,13 +452,16 @@ export default function decorate(block) {
 
   function resetFromThankYou() {
     if (!thankyou || !container) return;
+    block.classList.remove('is-thankyou');
     thankyou.style.display = 'none';
     bgContainer.style.display = '';
     container.style.display = '';
   }
 
   closeBtn?.addEventListener('click', resetFromThankYou);
-  closeBtn?.addEventListener('keydown', (e) => { if (e.key === 'Enter') resetFromThankYou(); });
+  closeBtn?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') resetFromThankYou();
+  });
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -429,7 +469,6 @@ export default function decorate(block) {
 
     spinner?.classList.remove('d-none');
 
-    // AesUtil requires CryptoJS globally (your earlier AMS flow uses AesUtil too) [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)[6](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/hero-form.js)
     if (!window.CryptoJS) {
       showThankYou(false);
       spinner?.classList.add('d-none');
@@ -437,23 +476,24 @@ export default function decorate(block) {
     }
 
     const utm = getUtmParams();
-    const visitorId = getVisitorId();
     const whatsAppConsent = consentInput?.checked ? 'Y' : 'N';
-
     const aesUtil = new AesUtil(128, 1000);
+
     const fNameEnc = aesUtil.ltyEncrypt('NA');
     const lNameEnc = aesUtil.ltyEncrypt('NA');
     const mobileEnc = aesUtil.ltyEncrypt(mobileInput.value.trim());
     const pinEnc = aesUtil.ltyEncrypt(pinInput.value.trim());
-
     const email = `${mobileInput.value.trim()}na@asianpaints.com`;
+
+    const configuredCampaignId = (cfg.campaignId || container.getAttribute('data-attr-campaignId') || '').trim();
+    const campaignId = configuredCampaignId || getCampaignIdFromUrl();
 
     const payload = buildBasePayload();
     payload.pageUrl = window.location.href;
-    payload.node = cfg.node || container.getAttribute('data-attr-respath') || '';
-    payload.campaignId = utm.campaignId || cfg.campaignId || container.getAttribute('data-attr-campaignId') || '';
+    payload.node = (cfg.node || window.location.pathname || ' ').trim();
+    payload.campaignId = campaignId;
     payload.marketingChannel = 'Direct';
-    payload.visitorId = visitorId;
+    payload.visitorId = getVisitorId();
     payload.whatsAppConsent = whatsAppConsent;
 
     payload.fName = fNameEnc;
@@ -472,14 +512,12 @@ export default function decorate(block) {
     payload.utmCampaignSource = utm.utmCampaignSource;
 
     try {
-      // DB call first, like AMS [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
       const dbResp = await postFormUrlEncoded(
         `${AMS_BASE}/apcolourcatalogue/ccforms.saveleadform.json`,
         payload,
       );
 
       if (dbResp && dbResp.Status === 'SUCCESS' && dbResp.rowID) {
-        // SF call after DB success, like AMS [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
         const sfPayload = { ...payload, rowId: dbResp.rowID };
         const sfResp = await postFormUrlEncoded(
           `${AMS_BASE}/apcolourcatalogue/ccforms/salesforce.leadstosalesforce.json`,
@@ -487,9 +525,8 @@ export default function decorate(block) {
         );
 
         const ok = sfResp && (sfResp.returnCode === 201 || sfResp.returnCode === '201');
-
-        // If redirect configured, behave like AMS “formRedirect” concept [1](https://asianpaints-my.sharepoint.com/personal/p00126660_asianpaints_com/Documents/Microsoft%20Copilot%20Chat%20Files/miniform.js)
         const redirect = container.getAttribute('data-attr-redirection');
+
         if (ok && redirect) {
           window.location.href = redirect;
         } else {
