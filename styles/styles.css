@@ -209,62 +209,14 @@ button {
   font: inherit;
 }
 
-/* links 
+/* links */
 a:any-link {
-  color: var(--link-color); 
   text-decoration: none;
-  overflow-wrap: break-word;
-}*/
+}
 
 a:hover {
   color: var(--link-hover-color);
-  /* text-decoration: underline; */
 }
-
-/* buttons - Asian Paints brand */
-/* a.button:any-link,
-button {
-  box-sizing: border-box;
-  display: inline-block;
-  max-width: 100%;
-  margin: 12px 0;
-  border: 1px solid var(--primary-color);
-  border-radius: 40px;
-  padding: 15px 24px;
-  font-family: var(--body-font-family);
-  font-style: normal;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.86px;
-  line-height: 1.25;
-  text-align: center;
-  text-decoration: none;
-  text-transform: uppercase;
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-} */
-
-/* a.button:hover,
-a.button:focus,
-button:hover,
-button:focus {
-  background-color: var(--primary-color-light);
-  border-color: var(--primary-color-light);
-  cursor: pointer;
-} */
-
-/* button:disabled,
-button:disabled:hover {
-  background-color: #ddd;
-  border-color: #ddd;
-  color: #979797;
-  cursor: unset;
-} */
 
 /* Secondary button - outline style */
 a.button.secondary,
