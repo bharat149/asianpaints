@@ -1,3 +1,4 @@
+import { trackEvent } from "../../scripts/analytics.js";
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -180,6 +181,9 @@ function buildSlide(row, block) {
       e.preventDefault();
       e.stopPropagation();
       openVideoModal(block, videoLink);
+      trackEvent("test_open", {
+        "videoId": videoLink
+      });
     });
   }
 
@@ -310,42 +314,42 @@ export default async function decorate(block) {
 
   const prevButton = block.querySelector('.testimonial-prev');
   const nextButton = block.querySelector('.testimonial-next');
-function handleNav(swiper) {
-  const totalSlides = swiper.slides.length;
+  function handleNav(swiper) {
+    const totalSlides = swiper.slides.length;
 
 
 
-let slidesPerView = swiper.params.slidesPerView;
+    let slidesPerView = swiper.params.slidesPerView;
 
-// ✅ correct way to get current slidesPerView
-if (typeof slidesPerView !== 'number') {
-  slidesPerView = swiper.slidesPerViewDynamic();
-}
+    // ✅ correct way to get current slidesPerView
+    if (typeof slidesPerView !== 'number') {
+      slidesPerView = swiper.slidesPerViewDynamic();
+    }
 
-  // Hide arrows if not enough slides
-  if (totalSlides <= slidesPerView) {
-    prevButton.style.display = 'none';
-    nextButton.style.display = 'none';
-    return;
+    // Hide arrows if not enough slides
+    if (totalSlides <= slidesPerView) {
+      prevButton.style.display = 'none';
+      nextButton.style.display = 'none';
+      return;
+    }
+
+    // Otherwise show and control disable
+    prevButton.style.display = '';
+    nextButton.style.display = '';
+
+    prevButton.disabled = swiper.isBeginning;
+    nextButton.disabled = swiper.isEnd;
   }
-
-  // Otherwise show and control disable
-  prevButton.style.display = '';
-  nextButton.style.display = '';
-
-  prevButton.disabled = swiper.isBeginning;
-  nextButton.disabled = swiper.isEnd;
-}
   const swiper = new Swiper(swiperEl, {
     slidesPerView: 1,
     spaceBetween: 20,
     speed: 500,
     slidesPerGroup: 1,
     centeredSlides: false,
-slideToClickedSlide: false,
-touchRatio: 1,
-resistanceRatio: 0.85,
-threshold: 5,
+    slideToClickedSlide: false,
+    touchRatio: 1,
+    resistanceRatio: 0.85,
+    threshold: 5,
     watchOverflow: true,
     navigation: {
       prevEl: prevButton,
@@ -369,17 +373,17 @@ threshold: 5,
         spaceBetween: 20,
       },
     },
-on: {
-  init(s) {
-    handleNav(s);
-  },
-  slideChange(s) {
-    handleNav(s);
-  },
-  resize(s) {
-    handleNav(s);
-  },
-},
+    on: {
+      init(s) {
+        handleNav(s);
+      },
+      slideChange(s) {
+        handleNav(s);
+      },
+      resize(s) {
+        handleNav(s);
+      },
+    },
   });
 
   block._testimonialSwiper = swiper;
