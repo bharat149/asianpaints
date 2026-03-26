@@ -667,6 +667,14 @@
   gap: 40px;
 }
 
+.cards.room .cards-card-description {
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 1.71;
+  letter-spacing: .54px;
+  color: #000;
+}
+
 @media screen and (max-width:992px) {
   .section.cards-container:has(.cards.room)>.default-content-wrapper h2 {
     font-size: 22px;
