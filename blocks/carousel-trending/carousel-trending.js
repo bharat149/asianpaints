@@ -37,16 +37,21 @@ export default async function decorate(block) {
       // clone the nodes so originals remain intact
       const img = child.children[1]?.cloneNode(true);
       const body = child.children[2]?.cloneNode(true);
+      const linkDiv = child.children[3]?.cloneNode(true);
+      const anchor = linkDiv.querySelector("a");
+      anchor.innerHTML = "";
 
-      if (img) {
+      if (img && anchor) {
         img.classList.add("card-img");
-        card.appendChild(img);
+        anchor.appendChild(img);
       }
 
-      if (body) {
+      if (body && anchor) {
         body.classList.add("card-body");
-        card.appendChild(body);
+        anchor.appendChild(body);
       }
+
+      if (anchor) card.appendChild(anchor);
 
       wrapper.appendChild(card);
     });
@@ -90,12 +95,17 @@ export default async function decorate(block) {
       // clone the nodes so originals remain intact
       const img = child.children[0]?.cloneNode(true);
       const body = child.children[2]?.cloneNode(true);
+      const linkDiv = child.children[3]?.cloneNode(true);
+      const anchor = linkDiv.querySelector("a");
+      anchor.innerHTML = "";
 
       if (img) img.classList.add("card-img");
       if (body) body.classList.add("card-body");
 
-      if (img) card.appendChild(img);
-      if (body) card.appendChild(body);
+      if (img && anchor) anchor.appendChild(img);
+      if (body && anchor) anchor.appendChild(body);
+
+      if (anchor) card.appendChild(anchor);
 
       cardContainer.appendChild(card);
     });
