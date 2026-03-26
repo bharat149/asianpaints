@@ -33,7 +33,7 @@
 .color-gallery-text h3 {
   color: #000;
   font-size: 54px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 20px 0;
   line-height: 1.1;
 }
@@ -86,7 +86,7 @@
   align-items: center;
   justify-content: center;
   align-content: center;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .color-gallery-text a:hover,
@@ -280,7 +280,7 @@
     text-decoration: none;
     border-radius: 45px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: none !important;
     border: 1px solid #232426;
   }
@@ -307,7 +307,7 @@
 
   .color-gallery-text h3 {
     font-size: 24px;
-    font-weight: 700;
+    font-weight: 600;
     margin: 0 0 10px 0;
   }
 

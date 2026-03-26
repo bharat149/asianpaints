@@ -287,7 +287,7 @@ Variant: cta — Pincode (cta)
 
 .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
     font-family: Manrope, sans-serif;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 54px;
     line-height: 1.2;
     color: #222;
@@ -299,7 +299,7 @@ Variant: cta — Pincode (cta)
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1{
         line-height: 44.4px;
         font-size: 40px;
-        font-weight: 700;
+        font-weight: 600;
     }
 }
 
@@ -379,7 +379,7 @@ Variant: cta — Pincode (cta)
     color: #232426;
     font-family: Manrope, sans-serif;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 1.08px;
     text-transform: none;
     cursor: pointer;

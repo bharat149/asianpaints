@@ -12,7 +12,7 @@
 
 .square-image-cross-links__heading {
     margin: 0;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
     font-size: 24px;
     color: var(--text-color, #111);
@@ -63,7 +63,7 @@
     margin: 0;
     letter-spacing: 1.08px;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 16px;
     color: var(--text-color, #111);
 }

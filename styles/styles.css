@@ -597,7 +597,7 @@ main > .section:has(> .default-content-wrapper:only-child > picture:only-child) 
 /* SEO/Default content typography - match Asian Paints original */
 main > .section > .default-content-wrapper h2 {
   font-size: 30px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.13;
   color: #222;
   margin-top: 1.5em;
@@ -618,7 +618,7 @@ main > .section.center-heading > .default-content-wrapper h2 + p {
 
 main > .section > .default-content-wrapper h3 {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.1;
   color: #222;
   margin-top: 1.2em;

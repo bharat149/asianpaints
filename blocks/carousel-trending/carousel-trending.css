@@ -46,7 +46,7 @@
     .default-content-wrapper
     .button-container
     a {
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 2rem;
     border: 1px solid #232426;
     border-radius: 45px;
@@ -124,7 +124,7 @@
     background: rgba(0, 0, 0, 0.55);
     padding: 18px 0px;
     transform: none;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .carousel-trending .card .card-body p {
