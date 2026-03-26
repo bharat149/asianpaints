@@ -9,6 +9,7 @@ Two variant: White form, Blue form
 */
 
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
@@ -18,6 +19,10 @@ const ERROR_DESKTOP_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcat
 const ERROR_MOBILE_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccessMweb.webp';
 const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
 const ERROR_DOWNLOAD_LINK = 'https://static.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+
+let formName = "";
+let campaignId = ""; // FIXME: work on this
+let formStarted = false;
 
 /**
  * Ensure bootstrap utility classes where useful
@@ -194,6 +199,7 @@ function populateDescriptionCell(cell, descriptionCells) {
   const subtitle = createDescriptionItem(descriptionCells[2], 'form-subtitle');
 
   if (descriptionCells[0]?.innerHTML?.trim()) {
+    formName = smallTitle.textContent?.trim(); // FIXME: check this
     cell.appendChild(smallTitle);
   }
 
@@ -267,6 +273,13 @@ function createThankYouScreen(block) {
   cta.target = '_blank';
   cta.rel = 'noopener noreferrer';
   cta.setAttribute('aria-label', 'Explore now');
+  cta.addEventListener('click', () => {
+    trackEvent("cta_link_text", {
+      "cta": "Explore now", // FIXME: check this
+      "parentTitle": "Form Thank you pop-up",
+      "param1": THANK_YOU_CTA_LINK
+    });
+  });
 
   video.addEventListener('ended', () => {
     video.pause();
@@ -366,6 +379,19 @@ function showThankYouScreen(block) {
   block.classList.add('thank-you-active', 'popup-active');
 }
 
+function trackFormSubmission(form) {
+  const formData = {
+    "formName": formName, // FIXME: check this
+    "campaignId": campaignId,
+    "pincode": form.querySelector("#enquire-pincode")?.value?.trim() || '',
+    "whatsappOptIn": form.querySelector('[name="updateMeOnWhatsapp"]').value === 'true' ? 'Y' : 'N', // FIXME: check this
+    "contruction": form.querySelector('[name="constructionWorkGoingOn"]').value === 'true' ? 'Yes' : 'No', // FIXME: check this
+    "localpainter": form.querySelector('[name="localPainterHired"]').value === 'true' ? 'Yes' : 'No' // FIXME: check this
+  };
+  getDigitalData().form = formData;
+  trackEvent("form_submit", formData);
+}
+
 /**
  * Show error overlay
  */
@@ -418,6 +444,7 @@ function bindSubmitHandler(block, row, buttonCell) {
     })
       .then(() => {
         showThankYouScreen(block);
+        trackFormSubmission(row);
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
@@ -510,6 +537,17 @@ function renderForm(block) {
 
   formRow.appendChild(descriptionCell);
   formRow.appendChild(fieldsArea);
+
+  formRow.addEventListener('focusin', function (e) {
+    if (!formStarted && e.target.tagName === 'INPUT') {
+      formStarted = true;
+      trackEvent("form_start", {
+        "formName": formName,
+        "campaignId": campaignId
+      });
+    }
+  });
+
   block.appendChild(formRow);
 
   if (buttonCell.children.length) {
