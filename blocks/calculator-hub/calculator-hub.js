@@ -32,6 +32,55 @@ function safeNumber(val, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function getStoredMiniFormValues(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function resolveFlowType(form, values) {
+  if (!values || values.Area === 'Val3') return '';
+
+  const inCalculatorHub = !!form.closest('.calculatorhub, .calculator-hub');
+  const inBudgetCalculator = !!document.querySelector('.budgetcalculator');
+
+  const isPbc = form.classList.contains('pbc-mini-form')
+    || !!document.querySelector('.budgetcalculator .pbcCalculator');
+  const isWbc = form.classList.contains('wbc-mini-form')
+    || !!document.querySelector('.budgetcalculator .wbcCalculator');
+
+  if ((inCalculatorHub || inBudgetCalculator) && isPbc) return 'SPS_PBC_miniform';
+  if ((inCalculatorHub || inBudgetCalculator) && isWbc) return 'SPS_WPC_miniform';
+  return '';
+}
+
+function calculatorStart(form, storageKey) {
+  const satellite = window._satellite;
+  if (!satellite || typeof satellite.track !== 'function') return;
+
+  const miniFormValues = getStoredMiniFormValues(storageKey);
+  const flowType = resolveFlowType(form, miniFormValues);
+
+  satellite.track('calc_start', { flowType });
+}
+
+function calculatorContinue(form, userInput, storageKey) {
+  const satellite = window._satellite;
+  if (!satellite || typeof satellite.track !== 'function') return;
+
+  const miniFormValues = getStoredMiniFormValues(storageKey);
+  const flowType = resolveFlowType(form, miniFormValues);
+
+  satellite.track('calc_continue', {
+    filter: userInput,
+    calcType: 'Basic',
+    flowType,
+  });
+}
+
 function setAriaCheckedForGroup(wrapper) {
   const labels = [...wrapper.querySelectorAll('label[role="radio"]')];
   labels.forEach((lab) => {
@@ -377,18 +426,9 @@ function buildFormUI(config) {
     else error.style.visibility = 'hidden';
   }
 
-  function safeCall(fnPath, arg) {
-    try {
-      const parts = fnPath.split('.');
-      let obj = window;
-      for (const p of parts) obj = obj?.[p];
-      if (typeof obj === 'function') obj(arg);
-    } catch (e) { /* ignore */ }
-  }
-
   form.addEventListener('input', () => {
     if (!state.started) {
-      safeCall('ccAnalytics.calculateStart');
+      calculatorStart(form, storageKey);
       state.started = true;
     }
     toggleCTA();
@@ -413,7 +453,7 @@ function buildFormUI(config) {
       Area: area,
     }));
 
-    safeCall('ccAnalytics.calculateContinue', `${project}|${space}|${area}`);
+    calculatorContinue(form, `${project}|${space}|${area}`, storageKey);
     spinner.classList.remove('d-none');
 
     if (toolLink) window.location.href = toolLink;

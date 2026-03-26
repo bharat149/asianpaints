@@ -1,4 +1,5 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
+import { trackEvent } from '../../scripts/analytics.js';
 
 const buildArrowSVG = () => `
   <svg class="sicls-arrow-icon" width="24" height="18" viewBox="0 0 32 24" aria-hidden="true" focusable="false">
@@ -150,4 +151,29 @@ export default function decorate(block) {
   // Replace authored table markup
   block.textContent = '';
   block.append(wrapper);
+  
+  const cardLinks = block.querySelectorAll('.square-image-cross-links__item a');
+  cardLinks.forEach((linkEl) => {
+    linkEl.addEventListener('click', () => {
+      const exploreLink = linkEl.getAttribute('href') || '';
+      const exploreTitle = (linkEl.querySelector('.text-explore-stores')?.textContent || '').trim();
+      const exploreMainTitle = (linkEl.querySelector('.square-image-cross-links__title')?.textContent || '').trim();
+
+      if (exploreLink && window.digitalData) {
+        window.digitalData.data = {
+          cta_: exploreTitle,
+          param1: exploreMainTitle,
+          param2: exploreLink,
+        };
+      }
+
+      if (exploreLink) {
+        trackEvent('squarecross_click', {
+          cta_: exploreTitle,
+          param1: exploreMainTitle,
+          param2: exploreLink,
+        });
+      }
+    });
+  });
 }
