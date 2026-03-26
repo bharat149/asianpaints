@@ -44,6 +44,55 @@ export default function decorate(block) {
 
     // Room variant only: make image clickable using CTA link
     if (isRoomBlock) {
+      li.querySelectorAll('.cards-card-body p').forEach((p) => {
+        const strong = p.querySelector('strong');
+        const link = p.querySelector('a');
+
+        if (strong && !strong.classList.contains('cards-card-title')) {
+          strong.classList.add('cards-card-title');
+        }
+
+        if (!strong || !link || p.querySelector('.cards-card-description')) return;
+
+        const nodes = [...p.childNodes];
+        const descriptionWrapper = document.createElement('span');
+        descriptionWrapper.className = 'cards-card-description';
+
+        let shouldCollect = false;
+        let hasDescriptionContent = false;
+
+        nodes.forEach((node) => {
+          if (node === strong) {
+            shouldCollect = true;
+            return;
+          }
+
+          if (node === link) {
+            shouldCollect = false;
+            return;
+          }
+
+          if (shouldCollect) {
+            const clonedNode = node.cloneNode(true);
+
+            if (
+              (clonedNode.nodeType === Node.TEXT_NODE && clonedNode.textContent.trim())
+              || clonedNode.nodeType === Node.ELEMENT_NODE
+            ) {
+              hasDescriptionContent = true;
+            }
+
+            descriptionWrapper.append(clonedNode);
+            node.remove();
+          }
+        });
+
+        if (hasDescriptionContent) {
+          strong.insertAdjacentElement('afterend', descriptionWrapper);
+        }
+      });
+
+      // Room variant only: make image clickable using CTA link
       const imageWrapper = li.querySelector('.cards-card-image');
       const bodyWrapper = li.querySelector('.cards-card-body');
       const ctaLink = bodyWrapper?.querySelector('a[href]');
