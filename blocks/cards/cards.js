@@ -1,25 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
-import { trackEvent } from '../../scripts/analytics.js';
-
-function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) {
-  if (!ctaLink) return;
-
-  if (ctaLink.indexOf('javascript:void') > -1) {
-    trackEvent('custom_cta_click', {
-      cta_: btnTitle,
-    });
-  } else if (ctaLink.indexOf('tel:') > -1) {
-    trackEvent('SPSContactClick');
-  } else {
-    trackEvent('custom_cta_click', {
-      cta_: btnTitle,
-      redirectionLink: ctaLink,
-      parentTitle,
-      param1: ctaLink,
-    });
-  }
-}
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
