@@ -17,25 +17,20 @@ export default function decorate(block) {
 
     while (row.firstElementChild) li.append(row.firstElementChild);
 
-    let cardLink = null;
-
     [...li.children].forEach((div) => {
       if (!isCta && div.children.length === 1 && div.querySelector('picture')) {
         div.className = 'cards-card-image';
       } else {
         div.className = 'cards-card-body';
 
-        // ✅ Your stats-only hook (non-invasive)
         if (isStats) div.classList.add('content-wrapper');
       }
     });
 
-    // Existing grid mobile image behavior
     if (isGrid && li.children.length === 3 && li.children[1].classList.contains('cards-card-image')) {
       li.children[1].classList.add('mob-view');
     }
 
-    // ✅ Your stats-only container + title/subtitle hooks (non-invasive)
     if (isStats) {
       li.classList.add('data-parent-container');
 
@@ -44,6 +39,33 @@ export default function decorate(block) {
         if (ps[0]) ps[0].classList.add('title');
         if (ps[1]) ps[1].classList.add('sub-title');
       });
+    }
+
+    // Room variant only: make image clickable using CTA link
+    if (isRoomBlock) {
+      const imageWrapper = li.querySelector('.cards-card-image');
+      const bodyWrapper = li.querySelector('.cards-card-body');
+      const ctaLink = bodyWrapper?.querySelector('a[href]');
+
+      if (imageWrapper && ctaLink && !imageWrapper.querySelector('a')) {
+        const imageLink = document.createElement('a');
+        imageLink.href = ctaLink.href;
+
+        if (ctaLink.target) imageLink.target = ctaLink.target;
+        if (ctaLink.rel) {
+          imageLink.rel = ctaLink.rel;
+        } else if (ctaLink.target === '_blank') {
+          imageLink.rel = 'noopener noreferrer';
+        }
+
+        imageLink.className = 'cards-card-image-link';
+
+        while (imageWrapper.firstChild) {
+          imageLink.append(imageWrapper.firstChild);
+        }
+
+        imageWrapper.append(imageLink);
+      }
     }
 
     ul.append(li);
@@ -56,25 +78,19 @@ export default function decorate(block) {
     img.closest('picture').replaceWith(optimizedPic);
   });
 
-  /**
-   * ✅ Safe version of their "strip paragraph content" logic:
-   * Run it ONLY when the paragraph contains an <a>.
-   * This preserves text-only paragraphs used by features/stats variants.
-   */
+  if (!isServicesBlock && !isRoomBlock && !isBenefitsBlock) {
+    ul.querySelectorAll('.cards-card-body p').forEach((p) => {
+      if (!p.querySelector('a')) return;
 
-    if (!isServicesBlock && !isRoomBlock && !isBenefitsBlock) {
-      ul.querySelectorAll('.cards-card-body p').forEach((p) => {
-        if (!p.querySelector('a')) return; // <-- key fix to stop nuking stats/features text
-    
-        [...p.childNodes].forEach((node) => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            node.remove();
-          } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A') {
-            node.remove();
-          }
-        });
+      [...p.childNodes].forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          node.remove();
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A') {
+          node.remove();
+        }
       });
-    }
+    });
+  }
 
   block.textContent = '';
   block.append(ul);

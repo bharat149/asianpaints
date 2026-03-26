@@ -283,7 +283,7 @@
 
 .header .profile-dropdown-greeting {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--header-text-dark);
   margin: 0 20px 12px;
   padding-bottom: 12px;
@@ -347,7 +347,7 @@
   background: #7345b2;
   color: white;
   font-size: 8px;
-  font-weight: 700;
+  font-weight: 600;
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -375,7 +375,7 @@
   border-radius: 45px;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 21px;
   white-space: nowrap;
@@ -668,7 +668,7 @@
 
 .header .dropdown-title {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -707,7 +707,7 @@
   background: #00c853;
   color: white;
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 1px 5px;
   border-radius: 2px;
   margin-left: 6px;
@@ -972,7 +972,7 @@ body.nav-open {
     padding: 14px 16px 13px;
     box-sizing: border-box;
     font-size: 18px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 26px;
     color: #000;
     width: 100%;
@@ -1027,7 +1027,7 @@ body.nav-open {
     padding: 14px 16px 13px;
     box-sizing: border-box;
     font-size: 18px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 26px;
     color: var(--header-text-dark);
     cursor: pointer;
@@ -1208,7 +1208,7 @@ body.nav-open {
 
 .header .vs-or {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   color: #999;
   margin: 0 0 12px;
 }
@@ -1223,7 +1223,7 @@ body.nav-open {
   border-radius: 50px;
   padding: 10px 24px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: #222;
   text-transform: none;
   letter-spacing: 0.03em;
@@ -1301,7 +1301,7 @@ body.nav-open {
 
 .header .mock-login-title {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 24px;
   background: linear-gradient(135deg, #7c3aed 0%, #ea580c 100%);
   -webkit-text-fill-color: transparent;
@@ -1399,7 +1399,7 @@ body.nav-open {
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .header .mock-login-brands {
@@ -1411,7 +1411,7 @@ body.nav-open {
 
 .header .mock-login-ap {
   color: #7c3aed;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .header .mock-login-asianpaints {
@@ -1519,7 +1519,7 @@ body.nav-open {
 
 .header .cart-modal-title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   color: #222;
   margin: 0 0 20px;
 }
@@ -1884,7 +1884,7 @@ body.search-dialog-open {
 /* (Manrope may use same file for all weights → synthetic bold; darker color helps differentiation) */
 .header .sd-section-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 14px;
   color: #111;
   margin: 0 8px 4px 0;
@@ -2023,7 +2023,7 @@ body.search-dialog-open {
 }
 
 .header .sd-suggestions-list a strong {
-  font-weight: 700;
+  font-weight: 600;
   color: #111;
 }
 
@@ -2034,7 +2034,7 @@ body.search-dialog-open {
   border-bottom: 1px solid #e5e5e5;
   font-size: 14px;
   line-height: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: #2f2f2f;
 }
 
@@ -2133,7 +2133,7 @@ body.search-dialog-open {
 
 .header .sd-product-name {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: #222;
   line-height: 22px;
   display: -webkit-box;
@@ -2212,7 +2212,7 @@ body.search-dialog-open {
 
 .header .sd-location-name {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
   margin-bottom: 2px;
 }
@@ -2241,7 +2241,7 @@ body.search-dialog-open {
 .header .sd-location-explore {
   display: inline-block;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: #d96f26;
   text-decoration: none;
 }

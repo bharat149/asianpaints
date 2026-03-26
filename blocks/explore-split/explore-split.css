@@ -38,7 +38,7 @@ main>.section .explore-split-wrapper {
 }
 
 .explore-mobile-tabs h3.active {
-  font-weight: 700;
+  font-weight: 600;
   color: #2e2f32;
   border-bottom: 3px solid #feb940;
 }
@@ -88,7 +88,7 @@ main>.section .explore-split-wrapper {
 .explore-split-wrapper h2 {
   color: rgb(39, 123, 212);
   font-size: 40px;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   margin: 0 0 48px;
   line-height: 22px;
@@ -311,7 +311,7 @@ main>.section .explore-split-wrapper {
   padding: 10px 20px !important;
   align-items: center;
   font-size: 14px !important;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-flex !important;
   gap: 10px;
   cursor: pointer;

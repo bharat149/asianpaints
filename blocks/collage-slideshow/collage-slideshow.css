@@ -218,7 +218,7 @@
   margin: 0;
   font-size: clamp(56px, 6vw, 76px);
   line-height: 0.95;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.04em;
   color: #000;
 }
@@ -249,7 +249,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   padding: 14px 20px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   min-height: 38px;
 }
 
@@ -367,14 +367,14 @@
     margin: 0 0 2px;
     font-size: 16px;
     line-height: 1.25;
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .collage-slideshow__title-line {
     margin: 0;
     font-size: 30px;
     line-height: 0.98;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.03em;
   }
 
@@ -646,7 +646,7 @@ display: flex;
     margin: 0 0 8px;
     font-size: 30px;
     color: #000;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.5px;
     line-height: 22px;
 }
