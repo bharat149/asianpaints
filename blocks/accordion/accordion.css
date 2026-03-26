@@ -13,7 +13,7 @@
 .section.accordion-container:has(.accordion.faq) > .default-content-wrapper h2 {
     font-family: Manrope, sans-serif;
     font-size: 32px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 38px;
     margin: 0 0 20px;
     text-align: center;
@@ -68,7 +68,7 @@
 
     font-family: Manrope, sans-serif;
     font-size: 18px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 23.4px;
     color: var(--faq-heading-color, #373737);
     margin: 0;
