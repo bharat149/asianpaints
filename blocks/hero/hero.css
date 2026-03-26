@@ -218,7 +218,7 @@
 .hero.services h1,
 .hero.services h2 {
   font-size: 36px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   margin-bottom: 16px;
 }
@@ -257,7 +257,7 @@
   padding: 12px 32px;
   border-radius: 45px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   display: inline-block;
   border: none;
