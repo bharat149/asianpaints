@@ -7,6 +7,8 @@ Each slide cell contains desktop + mobile image
 Selected category shows its own Swiper on the right
 */
 
+import { trackEvent } from '../../scripts/analytics.js';
+
 function getTextContent(el) {
   return el ? el.textContent.trim() : '';
 }
@@ -270,6 +272,13 @@ export default async function decorate(block) {
 
   tabButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
+      const filterOption = button.textContent.trim();
+      if (filterOption) {
+        trackEvent('filter_click', {
+          filter: filterOption,
+        });
+      }
+
       setActiveCategory({
         activeIndex: index,
         tabButtons,

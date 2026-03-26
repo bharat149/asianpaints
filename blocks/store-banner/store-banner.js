@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   const row = block.querySelector(':scope > div');
   if (!row) return;
@@ -34,6 +36,16 @@ export default function decorate(block) {
   bannerLink.className = 'store-banner-link';
   bannerLink.setAttribute('aria-label', img.alt);
   bannerLink.appendChild(picture);
+
+  bannerLink.addEventListener('click', () => {
+    const ctaLink = bannerLink.getAttribute('href') || '';
+    const btnTitle = linkEl.textContent.trim() || img.alt || 'Store Banner';
+    const parentTitle = block.closest('.section')
+      ?.querySelector('h1, h2, h3, h4, h5, h6')
+      ?.textContent.trim() || '';
+
+    triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+  });
 
   block.textContent = '';
   block.appendChild(bannerLink);

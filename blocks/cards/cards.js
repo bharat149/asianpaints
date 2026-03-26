@@ -1,5 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
@@ -94,4 +95,15 @@ export default function decorate(block) {
 
   block.textContent = '';
   block.append(ul);
+
+  ul.querySelectorAll('.cards-card-body a').forEach((cta) => {
+    cta.addEventListener('click', () => {
+      const ctaLink = cta.getAttribute('href') || '';
+      const btnTitle = cta.textContent.trim();
+      const body = cta.closest('.cards-card-body');
+      const parentTitle = body?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent.trim() || '';
+
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  });
 }
