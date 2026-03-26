@@ -19,7 +19,7 @@
   color: #000;
   font-size: 32px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   line-height: normal;
   margin-bottom: 25px;
 }
@@ -29,7 +29,7 @@
   color: #000;
   font-size: 52px;
   line-height: 1.12;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -65,9 +65,9 @@
   border-color: #55d88b;
   background: #eaf4ef;
   color: #000;
-  font-weight: 700;
+  font-weight: 600;
   padding: 19px;
-  height: 60px;
+  height: 52px;
   pointer-events: none;
   color: #2d2d2d;
 }

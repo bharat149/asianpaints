@@ -16,7 +16,7 @@
   color: #1f1f1f;
   font-size: 52px;
   line-height: 1.05;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -59,7 +59,7 @@
   color: #303030;
   font-size: 62px;
   line-height: 0.95;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
   white-space: pre-line;
 }
@@ -88,8 +88,9 @@
   font-size: 14px;
   line-height: 1.2;
   font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .discover-collections__download:hover {

@@ -13,7 +13,7 @@
     color: #222;
     margin-bottom: .5rem;
     font-size: 30px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .seo-content.block p {
@@ -36,7 +36,7 @@
 
 .seo-content.block ul li::marker {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .seo-content.block ul li p:nth-child(1) {
@@ -70,7 +70,7 @@
 
     .seo-content.block h2 {
         font-size: 22px;
-        font-weight: 700;
+        font-weight: 600;
     }
 
     .seo-content.block ul li strong {
