@@ -2,374 +2,379 @@
 
 /* Block container */
 .form-expert {
-  background-color: #3d5a80;
-  border-radius: 16px;
-  padding: 50px 60px;
-  margin: 40px;
+    background-color: #3d5a80;
+    border-radius: 16px;
+    padding: 50px 60px;
+    margin: 40px;
 }
 
 /* Main layout container - two columns */
 .form-expert .form-expert-container {
-  display: flex;
-  align-items: center;
-  gap: 80px;
+    display: flex;
+    align-items: center;
+    gap: 80px;
 }
 
 /* Left section - Title and description */
 .form-expert .form-expert-left {
-  flex: 0 0 380px;
-  max-width: 380px;
+    flex: 0 0 380px;
+    max-width: 380px;
 }
 
 .form-expert .form-expert-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 16px;
-  line-height: 1.2;
-  font-family: var(--heading-font-family);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 16px;
+    line-height: 1.2;
+    font-family: var(--heading-font-family);
 }
 
 .form-expert .form-expert-subtitle {
-  font-size: 16px;
-  color: rgb(255 255 255 / 85%);
-  margin: 0;
-  line-height: 1.5;
-  font-family: var(--body-font-family);
+    font-size: 16px;
+    color: rgb(255 255 255 / 85%);
+    margin: 0;
+    line-height: 1.5;
+    font-family: var(--body-font-family);
 }
 
 /* Right section - Form */
 .form-expert .form-expert-right {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .form-expert .form-expert-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* Input fields grid - 2x2 */
 .form-expert .form-expert-inputs-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 /* Input field wrapper */
 .form-expert .form-expert-field {
-  position: relative;
+    position: relative;
 }
 
 /* Input styling */
 .form-expert .form-expert-input {
-  width: 100%;
-  padding: 18px 24px;
-  border: 1px solid rgb(255 255 255 / 30%);
-  border-radius: 8px;
-  background-color: transparent;
-  color: #fff;
-  font-size: 16px;
-  font-family: var(--body-font-family);
-  box-sizing: border-box;
-  transition: all 0.2s ease;
+    width: 100%;
+    padding: 18px 24px;
+    border: 1px solid rgb(255 255 255 / 30%);
+    border-radius: 8px;
+    background-color: transparent;
+    color: #fff;
+    font-size: 16px;
+    font-family: var(--body-font-family);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
 .form-expert .form-expert-input::placeholder {
-  color: rgb(255 255 255 / 70%);
+    color: rgb(255 255 255 / 70%);
 }
 
 .form-expert .form-expert-input:focus {
-  outline: none;
-  border-color: rgb(255 255 255 / 50%);
-  background-color: rgb(255 255 255 / 5%);
+    outline: none;
+    border-color: rgb(255 255 255 / 50%);
+    background-color: rgb(255 255 255 / 5%);
 }
 
 /* Mobile field with prefix */
 .form-expert .form-expert-mobile-field {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid rgb(255 255 255 / 30%);
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: transparent;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgb(255 255 255 / 30%);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: transparent;
 }
 
 .form-expert .form-expert-mobile-prefix {
-  display: flex;
-  align-items: center;
-  padding: 0 12px 0 20px;
-  color: rgb(255 255 255 / 90%);
-  font-size: 15px;
-  font-family: var(--body-font-family);
-  background-color: transparent;
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    padding: 0 12px 0 20px;
+    color: rgb(255 255 255 / 90%);
+    font-size: 15px;
+    font-family: var(--body-font-family);
+    background-color: transparent;
+    white-space: nowrap;
 }
 
 .form-expert .form-expert-mobile-field .form-expert-input {
-  border: none;
-  padding-left: 0;
-  flex: 1;
+    border: none;
+    padding-left: 0;
+    flex: 1;
 }
 
 .form-expert .form-expert-mobile-field:focus-within {
-  border-color: rgb(255 255 255 / 50%);
-  background-color: rgb(255 255 255 / 5%);
+    border-color: rgb(255 255 255 / 50%);
+    background-color: rgb(255 255 255 / 5%);
 }
 
 /* WhatsApp Toggle */
 .form-expert .form-expert-toggle-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
 }
 
 .form-expert .form-expert-toggle {
-  position: relative;
-  display: inline-block;
-  width: 48px;
-  height: 26px;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    cursor: pointer;
 }
 
 .form-expert .form-expert-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .form-expert .form-expert-toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: #6b7a8c;
-  transition: 0.3s;
-  border-radius: 26px;
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #6b7a8c;
+    transition: 0.3s;
+    border-radius: 26px;
 }
 
 .form-expert .form-expert-toggle-slider::before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 50%;
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
 }
 
 .form-expert .form-expert-toggle input:checked + .form-expert-toggle-slider {
-  background-color: #25d366;
+    background-color: #25d366;
 }
 
-.form-expert .form-expert-toggle input:checked + .form-expert-toggle-slider::before {
-  transform: translateX(22px);
+.form-expert
+    .form-expert-toggle
+    input:checked
+    + .form-expert-toggle-slider::before {
+    transform: translateX(22px);
 }
 
 .form-expert .form-expert-toggle-label {
-  color: rgb(255 255 255 / 90%);
-  font-size: 14px;
-  font-family: var(--body-font-family);
+    color: rgb(255 255 255 / 90%);
+    font-size: 14px;
+    font-family: var(--body-font-family);
 }
 
 /* Checkboxes */
 .form-expert .form-expert-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 32px;
-  margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    margin-top: 8px;
 }
 
 .form-expert .form-expert-checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .form-expert .form-expert-checkbox {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .form-expert .form-expert-checkbox-custom {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgb(255 255 255 / 50%);
-  border-radius: 4px;
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgb(255 255 255 / 50%);
+    border-radius: 4px;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .form-expert .form-expert-checkbox:checked + .form-expert-checkbox-custom {
-  background-color: #25d366;
-  border-color: #25d366;
+    background-color: #25d366;
+    border-color: #25d366;
 }
 
-.form-expert .form-expert-checkbox:checked + .form-expert-checkbox-custom::after {
-  content: '';
-  width: 6px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  margin-bottom: 2px;
+.form-expert
+    .form-expert-checkbox:checked
+    + .form-expert-checkbox-custom::after {
+    content: "";
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
 }
 
 .form-expert .form-expert-checkbox-label {
-  color: rgb(255 255 255 / 85%);
-  font-size: 14px;
-  font-family: var(--body-font-family);
+    color: rgb(255 255 255 / 85%);
+    font-size: 14px;
+    font-family: var(--body-font-family);
 }
 
 /* Disclaimer */
 .form-expert .form-expert-disclaimer {
-  font-size: 12px;
-  color: rgb(255 255 255 / 60%);
-  line-height: 1.5;
-  margin: 8px 0 0;
-  font-family: var(--body-font-family);
+    font-size: 12px;
+    color: rgb(255 255 255 / 60%);
+    line-height: 1.5;
+    margin: 8px 0 0;
+    font-family: var(--body-font-family);
 }
 
 /* Button container */
 .form-expert .form-expert-button-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
 }
 
 /* Submit button */
 .form-expert .form-expert-submit {
-  padding: 14px 28px;
-  background: #f5a623;
-  color: #1a1a1a;
-  border: none;
-  border-radius: 30px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--body-font-family);
-  white-space: nowrap;
+    padding: 14px 28px;
+    background: #f5a623;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--body-font-family);
+    white-space: nowrap;
 }
 
 .form-expert .form-expert-submit .arrow {
-  font-size: 18px;
-  font-weight: 400;
-  transition: transform 0.2s ease;
+    font-size: 18px;
+    font-weight: 400;
+    transition: transform 0.2s ease;
 }
 
 .form-expert .form-expert-submit:hover {
-  background: #ffb733;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgb(245 166 35 / 40%);
+    background: #ffb733;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgb(245 166 35 / 40%);
 }
 
 .form-expert .form-expert-submit:hover .arrow {
-  transform: translateX(4px);
+    transform: translateX(4px);
 }
 
 /* Responsive - Tablet */
 @media (width <= 991px) {
-  .form-expert {
-    padding: 40px;
-    margin: 30px 20px;
-  }
+    .form-expert {
+        padding: 40px;
+        margin: 30px 20px;
+    }
 
-  .form-expert .form-expert-container {
-    flex-direction: column;
-    gap: 30px;
-  }
+    .form-expert .form-expert-container {
+        flex-direction: column;
+        gap: 30px;
+    }
 
-  .form-expert .form-expert-left {
-    flex: none;
-    max-width: 100%;
-    text-align: center;
-  }
+    .form-expert .form-expert-left {
+        flex: none;
+        max-width: 100%;
+        text-align: center;
+    }
 
-  .form-expert .form-expert-title {
-    font-size: 28px;
-  }
+    .form-expert .form-expert-title {
+        font-size: 28px;
+    }
 
-  .form-expert .form-expert-checkboxes {
-    flex-direction: column;
-    gap: 12px;
-  }
+    .form-expert .form-expert-checkboxes {
+        flex-direction: column;
+        gap: 12px;
+    }
 
-  .form-expert .form-expert-button-container {
-    justify-content: center;
-  }
+    .form-expert .form-expert-button-container {
+        justify-content: center;
+    }
 }
 
 /* Responsive - Mobile */
 @media (width <= 600px) {
-  .form-expert {
-    padding: 30px 20px;
-    margin: 20px 16px;
-    border-radius: 12px;
-  }
+    .form-expert {
+        padding: 30px 20px;
+        margin: 20px 16px;
+        border-radius: 12px;
+    }
 
-  .form-expert .form-expert-container {
-    gap: 24px;
-  }
+    .form-expert .form-expert-container {
+        gap: 24px;
+    }
 
-  .form-expert .form-expert-title {
-    font-size: 24px;
-  }
+    .form-expert .form-expert-title {
+        font-size: 24px;
+    }
 
-  .form-expert .form-expert-subtitle {
-    font-size: 14px;
-  }
+    .form-expert .form-expert-subtitle {
+        font-size: 14px;
+    }
 
-  .form-expert .form-expert-inputs-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
+    .form-expert .form-expert-inputs-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 
-  .form-expert .form-expert-input {
-    padding: 14px 16px;
-    font-size: 14px;
-  }
+    .form-expert .form-expert-input {
+        padding: 14px 16px;
+        font-size: 14px;
+    }
 
-  .form-expert .form-expert-mobile-prefix {
-    padding: 0 8px 0 16px;
-    font-size: 14px;
-  }
+    .form-expert .form-expert-mobile-prefix {
+        padding: 0 8px 0 16px;
+        font-size: 14px;
+    }
 
-  .form-expert .form-expert-checkboxes {
-    gap: 10px;
-  }
+    .form-expert .form-expert-checkboxes {
+        gap: 10px;
+    }
 
-  .form-expert .form-expert-checkbox-label {
-    font-size: 13px;
-  }
+    .form-expert .form-expert-checkbox-label {
+        font-size: 13px;
+    }
 
-  .form-expert .form-expert-disclaimer {
-    font-size: 11px;
-  }
+    .form-expert .form-expert-disclaimer {
+        font-size: 11px;
+    }
 
-  .form-expert .form-expert-submit {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 24px;
-  }
+    .form-expert .form-expert-submit {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 24px;
+    }
 
-  .form-expert .form-expert-button-container {
-    justify-content: stretch;
-  }
+    .form-expert .form-expert-button-container {
+        justify-content: stretch;
+    }
 }
 
 /* ============================================
@@ -378,36 +383,50 @@
    ============================================ */
 
 .form-expert.ids .form-expert-input {
-  border: none;
-  background-color: #fff;
-  color: #333;
+    border: none;
+    background-color: #fff;
+    color: #333;
 }
 
 .form-expert.ids .form-expert-input::placeholder {
-  color: #666;
+    color: #666;
 }
 
 .form-expert.ids .form-expert-input:focus {
-  border-color: transparent;
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 50%);
-  background-color: #fff;
+    border-color: transparent;
+    box-shadow: 0 0 0 2px rgb(255 255 255 / 50%);
+    background-color: #fff;
 }
 
 .form-expert.ids .form-expert-mobile-field {
-  border: none;
-  background-color: #fff;
+    border: none;
+    background-color: #fff;
 }
 
 .form-expert.ids .form-expert-mobile-prefix {
-  color: #333;
-  background-color: #fff;
+    color: #333;
+    background-color: #fff;
 }
 
 .form-expert.ids .form-expert-mobile-field .form-expert-input {
-  background-color: #fff;
+    background-color: #fff;
 }
 
 .form-expert.ids .form-expert-mobile-field:focus-within {
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 50%);
-  background-color: #fff;
+    box-shadow: 0 0 0 2px rgb(255 255 255 / 50%);
+    background-color: #fff;
+}
+
+/* ============================================
+   Variant: background cream
+   ============================================ */
+.section.form-expert-container:has(.form-expert.bg-cream) {
+    background-color: rgb(236, 229, 215);
+    margin-top: -40px;
+    padding: 2rem 0;
+    margin-bottom: 0;
+}
+
+.form-expert.bg-cream {
+    margin: 0 40px;
 }
