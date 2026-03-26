@@ -673,7 +673,7 @@ main > .section:has(.embed-wrapper) > .default-content-wrapper {
 /* Video section title - Pixel perfect */
 main > .section:has(.embed-wrapper) > .default-content-wrapper h2 {
   font-size: 32px; /* Pixel-perfect */
-  font-weight: 800; /* Pixel-perfect */
+  font-weight: 700; /* Pixel-perfect */
   font-family: Manrope, sans-serif;
   color: rgb(34 34 34); /* Pixel-perfect */
   line-height: 40px; /* Pixel-perfect */

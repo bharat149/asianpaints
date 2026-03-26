@@ -1,3 +1,5 @@
+import { trackEvent } from "../../scripts/analytics.js";
+
 function getSwiperClass() {
   if (window.Swiper) return Promise.resolve(window.Swiper);
   if (window.loadSwiper) return window.loadSwiper();
@@ -112,6 +114,15 @@ export default async function decorate(block) {
       cta.className = "hero-cta";
       cta.href = ctaLink;
       cta.textContent = ctaText;
+
+      // Track Click
+      cta.addEventListener("click", function (e) {
+        trackEvent("carousel_banner_click", {
+          "bannerDestinationUrl": ctaLink,
+          "bannerTitle": e.target.closest(".hero-media").querySelector("img").alt || ""
+        });
+      })
+
       mediaWrap.appendChild(cta);
     }
 

@@ -1519,7 +1519,7 @@ body.nav-open {
 
 .header .cart-modal-title {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   color: #222;
   margin: 0 0 20px;
 }
@@ -1884,7 +1884,7 @@ body.search-dialog-open {
 /* (Manrope may use same file for all weights → synthetic bold; darker color helps differentiation) */
 .header .sd-section-title {
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 14px;
   color: #111;
   margin: 0 8px 4px 0;

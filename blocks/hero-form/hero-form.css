@@ -43,7 +43,7 @@
 
 /* ===== TYPOGRAPHY & FORM STYLES ===== */
 .hero-form .title-section p {
-    font-weight: 800;
+    font-weight: 700;
     font-size: 32px;
     line-height: 41.6px;
     color: #2F2F2F;
@@ -497,7 +497,7 @@
 
 .hero-form .mf-thank-you-message-title {
     font-size: 40px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 48px;
     margin-bottom: 16px;
     max-width: 400px;

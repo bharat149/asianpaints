@@ -23,7 +23,6 @@ function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) {
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
-  const isRecommended = block.classList.contains('recommended');
   const isGrid = block.classList.contains('grid');
   const isStats = block.classList.contains('stats');
   const isServicesBlock = block.classList.contains('services');
@@ -48,24 +47,8 @@ export default function decorate(block) {
 
         // ✅ Your stats-only hook (non-invasive)
         if (isStats) div.classList.add('content-wrapper');
-
-        // Existing recommended logic
-        if (isRecommended) {
-          const link = div.querySelector('a');
-          if (link) cardLink = link.href;
-        }
       }
     });
-
-    // Existing recommended “whole card clickable”
-    if (isRecommended && cardLink) {
-      li.addEventListener('click', () => { window.location.href = cardLink; });
-      li.setAttribute('role', 'link');
-      li.setAttribute('tabindex', '0');
-      li.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') window.location.href = cardLink;
-      });
-    }
 
     // Existing grid mobile image behavior
     if (isGrid && li.children.length === 3 && li.children[1].classList.contains('cards-card-image')) {
@@ -86,7 +69,7 @@ export default function decorate(block) {
     ul.append(li);
   });
 
-  const imgWidth = isRecommended ? '400' : '750';
+  const imgWidth = '750';
   ul.querySelectorAll('picture > img').forEach((img) => {
     const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: imgWidth }]);
     moveInstrumentation(img, optimizedPic.querySelector('img'));
