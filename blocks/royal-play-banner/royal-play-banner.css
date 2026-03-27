@@ -1,0 +1,158 @@
+.royal-play-banner {
+  position: relative;
+  width: 100%;
+}
+
+/* ===== Desktop ===== */
+.royal-play-banner__desktop {
+  display: block;
+}
+
+.royal-play-banner__mobile {
+  display: none;
+}
+
+.royal-play-banner__media,
+.royal-play-banner__image-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.royal-play-banner__image-wrap {
+  overflow: hidden;
+}
+
+.royal-play-banner__image-wrap picture,
+.royal-play-banner__image-wrap img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Zoom animation */
+.royal-play-banner__image--desktop img {
+  transform-origin: right center;
+  animation: zoom-banner-img 2s ease-in-out forwards;
+}
+
+@keyframes zoom-banner-img {
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+/* Overlay */
+.royal-play-banner__overlay {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 46%;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+
+  background: linear-gradient(
+    270deg,
+    hsla(24, 28%, 66%, 0.01),
+    hsla(24, 28%, 66%, 0.44) 13.94%,
+    hsla(24, 28%, 66%, 0.66) 25.25%,
+    var(--bg-color, #bda690) 42.64%
+  );
+}
+
+.royal-play-banner__content {
+  padding: 40px 48px;
+}
+
+/* Logo */
+.royal-play-banner__logo img {
+  max-width: 160px;
+  margin-bottom: 20px;
+}
+
+/* Title */
+.royal-play-banner__title-line {
+  color: #fff;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Subtitle */
+.royal-play-banner__subtitle {
+  margin: 16px 0 24px;
+  color: #232426;
+  font-size: 16px;
+}
+
+/* CTA */
+.royal-play-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 20px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.royal-play-banner__cta--transparent {
+  border: 1px solid #232426;
+  border-radius: 45px;
+  background: transparent;
+  color: #232426;
+}
+
+.royal-play-banner__cta--default {
+  background: #232426;
+  color: #fff;
+  border-radius: 45px;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 767px) {
+  .royal-play-banner__desktop {
+    display: none;
+  }
+
+  .royal-play-banner__mobile {
+    display: block;
+  }
+
+  .royal-play-banner__mobile-image-wrap {
+    position: relative;
+  }
+
+  .royal-play-banner__mobile-image-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Logo top-left */
+  .royal-play-banner__mobile-logo {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 3;
+  }
+
+  .royal-play-banner__mobile-logo img {
+    max-width: 110px;
+  }
+
+  /* CTA centered */
+  .royal-play-banner__mobile-actions {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .royal-play-banner__mobile-actions .royal-play-banner__cta {
+    min-width: 160px;
+  }
+}

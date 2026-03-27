@@ -159,7 +159,7 @@
 /* ============================================
    Variant: hero — Carousel (hero)
    ============================================ */
-
+/* 
 .carousel.hero {
     margin: 0;
     display: block;
@@ -393,7 +393,7 @@
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-.carousel.hero .carousel-navigation-buttons button {
+/* .carousel.hero .carousel-navigation-buttons button {
     position: relative;
     width: 44px;
     height: 44px;
@@ -461,7 +461,7 @@
         left: 60px;
         right: 60px;
     }
-}
+} */
 
 /* ============================================
    Hero section: "Transform your space" overlay
@@ -586,7 +586,7 @@
         width: 32px;
         height: 32px;
     }
-}
+} */
 
 
 /* ============================================
