@@ -272,4 +272,5 @@
 }
 .interiors-shop-pagination .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
   background: #4c4e52;
+  opacity: 1;
 }

@@ -351,26 +351,27 @@ align-self: center;
 
 .form.block .form-popup-close {
   position: absolute;
-  top: 18px;
+  top: 3px;
   right: 18px;
   z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  /* width: 56px;
+  height: 56px; */
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgb(255 255 255 / 88%);
+  /* background: rgb(255 255 255 / 88%); */
+  background: none;
   color: #1a1a1a;
-  font-size: 40px;
-  line-height: 1;
+  font-size: 44px;
+  line-height: 50px;
   cursor: pointer;
 }
 
 .form.block .form-popup-close:hover {
-  background: #fff;
+  /* background: #fff; */
 }
 
 /* Success popup */
