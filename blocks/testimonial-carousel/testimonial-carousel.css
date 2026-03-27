@@ -6,7 +6,7 @@
 .testimonial-carousel-container {
     display: flex;
     align-items: flex-start;
-    gap: 40px;
+    /* gap: 40px; */
     width: 100%;
 }
 
@@ -126,7 +126,7 @@
 .testimonial-carousel .testimonial-quote {
     position: relative;
     z-index: 1;
-    margin: 0;
+    margin: 0 0 30px 0;
     color: #4d4d4d;
     font-family: Manrope, sans-serif;
     font-size: 14px;
@@ -134,6 +134,12 @@
     line-height: normal;
     text-align: left;
     margin-top: -30px;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
 }
 
 .testimonial-carousel .testimonial-attribution {
@@ -336,8 +342,8 @@ body.testimonial-video-open {
 
     .testimonial-carousel .testimonial-heading h2,
     .testimonial-carousel .testimonial-heading h3 {
-        font-size: 28px;
-        line-height: 36px;
+       font-size: 32px;
+       line-height: 41.6px;
     }
 
     .testimonial-carousel .testimonial-nav-buttons {

@@ -11,192 +11,189 @@ Col 1: left images
 Col 2: right images
 */
 
-function getHeading(cell) {
-  return cell.querySelector('h1, h2, h3, h4, h5, h6');
-}
+export default async function decorate(block) {
+  await window.loadJQuery?.();
+  const $ = window.jQuery;
 
-function getDescription(cell) {
-  const paragraphs = [...cell.querySelectorAll('p')];
-  return paragraphs.find((p) => p.textContent.trim());
-}
+  const $block = $(block);
+  const $rows = $block.children();
 
-function getLinks(cell) {
-  return [...cell.querySelectorAll('a')];
-}
+  if ($rows.length < 3) return;
 
-function getPictures(cell) {
-  return [...cell.querySelectorAll('picture')].map((picture, index) => {
-    const cloned = picture.cloneNode(true);
-    const img = cloned.querySelector('img');
+  const $titleCols = $rows.eq(0).children();
+  const $contentCols = $rows.eq(1).children();
+  const $imageCols = $rows.eq(2).children();
 
-    if (img) {
-      img.loading = index < 2 ? 'eager' : 'lazy';
-      img.setAttribute('fetchpriority', index < 2 ? 'high' : 'auto');
-      img.removeAttribute('width');
-      img.removeAttribute('height');
+  if ($titleCols.length < 2 || $contentCols.length < 2 || $imageCols.length < 2) return;
+
+  $block.empty().addClass('discover-collections');
+
+  function getCellContent($cell) {
+    const $preferred = $cell.find('h1,h2,h3,h4,h5,h6,p,span,div').first();
+    return $preferred.text().trim() || $cell.text().trim();
+  }
+
+  function getHeading($cell) {
+    return $cell.find('h1,h2,h3,h4,h5,h6').first();
+  }
+
+  function getDescription($cell) {
+    return $cell.find('p').filter(function () {
+      return $(this).text().trim();
+    }).first();
+  }
+
+  function getLinks($cell) {
+    return $cell.find('a');
+  }
+
+  function getPictures($cell) {
+    return $cell.find('picture').map(function (i) {
+      const $clone = $(this).clone();
+      const $img = $clone.find('img');
+
+      if ($img.length) {
+        $img.attr('loading', i < 2 ? 'eager' : 'lazy');
+        $img.attr('fetchpriority', i < 2 ? 'high' : 'auto');
+        $img.removeAttr('width height');
+      }
+
+      return $clone[0];
+    }).get();
+  }
+
+  function createArrowIcon() {
+    return $(`
+      <span class="discover-collections__cta-arrow">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    `);
+  }
+
+  function createDownloadIcon() {
+    return $(`
+      <span class="discover-collections__download-icon">
+        <img
+          src="https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg"
+          alt="Download"
+          loading="lazy"
+          height="18"
+          width="18"
+        />
+      </span>
+    `);
+  }
+
+  function createBlockHeader() {
+    const first = getCellContent($titleCols.eq(0));
+    const second = getCellContent($titleCols.eq(1));
+
+    return $(`
+      <div class="discover-collections__block-header">
+        <h2 class="discover-collections__block-title">
+          ${first ? `<span class="discover-collections__block-title-main">${first}</span>` : ''}
+          ${second ? `<span class="discover-collections__block-title-gradient">${second}</span>` : ''}
+        </h2>
+      </div>
+    `);
+  }
+
+  function createTextBlock($cell) {
+    const $wrap = $('<div class="discover-collections__text"></div>');
+
+    const $heading = getHeading($cell);
+    const $desc = getDescription($cell);
+    const $links = getLinks($cell);
+
+    const $title = $('<h3 class="discover-collections__title"></h3>').html($heading.html() || '');
+    const $subtitle = $('<p class="discover-collections__subtitle"></p>').html($desc.html() || '');
+
+    const $actions = $('<div class="discover-collections__actions"></div>');
+
+    if ($links[0]) {
+      const $download = $($links[0]).clone()
+        .addClass('discover-collections__download')
+        .attr('target', '_blank')
+        .attr('rel', 'noopener noreferrer');
+
+      $download.prepend(createDownloadIcon());
+      $actions.append($download);
     }
 
-    return cloned;
-  });
-}
-
-function getCellContent(cell) {
-  if (!cell) return '';
-
-  const preferred = cell.querySelector('h1, h2, h3, h4, h5, h6, p, span, div');
-
-  if (preferred && preferred.textContent.trim()) {
-    return preferred.textContent.trim();
-  }
-
-  return cell.textContent ? cell.textContent.trim() : '';
-}
-
-function createArrowIcon() {
-  const arrow = document.createElement('span');
-  arrow.className = 'discover-collections__cta-arrow';
-  arrow.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  `;
-  return arrow;
-}
-
-function createDownloadIcon() {
-  const icon = document.createElement('span');
-  icon.className = 'discover-collections__download-icon';
-
-  const img = document.createElement('img');
-  img.src =
-    'https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg';
-  img.alt = 'Download';
-  img.loading = 'lazy';
-  img.setAttribute('height', '18');
-  img.setAttribute('width', '18');
-  icon.append(img);
-
-  return icon;
-}
-
-function createBlockHeader(titleCols) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'discover-collections__block-header';
-
-  const title = document.createElement('h2');
-  title.className = 'discover-collections__block-title';
-
-  const firstPart = getCellContent(titleCols[0]);
-  const secondPart = getCellContent(titleCols[1]);
-
-  title.innerHTML = `
-    ${firstPart ? `<span class="discover-collections__block-title-main">${firstPart}</span>` : ''}
-    ${secondPart ? `<span class="discover-collections__block-title-gradient">${secondPart}</span>` : ''}
-  `;
-
-  wrapper.append(title);
-  return wrapper;
-}
-
-function createTextBlock(contentCell) {
-  const textWrap = document.createElement('div');
-  textWrap.className = 'discover-collections__text';
-
-  const headingEl = getHeading(contentCell);
-  const descriptionEl = getDescription(contentCell);
-  const links = getLinks(contentCell);
-
-  const title = document.createElement('h3');
-  title.className = 'discover-collections__title';
-  title.innerHTML = headingEl ? headingEl.innerHTML : '';
-
-  const subtitle = document.createElement('p');
-  subtitle.className = 'discover-collections__subtitle';
-  subtitle.innerHTML = descriptionEl ? descriptionEl.innerHTML : '';
-
-  const actions = document.createElement('div');
-  actions.className = 'discover-collections__actions';
-
-  if (links[0]) {
-    const downloadLink = links[0].cloneNode(true);
-    downloadLink.className = 'discover-collections__download';
-
-    if (!downloadLink.getAttribute('target')) {
-      downloadLink.setAttribute('target', '_blank');
+    if ($links[1]) {
+      const $view = $($links[1]).clone().addClass('discover-collections__cta');
+      $view.append(createArrowIcon());
+      $actions.append($view);
     }
 
-    downloadLink.setAttribute('rel', 'noopener noreferrer');
-    downloadLink.prepend(createDownloadIcon());
-    actions.append(downloadLink);
+    $wrap.append($title, $subtitle, $actions);
+    return $wrap;
   }
 
-  if (links[1]) {
-    const viewLink = links[1].cloneNode(true);
-    viewLink.className = 'discover-collections__cta';
-    viewLink.append(createArrowIcon());
-    actions.append(viewLink);
+  function createImageCard(picture, index) {
+    return $(`
+      <div class="discover-collections__image discover-collections__image--${index + 1} is-hidden-before-animation"></div>
+    `).append(picture);
   }
 
-  textWrap.append(title, subtitle, actions);
-  return textWrap;
-}
+  function createVariant($contentCell, $imageCell, variantClass) {
+    const $section = $(`<section class="discover-collections__variant ${variantClass}"></section>`);
+    const $collage = $('<div class="discover-collections__collage"></div>');
 
-function createImageCard(picture, index) {
-  const item = document.createElement('div');
-  item.className = `discover-collections__image discover-collections__image--${index + 1}`;
-  item.append(picture);
-  return item;
-}
+    $collage.append(createTextBlock($contentCell));
 
-function createCollectionVariant(contentCell, imageCell, variantClass) {
-  const section = document.createElement('section');
-  section.className = `discover-collections__variant ${variantClass}`;
+    const pictures = getPictures($imageCell).slice(0, 8);
 
-  const collage = document.createElement('div');
-  collage.className = 'discover-collections__collage';
+    pictures.forEach((pic, i) => {
+      $collage.append(createImageCard(pic, i));
+    });
 
-  collage.append(createTextBlock(contentCell));
+    $section.append($collage);
+    return $section;
+  }
 
-  const pictures = getPictures(imageCell).slice(0, 8);
-  pictures.forEach((picture, index) => {
-    collage.append(createImageCard(picture, index));
+  function observeImagesOnce() {
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+
+      $block.find('.discover-collections__image').each(function () {
+        const $image = $(this);
+
+        if ($image.data('animated')) return;
+        $image.data('animated', true);
+
+        $image.removeClass('is-hidden-before-animation');
+        $image.addClass('animate-grow-from-center');
+      });
+
+      obs.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.2,
   });
 
-  section.append(collage);
-  return section;
+  observer.observe($block[0]);
 }
 
-export default function decorate(block) {
-  const rows = [...block.children];
-  if (rows.length < 3) return;
+  const $header = createBlockHeader();
 
-  const titleRow = rows[0];
-  const contentRow = rows[1];
-  const imageRow = rows[2];
-
-  const titleCols = [...titleRow.children];
-  const contentCols = [...contentRow.children];
-  const imageCols = [...imageRow.children];
-
-  if (titleCols.length < 2 || contentCols.length < 2 || imageCols.length < 2) return;
-
-  block.textContent = '';
-  block.classList.add('discover-collections');
-
-  const blockHeader = createBlockHeader(titleCols);
-
-  const leftVariant = createCollectionVariant(
-    contentCols[0],
-    imageCols[0],
-    'discover-collections__variant--left',
+  const $left = createVariant(
+    $contentCols.eq(0),
+    $imageCols.eq(0),
+    'discover-collections__variant--left'
   );
 
-  const rightVariant = createCollectionVariant(
-    contentCols[1],
-    imageCols[1],
-    'discover-collections__variant--right',
+  const $right = createVariant(
+    $contentCols.eq(1),
+    $imageCols.eq(1),
+    'discover-collections__variant--right'
   );
 
-  block.append(blockHeader, leftVariant, rightVariant);
+  $block.append($header, $left, $right);
+
+  observeImagesOnce();
 }

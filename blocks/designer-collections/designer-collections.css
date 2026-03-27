@@ -101,7 +101,7 @@
 
 .designer-collections-image {
   position: relative;
-  width: 68%;
+  /* width: 68%; */
   max-width: 320px;
   margin: 0 auto 20px;
   display: block;
@@ -143,7 +143,7 @@
   border-radius: 12px;
   position: relative;
   z-index: 2;
-  background: white;
+  /* background: white; */
 }
 
 .designer-collections-content h3 {
@@ -233,20 +233,23 @@
   display: none !important;
 }
 
+.designer-collections-next , .designer-collections-prev {
+  border: unset !important;
+}
 .designer-collections-prev::before {
-  content: " ";
-    background-image: url(/icons/Icons-Sprite-firstFold.webp);
-    width: 22px;
-    height: 13px;
-    background-position: -115px -126px;
+     content: " ";
+    background-image: url("/icons/round-black-prev-icon.svg");
+    background-repeat: no-repeat;
+    width: 44px;
+    height: 44px;
 }
 
 .designer-collections-next::before {
- content: " ";
-    background-image: url(/icons/Icons-Sprite-firstFold.webp);
-    width: 22px;
-    height: 13px;
-    background-position: -148px -126px;
+    content: " ";
+    background-image: url("/icons/round-black-next-icon.svg");
+    background-repeat: no-repeat;
+    width: 44px;
+    height: 44px;
 }
 
 .designer-collections-pagination {
@@ -305,7 +308,6 @@
   }
 
   .designer-collections-image {
-    width: 72%;
     max-width: 220px;
   }
 

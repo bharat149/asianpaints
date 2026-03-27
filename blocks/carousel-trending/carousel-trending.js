@@ -1,128 +1,195 @@
-async function waitForSwiper(maxRetries = 10, delay = 300) {
-  for (let i = 0; i < maxRetries; i++) {
-    if (window.Swiper) return window.Swiper;
-    if (window.loadSwiper) {
-      const Swiper = await window.loadSwiper();
-      if (Swiper) return Swiper;
-    }
-    // wait before retry
-    await new Promise((res) => setTimeout(res, delay));
-  }
-  console.warn("Swiper not available after retries");
+// Get Swiper instance
+async function getSwiper() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
+
+  console.warn('Swiper not available');
   return null;
 }
 
-export default async function decorate(block) {
-  const carousel = block;
-  const mobileHTML = [...carousel.children]; // snapshot
-  const desktopHTML = [...carousel.children]; // for desktop restore
+// Desktop: animate each card when that card enters viewport
+function createCardObserver($) {
+  return new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
 
-  const Swiper = await waitForSwiper();
+      const $overlay = $(entry.target);
+      if ($overlay.data('animated')) return;
+
+      $overlay.data('animated', true);
+
+      const index = $overlay.closest('.card').index();
+
+      setTimeout(() => {
+        $overlay.addClass('grow-image-bottom-to-top');
+      }, 150 * index);
+
+      observer.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.2,
+  });
+}
+
+// Mobile: animate all overlays once when whole swiper enters viewport
+function createMobileObserver($, $container) {
+  return new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+
+      $container.find('.card-overlay').each(function (index) {
+        const $overlay = $(this);
+        if ($overlay.data('animated')) return;
+
+        $overlay.data('animated', true);
+
+        setTimeout(() => {
+          $overlay.addClass('grow-image-bottom-to-top');
+        }, 150 * index);
+      });
+
+      observer.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.2,
+  });
+}
+
+export default async function decorate(block) {
+  // Wait for jQuery because it is lazy-loaded in EDS
+  await window.loadJQuery?.();
+  const $ = window.jQuery;
+
+  const $block = $(block);
+  const items = $block.children().toArray();
+
+  const Swiper = await getSwiper();
   if (!Swiper) return;
 
-  let swiperInstance = null;
+  let swiper = null;
+  let cardObserver = null;
+  let mobileObserver = null;
+  let mode = '';
 
-  function initSwiper() {
-    const wrapper = document.createElement("div");
-    const swiperContainer = document.createElement("div");
-    wrapper.classList.add("swiper-wrapper");
+  const bp = 768;
+  const ns = `.carousel-${Date.now()}`;
 
-    carousel.innerHTML = "";
+  function resetObservers() {
+    if (cardObserver) {
+      cardObserver.disconnect();
+      cardObserver = null;
+    }
 
-    mobileHTML.forEach((child) => {
-      const card = document.createElement("div");
-      card.classList.add("card");
-      card.classList.add("swiper-slide");
-
-      // clone the nodes so originals remain intact
-      const img = child.children[1]?.cloneNode(true);
-      const body = child.children[2]?.cloneNode(true);
-      const linkDiv = child.children[3]?.cloneNode(true);
-      const anchor = linkDiv.querySelector("a");
-      anchor.innerHTML = "";
-
-      if (img && anchor) {
-        img.classList.add("card-img");
-        anchor.appendChild(img);
-      }
-
-      if (body && anchor) {
-        body.classList.add("card-body");
-        anchor.appendChild(body);
-      }
-
-      if (anchor) card.appendChild(anchor);
-
-      wrapper.appendChild(card);
-    });
-
-    swiperContainer.classList.add("swiper");
-    swiperContainer.appendChild(wrapper);
-    carousel.appendChild(swiperContainer);
-
-    // const nextBtn = document.createElement("div");
-    // nextBtn.classList.add("swiper-button-next");
-    // const prevBtn = document.createElement("div");
-    // prevBtn.classList.add("swiper-button-prev");
-    const pagination = document.createElement("div");
-    pagination.classList.add("swiper-pagination");
-    carousel.append(pagination);
-
-    swiperInstance = new Swiper(swiperContainer, {
-      loop: true,
-      slidesPerView: 1.2,
-      spaceBetween: 10,
-      pagination: { el: ".swiper-pagination", clickable: true },
-      autoplay: false,
-    });
+    if (mobileObserver) {
+      mobileObserver.disconnect();
+      mobileObserver = null;
+    }
   }
 
   function destroySwiper() {
-    if (swiperInstance) {
-      swiperInstance.destroy(true, true);
-      swiperInstance = null;
+    if (swiper) {
+      swiper.destroy(true, true);
+      swiper = null;
     }
-    carousel.classList.remove("swiper");
-    carousel.innerHTML = "";
-    const cardContainer = document.createElement("div");
-    cardContainer.classList.add("card-container");
+  }
 
-    // restore original children with desktop structure
-    desktopHTML.forEach((child) => {
-      const card = document.createElement("div");
-      card.classList.add("card");
+  function makeCard(child, imgIndex, slide = false) {
+    const $child = $(child);
 
-      // clone the nodes so originals remain intact
-      const img = child.children[0]?.cloneNode(true);
-      const body = child.children[2]?.cloneNode(true);
-      const linkDiv = child.children[3]?.cloneNode(true);
-      const anchor = linkDiv.querySelector("a");
-      anchor.innerHTML = "";
+    const $linkWrap = $child.children().eq(3).clone();
+    const $a = $linkWrap.find('a').first();
+    if (!$a.length) return null;
 
-      if (img) img.classList.add("card-img");
-      if (body) body.classList.add("card-body");
+    const $img = $child.children().eq(imgIndex).clone().addClass('card-img');
+    const $body = $child.children().eq(2).clone().addClass('card-body');
+    const $overlay = $('<div class="card-overlay"></div>');
+    const $card = $(`<div class="card${slide ? ' swiper-slide' : ''}"></div>`);
 
-      if (img && anchor) anchor.appendChild(img);
-      if (body && anchor) anchor.appendChild(body);
+    $a.empty().append($img, $body);
+    $card.append($a, $overlay);
 
-      if (anchor) card.appendChild(anchor);
+    return $card;
+  }
 
-      cardContainer.appendChild(card);
+  function renderDesktop() {
+    resetObservers();
+    $block.empty();
+
+    const $container = $('<div class="card-container"></div>');
+    cardObserver = createCardObserver($);
+
+    items.forEach((item) => {
+      const $card = makeCard(item, 0, false);
+      if ($card) {
+        $container.append($card);
+        const $overlay = $card.find('.card-overlay');
+        if ($overlay.length) cardObserver.observe($overlay[0]);
+      }
     });
 
-    carousel.appendChild(cardContainer);
+    $block.append($container);
   }
 
-  function toggleSwiper() {
-    if (window.innerWidth <= 768) {
-      if (!swiperInstance) {
-        initSwiper(); // mobile: init swiper
+  function renderMobile() {
+    resetObservers();
+    $block.empty();
+
+    const $swiper = $('<div class="swiper"></div>');
+    const $wrapper = $('<div class="swiper-wrapper"></div>');
+    const $pagination = $('<div class="swiper-pagination"></div>');
+
+    let slideCount = 0;
+
+    items.forEach((item) => {
+      const $card = makeCard(item, 1, true);
+      if ($card) {
+        $wrapper.append($card);
+        slideCount += 1;
       }
-    } else {
-      destroySwiper(); // desktop: always restore
-    }
+    });
+
+    $swiper.append($wrapper);
+    $block.append($swiper, $pagination);
+
+    // Init swiper after DOM is appended
+    setTimeout(() => {
+      swiper = new Swiper($swiper[0], {
+        loop: slideCount > 1,
+        slidesPerView: 1.2,
+        spaceBetween: 10,
+        pagination: {
+          el: $pagination[0],
+          clickable: true,
+        },
+        autoplay: false,
+      });
+
+      swiper.update();
+
+      // Animate all mobile cards once when whole swiper enters viewport
+      mobileObserver = createMobileObserver($, $swiper);
+      mobileObserver.observe($swiper[0]);
+    }, 0);
   }
 
-  toggleSwiper();
-  window.addEventListener("resize", toggleSwiper);
+  function update() {
+    const nextMode = window.innerWidth <= bp ? 'mobile' : 'desktop';
+    if (nextMode === mode) return;
+
+    destroySwiper();
+
+    if (nextMode === 'mobile') {
+      renderMobile();
+    } else {
+      renderDesktop();
+    }
+
+    mode = nextMode;
+  }
+
+  update();
+
+  $(window)
+    .off(`resize${ns}`)
+    .on(`resize${ns}`, update);
 }
