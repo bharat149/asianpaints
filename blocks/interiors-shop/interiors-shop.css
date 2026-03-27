@@ -130,7 +130,7 @@
   background: url('/icons/arrow-icon-new.svg');
   background-repeat: no-repeat;
   width: 20px;
-  height: 15px;
+  height: 18px;
   display: inline-flex;
   object-fit: cover;
 }
@@ -138,6 +138,9 @@
   background: #fff7e8;
   color: #000;
   border: 1px solid #232426;
+}
+.interiors-shop-button:hover span::after {
+  filter: invert(1);
 }
 
 /* Large desktop */
@@ -272,4 +275,5 @@
 }
 .interiors-shop-pagination .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
   background: #4c4e52;
+  opacity: 1;
 }
