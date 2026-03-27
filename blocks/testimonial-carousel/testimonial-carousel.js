@@ -269,7 +269,7 @@ export default async function decorate(block) {
 
   const h2 = document.createElement('h2');
   const words = headingText.split(' ');
-  const midPoint = Math.ceil(words.length / 2);
+  const midPoint = Math.ceil(words.length / 3);
   h2.innerHTML = `${words.slice(0, midPoint).join(' ')}<br>${words.slice(midPoint).join(' ')}`;
   headingWrapper.appendChild(h2);
 
