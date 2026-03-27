@@ -1,6 +1,6 @@
 .section.carousel-trending-container {
     background: rgb(236, 229, 215);
-    margin-top: 0;
+    margin: 0;
     padding: 5rem 3.6rem;
     font-family: Manrope, sans-serif;
 }
@@ -35,17 +35,12 @@
     font-weight: 400;
 }
 
-.section.carousel-trending-container
-    .default-content-wrapper
-    .button-container {
+.section.carousel-trending-container .default-content-wrapper .button-container {
     outline: none;
     border: none;
 }
 
-.section.carousel-trending-container
-    .default-content-wrapper
-    .button-container
-    a {
+.section.carousel-trending-container .default-content-wrapper .button-container a {
     font-weight: 600;
     margin-bottom: 2rem;
     border: 1px solid #232426;
@@ -57,24 +52,17 @@
     align-items: center;
 }
 
-.section.carousel-trending-container
-    .default-content-wrapper
-    .button-container
-    a::after {
+.section.carousel-trending-container .default-content-wrapper .button-container a::after {
     content: "";
     background: url("/icons/arrow-icon-new.svg") no-repeat;
     width: 17px;
     height: 20px;
-    filter: contrast(1000%) invert(100%) sepia(100%) saturate(10000%)
-        hue-rotate(90deg);
+    filter: contrast(1000%) invert(100%) sepia(100%) saturate(10000%) hue-rotate(90deg);
     display: inline-block;
     margin-left: 5px;
 }
 
-.section.carousel-trending-container
-    .default-content-wrapper
-    .button-container
-    a:hover {
+.section.carousel-trending-container .default-content-wrapper .button-container a:hover {
     background: #fff7e8;
     border: 1px solid #232426;
 }
@@ -145,9 +133,7 @@
         font-size: 20px;
     }
 
-    .section.carousel-trending-container
-        .default-content-wrapper
-        p:first-of-type {
+    .section.carousel-trending-container .default-content-wrapper p:first-of-type {
         font-size: 14px;
     }
 
@@ -174,9 +160,7 @@
         height: 8px !important;
     }
 
-    .carousel-trending.block
-        .swiper-pagination
-        .swiper-pagination-bullet.swiper-pagination-bullet-active {
+    .carousel-trending.block .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
         background: #4d4d4d !important;
         width: 18px !important;
         opacity: 1 !important;
