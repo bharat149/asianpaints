@@ -595,3 +595,43 @@
     margin: 0 0 48px;
   }
 }
+
+/* ============================================
+   Section: Columns (royale-alt) 
+   ============================================ */
+.section.columns-container:has(.columns.royale-alt.block) {
+  background: var(--cream-bg);
+  margin: 0;
+  padding: 0;
+  margin-top: -40px;
+}
+
+.section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper {
+  padding-bottom: 20px;
+}
+
+.section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper h2 {
+  margin-bottom: 0;
+  font-size: 32px;
+}
+
+.columns.royale-alt.block {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.section.columns-container:has(.columns.royale-alt.block)>.default-content-wrapper h2 strong{
+  background: linear-gradient(270deg, #f8a12e, #be2a1d 50.07%, #45216c 98.1%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 32px;
+}
+.columns.royale-alt.block > div > div > p:nth-child(2):not(:has(strong:only-child))  {
+  font-size: 16px;
+  max-width: 100%;
+}
+
+.columns.royale-alt.block .button-container .button {
+  padding: 8px 20px;
+}

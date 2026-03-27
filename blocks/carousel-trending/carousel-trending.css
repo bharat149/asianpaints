@@ -212,7 +212,7 @@
     }
 
     .carousel-trending.block .swiper {
-        overflow: visible;
+        overflow: hidden;
     }
 
     .carousel-trending.block .card {

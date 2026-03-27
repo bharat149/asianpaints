@@ -7,8 +7,8 @@ async function getSwiper() {
   return null;
 }
 
-// Observe each overlay and animate only once (animate the card to grow from bottom to top, one by one)
-function createObserver($) {
+// Desktop: animate each card when that card enters viewport
+function createCardObserver($) {
   return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
@@ -18,12 +18,35 @@ function createObserver($) {
 
       $overlay.data('animated', true);
 
-      // slight stagger based on card index
       const index = $overlay.closest('.card').index();
 
       setTimeout(() => {
         $overlay.addClass('grow-image-bottom-to-top');
       }, 150 * index);
+
+      observer.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.2,
+  });
+}
+
+// Mobile: animate all overlays once when whole swiper enters viewport
+function createMobileObserver($, $container) {
+  return new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+
+      $container.find('.card-overlay').each(function (index) {
+        const $overlay = $(this);
+        if ($overlay.data('animated')) return;
+
+        $overlay.data('animated', true);
+
+        setTimeout(() => {
+          $overlay.addClass('grow-image-bottom-to-top');
+        }, 150 * index);
+      });
 
       observer.unobserve(entry.target);
     });
@@ -43,17 +66,33 @@ export default async function decorate(block) {
   const Swiper = await getSwiper();
   if (!Swiper) return;
 
-  const observer = createObserver($);
-
   let swiper = null;
+  let cardObserver = null;
+  let mobileObserver = null;
   let mode = '';
+
   const bp = 768;
   const ns = `.carousel-${Date.now()}`;
 
-  /**
-   * Build one card
-   * imgIndex: 0 = desktop image, 1 = mobile image
-   */
+  function resetObservers() {
+    if (cardObserver) {
+      cardObserver.disconnect();
+      cardObserver = null;
+    }
+
+    if (mobileObserver) {
+      mobileObserver.disconnect();
+      mobileObserver = null;
+    }
+  }
+
+  function destroySwiper() {
+    if (swiper) {
+      swiper.destroy(true, true);
+      swiper = null;
+    }
+  }
+
   function makeCard(child, imgIndex, slide = false) {
     const $child = $(child);
 
@@ -69,66 +108,81 @@ export default async function decorate(block) {
     $a.empty().append($img, $body);
     $card.append($a, $overlay);
 
-    // Animate overlay only once when visible
-    observer.observe($overlay[0]);
-
     return $card;
   }
 
-  // Mobile swiper layout
+  function renderDesktop() {
+    resetObservers();
+    $block.empty();
+
+    const $container = $('<div class="card-container"></div>');
+    cardObserver = createCardObserver($);
+
+    items.forEach((item) => {
+      const $card = makeCard(item, 0, false);
+      if ($card) {
+        $container.append($card);
+        const $overlay = $card.find('.card-overlay');
+        if ($overlay.length) cardObserver.observe($overlay[0]);
+      }
+    });
+
+    $block.append($container);
+  }
+
   function renderMobile() {
+    resetObservers();
     $block.empty();
 
     const $swiper = $('<div class="swiper"></div>');
     const $wrapper = $('<div class="swiper-wrapper"></div>');
     const $pagination = $('<div class="swiper-pagination"></div>');
 
+    let slideCount = 0;
+
     items.forEach((item) => {
       const $card = makeCard(item, 1, true);
-      if ($card) $wrapper.append($card);
+      if ($card) {
+        $wrapper.append($card);
+        slideCount += 1;
+      }
     });
 
     $swiper.append($wrapper);
     $block.append($swiper, $pagination);
 
-    swiper = new Swiper($swiper[0], {
-      loop: true,
-      slidesPerView: 1.2,
-      spaceBetween: 10,
-      pagination: {
-        el: $pagination[0],
-        clickable: true,
-      },
-      autoplay: false,
-    });
+    // Init swiper after DOM is appended
+    setTimeout(() => {
+      swiper = new Swiper($swiper[0], {
+        loop: slideCount > 1,
+        slidesPerView: 1.2,
+        spaceBetween: 10,
+        pagination: {
+          el: $pagination[0],
+          clickable: true,
+        },
+        autoplay: false,
+      });
+
+      swiper.update();
+
+      // Animate all mobile cards once when whole swiper enters viewport
+      mobileObserver = createMobileObserver($, $swiper);
+      mobileObserver.observe($swiper[0]);
+    }, 0);
   }
 
-  // Desktop static layout
-  function renderDesktop() {
-    $block.empty();
-
-    const $container = $('<div class="card-container"></div>');
-
-    items.forEach((item) => {
-      const $card = makeCard(item, 0, false);
-      if ($card) $container.append($card);
-    });
-
-    $block.append($container);
-  }
-
-  // Switch only when mode changes
   function update() {
     const nextMode = window.innerWidth <= bp ? 'mobile' : 'desktop';
     if (nextMode === mode) return;
 
-    if (swiper) {
-      swiper.destroy(true, true);
-      swiper = null;
-    }
+    destroySwiper();
 
-    if (nextMode === 'mobile') renderMobile();
-    else renderDesktop();
+    if (nextMode === 'mobile') {
+      renderMobile();
+    } else {
+      renderDesktop();
+    }
 
     mode = nextMode;
   }
