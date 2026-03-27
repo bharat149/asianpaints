@@ -1,6 +1,13 @@
-.discover-collections {
+.section.discover-collections-container {
+  margin-top: -40px;
   background: #f4f2ee;
-  padding: 16px 10px 10px;
+  padding: 5rem 0 10rem;
+  margin-bottom: 0;
+}
+
+.discover-collections {
+  max-width: 1322px;
+  margin: 0 auto;
 }
 
 .discover-collections__block-header {
@@ -14,10 +21,11 @@
 .discover-collections__block-title {
   margin: 0;
   color: #1f1f1f;
-  font-size: 52px;
+  font-size: 32px;
   line-height: 1.05;
   font-weight: 600;
   letter-spacing: 0;
+  margin-bottom: 2rem;
 }
 
 .discover-collections__block-title-main {
@@ -34,7 +42,7 @@
 }
 
 .discover-collections__variant {
-  margin-bottom: 40px;
+  margin-bottom: 100px;
 }
 
 .discover-collections__variant:last-child {
@@ -57,7 +65,7 @@
 .discover-collections__title {
   margin: 0 0 18px;
   color: #303030;
-  font-size: 62px;
+  font-size: 54px;
   line-height: 0.95;
   font-weight: 600;
   letter-spacing: 0;
@@ -70,7 +78,7 @@
   color: #1f1f1f;
   font-size: 16px;
   line-height: 1.55;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .discover-collections__actions {
@@ -159,114 +167,115 @@
 .discover-collections__variant--left .discover-collections__image--1 {
   grid-column: 3;
   grid-row: 1;
-  height: 245px;
+  height: auto;
 }
 
 .discover-collections__variant--left .discover-collections__image--2 {
   grid-column: 4;
   grid-row: 1 / span 2;
-  height: 245px;
+  height: auto;
   margin-top: 148px;
 }
 
 .discover-collections__variant--left .discover-collections__image--3 {
   grid-column: 1;
   grid-row: 3;
-  height: 245px;
+  height: auto;
 }
 
 .discover-collections__variant--left .discover-collections__image--4 {
   grid-column: 2;
   grid-row: 3;
-  height: 245px;
-  margin-top: -42px;
+  height: auto;
+  margin-top: -130px;
 }
 
 .discover-collections__variant--left .discover-collections__image--5 {
   grid-column: 3;
   grid-row: 2 / span 2;
-  height: 245px;
+  height: auto;
 }
 
 .discover-collections__variant--left .discover-collections__image--6 {
   grid-column: 2;
   grid-row: 4;
-  height: 245px;
-  margin-top: -34px;
+  height: auto;
+  margin-top: -130px;
 }
 
 .discover-collections__variant--left .discover-collections__image--7 {
   grid-column: 3;
   grid-row: 4;
-  height: 245px;
+  height: auto;
+  margin-top: -175px;
 }
 
 .discover-collections__variant--left .discover-collections__image--8 {
   grid-column: 4;
   grid-row: 3 / span 2;
-  height: 245px;
-  margin-top: 16px;
+  height: auto;
+  margin-top: -25px;
 }
 
 /* RIGHT VARIANT DESKTOP */
 .discover-collections__variant--right .discover-collections__text {
   grid-column: 3 / 5;
   grid-row: 1 / span 2;
-  padding: 6px 0 0 18px;
+  padding: 6px 0 0 40px;
 }
 
 .discover-collections__variant--right .discover-collections__image--1 {
   grid-column: 1;
   grid-row: 1 / span 2;
-  height: 245px;
+  height: auto;
   margin-top: 78px;
 }
 
 .discover-collections__variant--right .discover-collections__image--2 {
   grid-column: 2;
   grid-row: 1;
-  height: 245px;
+  height: auto;
 }
 
 .discover-collections__variant--right .discover-collections__image--3 {
   grid-column: 1;
   grid-row: 3;
-  height: 245px;
+  height: auto;
+  margin-top: -95px;
 }
 
 .discover-collections__variant--right .discover-collections__image--4 {
   grid-column: 2;
   grid-row: 2 / span 2;
-  height: 245px;
-  margin-top: 18px;
+  height: auto;
 }
 
 .discover-collections__variant--right .discover-collections__image--5 {
   grid-column: 2;
   grid-row: 4;
-  height: 245px;
-  margin-top: -18px;
+  height: auto;
+  margin-top: -80px;
 }
 
 .discover-collections__variant--right .discover-collections__image--6 {
   grid-column: 3;
   grid-row: 3 / span 2;
-  height: 245px;
-  margin-top: 18px;
+  height: auto;
+  margin-top: -110px;
 }
 
 .discover-collections__variant--right .discover-collections__image--7 {
   grid-column: 3;
   grid-row: 4;
-  height: 245px;
-  display: none;
+  height: auto;
+  margin-top: -10px;
 }
 
 .discover-collections__variant--right .discover-collections__image--8 {
   grid-column: 4;
   grid-row: 3 / span 2;
-  height: 245px;
-  margin-top: 138px;
+  height: auto;
+  margin-top: 50px;
 }
 
 @media (min-width: 992px) and (max-width: 1279px) {
