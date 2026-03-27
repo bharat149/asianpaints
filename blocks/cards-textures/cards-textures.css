@@ -160,7 +160,7 @@
 }
 
 /* Mobile responsive */
-@media (width <= 1024px) {
+@media (width <=1024px) {
   .cards-textures {
     flex-wrap: wrap;
     border-radius: 12px;
@@ -210,14 +210,14 @@
   }
 }
 
-@media (width <= 768px) {
+@media (width <=768px) {
   .cards-textures-card {
     flex: 0 0 50%;
     height: 280px;
   }
 }
 
-@media (width <= 480px) {
+@media (width <=480px) {
   .cards-textures {
     flex-direction: column;
   }
@@ -229,7 +229,7 @@
 }
 
 /* Section styles for Cards Textures intro content */
-main > .section.cards-textures-container {
+main>.section.cards-textures-container {
   background: var(--cream-bg);
   padding: 60px 24px;
   margin: 0 -24px;
@@ -237,21 +237,21 @@ main > .section.cards-textures-container {
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-main > .section.cards-textures-container > .default-content-wrapper {
+main>.section.cards-textures-container>.default-content-wrapper {
   text-align: center;
   max-width: 800px;
   margin: 0 auto 32px;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-main > .section.cards-textures-container > .default-content-wrapper h2 {
+main>.section.cards-textures-container>.default-content-wrapper h2 {
   font-size: 28px;
   font-weight: 600;
   color: var(--text-color-dark);
   margin: 0 0 16px;
 }
 
-main > .section.cards-textures-container > .default-content-wrapper h2 .gradient-text {
+main>.section.cards-textures-container>.default-content-wrapper h2 .gradient-text {
   background: linear-gradient(90deg, #f8a12e, #be2a1d);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-background-clip: text;
@@ -260,7 +260,7 @@ main > .section.cards-textures-container > .default-content-wrapper h2 .gradient
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-main > .section.cards-textures-container > .default-content-wrapper p {
+main>.section.cards-textures-container>.default-content-wrapper p {
   color: var(--text-color-muted);
   font-size: 16px;
   line-height: 1.6;
@@ -268,7 +268,7 @@ main > .section.cards-textures-container > .default-content-wrapper p {
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-main > .section.cards-textures-container > .default-content-wrapper p strong a {
+main>.section.cards-textures-container>.default-content-wrapper p strong a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -283,30 +283,60 @@ main > .section.cards-textures-container > .default-content-wrapper p strong a {
   transition: all 0.3s ease;
 }
 
-main > .section.cards-textures-container > .default-content-wrapper p strong a::after {
+main>.section.cards-textures-container>.default-content-wrapper p strong a::after {
   content: '→';
   transition: transform 0.3s ease;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-main > .section.cards-textures-container > .default-content-wrapper p strong a:hover {
+main>.section.cards-textures-container>.default-content-wrapper p strong a:hover {
   background: var(--text-color-dark);
   color: #fff;
 }
 
-main > .section.cards-textures-container > .default-content-wrapper p strong a:hover::after {
+main>.section.cards-textures-container>.default-content-wrapper p strong a:hover::after {
   transform: translateX(4px);
 }
 
-@media (width >= 768px) {
-  main > .section.cards-textures-container {
+@media (width >=768px) {
+  main>.section.cards-textures-container {
     padding: 80px 56px;
     margin: 0 -56px;
     width: calc(100% + 112px);
   }
 
-  main > .section.cards-textures-container > .default-content-wrapper h2 {
+  main>.section.cards-textures-container>.default-content-wrapper h2 {
     font-size: 40px;
     margin: 0 0 20px;
   }
+}
+
+/* ============================================
+   Variant: width and margin fix
+   ============================================ */
+.section.cards-textures-container:has(.cards-textures.width-alt.block) {
+  width: 100%;
+  margin: 0;
+}
+
+.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2{
+  font-size: 32px;
+}
+
+.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2 strong{
+  background: linear-gradient(270deg, #f8a12e, #be2a1d 50.07%, #45216c 98.1%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 32px;
+}
+
+.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper p {
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: .5px;
+}
+
+.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper p a {
+  padding: 8px 20px;
 }
