@@ -147,7 +147,6 @@ export default async function decorate(block) {
   const totalSlides = swiperWrapper.children.length;
   let prevButton;
   let nextButton;
-  let paginationEl;
 
   carouselCol.innerHTML = '';
 
@@ -168,12 +167,12 @@ export default async function decorate(block) {
     navContainer.appendChild(prevButton);
     navContainer.appendChild(nextButton);
 
-    paginationEl = document.createElement('div');
-    paginationEl.className = 'tools-carousel-pagination swiper-pagination';
+    // paginationEl = document.createElement('div');
+    // paginationEl.className = 'tools-carousel-pagination swiper-pagination';
 
     carouselCol.appendChild(navContainer);
     carouselCol.appendChild(swiperEl);
-    carouselCol.appendChild(paginationEl);
+    // carouselCol.appendChild(paginationEl);
   } else {
     carouselCol.appendChild(swiperEl);
   }
@@ -196,10 +195,6 @@ export default async function decorate(block) {
       navigation: {
         prevEl: prevButton,
         nextEl: nextButton,
-      },
-      pagination: {
-        el: paginationEl,
-        clickable: false,
       },
       breakpoints: {
         0: {
