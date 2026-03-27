@@ -9,6 +9,7 @@
  */
 
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import { trackEvent } from '../../scripts/analytics.js';
 
 function prefersReducedMotion() {
   return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -147,6 +148,20 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
   });
 }
 
+function trackAccordionClick(block, summaryEl) {
+  const cta = block.classList.contains('faq') ? 'FAQ' : 'Accordion'; // FIXME: check for other variants
+  summaryEl.addEventListener('click', (e) => {
+    setTimeout(() => {
+      const state = e.target.closest(".accordion-item")?.open ? "Open" : "Close";
+      trackEvent("cta_link_text", {
+        "cta_": cta + " " + state,
+        "Title": e.target.textContent?.trim(), // FIXME: ??
+        "parentTitle": "" // FIXME: ??
+      });
+    }, 200);
+  });
+}
+
 export default function decorate(block) {
   const isFaq = block.classList.contains('faq');
   const rows = [...block.children];
@@ -179,6 +194,7 @@ export default function decorate(block) {
       if (index === 0) details.open = true;
 
       details.append(summary, body);
+      trackAccordionClick(block, summary);
 
       // ✅ ADD: JS slide open/close animation (only for FAQ)
       addDetailsAnimation(details, summary, body, {
@@ -221,6 +237,7 @@ export default function decorate(block) {
       moveInstrumentation(row, details);
       details.className = 'accordion-item';
       details.append(summary, body);
+      trackAccordionClick(block, summary);
 
       // (No animation for default variant — keeping behavior unchanged)
       row.replaceWith(details);

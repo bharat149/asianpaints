@@ -83,6 +83,26 @@ function getHrefItem(item) {
   return item.textContent?.trim() || '';
 }
 
+function trackNavClick(button, sectionTitle) {
+  if (!button) return;
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    let direction = '';
+    if (button.classList.contains('designer-collections-next') || button.classList.contains('swiper-button-next') || button.classList.contains('slick-next')) {
+      direction = 'Next';
+    } else if (button.classList.contains('designer-collections-prev') || button.classList.contains('swiper-button-prev') || button.classList.contains('slick-prev')) {
+      direction = 'Previous';
+    }
+
+    trackEvent('Navigation', {
+      direction,
+      testTitle: sectionTitle,
+    });
+  });
+}
+
 function createVideoElement(src, title) {
   if (!src) return null;
 
@@ -184,6 +204,9 @@ export default async function decorate(block) {
   nextButton.className = 'designer-collections-nav designer-collections-next swiper-button-next';
   nextButton.type = 'button';
   nextButton.setAttribute('aria-label', 'Next');
+
+  trackNavClick(prevButton, titleText);
+  trackNavClick(nextButton, titleText);
 
   navWrapper.appendChild(prevButton);
   navWrapper.appendChild(nextButton);

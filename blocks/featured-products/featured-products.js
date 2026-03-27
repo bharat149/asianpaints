@@ -4,6 +4,7 @@ Col 1 contains multiple desktop top images
 Col 2 contains multiple mobile top images
 Col 3 contains multiple URLs
 */
+import { trackEvent } from "../../scripts/analytics.js";
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -37,6 +38,13 @@ function getHref(linkCol) {
 
   const text = linkCol.textContent?.trim();
   return text || '#';
+}
+
+function getTitle(col) {
+  if (!col) return '';
+
+  const title = col.querySelector('h3');
+  return title?.textContent?.trim() || "";
 }
 
 export default async function decorate(block) {
@@ -118,6 +126,13 @@ export default async function decorate(block) {
       mobileWrap.appendChild(mobilePicture.cloneNode(true));
       anchor.appendChild(mobileWrap);
     }
+
+    anchor.addEventListener("click", (e) => {
+      trackEvent("product_tile_click", {
+        "productName": getTitle(linkCol),
+        "param1": href
+      });
+    });
 
     slide.appendChild(anchor);
     wrapper.appendChild(slide);
