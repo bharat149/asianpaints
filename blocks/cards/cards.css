@@ -36,7 +36,7 @@
 
 .section.cards-container:has(.cards.benefits)>.default-content-wrapper h2 {
   font-size: 32px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 35.2px;
   color: #000;
   margin-bottom: 10px;
@@ -129,8 +129,8 @@
 .cards.benefits .cards-card-body strong {
   display: block;
   font-size: 20px;
-  font-weight: 800;
-  color:#3b3d40;
+  font-weight: 600;
+  color: #3b3d40;
   margin-bottom: 6px;
   line-height: 1.3;
   font-family: var(--heading-font-family);
@@ -468,7 +468,7 @@
 
 .section.cards-container:has(.cards.services)>.default-content-wrapper h2 {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 16px;
 }
 
@@ -628,9 +628,9 @@
     margin-bottom: 16px;
   }
 
-  .cards.services .cards-card-body p:nth-child(1) strong{
+  .cards.services .cards-card-body p:nth-child(1) strong {
     font-size: 36px;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 2px;
   }
 
@@ -667,6 +667,14 @@
   gap: 40px;
 }
 
+.cards.room .cards-card-description {
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 1.71;
+  letter-spacing: .54px;
+  color: #000;
+}
+
 @media screen and (max-width:992px) {
   .section.cards-container:has(.cards.room)>.default-content-wrapper h2 {
     font-size: 22px;
@@ -678,6 +686,16 @@
 
   .cards.room>ul {
     gap: 40px;
+  }
+
+  .cards.room .cards-card-image-link {
+    display: block;
+  }
+
+  .cards.room .cards-card-image-link picture,
+  .cards.room .cards-card-image-link img {
+    display: block;
+    width: 100%;
   }
 
   .cards.room .cards-card-body strong,
@@ -740,7 +758,7 @@
 .cards.room .cards-card-body strong,
 .cards.room .cards-card-body h3 {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 12px;
   line-height: 1.3;
@@ -750,7 +768,7 @@
 .cards.room .cards-card-body p strong {
   display: block;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   color: #222;
   margin: 0 0 12px;
   line-height: 1.3;
@@ -775,7 +793,7 @@
   padding: 9px 20px;
   align-items: center;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-flex;
   gap: 10px;
   cursor: pointer;
@@ -954,10 +972,10 @@
 }
 
 .section.cards-container:has(.cards.grid)>.default-content-wrapper h1 {
-  font-weight: 700;
+  font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 20px;
   line-height: normal;
 }
@@ -1031,7 +1049,7 @@
     max-width: calc(100% - 200px);
     font-size: 40px;
     font-style: normal;
-    font-weight: 800;
+    font-weight: 600;
     color: #000;
     line-height: 35.2px;
   }
@@ -1508,7 +1526,7 @@
   margin: 0 0 6px;
 
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 27.32px;
 
   color: #3b3d40;
@@ -1577,7 +1595,7 @@
   .cards.features .cards-card-body h3,
   .cards.features .cards-card-body h4 {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 21px;
 
     margin-bottom: 0;
@@ -1590,96 +1608,6 @@
     font-weight: 400;
     line-height: 16.8px;
     margin-bottom: 0;
-  }
-}
-
-
-/* ============================================
-   Variant: recommended — Cards (recommended)
-   ============================================ */
-
-.cards.recommended {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 51px;
-}
-
-.cards.recommended>ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
-}
-
-.cards.recommended>ul>li {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.cards.recommended>ul>li:hover {
-  transform: translateY(-2px);
-}
-
-.cards.recommended .cards-card-image {
-  line-height: 0;
-  margin-bottom: 12px;
-}
-
-.cards.recommended .cards-card-image picture,
-.cards.recommended .cards-card-image img {
-  width: 100%;
-  aspect-ratio: 280 / 236;
-  object-fit: cover;
-  border-radius: 0;
-}
-
-.cards.recommended .cards-card-body {
-  padding: 0;
-  margin: 0;
-}
-
-.cards.recommended .cards-card-body p {
-  margin: 0;
-}
-
-.cards.recommended .cards-card-body strong,
-.cards.recommended .cards-card-body p:first-child {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #222;
-  font-family: var(--body-font-family, 'Manrope', sans-serif);
-  text-align: left;
-  margin-bottom: 7px;
-}
-
-.cards.recommended .cards-card-body a {
-  display: none;
-}
-
-@media (width < 1024px) {
-  .cards.recommended>ul {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  .cards.recommended {
-    padding: 0 24px;
-  }
-}
-
-@media (width < 600px) {
-  .cards.recommended>ul {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .cards.recommended {
-    padding: 0 16px;
   }
 }
 
@@ -1759,7 +1687,7 @@
 .cards.cta .cards-card-body p:first-child {
   font-family: Manrope, sans-serif;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 600;
   color: #222;
   margin: 0;
   line-height: 24px;
@@ -1832,113 +1760,4 @@
   .cards.cta .cards-card-body .button-container a.button::after {
     font-size: 20px;
   }
-}
-
-/* ============================================
-   Section: Cards (recommended) — intro content
-   ============================================ */
-.section.cards-container:has(.cards.recommended) {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 0;
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.section.cards-container:has(.cards.recommended)>.default-content-wrapper h2 {
-  font-size: 20px;
-  font-weight: 700;
-  font-family: Manrope, sans-serif;
-  line-height: 1.2;
-  margin-bottom: 20px;
-  text-align: center;
-  background: linear-gradient(330deg, rgb(248 161 46), rgb(190 42 29) 50.07%, rgb(69 33 108) 60.1%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  width: 100%;
-}
-
-/* ============================================
-   Section: Cards (gallery) — intro content
-   ============================================ */
-.section.cards-container:has(.cards.gallery) {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 0;
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.section.cards-container:has(.cards.gallery)>.default-content-wrapper h2 {
-  font-size: 24px;
-  font-weight: 700;
-  font-family: Manrope, sans-serif;
-  line-height: 1.3;
-  margin-bottom: 12px;
-  text-align: left;
-  color: var(--text-color);
-  padding: 0 16px;
-}
-
-@media (width >=768px) {
-  .section.cards-container:has(.cards.gallery)>.default-content-wrapper h2 {
-    font-size: 32px;
-    padding: 0 51px;
-  }
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.section.cards-container:has(.cards.gallery)>.default-content-wrapper p {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--text-color-muted);
-  margin-bottom: 16px;
-  padding: 0 16px;
-}
-
-@media (width >=768px) {
-  .section.cards-container:has(.cards.gallery)>.default-content-wrapper p {
-    font-size: 16px;
-    padding: 0 51px;
-  }
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.section.cards-container:has(.cards.gallery)>.default-content-wrapper .button-container {
-  margin-bottom: 24px;
-  padding: 0 16px;
-}
-
-@media (width >=768px) {
-  .section.cards-container:has(.cards.gallery)>.default-content-wrapper .button-container {
-    padding: 0 51px;
-  }
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.section.cards-container:has(.cards.gallery)>.default-content-wrapper a.button {
-  background-color: transparent;
-  border: 1.5px solid var(--text-color);
-  color: var(--text-color);
-  padding: 12px 24px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: none;
-  border-radius: 30px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section.cards-container:has(.cards.gallery)>.default-content-wrapper a.button::after {
-  content: "→";
-  font-size: 14px;
-}
-
-/* stylelint-disable-next-line no-descending-specificity */
-.section.cards-container:has(.cards.gallery)>.default-content-wrapper a.button:hover {
-  background-color: var(--text-color);
-  color: #fff;
 }

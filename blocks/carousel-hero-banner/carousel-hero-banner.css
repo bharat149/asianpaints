@@ -36,7 +36,7 @@
     padding: 14px 20px;
     align-items: center;
     font-size: clamp(14px, 1vw, 16px);
-    font-weight: 700;
+    font-weight: 600;
     display: inline-flex !important;
     gap: 10px;
     height: 38px;

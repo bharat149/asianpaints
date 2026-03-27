@@ -246,7 +246,7 @@ main > .section.cards-textures-container > .default-content-wrapper {
 /* stylelint-disable-next-line no-descending-specificity */
 main > .section.cards-textures-container > .default-content-wrapper h2 {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-color-dark);
   margin: 0 0 16px;
 }

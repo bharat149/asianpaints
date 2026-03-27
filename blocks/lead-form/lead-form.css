@@ -331,7 +331,7 @@
   background: linear-gradient(180deg, #f5c842 0%, #f0a830 100%);
   color: #222;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: inherit;
   text-transform: none;
   letter-spacing: normal;
@@ -483,7 +483,7 @@
   margin: 0 0 7px;
   color: #222;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
 }
 

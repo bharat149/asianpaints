@@ -1,3 +1,4 @@
+import { trackEvent, getDigitalData } from "../../scripts/analytics.js";
 /*
 ** Authoring format **
 Column 1 → logo desktop
@@ -274,6 +275,15 @@ export default async function decorate(block) {
 
     cta.appendChild(ctaText);
     cta.appendChild(ctaIcon);
+
+    cta.addEventListener("click", function (e) {
+      const data = {
+        "Title": title,
+        "pdfName": pdfHref.split('/').pop().replace(".pdf", "")
+      }
+      getDigitalData().download = data;
+      trackEvent("download_multiple_pdf", data);
+    });
     ctaWrap.appendChild(cta);
 
     cardInner.appendChild(logoWrap);
