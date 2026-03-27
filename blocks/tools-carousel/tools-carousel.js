@@ -6,6 +6,8 @@ col 3 = multiple titles
 col 4 = multiple URLs
 */
 
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -80,6 +82,26 @@ function getHrefFromItem(item) {
   return text || '#';
 }
 
+function trackNavClick(button, parentTitle) {
+  if (!button) return;
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    let direction = '';
+    if (button.classList.contains('tools-carousel-next') || button.classList.contains('swiper-button-next')) {
+      direction = 'Next';
+    } else if (button.classList.contains('tools-carousel-prev') || button.classList.contains('swiper-button-prev')) {
+      direction = 'Previous';
+    }
+
+    trackEvent('Navigation', {
+      direction,
+      testTitle: parentTitle,
+    });
+  });
+}
+
 export default async function decorate(block) {
   const section = block.closest('.section');
   if (section) {
@@ -98,6 +120,9 @@ export default async function decorate(block) {
   const imageCol = columns[1];
   const titleCol = columns[2];
   const linkCol = columns[3];
+  const parentTitle = headingCol.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent?.trim()
+    || headingCol.textContent?.trim()
+    || '';
 
   const carouselCol = document.createElement('div');
   carouselCol.className = 'tools-carousel-items';
@@ -123,7 +148,8 @@ export default async function decorate(block) {
   for (let i = 0; i < items; i += 1) {
     const slide = document.createElement('a');
     slide.className = 'tools-carousel-slide swiper-slide';
-    slide.href = getHrefFromItem(linkItems[i]);
+    const buttonLink = getHrefFromItem(linkItems[i]);
+    slide.href = buttonLink;
 
     const imageNode = getImageFromItem(imageItems[i]);
     const titleText = getTitleFromItem(titleItems[i]);
@@ -138,6 +164,11 @@ export default async function decorate(block) {
       title.textContent = titleText;
       slide.appendChild(title);
     }
+
+    slide.addEventListener('click', () => {
+      const buttonTitle = titleText || slide.querySelector('.tools-carousel-title')?.textContent?.trim() || '';
+      triggerCTAClickWithLinkAndTitle(buttonLink, buttonTitle, parentTitle);
+    });
 
     swiperWrapper.appendChild(slide);
   }
@@ -164,6 +195,9 @@ export default async function decorate(block) {
     nextButton.className = 'tools-carousel-nav tools-carousel-next swiper-button-next';
     nextButton.type = 'button';
     nextButton.setAttribute('aria-label', 'Next');
+
+    trackNavClick(prevButton, parentTitle);
+    trackNavClick(nextButton, parentTitle);
 
     navContainer.appendChild(prevButton);
     navContainer.appendChild(nextButton);
