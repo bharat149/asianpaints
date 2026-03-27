@@ -195,7 +195,11 @@
   color: #53565a;
   font-size: 12px;
   font-weight: 400;
-  line-height: 24px;
+  line-height: 16.8px;
+}
+.form.block .form-consent-text-whatsapp {
+  color: #000000;
+  font-weight: 500;
 }
 
 .form.block .form-consent-box {
@@ -203,7 +207,7 @@
   flex: 0 0 22px;
   width: 22px;
   height: 22px;
-  border: 1px solid #53565a;
+  border: 1px solid #b0b1b3;
   border-radius: 6px;
   background: transparent;
   transition: all 0.2s ease;
@@ -676,6 +680,7 @@ align-self: center;
   }
   .form.block .form-subtitle p {
     font-size: inherit;
+    margin-bottom: 0;
   }
 
   .form.block .form-inputs-grid {
@@ -695,7 +700,7 @@ align-self: center;
   .form.block .form-input,
   .form.block .form-control.form-input {
     height: 52px;
-    padding: 20px 18px 16px;
+    padding: 18px 18px 18px;
     font-size: 16px;
     border-radius: 12px;
   }
@@ -714,9 +719,13 @@ align-self: center;
     width: 100%;
     gap: 16px;
   }
+  .form.block .form-consent-item:nth-of-type(1)
+  {
+    margin-bottom: 10px;
+  }
 
   .form.block .form-consent-text {
-    font-size: 14px;
+    /* font-size: 14px; */
   }
 
   .form.block .form-consent-box {
