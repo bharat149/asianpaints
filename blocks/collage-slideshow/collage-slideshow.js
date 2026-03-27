@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 function getSwiperClass() {
   if (window.Swiper) return Promise.resolve(window.Swiper);
   if (window.loadSwiper) return window.loadSwiper();
@@ -152,14 +154,20 @@ function createContentPanel(contentRow) {
     if (paragraphs[3]) paragraphs[3].classList.add('collage-slideshow__description');
   }
 
+  const parentTitle = panel.querySelector('.collage-slideshow__title-line, h1, h2, h3, h4, h5, h6, p')?.textContent?.trim() || '';
+
   const firstLink = links[0];
   if (firstLink) {
     firstLink.classList.add('collage-slideshow__cta');
     const label = firstLink.textContent.trim();
+    const ctaLink = firstLink.getAttribute('href') || firstLink.href || '';
     firstLink.innerHTML = `
       <span>${label}</span>
       <span class="collage-slideshow__cta-icon" aria-hidden="true">➜</span>
     `;
+    firstLink.addEventListener('click', () => {
+      triggerCTAClickWithLinkAndTitle(ctaLink, label, parentTitle);
+    });
   }
 
   return panel;
