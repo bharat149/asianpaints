@@ -105,7 +105,7 @@ function createConsentArea() {
           value="true"
         />
         <span class="form-consent-toggle" aria-hidden="true"></span>
-        <span class="form-consent-text">Update me on WhatsApp</span>
+        <span class="form-consent-text form-consent-text-whatsapp">Update me on WhatsApp</span>
       </label>
   <div class = "form-consent-options-right" >
       <label class="form-consent-item">
@@ -529,7 +529,14 @@ function renderForm(block) {
   if (!inputsGrid.children.length) return;
 
   fieldsArea.appendChild(inputsGrid);
-  fieldsArea.appendChild(createConsentArea());
+  const consentArea = createConsentArea();
+  fieldsArea.appendChild(consentArea);
+
+  // ✅ CHECK WHATSAPP BY DEFAULT
+  const whatsappCheckbox = consentArea.querySelector('[name="updateMeOnWhatsapp"]');
+  if (whatsappCheckbox) {
+    whatsappCheckbox.checked = true;
+  }
 
   if (buttonCell.children.length) {
     fieldsArea.appendChild(buttonCell);
