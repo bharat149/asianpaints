@@ -52,6 +52,7 @@ main>.section .explore-split-wrapper {
 .textures-mobile p {
   position: absolute;
   width: 48%;
+  margin: 0;
 }
 
 .textures-mobile p:nth-child(1) {
@@ -76,7 +77,7 @@ main>.section .explore-split-wrapper {
 
 .textures-mobile p.button-container,
 .wallpapers-mobile p.button-container {
-  bottom: 0;
+  bottom: 5%;
   width: 100%;
   text-align: center;
 }

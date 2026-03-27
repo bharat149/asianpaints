@@ -43,7 +43,9 @@
   font-size: 16px;
   line-height: 24.8px;
 }
-
+.color-gallery p:has(picture) {
+  margin: 0;
+}
 .color-gallery-text p:last-child {
   margin-bottom: 0;
 }
@@ -236,22 +238,31 @@
 .color-gallery-nav::after {
   display: none;
 }
-
+.color-gallery-prev , .color-gallery-next {
+  border: unset !important;
+  padding: 0;
+}
+.color-gallery-prev:hover , .color-gallery-next:hover {
+  background: none !important;
+}
 .color-gallery-prev::before {
-  /* content: '←'; */
-  content: " ";
-  background-image: url('/icons/Icons-Sprite-firstFold.webp');
+content: " ";
+  background-image: url('/icons/round-black-prev-icon.svg');
   width: 22px;
   height: 13px;
-  background-position: -115px -126px;
+  background-repeat: no-repeat;
+  width: 44px;
+  height: 44px;
 }
 
 .color-gallery-next::before {
   content: " ";
-  background-image: url('/icons/Icons-Sprite-firstFold.webp');
+  background-image: url('/icons/round-black-next-icon.svg');
   width: 22px;
   height: 13px;
-  background-position: -148px -126px;
+  background-repeat: no-repeat;
+  width: 44px;
+  height: 44px;
 }
 
 /* Mobile CTA - hidden by default on desktop */
@@ -294,7 +305,7 @@
 @media (max-width: 991px) {
   .color-gallery {
     flex-direction: column;
-    padding: 40px 20px;
+    padding: 0px 20px 40px 20px;
     gap: 10px;
     max-width: 100%;
   }
@@ -367,6 +378,17 @@
 }
 
 @media (min-width: 992px) {
+  .color-gallery p:has(picture) picture {
+    width: 205px;
+    height: 40px;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .color-gallery p:has(picture) picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
   .section.color-gallery-container {
     margin: 80px 0;
   }
@@ -399,12 +421,23 @@
 }
 
 @media (max-width: 991px) {
+  .color-gallery p:has(picture) picture {
+    width: 125px;
+    height: 24px;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .color-gallery p:has(picture) picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
   .color-gallery-navigation {
     /* display: none; */
   }
   .color-gallery-navigation .color-gallery-nav {
-    width: 44px !important;
-    height: 44px !important;
+    width: 45px !important;
+    height: 45px !important;
   }
 
   .color-gallery-pagination {

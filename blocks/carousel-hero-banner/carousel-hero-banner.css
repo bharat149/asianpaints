@@ -11,6 +11,7 @@
     height: auto;
     min-height: unset;
     object-fit: cover;
+    display: block;
 }
 
 .carousel-hero-banner-wrapper .swiper-slide .video-overlay {
@@ -237,4 +238,8 @@
     .carousel-hero-banner-wrapper .swiper-slide[data-slide="3"] .hero-cta:hover::after {
         filter: invert(1);
     }
+}
+.hero-media {
+  position: relative;
+  width: 100%;   /* ✅ IMPORTANT */
 }
