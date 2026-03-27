@@ -8,6 +8,8 @@
 .discover-collections {
   max-width: 1322px;
   margin: 0 auto;
+  padding-right: 4%;
+  padding-left: 4%;
 }
 
 .discover-collections__block-header {
@@ -299,7 +301,8 @@
 
 @media (max-width: 991px) {
   .discover-collections {
-    padding: 8px 8px 10px;
+    padding-right: 4.5%;
+    padding-left: 4.5%;
   }
 
   .discover-collections__block-header {

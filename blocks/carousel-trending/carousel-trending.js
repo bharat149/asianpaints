@@ -18,7 +18,6 @@ function createObserver($) {
 
       $overlay.data('animated', true);
 
-      // slight stagger based on card index
       const index = $overlay.closest('.card').index();
 
       setTimeout(() => {
@@ -43,12 +42,16 @@ export default async function decorate(block) {
   const Swiper = await getSwiper();
   if (!Swiper) return;
 
-  const observer = createObserver($);
-
+  let observer = createObserver($);
   let swiper = null;
   let mode = '';
   const bp = 768;
   const ns = `.carousel-${Date.now()}`;
+
+  function resetObserver() {
+    if (observer) observer.disconnect();
+    observer = createObserver($);
+  }
 
   /**
    * Build one card
@@ -75,36 +78,58 @@ export default async function decorate(block) {
     return $card;
   }
 
+  function destroySwiper() {
+    if (swiper) {
+      swiper.destroy(true, true);
+      swiper = null;
+    }
+  }
+
   // Mobile swiper layout
   function renderMobile() {
+    resetObserver();
     $block.empty();
 
     const $swiper = $('<div class="swiper"></div>');
     const $wrapper = $('<div class="swiper-wrapper"></div>');
     const $pagination = $('<div class="swiper-pagination"></div>');
 
+    let slideCount = 0;
+
     items.forEach((item) => {
       const $card = makeCard(item, 1, true);
-      if ($card) $wrapper.append($card);
+      if ($card) {
+        $wrapper.append($card);
+        slideCount += 1;
+      }
     });
 
     $swiper.append($wrapper);
     $block.append($swiper, $pagination);
 
-    swiper = new Swiper($swiper[0], {
-      loop: true,
-      slidesPerView: 1.2,
-      spaceBetween: 10,
-      pagination: {
-        el: $pagination[0],
-        clickable: true,
-      },
-      autoplay: false,
+    // Init after DOM is painted
+    requestAnimationFrame(() => {
+      swiper = new Swiper($swiper[0], {
+        loop: slideCount > 1,
+        slidesPerView: 1.2,
+        spaceBetween: 10,
+        observer: true,
+        observeParents: true,
+        observeSlideChildren: true,
+        pagination: {
+          el: $pagination[0],
+          clickable: true,
+        },
+        autoplay: false,
+      });
+
+      swiper.update();
     });
   }
 
   // Desktop static layout
   function renderDesktop() {
+    resetObserver();
     $block.empty();
 
     const $container = $('<div class="card-container"></div>');
@@ -122,13 +147,13 @@ export default async function decorate(block) {
     const nextMode = window.innerWidth <= bp ? 'mobile' : 'desktop';
     if (nextMode === mode) return;
 
-    if (swiper) {
-      swiper.destroy(true, true);
-      swiper = null;
-    }
+    destroySwiper();
 
-    if (nextMode === 'mobile') renderMobile();
-    else renderDesktop();
+    if (nextMode === 'mobile') {
+      renderMobile();
+    } else {
+      renderDesktop();
+    }
 
     mode = nextMode;
   }
