@@ -360,6 +360,8 @@ main>.section .explore-split-wrapper {
    main>.section>.default-content-wrapper #explore-beyond-colours {
     font-size: 40px;
     line-height: 54px;
+    margin-bottom: 50px;
+    margin-top: 0px;
    }
   .textures-desktop #textures,
 .wallpapers-desktop #wallpapers {

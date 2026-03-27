@@ -550,7 +550,7 @@ main > .section:has(> .default-content-wrapper:only-child > picture:only-child) 
 main > .section > .default-content-wrapper h2 {
   font-size: 30px;
   font-weight: 600;
-  line-height: 1.13;
+  line-height: normal;
   color: #222;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
