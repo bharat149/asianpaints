@@ -1,3 +1,5 @@
+import { trackEvent } from '../../scripts/analytics.js';
+
 // Get Swiper instance
 async function getSwiper() {
   if (window.Swiper) return window.Swiper;
@@ -5,6 +7,26 @@ async function getSwiper() {
 
   console.warn('Swiper not available');
   return null;
+}
+
+function normalizeButtonLink(href) {
+  if (!href) return '';
+
+  const lowerHref = href.toLowerCase();
+  if (
+    lowerHref.startsWith('mailto:')
+    || lowerHref.startsWith('tel:')
+    || lowerHref.startsWith('javascript:')
+    || lowerHref.startsWith('#')
+  ) {
+    return href;
+  }
+
+  if (href.indexOf('.html') === -1) {
+    return `${href}.html`;
+  }
+
+  return href;
 }
 
 // Desktop: animate each card when that card enters viewport
@@ -73,6 +95,38 @@ export default async function decorate(block) {
 
   const bp = 768;
   const ns = `.carousel-${Date.now()}`;
+
+  if (block.dataset.ctaTrackingBound !== 'true') {
+    block.dataset.ctaTrackingBound = 'true';
+    block.addEventListener('click', (event) => {
+      const anchor = event.target.closest('.card-container a, .swiper a');
+      if (!anchor || !block.contains(anchor)) return;
+
+      if (anchor.closest('.imageAccordion-withicon.flip-Image-OnHover')) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const titleNode = anchor.querySelector('h3');
+      const buttonTitle = titleNode?.textContent?.trim() || anchor.textContent.trim();
+      const buttonLink = normalizeButtonLink(anchor.getAttribute('href') || '');
+      const targetAttr = anchor.getAttribute('target') || '';
+
+      trackEvent('cta_link_text', {
+        cta_: buttonTitle,
+        param1: buttonLink,
+      });
+
+      if (buttonLink) {
+        if (targetAttr.indexOf('blank') > -1) {
+          window.open(buttonLink, '_blank');
+        } else {
+          window.location.href = buttonLink;
+        }
+      }
+    });
+  }
 
   function resetObservers() {
     if (cardObserver) {
