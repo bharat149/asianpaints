@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 function getTextContent(cell) {
   return cell?.textContent?.trim() || '';
 }
@@ -184,6 +186,10 @@ export default function decorate(block) {
   const row = rows[0];
   if (!row || row.children.length < 7) return;
 
+  const titleCell = row.children[3];
+  const { line1, line2 } = getTitleLines(titleCell);
+  const parentTitle = [line1, line2].filter(Boolean).join(' ').trim();
+
   block.textContent = '';
   block.classList.add('royal-play-banner');
 
@@ -191,4 +197,16 @@ export default function decorate(block) {
   const mobile = createMobileLayout(row);
 
   block.append(desktop, mobile);
+
+  if (block.dataset.royalPlayAnalyticsBound !== 'true') {
+    block.dataset.royalPlayAnalyticsBound = 'true';
+    block.addEventListener('click', (event) => {
+      const cta = event.target.closest('.royal-play-banner__cta');
+      if (!cta || !block.contains(cta)) return;
+
+      const ctaLink = cta.getAttribute('href') || '';
+      const btnTitle = cta.textContent.trim();
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  }
 }
