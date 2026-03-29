@@ -19,7 +19,7 @@ Col 6 - CTA label and Redirection link
 Col 7 - Button type
 */
 
-
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 async function getSwiper() {
   if (window.Swiper) return window.Swiper;
@@ -29,9 +29,7 @@ async function getSwiper() {
   return null;
 }
 
-/**
- * Safely get trimmed text content
- */
+
 function getTextContent(cell) {
   return cell?.textContent?.trim() || '';
 }
@@ -362,6 +360,10 @@ function addCustomArrowsToPagination(paginationEl, swiper) {
 export default async function decorate(block) {
   const rows = [...block.children];
 
+  const titleCell = row.children[3];
+  const { line1, line2 } = getTitleLines(titleCell);
+  const parentTitle = [line1, line2].filter(Boolean).join(' ').trim();
+
   block.textContent = '';
   block.classList.add('royal-play-banner');
 
@@ -387,4 +389,17 @@ export default async function decorate(block) {
 
   addCustomArrowsToPagination(desktop.pagination, desktopSwiper);
   addCustomArrowsToPagination(mobile.pagination, mobileSwiper);
+  block.append(desktop, mobile);
+
+  if (block.dataset.royalPlayAnalyticsBound !== 'true') {
+    block.dataset.royalPlayAnalyticsBound = 'true';
+    block.addEventListener('click', (event) => {
+      const cta = event.target.closest('.royal-play-banner__cta');
+      if (!cta || !block.contains(cta)) return;
+
+      const ctaLink = cta.getAttribute('href') || '';
+      const btnTitle = cta.textContent.trim();
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  }
 }

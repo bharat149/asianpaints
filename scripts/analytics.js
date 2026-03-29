@@ -16,7 +16,81 @@ export function getDigitalData() {
  * @param {Object} [eventData] Optional event data
  */
 export function trackEvent(eventName, eventData = {}) {
+  getDigitalData().event = eventName;
   window._satellite && window._satellite.track(eventName, eventData);
+}
+
+function toUrl(urlLike) {
+  try {
+    return new URL(urlLike, window.location.origin);
+  } catch (e) {
+    return new URL(window.location.href);
+  }
+}
+
+function buildPageData(urlObj) {
+  const parts = urlObj.pathname.split('/').filter(Boolean);
+
+  return {
+    destinationURL: urlObj.href,
+    pageName: `in::${parts.join(':')}`,
+    section1: parts[0] || '',
+    section2: parts[1] || '',
+    section3: parts[2] || '',
+    section4: parts[3] || '',
+  };
+}
+
+function getParam(urlObj, key) {
+  return urlObj.searchParams.get(key) || '';
+}
+
+function getMcidFromCookie() {
+  return window._satellite?.getVisitorId?.()?.getMarketingCloudVisitorID?.() || '';
+}
+
+function setDigitalDataContext(destinationUrl = window.location.href) {
+  const currentUrl = toUrl(window.location.href);
+  const targetUrl = toUrl(destinationUrl);
+  const digitalData = getDigitalData();
+
+  const source = getParam(currentUrl, 'utm_source') || getParam(currentUrl, 'source')
+    || getParam(targetUrl, 'utm_source') || getParam(targetUrl, 'source');
+  const medium = getParam(currentUrl, 'utm_medium') || getParam(currentUrl, 'medium')
+    || getParam(targetUrl, 'utm_medium') || getParam(targetUrl, 'medium');
+  const campaign = getParam(currentUrl, 'utm_campaign') || getParam(currentUrl, 'campaign')
+    || getParam(targetUrl, 'utm_campaign') || getParam(targetUrl, 'campaign');
+  const cid = getParam(currentUrl, 'cid') || getParam(targetUrl, 'cid') || 'null';
+
+  digitalData.page = buildPageData(targetUrl);
+  digitalData.utmValues = {
+    source,
+    medium,
+    campaign,
+    cid,
+  };
+  digitalData.product = {
+    productName: '',
+    productCode: '',
+    productPrice: '',
+    productQuantity: 1,
+    relatedProduct: '',
+  };
+  digitalData.skuCodeList = {
+    skuCodes: '',
+  };
+  digitalData.device = {
+    deviceType: navigator.userAgent,
+  };
+  digitalData.user = {
+    loginStatus: digitalData.user?.loginStatus || 'not logged in',
+    mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    ipAddress: digitalData.user?.ipAddress || '',
+    emailId: digitalData.user?.emailId || '',
+    mobileNumber: digitalData.user?.mobileNumber || '',
+    loginFunction: digitalData.user?.loginFunction || '',
+  };
+  digitalData.event = digitalData.event || '';
 }
 
 /**
@@ -27,6 +101,8 @@ export function trackEvent(eventName, eventData = {}) {
  */
 export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) {
   if (!ctaLink) return;
+
+  setDigitalDataContext(ctaLink);
 
   if (ctaLink.indexOf('javascript:void') > -1) {
     trackEvent('custom_cta_click', {
@@ -44,6 +120,16 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   }
 }
 
+function getTrackingLinkValue(link) {
+  const href = link.getAttribute('href') || '';
+  const redirectionLink = link.getAttribute('data-redirection-link') || '';
+
+  if (href.indexOf('javascript:void') > -1 && redirectionLink) {
+    return redirectionLink;
+  }
+
+  return href || redirectionLink;
+}
 function getButtonContainerParentTitle(link) {
   const section = link.closest('.section');
   const block = link.closest('.block');
@@ -82,14 +168,6 @@ export function bindButtonContainerTracking(element) {
  * Initializes the data layer and loads the Adobe Launch script.
  */
 export async function initAnalytics() {
-  // Add page metadata
-  getDigitalData().page = {
-    title: document.title,
-    url: window.location.href,
-    path: window.location.pathname,
-    // Add any other global meta from <meta> tags here
-  };
-
   // Load the Launch script
   const siteConfig = await getSiteConfig();
   const launchUrl = siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
@@ -97,4 +175,5 @@ export async function initAnalytics() {
     return;
   }
   await loadScript(launchUrl, { async: true });
+  setDigitalDataContext(window.location.href);
 }

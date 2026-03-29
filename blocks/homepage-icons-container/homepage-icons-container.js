@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
 
   /* =========================
@@ -11,6 +13,11 @@ export default function decorate(block) {
   const iconsWrapper = block.closest(".homepage-icons-container-wrapper");
 
   if (!defaultContent || !iconsWrapper) return;
+
+  const parentTitle = defaultContent
+    .querySelector("h1, h2, h3, h4, h5, h6")
+    ?.textContent
+    ?.trim() || "";
 
   /* =========================
        STEP 2: WRAP BOTH (ONCE)
@@ -44,14 +51,18 @@ export default function decorate(block) {
 
     const first = titleEls[0]?.textContent?.trim() || "";
     const last = titleEls[1]?.textContent?.trim() || "";
+    const btnTitle = [first, last].filter(Boolean).join(" ");
 
     /* ===== CREATE LINK ===== */
 
     const a = document.createElement("a");
     a.href = link;
     a.className = "icon-item banner-icon";
-    a.title = `${first} ${last}`;
+    a.title = btnTitle;
     a.target = "_self";
+    a.addEventListener("click", () => {
+      triggerCTAClickWithLinkAndTitle(link, btnTitle, parentTitle);
+    });
 
     /* ===== FIGURE ===== */
 
