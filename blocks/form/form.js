@@ -19,6 +19,8 @@ const ERROR_DESKTOP_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcat
 const ERROR_MOBILE_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccessMweb.webp';
 const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
 const ERROR_DOWNLOAD_LINK = 'https://static.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+const THANK_YOU_TWO_DESKTOP = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-desktop.webp'
+const THANK_YOU_TWO_MOB = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-mobile.webp'
 
 let formName = "";
 let campaignId = ""; // FIXME: work on this
@@ -281,6 +283,41 @@ function createThankYouScreen(block) {
     });
   });
 
+const ins = document.createElement('a')
+ins.className = 'intereseted-cta';
+ins.href = 'javascript:void(0)';
+ins.setAttribute('aria-label', 'Yes I am Interseted');
+ins.addEventListener('click', () => {
+  const parent = ins.closest('.form-popup-overlay'); // ✅ scope to this instance
+  if (!parent) return;
+
+  const videoEl = parent.querySelector('video');
+  const ctaEl = parent.querySelector('.form-popup-success-cta');
+  const insEl = parent.querySelector('.intereseted-cta');
+
+  // ✅ hide existing elements
+  if (videoEl) videoEl.style.display = 'none';
+  if (ctaEl) ctaEl.style.display = 'none';
+  if (insEl) insEl.style.display = 'none';
+
+  // ✅ create new UI
+  const isMobile = window.matchMedia('(max-width: 991px)').matches;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'thank-you-pop-two';
+
+  wrapper.innerHTML = `
+    <img class="thank-img-desk" src="${THANK_YOU_TWO_DESKTOP}" alt="thank you" />
+    <img class="thank-img-mob" src="${THANK_YOU_TWO_MOB}" alt="thank you" />
+    <a class="explore-now-rewamp" href="${THANK_YOU_CTA_LINK}" target="_blank">
+      Explore Now
+    </a>
+  `;
+
+  // ✅ append inside same overlay
+  parent.appendChild(wrapper);
+});
+
   video.addEventListener('ended', () => {
     video.pause();
   });
@@ -289,7 +326,7 @@ function createThankYouScreen(block) {
     closeActivePopup(block, overlay, video);
   });
 
-  overlay.append(closeBtn, video, cta);
+  overlay.append(closeBtn, video, cta ,ins ) ;
 
   return overlay;
 }
