@@ -2,14 +2,14 @@
 
 /* Section styling */
 .section.cards-action-container {
-  background-color: #faf8f5;
-  padding: 60px 24px;
+  /* background-color: #faf8f5; */
+  padding: 0 24px;
 }
 
 @media (min-width: 900px) {
-  .section.cards-action-container {
+  /* .section.cards-action-container {
     padding: 80px 40px;
-  }
+  } */
 }
 
 /* Block container */
@@ -88,8 +88,8 @@
 
 
 .cards-action-image {
-  width: 108px;
-  height: 108px;
+  width: 105px;
+  height: 105px;
   margin: 0 auto;
 }
 

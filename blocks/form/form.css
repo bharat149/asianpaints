@@ -378,10 +378,6 @@ align-self: center;
   cursor: pointer;
 }
 
-.form.block .form-popup-close:hover {
-  /* background: #fff; */
-}
-
 /* Success popup */
 .form.block .form-popup-overlay--success {
   background: #ded7cb;
@@ -527,6 +523,31 @@ align-self: center;
   line-height: 1.3;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.form-field-error {
+  min-height: 20px;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #ff2343;
+  text-align: left;
+}
+
+.form-field.has-error .form-input,
+.form-input.is-invalid {
+  border-color: #ff2343 !important;
+  box-shadow: none !important;
+}
+
+.form-field.has-error .form-field-label {
+  color: inherit;
 }
 
 /* Tablet */
@@ -747,10 +768,6 @@ align-self: center;
     margin-bottom: 10px;
   }
 
-  .form.block .form-consent-text {
-    /* font-size: 14px; */
-  }
-
   .form.block .form-consent-box {
     width: 20px;
     height: 20px;
@@ -825,7 +842,7 @@ align-self: center;
 
   .form.block .form-inputs-grid {
     column-gap: 50px;
-    row-gap: 40px;
+    row-gap: 15px;
   }
 
   .form.block .form-row .form-description-cell {
@@ -860,7 +877,7 @@ align-self: center;
 
 @media (min-width: 1201px) and (max-width: 1440px) {
   .section.form-container .form.block {
-    padding: 51px 50px 38px 50px;
+    /* padding: 51px 50px 38px 50px; */
   }
 
   .form.block .form-row .form-description-cell {
