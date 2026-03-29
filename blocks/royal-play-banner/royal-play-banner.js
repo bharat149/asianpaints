@@ -1,0 +1,390 @@
+/*
+** Authoring format **
+Row 1
+Col 1 - logo (only for desktop) 
+Col 2 - desktop image 
+Col 3 - mobile image
+Col 4 - White text called title line 1 and line 2 (only for desktop) 
+Col 5 - Subtitle in black (only for desktop) 
+Col 6 - CTA label and Redirection link 
+Col 7 - Button type
+
+Row 2
+Col 1 - logo (only for desktop)
+Col 2 - desktop image 
+Col 3 - mobile image 
+Col 4 - Desktop title image 
+Col 5 - Mobile title image
+Col 6 - CTA label and Redirection link 
+Col 7 - Button type
+*/
+
+
+
+async function getSwiper() {
+  if (window.Swiper) return window.Swiper;
+  if (window.loadSwiper) return window.loadSwiper();
+
+  console.warn('Swiper not available');
+  return null;
+}
+
+/**
+ * Safely get trimmed text content
+ */
+function getTextContent(cell) {
+  return cell?.textContent?.trim() || '';
+}
+
+/**
+ * Clone picture element (preserves sources)
+ */
+function getPicture(cell) {
+  return cell?.querySelector('picture')?.cloneNode(true) || null;
+}
+
+/**
+ * Get anchor element (CTA source)
+ */
+function getLink(cell) {
+  return cell?.querySelector('a') || null;
+}
+
+/**
+ * Normalize image attributes for performance
+ * - eager loading for above-the-fold
+ * - remove width/height for responsive behavior
+ */
+function updateImageAttributes(picture, eager = false) {
+  if (!picture) return picture;
+
+  const img = picture.querySelector('img');
+  if (img) {
+    img.loading = eager ? 'eager' : 'lazy';
+    img.setAttribute('fetchpriority', eager ? 'high' : 'auto');
+    img.removeAttribute('width');
+    img.removeAttribute('height');
+  }
+
+  return picture;
+}
+
+/**
+ * Extract 2-line title from paragraph structure
+ */
+function getTitleLines(cell) {
+  const paragraphs = [...(cell?.querySelectorAll('p') || [])].filter((p) => p.textContent.trim());
+
+  return {
+    line1: paragraphs[0]?.textContent.trim() || '',
+    line2: paragraphs[1]?.textContent.trim() || '',
+  };
+}
+
+/**
+ * Build CTA with variant styles:
+ * - transparent
+ * - white
+ * - default
+ */
+function createCTA(cell, buttonType) {
+  const link = getLink(cell);
+  if (!link) return null;
+
+  const cta = link.cloneNode(true);
+  cta.className = 'royal-play-banner__cta';
+
+  const type = (buttonType || '').trim().toUpperCase();
+
+  if (type === 'TRANSPARENT BUTTON') {
+    cta.classList.add('royal-play-banner__cta--transparent');
+  } else if (type === 'WHITE BUTTON') {
+    cta.classList.add('royal-play-banner__cta--white');
+  } else {
+    cta.classList.add('royal-play-banner__cta--default');
+  }
+
+  return cta;
+}
+
+/* =====================================================
+   SLIDE 1 (Hero Slide - Different Structure)
+===================================================== */
+
+/**
+ * Desktop Hero Slide
+ * - Background image
+ * - Left gradient overlay
+ * - Logo + title + subtitle + CTA
+ */
+function createFirstSlideDesktop(row) {
+  const cols = [...row.children];
+
+  const logo = updateImageAttributes(getPicture(cols[0]), true);
+  const desktopImage = updateImageAttributes(getPicture(cols[1]), true);
+  const { line1, line2 } = getTitleLines(cols[3]);
+  const subtitle = getTextContent(cols[4]);
+  const buttonType = getTextContent(cols[6]);
+  const cta = createCTA(cols[5], buttonType);
+
+  const slide = document.createElement('div');
+  slide.className = 'swiper-slide royal-play-banner__slide royal-play-banner__slide--hero';
+
+  const media = document.createElement('div');
+  media.className = 'royal-play-banner__media';
+
+  const imageWrap = document.createElement('div');
+  imageWrap.className = 'royal-play-banner__image-wrap';
+
+  if (desktopImage) {
+    desktopImage.classList.add('royal-play-banner__image', 'royal-play-banner__image--hero');
+    imageWrap.appendChild(desktopImage);
+  }
+
+  // Gradient overlay section
+  const overlay = document.createElement('div');
+  overlay.className = 'royal-play-banner__overlay';
+
+  const content = document.createElement('div');
+  content.className = 'royal-play-banner__content';
+
+  if (logo) {
+    const logoWrap = document.createElement('div');
+    logoWrap.className = 'royal-play-banner__logo';
+    logoWrap.appendChild(logo);
+    content.appendChild(logoWrap);
+  }
+
+  if (line1 || line2) {
+    const title = document.createElement('div');
+    title.className = 'royal-play-banner__title';
+
+    if (line1) {
+      const el = document.createElement('div');
+      el.className = 'royal-play-banner__title-line';
+      el.textContent = line1;
+      title.appendChild(el);
+    }
+
+    if (line2) {
+      const el = document.createElement('div');
+      el.className = 'royal-play-banner__title-line';
+      el.textContent = line2;
+      title.appendChild(el);
+    }
+
+    content.appendChild(title);
+  }
+
+  if (subtitle) {
+    const sub = document.createElement('p');
+    sub.className = 'royal-play-banner__subtitle';
+    sub.textContent = subtitle;
+    content.appendChild(sub);
+  }
+
+  if (cta) {
+    const actions = document.createElement('div');
+    actions.className = 'royal-play-banner__actions';
+    actions.appendChild(cta);
+    content.appendChild(actions);
+  }
+
+  overlay.appendChild(content);
+  media.append(imageWrap, overlay);
+  slide.appendChild(media);
+
+  return slide;
+}
+
+/**
+ * Mobile Hero Slide
+ * - Full image
+ * - Logo top-left
+ * - CTA centered bottom
+ */
+function createFirstSlideMobile(row) {
+  const cols = [...row.children];
+
+  const logo = updateImageAttributes(getPicture(cols[0]), true);
+  const mobileImage = updateImageAttributes(getPicture(cols[2]), true);
+  const buttonType = getTextContent(cols[6]);
+  const cta = createCTA(cols[5], buttonType);
+
+  const slide = document.createElement('div');
+  slide.className = 'swiper-slide royal-play-banner__slide';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'royal-play-banner__mobile-image-wrap';
+
+  if (mobileImage) {
+    mobileImage.classList.add('royal-play-banner__image');
+    wrap.appendChild(mobileImage);
+  }
+
+  /* logo top-left */
+  if (logo) {
+    const logoWrap = document.createElement('div');
+    logoWrap.className = 'royal-play-banner__mobile-logo';
+    logoWrap.appendChild(logo);
+    wrap.appendChild(logoWrap);
+  }
+
+  /* centered CTA */
+  if (cta) {
+    const action = document.createElement('div');
+    action.className = 'royal-play-banner__mobile-actions';
+    action.appendChild(cta);
+    wrap.appendChild(action);
+  }
+
+  slide.appendChild(wrap);
+  return slide;
+}
+
+/* =====================================================
+   SLIDE 2+ (Regular Slides)
+===================================================== */
+
+/**
+ * Regular slides:
+ * - Full image background
+ * - Logo top-left
+ * - Title image + CTA centered
+ */
+function createRegularSlide(row, isMobile = false) {
+  const cols = [...row.children];
+
+  const logo = updateImageAttributes(getPicture(cols[0]), true);
+  const image = updateImageAttributes(getPicture(cols[isMobile ? 2 : 1]), true);
+  const titleImage = updateImageAttributes(getPicture(cols[isMobile ? 4 : 3]), true);
+  const buttonType = getTextContent(cols[6]);
+  const cta = createCTA(cols[5], buttonType);
+
+  const slide = document.createElement('div');
+  slide.className = 'swiper-slide royal-play-banner__slide';
+
+  const inner = document.createElement('div');
+  inner.className = 'royal-play-banner__slide-inner';
+
+  if (image) inner.appendChild(image);
+
+  if (logo) {
+    const logoWrap = document.createElement('div');
+    logoWrap.className = 'royal-play-banner__slide-logo';
+    logoWrap.appendChild(logo);
+    inner.appendChild(logoWrap);
+  }
+
+  // Center content (title image + CTA)
+  const centerWrap = document.createElement('div');
+  centerWrap.className = 'royal-play-banner__slide-center';
+
+  if (titleImage) {
+    const titleWrap = document.createElement('div');
+    titleWrap.className = 'royal-play-banner__slide-title-image';
+    titleWrap.appendChild(titleImage);
+    centerWrap.appendChild(titleWrap);
+  }
+
+  if (cta) {
+    const actionWrap = document.createElement('div');
+    actionWrap.className = 'royal-play-banner__slide-actions';
+    actionWrap.appendChild(cta);
+    centerWrap.appendChild(actionWrap);
+  }
+
+  inner.appendChild(centerWrap);
+  slide.appendChild(inner);
+
+  return slide;
+}
+
+/**
+ * Decide slide type:
+ * - index 0 → hero
+ * - index > 0 → regular
+ */
+function createSlide(row, index, isMobile) {
+  return index === 0
+    ? (isMobile ? createFirstSlideMobile(row) : createFirstSlideDesktop(row))
+    : createRegularSlide(row, isMobile);
+}
+
+/**
+ * Build Swiper structure
+ */
+function createCarousel(rows, isMobile) {
+  const root = document.createElement('div');
+  root.className = `royal-play-banner__carousel ${isMobile ? 'royal-play-banner__carousel--mobile' : 'royal-play-banner__carousel--desktop'}`;
+
+  const swiperEl = document.createElement('div');
+  swiperEl.className = 'swiper';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'swiper-wrapper';
+
+  rows.forEach((row, index) => {
+    const slide = createSlide(row, index, isMobile);
+    if (slide) wrapper.appendChild(slide);
+  });
+
+  swiperEl.appendChild(wrapper);
+
+  const pagination = document.createElement('div');
+  pagination.className = 'swiper-pagination';
+
+  root.append(swiperEl, pagination);
+
+  return { root, swiperEl, pagination };
+}
+
+/**
+ * Add custom arrows inside pagination pill
+ */
+function addCustomArrowsToPagination(paginationEl, swiper) {
+  const prev = document.createElement('button');
+  prev.className = 'custom-arrow custom-arrow-prev';
+
+  const next = document.createElement('button');
+  next.className = 'custom-arrow custom-arrow-next';
+
+  prev.onclick = () => swiper.slidePrev();
+  next.onclick = () => swiper.slideNext();
+
+  paginationEl.prepend(prev);
+  paginationEl.append(next);
+}
+
+/**
+ * Entry point
+ */
+export default async function decorate(block) {
+  const rows = [...block.children];
+
+  block.textContent = '';
+  block.classList.add('royal-play-banner');
+
+  const desktop = createCarousel(rows, false);
+  const mobile = createCarousel(rows, true);
+
+  block.append(desktop.root, mobile.root);
+
+  const Swiper = await getSwiper();
+  if (!Swiper) return;
+
+  const desktopSwiper = new Swiper(desktop.swiperEl, {
+    slidesPerView: 1,
+    loop: rows.length > 1,
+    pagination: { el: desktop.pagination, clickable: true },
+  });
+
+  const mobileSwiper = new Swiper(mobile.swiperEl, {
+    slidesPerView: 1,
+    loop: rows.length > 1,
+    pagination: { el: mobile.pagination, clickable: true },
+  });
+
+  addCustomArrowsToPagination(desktop.pagination, desktopSwiper);
+  addCustomArrowsToPagination(mobile.pagination, mobileSwiper);
+}

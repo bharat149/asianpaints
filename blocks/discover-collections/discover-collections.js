@@ -11,7 +11,6 @@ Col 1: left images
 Col 2: right images
 */
 
-
 export default async function decorate(block) {
   await window.loadJQuery?.();
   const $ = window.jQuery;
@@ -28,10 +27,6 @@ export default async function decorate(block) {
   if ($titleCols.length < 2 || $contentCols.length < 2 || $imageCols.length < 2) return;
 
   $block.empty().addClass('discover-collections');
-
-  /* -------------------------
-     Helpers
-  -------------------------- */
 
   function getCellContent($cell) {
     const $preferred = $cell.find('h1,h2,h3,h4,h5,h6,p,span,div').first();
@@ -70,7 +65,7 @@ export default async function decorate(block) {
   function createArrowIcon() {
     return $(`
       <span class="discover-collections__cta-arrow">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -81,8 +76,13 @@ export default async function decorate(block) {
   function createDownloadIcon() {
     return $(`
       <span class="discover-collections__download-icon">
-        <img src="https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg"
-          alt="Download" loading="lazy" height="18" width="18"/>
+        <img
+          src="https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg"
+          alt="Download"
+          loading="lazy"
+          height="18"
+          width="18"
+        />
       </span>
     `);
   }
@@ -135,7 +135,7 @@ export default async function decorate(block) {
 
   function createImageCard(picture, index) {
     return $(`
-      <div class="discover-collections__image discover-collections__image--${index + 1}"></div>
+      <div class="discover-collections__image discover-collections__image--${index + 1} is-hidden-before-animation"></div>
     `).append(picture);
   }
 
@@ -155,9 +155,29 @@ export default async function decorate(block) {
     return $section;
   }
 
-  /* -------------------------
-     Build Block
-  -------------------------- */
+  function observeImagesOnce() {
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+
+      $block.find('.discover-collections__image').each(function () {
+        const $image = $(this);
+
+        if ($image.data('animated')) return;
+        $image.data('animated', true);
+
+        $image.removeClass('is-hidden-before-animation');
+        $image.addClass('animate-grow-from-center');
+      });
+
+      obs.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.2,
+  });
+
+  observer.observe($block[0]);
+}
 
   const $header = createBlockHeader();
 
@@ -174,4 +194,6 @@ export default async function decorate(block) {
   );
 
   $block.append($header, $left, $right);
+
+  observeImagesOnce();
 }

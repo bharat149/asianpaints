@@ -1,0 +1,68 @@
+.designer-collection-inspiration {
+    display: flex;
+    gap: 25px;
+    padding: 0 16px;
+    flex-direction: column;
+
+    @media (min-width: 1024px) {
+        flex-direction: row;
+        gap: 40px;
+        padding: 0 40px;
+    }
+}
+
+.designer-collection-inspiration > div {
+    width: 100%;
+    position: relative;
+    height: 222px;
+    transition: width 0.35s ease-in-out;
+
+    @media (min-width: 1024px) {
+        height: 400px;
+        width: 50%;
+    }
+}
+
+.designer-collection-inspiration > div:hover {
+    @media (min-width: 1024px) {
+        width: 75%;
+    }
+}
+
+.designer-collection-inspiration > div > div {
+    height: 222px;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    transition: opacity 0.35s ease-in-out;
+    opacity: 0;
+    border-radius: 12px;
+
+    @media (min-width: 1024px) {
+        height: 400px;
+    }
+}
+
+.designer-collection-inspiration > div > div:first-child {
+    opacity: 1;
+}
+
+.designer-collection-inspiration > div > div:hover {
+    @media (min-width: 1024px) {
+        opacity: 1;
+    }
+}
+
+.designer-collection-inspiration > div a {
+    border: none;
+    color: #000;
+    background: #fcaf17;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    position: absolute;
+    border-radius: 45px;
+    padding: 7px 20px;
+    top: 50px;
+    right: 20px;
+}
