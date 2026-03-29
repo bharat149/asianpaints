@@ -49,6 +49,128 @@ function createResponsivePicture(desktopPicture, mobilePicture, altText = '') {
   return picture;
 }
 
+/**
+ * Create inline error message element
+ */
+function createErrorMessageElement() {
+  const error = document.createElement('div');
+  error.className = 'form-field-error';
+  error.setAttribute('aria-live', 'polite');
+  return error;
+}
+
+/**
+ * Show field error
+ */
+function showFieldError(field, input, message) {
+  if (!field || !input) return;
+
+  let errorEl = field.querySelector('.form-field-error');
+  if (!errorEl) {
+    errorEl = createErrorMessageElement();
+    field.appendChild(errorEl);
+  }
+
+  errorEl.textContent = message;
+  field.classList.add('has-error');
+  input.classList.add('is-invalid');
+  input.setAttribute('aria-invalid', 'true');
+}
+
+/**
+ * Clear field error
+ */
+function clearFieldError(field, input) {
+  if (!field || !input) return;
+
+  const errorEl = field.querySelector('.form-field-error');
+  if (errorEl) {
+    errorEl.textContent = '';
+  }
+
+  field.classList.remove('has-error');
+  input.classList.remove('is-invalid');
+  input.removeAttribute('aria-invalid');
+  input.setCustomValidity('');
+}
+
+/**
+ * Restrict numeric-only inputs
+ */
+function bindNumericInputFilter(input) {
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    const numericValue = input.value.replace(/\D/g, '');
+
+    if (input.value !== numericValue) {
+      input.value = numericValue;
+    }
+  });
+}
+
+/**
+ * Get custom validation message for input
+ */
+function getValidationMessage(input) {
+  if (!input) return '';
+
+  const value = input.value.trim();
+  const fieldName = `${input.name || ''} ${input.id || ''}`.toLowerCase();
+
+  const isEmail = fieldName.includes('email');
+  const isPincode = fieldName.includes('pincode') || fieldName.includes('pin');
+  const isMobile = fieldName.includes('mobile') || fieldName.includes('phone');
+
+  if (!value) {
+    return 'Field is required';
+  }
+
+  if (isEmail) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return 'Email is invalid';
+    }
+  }
+
+  if (isPincode) {
+    if (!/^\d{6}$/.test(value)) {
+      return 'Enter a valid 6 digit Zip Code';
+    }
+  }
+
+  if (isMobile) {
+    if (!/^\d{10}$/.test(value)) {
+      return 'Phone number is invalid';
+    }
+  }
+
+  return '';
+}
+
+/**
+ * Validate single input
+ */
+function validateInputField(input, showError = true) {
+  if (!input) return true;
+
+  const field = input.closest('.form-field');
+  const message = getValidationMessage(input);
+
+  if (message) {
+    input.setCustomValidity(message);
+
+    if (showError) {
+      showFieldError(field, input, message);
+    }
+
+    return false;
+  }
+
+  clearFieldError(field, input);
+  return true;
+}
+
 function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const field = document.createElement('div');
   field.className = 'form-field position-relative w-100';
@@ -78,6 +200,9 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   input.placeholder = placeholderText;
   input.className = 'form-input form-control';
   input.required = true;
+  input.noValidate = true;
+
+  const errorEl = createErrorMessageElement();
 
   const updateFieldState = () => {
     const isFocused = document.activeElement === input;
@@ -89,10 +214,21 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   };
 
   input.addEventListener('focus', updateFieldState);
-  input.addEventListener('blur', updateFieldState);
-  input.addEventListener('input', updateFieldState);
 
-  field.append(label, input);
+  input.addEventListener('blur', () => {
+    updateFieldState();
+    validateInputField(input, true);
+  });
+
+  input.addEventListener('input', () => {
+    updateFieldState();
+
+    if (field.classList.contains('has-error')) {
+      validateInputField(input, true);
+    }
+  });
+
+  field.append(label, input, errorEl);
 
   cell.textContent = '';
   cell.appendChild(field);
@@ -137,8 +273,9 @@ function applyFieldConfig(input, headerCell, content) {
     input.id = 'enquire-mobile';
     input.name = 'ENQUIRE_MOBILE';
     input.inputMode = 'numeric';
-    input.pattern = '[1-9][0-9]{9}';
+    input.pattern = '[0-9]{10}';
     input.maxLength = 10;
+    bindNumericInputFilter(input);
   } else if (headerLabel.includes('email')) {
     input.type = 'email';
     input.id = 'enquire-email';
@@ -150,6 +287,7 @@ function applyFieldConfig(input, headerCell, content) {
     input.inputMode = 'numeric';
     input.pattern = '[0-9]{6}';
     input.maxLength = 6;
+    bindNumericInputFilter(input);
   } else if (headerLabel.includes('name')) {
     input.type = 'text';
     input.id = 'enquire-name';
@@ -170,7 +308,14 @@ function bindSubmitHandler(row, buttonCell) {
     if (row.dataset.submitting === 'true') return;
 
     const inputs = row.querySelectorAll('.form-input');
-    const isValid = [...inputs].every((input) => input.reportValidity());
+    let isValid = true;
+
+    inputs.forEach((input) => {
+      const validField = validateInputField(input, true);
+      if (!validField) {
+        isValid = false;
+      }
+    });
 
     if (!isValid) return;
 

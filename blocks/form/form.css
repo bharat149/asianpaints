@@ -573,6 +573,7 @@ align-self: center;
   }
   .form.block {
     padding: 40px;
+    border-radius: 0 !important;
   }
 
   .form.block .form-row {
