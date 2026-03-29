@@ -359,46 +359,62 @@ function addCustomArrowsToPagination(paginationEl, swiper) {
  */
 export default async function decorate(block) {
   const rows = [...block.children];
+  if (!rows.length) return;
 
-  const titleCell = row.children[3];
+  // Use first row title as analytics parent title for hero slide CTA
+  const firstRow = rows[0];
+  const titleCell = firstRow?.children?.[3];
   const { line1, line2 } = getTitleLines(titleCell);
   const parentTitle = [line1, line2].filter(Boolean).join(' ').trim();
 
+  // Clear authored table markup and prepare block root
   block.textContent = '';
   block.classList.add('royal-play-banner');
 
+  // Build desktop + mobile carousels
   const desktop = createCarousel(rows, false);
   const mobile = createCarousel(rows, true);
 
+  // Append actual DOM roots
   block.append(desktop.root, mobile.root);
 
+  // Init Swiper
   const Swiper = await getSwiper();
   if (!Swiper) return;
 
   const desktopSwiper = new Swiper(desktop.swiperEl, {
     slidesPerView: 1,
     loop: rows.length > 1,
-    pagination: { el: desktop.pagination, clickable: true },
+    pagination: {
+      el: desktop.pagination,
+      clickable: true,
+    },
   });
 
   const mobileSwiper = new Swiper(mobile.swiperEl, {
     slidesPerView: 1,
     loop: rows.length > 1,
-    pagination: { el: mobile.pagination, clickable: true },
+    pagination: {
+      el: mobile.pagination,
+      clickable: true,
+    },
   });
 
+  // Add custom arrows inside pagination pill
   addCustomArrowsToPagination(desktop.pagination, desktopSwiper);
   addCustomArrowsToPagination(mobile.pagination, mobileSwiper);
-  block.append(desktop, mobile);
 
+  // Bind analytics once at block level (event delegation)
   if (block.dataset.royalPlayAnalyticsBound !== 'true') {
     block.dataset.royalPlayAnalyticsBound = 'true';
+
     block.addEventListener('click', (event) => {
       const cta = event.target.closest('.royal-play-banner__cta');
       if (!cta || !block.contains(cta)) return;
 
       const ctaLink = cta.getAttribute('href') || '';
       const btnTitle = cta.textContent.trim();
+
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });
   }
