@@ -720,16 +720,22 @@
 /* Megamenu dropdown panel */
 .header .nav-dropdown {
   position: absolute;
-  top: 100%;
-  left: -40px;
+  top: 38px;
+  left: -30px;
   background: var(--header-white);
-  box-shadow: rgb(0 0 0 / 10%) 4px 4px 16px 0;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 4px 4px 16px 0 rgb(0 0 0 / 10%);
   opacity: 0;
   visibility: hidden;
   transform: translateY(4px);
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
   z-index: 1000;
   min-width: 200px;
+}
+
+.header .nav-item-1 > .nav-dropdown,
+.header .nav-item-2 > .nav-dropdown {
+  left: -40px;
 }
 
 .header .nav-item.has-dropdown.active > .nav-dropdown {
@@ -740,22 +746,36 @@
 
 .header .dropdown-inner {
   display: flex;
-  padding: 20px 24px;
-  gap: 32px;
+  padding: 0;
+  gap: 0;
 }
 
 .header .dropdown-column {
-  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: max-content;
+  min-width: 0;
+}
+
+.header .dropdown-column:not(:last-child) {
+  padding-right: 20px;
+}
+
+.header .dropdown-column-wide {
+  min-width: 0;
 }
 
 .header .dropdown-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin: 0 0 10px;
-  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  color: #8c8e90;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+  padding: 20px 0 8px 17px;
+  white-space: nowrap;
 }
 
 .header .dropdown-links {
@@ -764,23 +784,39 @@
   padding: 0;
 }
 
+.header .dropdown-links-split {
+  display: flex;
+  gap: 18px;
+  align-items: start;
+  width: max-content;
+}
+
 .header .dropdown-links li {
   margin: 0;
 }
 
+.header .dropdown-links li:first-child {
+  margin-top: 20px;
+}
+
 .header .dropdown-links a {
   display: block;
-  padding: 5px 0;
-  color: var(--header-text-gray);
+  padding: 12px 16px;
+  color: #232426;
   text-decoration: none;
-  font-size: 13px;
-  font-weight: 400;
-  transition: color 0.15s ease;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
 
 .header .dropdown-links a:hover {
-  color: var(--header-brand-bg);
+  color: #232426;
+  background: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
+  border-color: #ccc6;
 }
 
 /* New badge */
@@ -788,14 +824,14 @@
   display: inline-block;
   background: #00c853;
   color: white;
-  font-size: 9px;
-  font-weight: 600;
-  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 3px;
   border-radius: 2px;
-  margin-left: 6px;
+  margin-left: 3px;
   text-transform: uppercase;
   vertical-align: middle;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 /* Secondary navigation (right side of nav bar) */

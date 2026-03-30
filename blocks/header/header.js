@@ -2188,45 +2188,75 @@ function buildMegamenuPanel(submenuUl) {
   const dropdownInner = document.createElement('div');
   dropdownInner.className = 'dropdown-inner';
 
+  const buildMenuLinkItem = (itemLi) => {
+    const li = document.createElement('li');
+    const a = itemLi.querySelector('a');
+    if (!a) return li;
+
+    const link = document.createElement('a');
+    link.href = a.getAttribute('href');
+    link.textContent = a.textContent.trim();
+
+    const text = a.textContent.trim();
+    if (text === 'Textures For You' || text === 'Shade Cards') {
+      const badge = document.createElement('span');
+      badge.className = 'new-badge';
+      badge.textContent = 'New';
+      link.appendChild(badge);
+    }
+
+    li.appendChild(link);
+    return li;
+  };
+
   submenuUl.querySelectorAll(':scope > li').forEach((colLi) => {
     const column = document.createElement('div');
     column.className = 'dropdown-column';
 
-    const headingLink = colLi.querySelector(':scope > a, :scope > p > a');
-    if (headingLink) {
+    const headingSource = colLi.querySelector(':scope > a, :scope > p > a, :scope > strong, :scope > p > strong');
+    if (headingSource) {
       const heading = document.createElement('h4');
       heading.className = 'dropdown-title';
-      heading.textContent = headingLink.textContent.trim();
+      heading.textContent = headingSource.textContent.trim();
       column.appendChild(heading);
     }
 
     const itemsUl = colLi.querySelector(':scope > ul');
     if (itemsUl) {
-      const linkList = document.createElement('ul');
-      linkList.className = 'dropdown-links';
+      const itemLis = [...itemsUl.querySelectorAll(':scope > li')];
 
-      itemsUl.querySelectorAll(':scope > li').forEach((itemLi) => {
-        const li = document.createElement('li');
-        const a = itemLi.querySelector('a');
-        if (a) {
-          const link = document.createElement('a');
-          link.href = a.getAttribute('href');
-          link.textContent = a.textContent.trim();
+      if (itemLis.length >= 8) {
+        column.classList.add('dropdown-column-wide');
 
-          const text = a.textContent.trim();
-          if (text === 'Textures For You' || text === 'Shade Cards') {
-            const badge = document.createElement('span');
-            badge.className = 'new-badge';
-            badge.textContent = 'New';
-            link.appendChild(badge);
+        const splitLists = document.createElement('div');
+        splitLists.className = 'dropdown-links-split';
+
+        const primaryList = document.createElement('ul');
+        primaryList.className = 'dropdown-links';
+        const secondaryList = document.createElement('ul');
+        secondaryList.className = 'dropdown-links';
+
+        itemLis.forEach((itemLi, index) => {
+          const li = buildMenuLinkItem(itemLi);
+          if (index < 7) {
+            primaryList.appendChild(li);
+          } else {
+            secondaryList.appendChild(li);
           }
+        });
 
-          li.appendChild(link);
-        }
-        linkList.appendChild(li);
-      });
+        splitLists.append(primaryList, secondaryList);
+        column.appendChild(splitLists);
+      } else {
+        const linkList = document.createElement('ul');
+        linkList.className = 'dropdown-links';
 
-      column.appendChild(linkList);
+        itemLis.forEach((itemLi) => {
+          linkList.appendChild(buildMenuLinkItem(itemLi));
+        });
+
+        column.appendChild(linkList);
+      }
     }
 
     dropdownInner.appendChild(column);
@@ -2260,9 +2290,10 @@ function buildNavBar(navDiv, secondaryDiv) {
     const navList = document.createElement('ul');
     navList.className = 'nav-list';
 
-    mainUl.querySelectorAll(':scope > li').forEach((li) => {
+    mainUl.querySelectorAll(':scope > li').forEach((li, index) => {
       const navItem = document.createElement('li');
       navItem.className = 'nav-item';
+      navItem.classList.add(`nav-item-${index + 1}`);
 
       const anchor = li.querySelector(':scope > a, :scope > p > a');
       if (!anchor) return;
