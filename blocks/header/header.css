@@ -7,6 +7,8 @@
 }
 
 .header {
+  /* Asian Paints nav L1 hover underline (yellow → red → purple) */
+  --header-nav-underline-gradient: linear-gradient(91.16deg, #feb940 1.46%, #ee4137 51.38%, #431a80);
   --header-brand-bg: #000;
   --header-white: #fefefd;
   --header-border: #e5e5e5;
@@ -35,6 +37,8 @@
   right: 0;
   z-index: 1001;
   height: var(--header-brand-height);
+  transition: transform 0.28s ease;
+  will-change: transform;
 }
 
 .header .header-brands-inner {
@@ -55,6 +59,9 @@
   padding: 0;
   text-decoration: none;
   transition: background-color 0.2s ease;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .header .brand-item:nth-child(1) {
@@ -91,6 +98,19 @@
   right: 0;
   z-index: 1000;
   background: var(--header-white);
+  transition: top 0.28s ease;
+}
+
+/* Desktop: hide brand bar on scroll (Asian Paints header-unification) */
+@media (width >= 992px) {
+  .header.header-scrolled .header-brands {
+    transform: translateY(-100%);
+    pointer-events: none;
+  }
+
+  .header.header-scrolled .header-sticky {
+    top: 0;
+  }
 }
 
 /* ========================================
@@ -645,15 +665,16 @@
   transition: color 0.2s ease;
 }
 
-/* Yellow underline on hover */
+/* Gradient underline on hover (Asian Paints main nav) */
 .header .nav-link::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 8px;
   right: 8px;
-  height: 3px;
-  background-color: var(--header-yellow);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--header-nav-underline-gradient);
   transform: scaleX(0);
   transition: transform 0.2s ease;
   transform-origin: center;
@@ -832,8 +853,9 @@
   bottom: 0;
   left: 8px;
   right: 8px;
-  height: 3px;
-  background-color: var(--header-yellow);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--header-nav-underline-gradient);
   transform: scaleX(0);
   transition: transform 0.2s ease;
   transform-origin: center;

@@ -80,6 +80,15 @@
     /* Desktop header: 40px brand bar + 60px main header + 40px nav bar = 140px */
     --nav-height: 140px;
   }
+
+  /* Brand bar slides away on scroll — match fixed header + main offset (header block toggles class) */
+  html.header-brand-collapsed {
+    --nav-height: 100px;
+  }
+
+  html.header-brand-collapsed header {
+    height: 100px;
+  }
 }
 
 body {

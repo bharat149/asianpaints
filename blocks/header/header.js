@@ -2562,7 +2562,37 @@ function isDesktopViewport() {
   return window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
 }
 
+const BRAND_COLLAPSE_SCROLL_Y = 32;
+
+function updateHeaderBrandScrollState(block) {
+  if (!isDesktopViewport()) {
+    block.classList.remove('header-scrolled');
+    document.documentElement.classList.remove('header-brand-collapsed');
+    return;
+  }
+  const y = window.scrollY || document.documentElement.scrollTop;
+  const collapsed = y > BRAND_COLLAPSE_SCROLL_Y;
+  block.classList.toggle('header-scrolled', collapsed);
+  document.documentElement.classList.toggle('header-brand-collapsed', collapsed);
+}
+
+function initBrandBarScrollCollapse(block) {
+  let ticking = false;
+  const onScrollOrResize = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      updateHeaderBrandScrollState(block);
+      ticking = false;
+    });
+  };
+  window.addEventListener('scroll', onScrollOrResize, { passive: true });
+  window.addEventListener('resize', onScrollOrResize, { passive: true });
+  onScrollOrResize();
+}
+
 function addInteractions(block) {
+  initBrandBarScrollCollapse(block);
   const hamburger = block.querySelector('.nav-hamburger');
   const navBar = block.querySelector('.header-nav-bar');
 
@@ -2818,6 +2848,7 @@ function addInteractions(block) {
     } else {
       block.querySelectorAll('.nav-item.has-dropdown.active').forEach((li) => li.classList.remove('active'));
     }
+    updateHeaderBrandScrollState(block);
   });
 }
 
