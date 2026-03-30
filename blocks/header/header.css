@@ -15,6 +15,7 @@
   --header-text-dark: #1a1a1a;
   --header-text-gray: #666;
   --header-text-light: #888;
+  --header-search-underline: #b0b1b3;
   --header-yellow: #f5a623;
   --header-max-width: 1440px;
   --header-brand-height: 40px;
@@ -144,6 +145,8 @@
   height: 41px;
   margin-left: 0;
   border: none;
+  border-bottom: 0.5px solid var(--header-search-underline);
+  box-sizing: border-box;
   padding: 0;
   position: relative;
 }
