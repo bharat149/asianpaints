@@ -37,8 +37,6 @@
   right: 0;
   z-index: 1001;
   height: var(--header-brand-height);
-  transition: transform 0.28s ease;
-  will-change: transform;
 }
 
 .header .header-brands-inner {
@@ -98,19 +96,6 @@
   right: 0;
   z-index: 1000;
   background: var(--header-white);
-  transition: top 0.28s ease;
-}
-
-/* Desktop: hide brand bar on scroll (Asian Paints header-unification) */
-@media (width >= 992px) {
-  .header.header-scrolled .header-brands {
-    transform: translateY(-100%);
-    pointer-events: none;
-  }
-
-  .header.header-scrolled .header-sticky {
-    top: 0;
-  }
 }
 
 /* ========================================

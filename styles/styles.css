@@ -80,15 +80,6 @@
     /* Desktop header: 40px brand bar + 60px main header + 40px nav bar = 140px */
     --nav-height: 140px;
   }
-
-  /* Brand bar slides away on scroll — match fixed header + main offset (header block toggles class) */
-  html.header-brand-collapsed {
-    --nav-height: 100px;
-  }
-
-  html.header-brand-collapsed header {
-    height: 100px;
-  }
 }
 
 body {
@@ -116,9 +107,13 @@ header {
   /* 40px brand bar + 60px main header + 40px nav bar = 140px */
   height: 140px;
 
-  /* Prevent header layout changes from affecting main content */
-  contain: strict;
-  overflow: hidden;
+  /*
+   * Do not use contain:strict + overflow:hidden here: they establish a paint box that
+   * clips position:fixed descendants inside the header block. The brand bar uses
+   * translateY when “scrolled”, which then disappears entirely locally.
+   */
+  contain: none;
+  overflow: visible;
 }
 
 @media (width < 992px) {
