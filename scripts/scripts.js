@@ -12,6 +12,7 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
+import { bindButtonContainerTracking } from './analytics.js';
 
 (function loadCryptoJSGlobally() {
   if (window.CryptoJS) return;
@@ -220,6 +221,7 @@ function buildAutoBlocks(main) {
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateButtons(main);
+  bindButtonContainerTracking(main);
   decorateIcons(main);
   decorateLinkedPictures(main);
   buildAutoBlocks(main);

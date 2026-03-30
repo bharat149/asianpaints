@@ -1,0 +1,38 @@
+.inspiration-calculator {
+    display: flex;
+    padding: 40px;
+    gap: 18px;
+
+    @media (max-width: 900px) {
+        flex-direction: column;
+    }
+}
+
+.inspiration-calculator > div {
+    position: relative;
+    width: 100%;
+}
+
+.inspiration-calculator .content-wrapper {
+    position: absolute;
+    top: 0;
+    text-align: center;
+    width: 100%;
+    color: #fff;
+    top: 10%;
+}
+
+.inspiration-calculator .content-wrapper a {
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 10px 20px;
+    border-radius: 45px;
+    display: inline-block;
+    margin-top: 40px;
+}
+
+.inspiration-calculator .content-wrapper a:hover {
+    background: #fff7e8;
+    color: #000;
+    border-color: #232426;
+}

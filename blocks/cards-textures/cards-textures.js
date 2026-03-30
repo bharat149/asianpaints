@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   const cards = [...block.children];
 
@@ -14,6 +16,7 @@ export default function decorate(block) {
     const paragraphs = contentCell?.querySelectorAll('p') || [];
     let description = '';
     let link = null;
+    let btn = null;
 
     paragraphs.forEach((p) => {
       const anchor = p.querySelector('a');
@@ -70,7 +73,7 @@ export default function decorate(block) {
 
     // View Details button
     if (link) {
-      const btn = document.createElement('a');
+      btn = document.createElement('a');
       btn.className = 'card-button';
       btn.href = link.href;
       btn.innerHTML = `${link.textContent} <span class="arrow">→</span>`;
@@ -81,11 +84,19 @@ export default function decorate(block) {
 
     // Make entire card clickable
     if (link) {
+      const ctaLink = link.href;
+      const btnTitle = link.textContent.trim();
+
       card.style.cursor = 'pointer';
+      btn?.addEventListener('click', () => {
+        triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, name);
+      });
+
       card.addEventListener('click', (e) => {
-        if (!e.target.closest('a')) {
-          window.location.href = link.href;
-        }
+        if (e.target.closest('a')) return;
+
+        triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, name);
+        window.location.href = ctaLink;
       });
     }
   });
