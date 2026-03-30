@@ -793,6 +793,11 @@
   width: max-content;
 }
 
+.header .dropdown-column-no-title > .dropdown-links,
+.header .dropdown-column-no-title > .dropdown-links-split {
+  padding-top: 20px;
+}
+
 .header .dropdown-links li {
   margin: 0;
 }

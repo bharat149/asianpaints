@@ -2220,12 +2220,15 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
     const shouldHideHeading = topLevelItems.length === 1
       && headingText
       && headingText.toLowerCase() === parentLabel.toLowerCase();
+    const hasVisibleHeading = headingSource && !shouldHideHeading;
 
-    if (headingSource && !shouldHideHeading) {
+    if (hasVisibleHeading) {
       const heading = document.createElement('h4');
       heading.className = 'dropdown-title';
       heading.textContent = headingText;
       column.appendChild(heading);
+    } else {
+      column.classList.add('dropdown-column-no-title');
     }
 
     const itemsUl = colLi.querySelector(':scope > ul');
