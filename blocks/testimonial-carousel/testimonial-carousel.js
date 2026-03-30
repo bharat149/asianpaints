@@ -350,7 +350,7 @@ export default async function decorate(block) {
     touchRatio: 1,
     resistanceRatio: 0.85,
     threshold: 5,
-    watchOverflow: true,
+    watchOverflow: false,
     navigation: {
       prevEl: prevButton,
       nextEl: nextButton,
@@ -361,7 +361,7 @@ export default async function decorate(block) {
     },
     breakpoints: {
       600: {
-        slidesPerView: 1.2,
+        slidesPerView: 1.1,
         spaceBetween: 20,
       },
       900: {
