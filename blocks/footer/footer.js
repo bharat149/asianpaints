@@ -5,6 +5,8 @@
  * @param {Element} block The footer block element
  */
 
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 /* ---------- IMAGE FALLBACKS (local PNG images) ---------- */
 const IMG = 'https://content.da.live/aemysites/asian-paints-demo/.footer';
 const IMAGE_FALLBACKS = {
@@ -292,6 +294,9 @@ function buildVideoBanner(container, row) {
   cta.innerHTML = `<img class="yt-icon" src="${IMG}/youtube-logo.png" alt="YouTube" width="64" height="64">`;
   cta.appendChild(el('span', {}, ctaText));
   cta.addEventListener('click', () => {
+    trackEvent('video_playbotton_click', {
+      videoTitle: cta.getAttribute('aria-label') || '',
+    });
     window.open('https://www.youtube.com/watch?v=c6GKMQDYI1k', '_blank', 'noopener');
   });
   overlay.appendChild(cta);
@@ -342,7 +347,7 @@ function buildGlobalPresence(container, row) {
       loading: 'lazy',
       className: 'country-flag',
     }));
-    item.appendChild(el('span', { className: 'country-name' }, name));
+    item.appendChild(el('span', { className: 'country-name track_countryName' }, name));
     countries.appendChild(item);
   });
   inner.appendChild(countries);
@@ -409,10 +414,12 @@ function buildBottomBar(container, row) {
     [...cells[0].querySelectorAll('a')].forEach((a) => {
       const img = a.querySelector('img');
       if (!img) return;
+      const platformName = img.getAttribute('alt') || '';
       const link = el('a', {
         href: a.getAttribute('href'),
         className: 'social-icon',
-        'aria-label': img.getAttribute('alt') || '',
+        'aria-label': platformName,
+        'data-attr-platform': platformName,
         target: '_blank',
         rel: 'noopener',
       });
@@ -481,6 +488,88 @@ function initMobileAccordions(block) {
   });
 }
 
+function initFooterContactTracking(block) {
+  block.querySelectorAll('.footer-brand-contact').forEach((contact) => {
+    contact.addEventListener('click', () => {
+      trackEvent('footer_phone_number_click', {});
+    });
+  });
+}
+
+function initFooterTabTracking(block) {
+  const centerGrid = block.querySelector('.mega-center-grid');
+  if (!centerGrid || centerGrid.dataset.footerTabBound === 'true') return;
+
+  centerGrid.dataset.footerTabBound = 'true';
+  centerGrid.addEventListener('click', (event) => {
+    const link = event.target.closest('.link-group-list li a');
+    if (!link || !centerGrid.contains(link)) return;
+
+    const parentTitle = link.closest('.link-group')
+      ?.querySelector(':scope > .link-group-title span')
+      ?.textContent
+      ?.trim() || 'footer';
+    const ctaLink = link.getAttribute('href') || '';
+
+    triggerCTAClickWithLinkAndTitle(ctaLink, link.textContent.trim(), parentTitle);
+  });
+}
+
+function initFooterAboutTabTracking(block) {
+  block.querySelectorAll('.mega-col.mega-col-links.mega-col-about .link-group-list li a').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('footer_tab', {
+        cta_: link.textContent.trim(),
+      });
+    });
+  });
+}
+
+function initFooterSitemapTracking(block) {
+  block.querySelectorAll('.bottom-sitemap a').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('custom_cta_click', {
+        cta_: link.textContent.trim(),
+        parentTitle: 'footer',
+        redirectionLink: link.getAttribute('href') || '',
+      });
+    });
+  });
+}
+
+function initFooterCountryTracking(block) {
+  block.querySelectorAll('.country-list a').forEach((link) => {
+    link.addEventListener('click', () => {
+      const countryName = link.querySelector('.track_countryName')?.textContent?.trim() || '';
+
+      trackEvent('footer_country', {
+        cta_: countryName,
+      });
+    });
+  });
+}
+
+function initFooterDivisionTracking(block) {
+  block.querySelectorAll('.division-logos a').forEach((link) => {
+    link.addEventListener('click', () => {
+      const ctaTitle = link.getAttribute('aria-label') || link.textContent.trim();
+      const ctaLink = link.getAttribute('href') || '';
+
+      triggerCTAClickWithLinkAndTitle(ctaLink, ctaTitle, 'footer');
+    });
+  });
+}
+
+function initFooterSocialTracking(block) {
+  block.querySelectorAll('.bottom-social a').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('footer_socialicons', {
+        cta_: link.getAttribute('data-attr-platform') || '',
+      });
+    });
+  });
+}
+
 /* ---------- DECORATE ---------- */
 export default async function decorate(block) {
   const resp = await fetch('/footer.plain.html');
@@ -519,4 +608,11 @@ export default async function decorate(block) {
 
   block.append(footerContent);
   initMobileAccordions(block);
+  initFooterContactTracking(block);
+  initFooterTabTracking(block);
+  initFooterAboutTabTracking(block);
+  initFooterSitemapTracking(block);
+  initFooterCountryTracking(block);
+  initFooterDivisionTracking(block);
+  initFooterSocialTracking(block);
 }

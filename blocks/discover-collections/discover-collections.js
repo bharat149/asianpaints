@@ -1,3 +1,5 @@
+import { getDigitalData, trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 /*
 ** Authoring format **
 Row 1
@@ -45,6 +47,15 @@ export default async function decorate(block) {
 
   function getLinks($cell) {
     return $cell.find('a');
+  }
+
+  function getPdfAnalyticsData(title, href) {
+    const pdfName = href.split('/').pop()?.replace(/\.pdf$/i, '') || '';
+
+    return {
+      Title: title,
+      pdfName,
+    };
   }
 
   function getPictures($cell) {
@@ -119,12 +130,29 @@ export default async function decorate(block) {
         .attr('target', '_blank')
         .attr('rel', 'noopener noreferrer');
 
+      $download.on('click', () => {
+        const href = $download.attr('href') || '';
+        const data = getPdfAnalyticsData($heading.text().trim(), href);
+
+        getDigitalData().download = data;
+        trackEvent('download_form_pdf', data);
+      });
+
       $download.prepend(createDownloadIcon());
       $actions.append($download);
     }
 
     if ($links[1]) {
       const $view = $($links[1]).clone().addClass('discover-collections__cta');
+
+      $view.on('click', () => {
+        const href = $view.attr('href') || '';
+        const buttonTitle = $view.text().trim();
+        const parentTitle = $heading.text().trim();
+
+        triggerCTAClickWithLinkAndTitle(href, buttonTitle, parentTitle);
+      });
+
       $view.append(createArrowIcon());
       $actions.append($view);
     }

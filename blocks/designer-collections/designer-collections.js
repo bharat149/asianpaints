@@ -324,7 +324,7 @@ export default async function decorate(block) {
 
   const pagination = document.createElement('div');
   pagination.className = 'designer-collections-pagination swiper-pagination';
-  carousel.appendChild(pagination);
+  // carousel.appendChild(pagination);
 
   block.innerHTML = '';
   block.appendChild(header);
@@ -349,10 +349,6 @@ export default async function decorate(block) {
       navigation: {
         prevEl: prevButton,
         nextEl: nextButton,
-      },
-      pagination: {
-        el: pagination,
-        clickable: true,
       },
       breakpoints: {
         0: {

@@ -1,9 +1,13 @@
+.royal-play-banner-container{
+    margin: 0 !important;
+}
+
 .royal-play-banner,
 .royal-play-banner__carousel,
 .royal-play-banner__swiper,
 .royal-play-banner .swiper-wrapper,
 .royal-play-banner .swiper-slide {
-    height: calc(100vh - 140px) !important;
+    height: calc(100vh - 140px);
 }
 
 .royal-play-banner {
@@ -67,7 +71,7 @@
 .royal-play-banner__overlay {
     position: absolute;
     inset: 0 auto 0 0;
-    width: 46%;
+    width: 60%;
     display: flex;
     align-items: center;
     z-index: 2;
@@ -80,17 +84,20 @@
 
 .royal-play-banner__content {
     padding: 40px 48px;
-    max-width: 100%;
+    max-width: 55%;
 }
 
 .royal-play-banner__logo {
     margin-bottom: 24px;
+    display: flex;
+    align-items: anchor-center;
+    justify-content: center;
 }
 
 .royal-play-banner__logo picture,
 .royal-play-banner__logo img {
     display: block;
-    max-width: 180px;
+    max-width: 105px;
     width: auto;
     height: auto;
 }
@@ -101,21 +108,30 @@
 
 .royal-play-banner__title-line {
     color: #fff;
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 500;
     line-height: 1.1;
+    text-align: center;
 }
 
 .royal-play-banner__subtitle {
     margin: 0 0 24px;
     color: #232426;
-    font-size: 16px;
-    line-height: 1.4;
+    font-size: 15px;
+    line-height: 18px;
+    letter-spacing: .5px;
 }
 
 .royal-play-banner__actions {
     display: flex;
     align-items: center;
+    justify-content: center;
+}
+
+.royal-play-banner__actions a:hover {
+    border: 1px solid #000;
+    background: #fff7e8;
+    color: #000;
 }
 
 /* CTA */
@@ -152,11 +168,13 @@
     border: 1px solid #fff;
     border-radius: 45px;
     font-size: 16px;
+    height: 50px;
 }
 
 .royal-play-banner__cta--white:hover {
     border: 1px solid #000;
     background: #fff7e8;
+    color: #000;
 }
 
 /* Mobile hero */
@@ -177,7 +195,7 @@
 
 .royal-play-banner__mobile-actions {
     position: absolute;
-    bottom: 20px;
+    top: 50%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 3;
@@ -188,6 +206,8 @@
 
 .royal-play-banner__mobile-actions .royal-play-banner__cta {
     min-width: 160px;
+    color: #fff;
+    border: 1px solid #fff;
 }
 
 /* Regular slides */
@@ -197,8 +217,8 @@
 
 .royal-play-banner__slide-logo {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 35px;
+    left: 35px;
     z-index: 3;
 }
 
@@ -233,7 +253,6 @@
 .royal-play-banner__slide-title-image picture,
 .royal-play-banner__slide-title-image img {
     display: block;
-    max-width: 280px;
     width: auto;
     height: auto;
 }
@@ -329,7 +348,8 @@
     .royal-play-banner__swiper,
     .royal-play-banner .swiper-wrapper,
     .royal-play-banner .swiper-slide {
-        height: calc(100vh - 80px) !important;
+       /* height: calc(100vh - 80px) !important; */
+       height: 100%;
     }
 
     .royal-play-banner__carousel--desktop {
@@ -384,7 +404,7 @@
 
     .royal-play-banner__slide-logo img,
     .royal-play-banner__mobile-logo img {
-        max-width: 110px;
+        max-width: 55px;
     }
 
     .royal-play-banner__slide-actions .royal-play-banner__cta,
