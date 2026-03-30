@@ -635,3 +635,26 @@
 .columns.royale-alt.block .button-container .button {
   padding: 8px 20px;
 }
+
+@media screen and (max-width:992px) {
+  .section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper h2 {
+    font-size: 20px;
+  }
+
+  .section.columns-container:has(.columns.royale-alt.block)>.default-content-wrapper h2 strong {
+    font-size: 20px;
+  }
+
+  .section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper {
+    padding-bottom: 0;
+  }
+
+  .columns.royale-alt.block > div > div > p:nth-child(2):not(:has(strong:only-child)) {
+    margin-top: 16px;
+    font-size: 14px;
+  }
+
+  .columns.royale-alt.block > div > div > p:nth-child(3) {
+    margin-top: 10px;
+  }
+}

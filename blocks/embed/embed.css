@@ -274,3 +274,20 @@
   margin: 0 auto;
   border-radius: 8px;
 }
+
+@media screen and (max-width: 992px) {
+  .section.embed-container:has(.embed.media.royale-play) {
+    padding-top: 1.5rem;
+  }
+  
+  .embed.media.royale-play.block {
+    overflow: unset;
+    max-width: 100%;
+    border-radius: 0px;
+    padding-bottom: 30px;
+  }
+
+  .embed.media.royale-play.block .embed-media-video-wrapper video { 
+    border-radius: 0;
+  }
+}

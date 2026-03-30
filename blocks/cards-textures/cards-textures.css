@@ -340,3 +340,26 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
 .section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper p a {
   padding: 8px 20px;
 }
+
+@media screen and (max-width:992px) {
+  .section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2 {
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+
+  .section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2 strong {
+    font-size: 20px;
+  }
+
+  .section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper {
+    padding: 0;
+  }
+
+  .section.cards-textures-container:has(.cards-textures.width-alt.block) {
+    padding: 60px 17px;
+  }
+
+  .cards-textures.width-alt.block {
+    border-radius: 0;
+  }
+}
