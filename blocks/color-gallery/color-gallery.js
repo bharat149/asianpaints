@@ -8,6 +8,8 @@ Col 5 contains multiple mobile bottom images
 Col 6 contains multiple URLs
 */
 
+import { trackEvent } from '../../scripts/analytics.js';
+
 function getPicturesFromColumn(col) {
   if (!col) return [];
   return [...col.querySelectorAll('picture')];
@@ -27,6 +29,26 @@ function getLinksFromColumn(col) {
 
   const text = col.textContent.trim();
   return text ? [text] : [];
+}
+
+function getParentTitle(textCol, block) {
+  const title = textCol?.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim();
+  if (title) return title;
+
+  const fallbackText = textCol?.querySelector('p')?.textContent?.trim();
+  if (fallbackText) return fallbackText;
+
+  return block.closest('.section')?.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
+}
+
+function getCardProductName(topPicture, bottomPicture, index) {
+  const topAlt = topPicture?.querySelector('img')?.alt?.trim();
+  if (topAlt) return topAlt;
+
+  const bottomAlt = bottomPicture?.querySelector('img')?.alt?.trim();
+  if (bottomAlt) return bottomAlt;
+
+  return `Gallery card ${index + 1}`;
 }
 
 function cloneSourcesToPicture(targetPicture, sourcePicture, mediaQuery) {
@@ -83,6 +105,25 @@ function updateNavState(swiper, prevButton, nextButton) {
   nextButton.style.opacity = swiper.isEnd ? '0.4' : '1';
 }
 
+function trackNavClick(button, navigationAction, testTitle) {
+  if (!button) return;
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    const resolvedNavigationAction = navigationAction
+      || button.getAttribute('aria-label')
+      || '';
+
+    trackEvent('Navigation', {
+      'Navigation Action': resolvedNavigationAction,
+      navigationAction: resolvedNavigationAction,
+      direction: resolvedNavigationAction,
+      testTitle,
+    });
+  });
+}
+
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -104,6 +145,7 @@ export default async function decorate(block) {
   // Column 1 = text content
   const textCol = columns[0];
   textCol.classList.add('color-gallery-text');
+  const parentTitle = getParentTitle(textCol, block);
 
   // Columns 2–6
   const desktopTopCol = columns[1];
@@ -137,6 +179,20 @@ export default async function decorate(block) {
   const swiperWrapper = document.createElement('div');
   swiperWrapper.className = 'swiper-wrapper color-gallery-carousel-track';
 
+  if (carouselCol.dataset.analyticsBound !== 'true') {
+    carouselCol.dataset.analyticsBound = 'true';
+    carouselCol.addEventListener('click', (event) => {
+      const card = event.target.closest('.color-gallery-card');
+      if (!card || !carouselCol.contains(card)) return;
+
+      trackEvent('product_tile_click', {
+        productName: card.dataset.productName || '',
+        param1: card.href || card.getAttribute('href') || '',
+        Title: card.dataset.parentTitle || '',
+      });
+    });
+  }
+
   for (let i = 0; i < totalCards; i += 1) {
     const topPicture = createResponsivePicture(
       desktopTopPictures[i],
@@ -160,6 +216,8 @@ export default async function decorate(block) {
     cardLink.className = 'color-gallery-card';
     cardLink.href = urls[i] || '#';
     cardLink.setAttribute('aria-label', `View gallery card ${i + 1}`);
+    cardLink.dataset.productName = getCardProductName(topPicture, bottomPicture, i);
+    cardLink.dataset.parentTitle = parentTitle;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'color-gallery-card-top';
@@ -200,6 +258,9 @@ export default async function decorate(block) {
     nextButton.className = 'color-gallery-nav color-gallery-next swiper-button-next';
     nextButton.type = 'button';
     nextButton.setAttribute('aria-label', 'Next');
+
+    trackNavClick(prevButton, 'Previous', parentTitle);
+    trackNavClick(nextButton, 'Next', parentTitle);
 
     navContainer.appendChild(prevButton);
     navContainer.appendChild(nextButton);

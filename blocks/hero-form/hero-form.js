@@ -4,6 +4,7 @@ import {
   toClassName,
 } from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
+import { trackEvent } from '../../scripts/analytics.js';
 
 const AMS_BASE = 'https://beta.asianpaints.com';
 
@@ -244,6 +245,19 @@ function buildBasePayload() {
   };
 }
 
+function getTextFromHtml(html = '') {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  return temp.textContent?.trim() || '';
+}
+
+function trackInterestCTA(campaignId, formName) {
+  trackEvent('Form_thank_you_pop_up', {
+    cid: campaignId,
+    formName,
+  });
+}
+
 export default function decorate(block) {
   const config = readBlockConfig(block);
   const ds = block.dataset;
@@ -408,6 +422,18 @@ export default function decorate(block) {
   checkmark?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') consentInput?.click();
   });
+
+  const thankYouCta = block.querySelector('.explore-painting-btn');
+  if (thankYouCta && thankYouCta.dataset.analyticsBound !== 'true') {
+    thankYouCta.dataset.analyticsBound = 'true';
+    thankYouCta.addEventListener('click', () => {
+      const configuredCampaignId = (cfg.campaignId || container.getAttribute('data-attr-campaignId') || '').trim();
+      const currentCampaignId = configuredCampaignId || getCampaignIdFromUrl();
+      const currentFormName = getTextFromHtml(cfg.formTitle) || 'hero-form';
+
+      trackInterestCTA(currentCampaignId, currentFormName);
+    });
+  }
 
   function isFormValid() {
     const m = mobileInput.value.trim();

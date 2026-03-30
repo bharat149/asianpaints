@@ -385,6 +385,24 @@ function createCloseButton(labelText) {
   return button;
 }
 
+function trackInterestCTA(currentCampaignId, currentFormName) {
+  trackEvent('Form_thank_you_pop_up', {
+    cid: currentCampaignId,
+    formName: currentFormName,
+  });
+}
+
+function trackExploreNowCTA(ctaLink) {
+  if (!ctaLink) return;
+
+  trackEvent('cta_link_text', {
+    cta_: 'Explore now',
+    parentTitle: 'Form Thank you pop-up',
+    param1: ctaLink,
+    redirectionLink: ctaLink,
+  });
+}
+
 /**
  * Create thank you overlay
  */
@@ -414,11 +432,7 @@ function createThankYouScreen(block) {
   cta.rel = 'noopener noreferrer';
   cta.setAttribute('aria-label', 'Explore now');
   cta.addEventListener('click', () => {
-    trackEvent("cta_link_text", {
-      "cta": "Explore now", // FIXME: check this
-      "parentTitle": "Form Thank you pop-up",
-      "param1": THANK_YOU_CTA_LINK
-    });
+    trackExploreNowCTA(THANK_YOU_CTA_LINK);
   });
 
   const ins = document.createElement('a');
@@ -426,6 +440,8 @@ function createThankYouScreen(block) {
   ins.href = 'javascript:void(0)';
   ins.setAttribute('aria-label', 'Yes I am Interseted');
   ins.addEventListener('click', () => {
+    trackInterestCTA(campaignId, formName);
+
     const parent = ins.closest('.form-popup-overlay'); // ✅ scope to this instance
     if (!parent) return;
 
@@ -449,6 +465,11 @@ function createThankYouScreen(block) {
         Explore Now
       </a>
     `;
+
+    const rewampCta = wrapper.querySelector('.explore-now-rewamp');
+    rewampCta?.addEventListener('click', () => {
+      trackExploreNowCTA(THANK_YOU_CTA_LINK);
+    });
 
     // ✅ append inside same overlay
     parent.appendChild(wrapper);

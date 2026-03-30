@@ -1,3 +1,5 @@
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -56,6 +58,15 @@ export default function decorate(block) {
 
     const swiperWrapper = document.createElement('div');
     swiperWrapper.className = 'swiper-wrapper';
+
+    swiperWrapper.addEventListener('click', (event) => {
+      const anchor = event.target.closest('a');
+      if (!anchor || !swiperWrapper.contains(anchor)) return;
+
+      const ctaLink = anchor.getAttribute('href') || '';
+      const btnTitle = anchor.getAttribute('title') || anchor.textContent.trim();
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, title);
+    });
 
     const paragraphs = [...contentEl.querySelectorAll('p')];
 
@@ -128,6 +139,11 @@ export default function decorate(block) {
     }
 
     btn.addEventListener('click', () => {
+      const currentTabName = btn.textContent.trim();
+      trackEvent('waterproofing_categories', {
+        categories: currentTabName,
+      });
+
       tabsContainer.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
       tabsContainer.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
 

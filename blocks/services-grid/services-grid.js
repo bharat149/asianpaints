@@ -1,3 +1,5 @@
+import { trackEvent } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   const row = block.querySelector(':scope > div');
   if (!row) return;
@@ -53,6 +55,12 @@ export default function decorate(block) {
 
     // Apply authored link
     card.href = link?.href || '#';
+    card.addEventListener('click', () => {
+      trackEvent('cta_link_text', {
+        cta_: serviceName,
+        redirectionLink: card.href || link?.href || '#',
+      });
+    });
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'services-grid-card-image';
