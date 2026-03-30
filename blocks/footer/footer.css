@@ -325,6 +325,82 @@
   letter-spacing: normal;
 }
 
+.footer .footer-video-player {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0 0 0 / 82%);
+}
+
+.footer .footer-video-banner.video-active .footer-video-player {
+  display: flex;
+}
+
+.footer .footer-video-banner.video-active .video-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.footer .footer-video-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.footer .footer-video-close::before,
+.footer .footer-video-close::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 3px;
+  background: #fff;
+  border-radius: 999px;
+  transform-origin: center;
+  box-shadow: 0 0 8px rgba(0 0 0 / 35%);
+}
+
+.footer .footer-video-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.footer .footer-video-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.footer .footer-video-frame {
+  position: relative;
+  width: min(100%, 912px);
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.footer .footer-video-embed {
+  width: 100%;
+  height: 100%;
+}
+
+.footer .footer-video-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 /* =============================================
    SECTION 3: GLOBAL PRESENCE
    Fix #8: Centered flex, gap 28px

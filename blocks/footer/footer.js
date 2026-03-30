@@ -60,6 +60,62 @@ function el(tag, attrs = {}, ...children) {
   return elem;
 }
 
+function getFooterVideoLink(cell) {
+  return cell.querySelector('a[href*="youtube"], a[href*="youtu.be"]')?.href
+    || 'https://www.youtube.com/watch?v=c6GKMQDYI1k';
+}
+
+function getYouTubeEmbedUrl(videoUrl) {
+  try {
+    const url = new URL(videoUrl, window.location.origin);
+    let videoId = url.searchParams.get('v') || '';
+
+    if (url.hostname.includes('youtu.be')) {
+      videoId = url.pathname.split('/').filter(Boolean).pop() || '';
+    } else if (url.pathname.startsWith('/embed/')) {
+      [, , videoId] = url.pathname.split('/');
+    }
+
+    if (!videoId) return '';
+
+    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&playsinline=1`;
+  } catch (e) {
+    return '';
+  }
+}
+
+function openFooterVideo(banner, videoUrl) {
+  const player = banner.querySelector('.footer-video-player');
+  const frame = banner.querySelector('.footer-video-embed');
+  const embedUrl = getYouTubeEmbedUrl(videoUrl);
+
+  if (!player || !frame || !embedUrl) return;
+
+  frame.innerHTML = `
+    <iframe
+      src="${embedUrl}"
+      title="Asian Paints footer video"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  `;
+
+  banner.classList.add('video-active');
+  player.setAttribute('aria-hidden', 'false');
+}
+
+function closeFooterVideo(banner) {
+  const player = banner.querySelector('.footer-video-player');
+  const frame = banner.querySelector('.footer-video-embed');
+
+  if (!player || !frame) return;
+
+  banner.classList.remove('video-active');
+  player.setAttribute('aria-hidden', 'true');
+  frame.innerHTML = '';
+}
+
 /**
  * Parse link groups from a cell containing alternating title/link paragraphs.
  * DA format: <p>Title +</p> <p><a>link</a> <a>link</a>…</p>
@@ -244,6 +300,7 @@ function buildMegaFooter(container, row) {
 function buildVideoBanner(container, row) {
   if (!row) return;
   const cell = row.querySelector(':scope > div') || row;
+  const videoUrl = getFooterVideoLink(cell);
 
   const banner = el('section', { className: 'footer-video-banner' });
   const mediaBg = el('div', { className: 'video-bg' });
@@ -297,10 +354,36 @@ function buildVideoBanner(container, row) {
     trackEvent('video_playbotton_click', {
       videoTitle: cta.getAttribute('aria-label') || '',
     });
-    window.open('https://www.youtube.com/watch?v=c6GKMQDYI1k', '_blank', 'noopener');
+    openFooterVideo(banner, videoUrl);
   });
   overlay.appendChild(cta);
   banner.appendChild(overlay);
+
+  const player = el('div', {
+    className: 'footer-video-player',
+    'aria-hidden': 'true',
+  });
+  const closeButton = el('button', {
+    className: 'footer-video-close',
+    type: 'button',
+    'aria-label': 'Close footer video',
+  });
+  const frame = el('div', { className: 'footer-video-frame' });
+  const embed = el('div', { className: 'footer-video-embed' });
+
+  closeButton.addEventListener('click', () => {
+    closeFooterVideo(banner);
+  });
+
+  player.addEventListener('click', (event) => {
+    if (event.target === player) {
+      closeFooterVideo(banner);
+    }
+  });
+
+  frame.append(closeButton, embed);
+  player.append(frame);
+  banner.appendChild(player);
 
   container.appendChild(banner);
 }
@@ -570,6 +653,16 @@ function initFooterSocialTracking(block) {
   });
 }
 
+function initFooterVideoBanner(block) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+
+    block.querySelectorAll('.footer-video-banner.video-active').forEach((banner) => {
+      closeFooterVideo(banner);
+    });
+  });
+}
+
 /* ---------- DECORATE ---------- */
 export default async function decorate(block) {
   const resp = await fetch('/footer.plain.html');
@@ -615,4 +708,5 @@ export default async function decorate(block) {
   initFooterCountryTracking(block);
   initFooterDivisionTracking(block);
   initFooterSocialTracking(block);
+  initFooterVideoBanner(block);
 }
