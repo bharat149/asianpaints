@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   console.log('block', block);
 
@@ -12,6 +14,19 @@ export default function decorate(block) {
   // scope links inside block
   block.querySelectorAll('a').forEach((a) => {
     a.textContent = 'Read more';
+  });
+
+  block.addEventListener('click', (event) => {
+    const cta = event.target.closest('.inspiration-popular-read-more a');
+    if (!cta || !block.contains(cta)) return;
+
+    const ctaLink = cta.getAttribute('href') || '';
+    const btnTitle = cta.textContent.trim() || 'Read more';
+    const readMoreWrap = cta.closest('.inspiration-popular-read-more');
+    const card = readMoreWrap?.parentElement;
+    const parentTitle = card?.querySelector('.inspiration-popular-title')?.textContent?.trim() || '';
+
+    triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
   });
 
   const items = Array.from(block.children);

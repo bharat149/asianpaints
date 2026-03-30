@@ -1,3 +1,5 @@
+import { trackEvent } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   const items = [...block.children];
 
@@ -26,6 +28,12 @@ export default function decorate(block) {
     const anchor = document.createElement('a');
     anchor.href = link;
     anchor.innerHTML = 'Explore inspirations <img src="/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">';
+    anchor.addEventListener('click', () => {
+      const downloadPdfName = anchor.textContent?.trim() || '';
+      trackEvent('download_multiple_pdf', {
+        pdfName: downloadPdfName,
+      });
+    });
 
     // Wrapper to hold all three as siblings
     const wrapper = document.createElement('div');

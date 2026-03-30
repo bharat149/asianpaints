@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   // Remove dark-blue class from parent section if present
   const section = block.closest('.section');
@@ -83,6 +85,10 @@ export default function decorate(block) {
         btn.className = 'interiors-shop-button';
         const btnText = link.textContent?.trim() || 'Explore now';
         btn.innerHTML = `${btnText} <span class="arrow"></span>`;
+        btn.addEventListener('click', () => {
+          const parentTitle = title?.textContent?.trim() || '';
+          triggerCTAClickWithLinkAndTitle(btn.href, btnText, parentTitle);
+        });
         contentDiv.appendChild(btn);
       }
 
