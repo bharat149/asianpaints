@@ -215,10 +215,10 @@
 .form-banner__form .form-consent-item--toggle .form-consent-toggle::after {
   content: '';
   position: absolute;
-  top: 1px;
+  top: 3px;
   left: 4px;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: #fff;
   transition: transform 0.2s ease;
