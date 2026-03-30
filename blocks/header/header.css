@@ -39,12 +39,16 @@
   height: var(--header-brand-height);
 }
 
+/* Match asianpaints.com: brand tabs sit on the right within the max-width column */
 .header .header-brands-inner {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: stretch;
-  width: max-content;
+  width: 100%;
+  max-width: var(--header-max-width);
   margin: 0 auto;
+  padding: 0 40px;
+  box-sizing: border-box;
   height: 100%;
 }
 
