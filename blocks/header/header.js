@@ -2181,7 +2181,7 @@ function buildCartModal() {
   return overlay;
 }
 
-function buildMegamenuPanel(submenuUl) {
+function buildMegamenuPanel(submenuUl, parentLabel = '') {
   const dropdown = document.createElement('div');
   dropdown.className = 'nav-dropdown';
 
@@ -2209,15 +2209,22 @@ function buildMegamenuPanel(submenuUl) {
     return li;
   };
 
-  submenuUl.querySelectorAll(':scope > li').forEach((colLi) => {
+  const topLevelItems = [...submenuUl.querySelectorAll(':scope > li')];
+
+  topLevelItems.forEach((colLi) => {
     const column = document.createElement('div');
     column.className = 'dropdown-column';
 
     const headingSource = colLi.querySelector(':scope > a, :scope > p > a, :scope > strong, :scope > p > strong');
-    if (headingSource) {
+    const headingText = headingSource?.textContent.trim() || '';
+    const shouldHideHeading = topLevelItems.length === 1
+      && headingText
+      && headingText.toLowerCase() === parentLabel.toLowerCase();
+
+    if (headingSource && !shouldHideHeading) {
       const heading = document.createElement('h4');
       heading.className = 'dropdown-title';
-      heading.textContent = headingSource.textContent.trim();
+      heading.textContent = headingText;
       column.appendChild(heading);
     }
 
@@ -2320,7 +2327,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       navItem.appendChild(link);
 
       if (submenuUl) {
-        navItem.appendChild(buildMegamenuPanel(submenuUl));
+        navItem.appendChild(buildMegamenuPanel(submenuUl, normalizeNavLabel(anchor.textContent)));
       }
 
       navList.appendChild(navItem);
