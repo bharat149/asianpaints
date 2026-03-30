@@ -262,7 +262,7 @@
   }
 
   .designer-collections-header {
-    flex-direction: column;
+    /* flex-direction: column; */
     align-items: flex-start;
     gap: 20px;
   }
@@ -279,15 +279,6 @@
     font-size: 0.85rem;
   }
 
-  .designer-collections-nav {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    min-height: 40px;
-    max-width: 40px;
-    max-height: 40px;
-    font-size: 18px;
-  }
 }
 
 @media (width < 600px) {
@@ -305,6 +296,7 @@
 
   .designer-collections-title {
     font-size: 1.6rem;
+    align-self: center;
   }
 
   .designer-collections-image {
@@ -327,7 +319,7 @@
   }
 
   .designer-collections-nav-wrapper {
-    display: none;
+    /* display: none; */
   }
 
   .designer-collections-pagination {

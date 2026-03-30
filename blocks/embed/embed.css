@@ -170,12 +170,16 @@
   text-align: center;
   max-width: 100%;
   margin: 0 auto;
-  padding: 0;
+  padding-bottom: 50px;
 }
 
 .embed.media .embed-media-image-only {
   width: 100%;
   line-height: 0;
+}
+
+.embed.media .embed-media-video-wrapper video{
+  border-radius: 8px;
 }
 
 .embed.media .embed-media-image-only picture {
