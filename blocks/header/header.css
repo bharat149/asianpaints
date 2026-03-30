@@ -22,9 +22,6 @@
   --header-search-width-fluid: clamp(340px, calc(25vw - 20px), 459px);
   --header-action-gap: clamp(14.3906px, calc(1.5vw - 7.2094px), 21.5312px);
   --header-cta-gap: clamp(14.5px, calc(23.5vw - 323.9px), 126.359px);
-
-  /* Asian Paints header-unification icon hover */
-  --header-icon-hover-gradient: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
 }
 
 /* ========================================
@@ -179,29 +176,6 @@
   color: #8c8e90;
 }
 
-@media (width >= 992px) {
-  .header .header-search {
-    border-bottom: 0.5px solid #b0b1b3;
-    border-radius: 0;
-    box-sizing: border-box;
-  }
-
-  .header .search-icon {
-    position: relative;
-    border-radius: 0;
-  }
-
-  .header .search-icon::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 1.75px;
-    bottom: 6px;
-    right: 0;
-    background: #5d4f43;
-  }
-}
-
 .header .camera-btn {
   display: flex;
   align-items: center;
@@ -257,62 +231,25 @@
 }
 
 @media (width >= 992px) {
-  .header .find-contractors-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    position: relative;
-    cursor: pointer;
-    margin-left: -6px;
-    border-radius: 50%;
-  }
-
-  .header .header-actions > .action-btn {
-    border-radius: 50%;
-    margin-left: -6px;
-  }
-
-  .header .find-contractors-icon .action-btn {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-  }
-
-  .header .find-contractors-icon .action-btn:hover,
-  .header .find-contractors-icon .action-btn:focus-visible {
-    background: transparent;
-  }
-
-  .header .find-contractors-icon:hover,
-  .header .find-contractors-icon:focus-within {
-    background: radial-gradient(ellipse 118% 118% at 30% 36%, #f5efff 0%, #fff2f3 52%, #fffaf0 100%);
-  }
-
-  .header .profile-dropdown-wrapper .profile-auth-link {
-    border-radius: 50%;
-  }
-
-  .header .header-actions > .profile-dropdown-wrapper {
-    margin-left: -6px;
-  }
-
   .header .header-actions > .action-btn:hover,
-  .header .header-actions > .action-btn:focus-visible,
+  .header .header-actions > .action-btn:focus-visible {
+    background: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
+    border-radius: 50%;
+  }
+
   .header .profile-dropdown-wrapper .profile-auth-link:hover,
   .header .profile-dropdown-wrapper .profile-auth-link:focus-visible {
-    background: var(--header-icon-hover-gradient);
+    background: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
+    border-radius: 50%;
   }
 
   .header .action-btn .icon-tooltip-text,
-  .header .find-contractors-icon .icon-tooltip-text,
   .header .profile-dropdown-wrapper .profile-auth-link .icon-tooltip-text {
     visibility: hidden;
     position: absolute;
-    top: 50px;
+    top: calc(100% + 10px);
     left: 50%;
-    z-index: 2;
+    z-index: 1200;
     width: auto;
     height: auto;
     padding: 5px 10px;
@@ -331,7 +268,6 @@
   }
 
   .header .action-btn .icon-tooltip-text::after,
-  .header .find-contractors-icon .icon-tooltip-text::after,
   .header .profile-dropdown-wrapper .profile-auth-link .icon-tooltip-text::after {
     content: '';
     position: absolute;
@@ -345,14 +281,12 @@
 
   .header .action-btn:hover .icon-tooltip-text,
   .header .action-btn:focus-visible .icon-tooltip-text,
-  .header .find-contractors-icon:hover .icon-tooltip-text,
-  .header .find-contractors-icon:focus-within .icon-tooltip-text,
   .header .profile-dropdown-wrapper .profile-auth-link:hover .icon-tooltip-text,
   .header .profile-dropdown-wrapper .profile-auth-link:focus-visible .icon-tooltip-text {
     visibility: visible;
   }
 
-  .header .find-contractors-icon .icon-tooltip-text-stacked {
+  .header .action-btn .icon-tooltip-text-stacked {
     padding: 6px 12px 7px;
     background-color: #fef6eb;
     color: #2f2f2f;
@@ -361,11 +295,11 @@
     box-shadow: 0 1px 4px rgb(0 0 0 / 6%);
   }
 
-  .header .find-contractors-icon .icon-tooltip-text-stacked::after {
+  .header .action-btn .icon-tooltip-text-stacked::after {
     border-color: transparent transparent #fef6eb;
   }
 
-  .header .find-contractors-icon .icon-tooltip-text-stacked .icon-tooltip-line {
+  .header .action-btn .icon-tooltip-text-stacked .icon-tooltip-line {
     display: block;
   }
 }
@@ -1005,13 +939,6 @@ body.nav-open {
 
   .header .icon-tooltip-text {
     display: none !important;
-  }
-
-  .header .find-contractors-icon {
-    width: 32px;
-    height: 32px;
-    margin-left: 0;
-    border-radius: 0;
   }
 
   .header .action-btn {
@@ -1933,7 +1860,7 @@ body.search-dialog-open {
 .header .sd-search-icon {
   display: flex;
   flex-shrink: 0;
-  color: #5d4f43;
+  color: #3f3f46;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -1990,7 +1917,6 @@ body.search-dialog-open {
   height: 28px;
   background: transparent;
   border: none;
-  border-radius: 50%;
   font-size: 24px;
   color: #444;
   cursor: pointer;
@@ -1999,10 +1925,8 @@ body.search-dialog-open {
   flex-shrink: 0;
 }
 
-.header .sd-close-btn:hover,
-.header .sd-close-btn:focus-visible {
+.header .sd-close-btn:hover {
   color: #1f1f1f;
-  background: var(--header-icon-hover-gradient);
 }
 
 /* Content area: unbxd-as-wrapper 750px, columns unbxd-as-maincontent ~365px + unbxd-as-sidecontent ~353px */

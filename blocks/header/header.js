@@ -27,10 +27,9 @@ const headerConfig = {
 };
 
 const HEADER_ICON_PATHS = {
-  PROFILE_LOGGED_OUT: '/icons/profile-icon.svg',
-  PROFILE_LOGGED_IN: '/icons/profile-icon.svg',
-  STORE: '/icons/store-icon.svg',
-  CONTRACTOR: '/icons/contractor-helmet.svg',
+  PROFILE_LOGGED_OUT: '/icons/profile-icon-gray-brown.png',
+  PROFILE_LOGGED_IN: '/icons/profile-icon-logged-in.png',
+  STORE: '/icons/store-icon-gray-brown.png',
 };
 
 // Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
@@ -1972,24 +1971,6 @@ function buildMainHeader(mainDiv) {
       }
 
       const altText = (img?.alt || '').toLowerCase();
-      const hrefLower = (actionLink.getAttribute('href') || '').toLowerCase();
-
-      let containerAppend = actionLink;
-      let tipHost = actionLink;
-
-      const isContractor = (altText.includes('contractor') || hrefLower.includes('contractor'))
-        && !altText.includes('cart');
-      if (isContractor) {
-        actionLink.classList.add('contractor-btn');
-        const contractorImg = actionLink.querySelector('img');
-        if (contractorImg) contractorImg.src = HEADER_ICON_PATHS.CONTRACTOR;
-        const fcWrap = document.createElement('div');
-        fcWrap.className = 'find-contractors-icon';
-        fcWrap.setAttribute('title', 'Find Contractor');
-        fcWrap.appendChild(actionLink);
-        containerAppend = fcWrap;
-        tipHost = fcWrap;
-      }
 
       // Profile button — save original (logged-in) icon src,
       // start with clean local icon (no green dot) for logged-out state.
@@ -2062,11 +2043,12 @@ function buildMainHeader(mainDiv) {
         wrapper.appendChild(dropdown);
         actionsContainer.appendChild(wrapper);
       } else {
-        actionsContainer.appendChild(containerAppend);
+        actionsContainer.appendChild(actionLink);
       }
 
       const tipLabel = actionLink.getAttribute('aria-label');
       if (tipLabel) {
+        actionLink.removeAttribute('title');
         const tip = document.createElement('span');
         tip.className = 'icon-tooltip-text';
         tip.setAttribute('aria-hidden', 'true');
@@ -2083,7 +2065,7 @@ function buildMainHeader(mainDiv) {
         } else {
           tip.textContent = tipLabel;
         }
-        tipHost.appendChild(tip);
+        actionLink.appendChild(tip);
       }
     });
     inner.appendChild(actionsContainer);
