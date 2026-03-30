@@ -779,6 +779,8 @@
 }
 
 .header .dropdown-links {
+  display: flex;
+  flex-direction: column;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -793,10 +795,6 @@
 
 .header .dropdown-links li {
   margin: 0;
-}
-
-.header .dropdown-links li:first-child {
-  margin-top: 20px;
 }
 
 .header .dropdown-links a {
