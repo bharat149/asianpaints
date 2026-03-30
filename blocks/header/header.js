@@ -32,37 +32,6 @@ const HEADER_ICON_PATHS = {
   STORE: '/icons/store-icon-gray-brown.png',
 };
 
-/* eslint-disable max-len */
-/** Vector search icon (parity with AP; avoids blurry doc images) */
-const HEADER_SEARCH_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
-/* eslint-enable max-len */
-
-const MEGAMENU_SMALL_WORDS = new Set([
-  'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'from', 'in', 'nor',
-  'of', 'on', 'or', 'the', 'to', 'via',
-]);
-
-/**
- * Megamenu column titles from CMS are often ALL CAPS; normalize to readable casing.
- * @param {string} raw
- * @returns {string}
- */
-function formatMegamenuHeading(raw) {
-  const t = raw.trim();
-  if (!t) return t;
-  const words = t.toLowerCase().replace(/\s+/g, ' ').split(' ');
-  return words
-    .map((word, i) => {
-      if (i > 0 && MEGAMENU_SMALL_WORDS.has(word)) return word;
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(' ');
-}
-
-function headingIsColourByFamily(text) {
-  return /^colour\s+by\s+family$/i.test(String(text).trim());
-}
-
 // Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
 const AUTH_REDIRECT_URI = `${window.location.origin}/`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
@@ -1914,7 +1883,12 @@ function buildMainHeader(mainDiv) {
 
   const searchIconSpan = document.createElement('span');
   searchIconSpan.className = 'search-icon';
-  searchIconSpan.innerHTML = HEADER_SEARCH_ICON_SVG;
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[0]) {
+      searchIconSpan.appendChild(imgs[0].cloneNode(true));
+    }
+  }
 
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
@@ -1958,7 +1932,12 @@ function buildMainHeader(mainDiv) {
   mobileSearchBtn.className = 'mobile-search-btn';
   mobileSearchBtn.type = 'button';
   mobileSearchBtn.setAttribute('aria-label', 'Search');
-  mobileSearchBtn.innerHTML = HEADER_SEARCH_ICON_SVG;
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[0]) {
+      mobileSearchBtn.appendChild(imgs[0].cloneNode(true));
+    }
+  }
 
   // Action icons — from p.header-actions or <ul> in mainDiv
   const actionsContainer = document.createElement('div');
@@ -2126,13 +2105,18 @@ function buildMainHeader(mainDiv) {
   return mainHeader;
 }
 
-function buildMobileSearchPanel() {
+function buildMobileSearchPanel(mainDiv) {
   const panel = document.createElement('div');
   panel.className = 'mobile-search-panel';
 
+  const paragraphs = mainDiv.querySelectorAll('p');
+
   const searchIcon = document.createElement('span');
   searchIcon.className = 'search-icon';
-  searchIcon.innerHTML = HEADER_SEARCH_ICON_SVG;
+  if (paragraphs[1]) {
+    const imgs = paragraphs[1].querySelectorAll('img');
+    if (imgs[0]) searchIcon.appendChild(imgs[0].cloneNode(true));
+  }
 
   const input = document.createElement('input');
   input.type = 'text';
@@ -2209,12 +2193,10 @@ function buildMegamenuPanel(submenuUl) {
     column.className = 'dropdown-column';
 
     const headingLink = colLi.querySelector(':scope > a, :scope > p > a');
-    let rawHeading = '';
     if (headingLink) {
-      rawHeading = headingLink.textContent.trim();
       const heading = document.createElement('h4');
       heading.className = 'dropdown-title';
-      heading.textContent = formatMegamenuHeading(rawHeading);
+      heading.textContent = headingLink.textContent.trim();
       column.appendChild(heading);
     }
 
@@ -2244,9 +2226,6 @@ function buildMegamenuPanel(submenuUl) {
         linkList.appendChild(li);
       });
 
-      if (headingIsColourByFamily(rawHeading)) {
-        column.classList.add('dropdown-column-split-links');
-      }
       column.appendChild(linkList);
     }
 
@@ -2955,7 +2934,7 @@ export default async function decorate(block) {
   block.appendChild(stickyWrapper);
 
   // Mobile search panel
-  block.appendChild(buildMobileSearchPanel());
+  block.appendChild(buildMobileSearchPanel(mainDiv));
 
   // Cart modal
   block.appendChild(buildCartModal());
