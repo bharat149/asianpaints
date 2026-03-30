@@ -1834,6 +1834,10 @@ function buildBrandBar(brandDiv) {
 
     if (img) {
       const clonedImg = img.cloneNode(true);
+      // Use mobile-optimised logo for White Teak (3rd brand)
+      if (idx === 2 && window.innerWidth < 900) {
+        clonedImg.src = '/icons/wt_logo_mob.svg';
+      }
       brandItem.appendChild(clonedImg);
     }
 
@@ -1886,7 +1890,9 @@ function buildMainHeader(mainDiv) {
   if (paragraphs[1]) {
     const imgs = paragraphs[1].querySelectorAll('img');
     if (imgs[0]) {
-      searchIconSpan.appendChild(imgs[0].cloneNode(true));
+      const searchImg = imgs[0].cloneNode(true);
+      searchImg.src = '/icons/search-icon.svg';
+      searchIconSpan.appendChild(searchImg);
     }
   }
 
@@ -1935,7 +1941,9 @@ function buildMainHeader(mainDiv) {
   if (paragraphs[1]) {
     const imgs = paragraphs[1].querySelectorAll('img');
     if (imgs[0]) {
-      mobileSearchBtn.appendChild(imgs[0].cloneNode(true));
+      const mobileSearchImg = imgs[0].cloneNode(true);
+      mobileSearchImg.src = '/icons/search-icon.svg';
+      mobileSearchBtn.appendChild(mobileSearchImg);
     }
   }
 
