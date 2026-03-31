@@ -702,7 +702,7 @@
 .header .nav-list {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-start;
   list-style: none;
   margin: 0;
@@ -716,11 +716,11 @@
 
 .header .nav-link {
   display: block;
-  padding: 13px 8px;
+  padding: 11px 8px;
   text-decoration: none;
   color: var(--header-nav-text);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   height: auto;
   line-height: 12.46px;
@@ -753,7 +753,7 @@
   display: block;
   width: 20px;
   height: 19px;
-  margin-left: 40px;
+  margin-left: 28px;
   padding: 0;
   line-height: normal;
 }
@@ -761,10 +761,10 @@
 .header .nav-item.nav-home {
   display: flex;
   align-items: center;
-  flex: 0 0 81px;
+  flex: 0 0 65px;
   height: 23px;
-  margin-right: -10px;
-  width: 81px;
+  margin-right: -4px;
+  width: 65px;
 }
 
 .header .nav-item.nav-home .nav-link::before {
@@ -834,11 +834,11 @@
 }
 
 .header .dropdown-column:not(:last-child) {
-  padding-right: 20px;
+  padding-right: 28px;
 }
 
 .header .dropdown-column-wide {
-  min-width: 0;
+  min-width: max-content;
 }
 
 .header .dropdown-title {
@@ -849,7 +849,7 @@
   text-transform: none;
   letter-spacing: 0;
   margin: 0;
-  padding: 20px 0 8px 17px;
+  padding: 16px 0 6px 17px;
   white-space: nowrap;
 }
 
@@ -863,7 +863,7 @@
 
 .header .dropdown-links-split {
   display: flex;
-  gap: 18px;
+  gap: 28px;
   align-items: start;
   width: max-content;
 }
@@ -879,7 +879,7 @@
 
 .header .dropdown-links a {
   display: block;
-  padding: 12px 16px;
+  padding: 10px 12px 10px 17px;
   color: #2e2f31;
   text-decoration: none;
   font-size: 14px;

@@ -2288,6 +2288,15 @@ function normalizeNavLabel(text) {
   return text.trim().replace(/\u2026$/, '').replace(/\.\.\.$/, '');
 }
 
+function getDisplayNavLabel(text) {
+  const trimmed = text.trim();
+  if (/^More(?:\u2026|\.{3})$/.test(trimmed)) {
+    return 'More...';
+  }
+
+  return normalizeNavLabel(trimmed);
+}
+
 function buildNavBar(navDiv, secondaryDiv) {
   const navBar = document.createElement('div');
   navBar.className = 'header-nav-bar';
@@ -2319,7 +2328,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       const link = document.createElement('a');
       link.className = 'nav-link';
       link.href = anchor.getAttribute('href');
-      link.textContent = normalizeNavLabel(anchor.textContent);
+      link.textContent = getDisplayNavLabel(anchor.textContent);
 
       if (link.textContent === 'Home') {
         navItem.classList.add('nav-home');
