@@ -609,12 +609,14 @@ function initMobileAccordions(block) {
     const expanded = btn.getAttribute('aria-expanded') === 'true';
     titles.forEach((other) => {
       other.setAttribute('aria-expanded', 'false');
-      other.nextElementSibling.style.maxHeight = null;
+      other.nextElementSibling.style.display = 'none';
+      other.querySelector('.accordion-icon')?.classList.remove('open');
     });
     if (!expanded) {
       btn.setAttribute('aria-expanded', 'true');
       const list = btn.nextElementSibling;
-      list.style.maxHeight = `${list.scrollHeight}px`;
+      list.style.display = 'block';
+      btn.querySelector('.accordion-icon')?.classList.add('open');
     }
   };
 
@@ -634,11 +636,22 @@ function initMobileAccordions(block) {
   mq.addEventListener('change', (e) => {
     titles.forEach((btn) => {
       if (e.matches) {
-        btn.nextElementSibling.style.maxHeight = null;
+        btn.nextElementSibling.style.display = '';
         btn.setAttribute('aria-expanded', 'false');
+        btn.querySelector('.accordion-icon')?.classList.remove('open');
+      } else {
+        btn.nextElementSibling.style.display = 'none';
       }
     });
   });
+
+  if (window.innerWidth < 1024) {
+    titles.forEach((btn) => {
+      btn.nextElementSibling.style.display = 'none';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.querySelector('.accordion-icon')?.classList.remove('open');
+    });
+  }
 }
 
 function initFooterContactTracking(block) {
