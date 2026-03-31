@@ -72,6 +72,7 @@
     line-height: 33.6px;
     color: #232426;
     margin: 0 0 8px;
+    margin-bottom: 0;
 }
 
 .inner-text-wraper .text-description {
@@ -80,6 +81,7 @@
     font-weight: 400;
     line-height: 24px;
     color: #53565A;
+    margin-bottom: 0;
 }
 
 /* keep for desktop/tablet; overridden on mobile */
