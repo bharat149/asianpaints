@@ -1017,9 +1017,17 @@
     line-height: 21px;
   }
 
+  .footer .mega-center .clickable-title {
+    margin-bottom: 0;
+  }
+
+  .footer .mega-center .group-link {
+    margin-bottom: 6px;
+  }
+
   .footer .mega-center .link-group-list a {
     color: #666;
-    padding: 4px 25px;
+    padding: 2px 25px;
   }
 
   .footer .mega-center .link-group-list a:hover {
@@ -1084,7 +1092,7 @@
   }
 
   .footer .link-group-title[aria-expanded="true"] + .link-group-list {
-    padding-bottom: 12px;
+    padding-bottom: 8px;
   }
 
   .footer .mega-col-about {
