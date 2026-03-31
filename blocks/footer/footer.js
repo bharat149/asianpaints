@@ -276,11 +276,11 @@ function buildLinkColumnFromGroups(groups) {
     header.innerHTML += '<span class="accordion-icon">+</span>';
     section.appendChild(header);
 
-    const list = el('ul', { className: 'link-group-list' });
+    const list = el('div', { className: 'link-group-list' });
     group.links.forEach((link) => {
-      const li = el('li');
-      li.appendChild(el('a', { href: link.href }, link.text));
-      list.appendChild(li);
+      const item = el('div', { className: 'group-link' });
+      item.appendChild(el('a', { href: link.href }, link.text));
+      list.appendChild(item);
     });
     section.appendChild(list);
     col.appendChild(section);
