@@ -1,3 +1,29 @@
+import { trackEvent } from '../../scripts/analytics.js';
+
+const calculatorBlocks = document.querySelectorAll('.inspiration-calculator');
+
+calculatorBlocks.forEach((block) => {
+  if (block.dataset.analyticsBound === 'true') return;
+
+  block.dataset.analyticsBound = 'true';
+  block.addEventListener('click', (event) => {
+    const cta = event.target.closest('.image-wrapper a, .content-wrapper a');
+    if (!cta || !block.contains(cta)) return;
+
+    const ctaLink = cta.getAttribute('href') || '';
+    const btnTitle = cta.textContent.trim();
+    const parentCard = cta.closest('.image-wrapper, .content-wrapper')?.parentElement;
+    const parentTitle = parentCard?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent?.trim() || '';
+
+    trackEvent('custom_cta_click', {
+      cta_: btnTitle,
+      redirectionLink: ctaLink,
+      parentTitle,
+      param1: ctaLink,
+    });
+  });
+});
+
 // Select all direct div children of .inspiration-calculator
 const calculatorDivs = document.querySelectorAll('.inspiration-calculator > div');
 
