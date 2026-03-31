@@ -205,11 +205,13 @@ function buildBrandColumn(cell) {
     const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row email-row' });
     email.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
     const emailText = emailLink.textContent.trim();
+    const normalizedEmailText = emailText.replace(/\s+/g, '');
     const emailLabel = el('span', { className: 'email-label' });
 
-    if (emailText === 'customercare@asianpaints.com') {
-      emailLabel.appendChild(el('span', { className: 'email-line' }, 'customercare'));
-      emailLabel.appendChild(el('span', { className: 'email-line' }, '@asianpaints.com'));
+    if (normalizedEmailText.includes('@')) {
+      const [localPart, domainPart] = normalizedEmailText.split('@');
+      emailLabel.appendChild(el('span', { className: 'email-line' }, localPart));
+      emailLabel.appendChild(el('span', { className: 'email-line' }, `@${domainPart}`));
     } else {
       emailLabel.appendChild(document.createTextNode(emailText));
     }
@@ -248,7 +250,7 @@ function buildLinkGroup(group, options = {}) {
   header.appendChild(el('div', {
     className: `group-title clickable-title${isProductGroup ? ' product-title' : ''}`,
   }, group.title));
-  header.innerHTML += '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+  header.innerHTML += '<span class="accordion-icon">+</span><svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
   section.appendChild(header);
 
   const list = el('div', { className: 'link-group-list group-links' });

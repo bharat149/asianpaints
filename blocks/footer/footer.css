@@ -918,12 +918,27 @@
   }
 
   .footer .mega-col-brand {
+    width: auto;
+    height: auto;
+    grid-template-rows: none;
+    gap: 24px;
     padding: 24px 0;
+    justify-self: stretch;
     border-bottom: 1px solid rgba(255 255 255 / 15%);
+  }
+
+  .footer .footer-brand-logo {
+    width: 120px;
+    height: auto;
   }
 
   .footer .footer-brand-logo img {
     width: 120px;
+  }
+
+  .footer .footer-brand-contact,
+  .footer .footer-public-notice {
+    width: auto;
   }
 
   /* Center block stacks on mobile — white card like original */
@@ -931,10 +946,13 @@
     padding: 0;
     background: #fff;
     border-radius: 4px;
+    height: auto;
+    min-height: 0;
   }
 
   .footer .mega-center-grid {
     grid-template-columns: 1fr;
+    height: auto;
   }
 
   .footer .mega-center .panel-left,
@@ -944,6 +962,11 @@
     margin-top: 0;
     border-right: none;
     border-top: none;
+  }
+
+  .footer .mega-center .panel-middle::before,
+  .footer .mega-center .panel-right::before {
+    display: none;
   }
 
   .footer .mega-center .right-inner {
@@ -982,14 +1005,16 @@
   }
 
   .footer .mega-center .link-group {
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: none;
   }
 
   .footer .mega-center .link-group-title {
     color: #000;
-    font-weight: 700;
-    padding: 0 12px 0 25px;
-    height: 40px;
+    font-weight: 600;
+    padding: 14px 20px;
+    min-height: 0;
+    height: auto;
+    line-height: 21px;
   }
 
   .footer .mega-center .link-group-list a {
@@ -1003,6 +1028,17 @@
 
   .footer .mega-center .link-group + .link-group {
     border-top: none;
+  }
+
+  .footer .mega-center .product-title,
+  .footer .mega-center .panel-right .product-title {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .footer .mega-center .panel-left .link-group + .link-group,
+  .footer .mega-center .panel-right .right-col:first-child .link-group:nth-child(2) {
+    margin-top: 0;
   }
 
   .footer .link-group-title .accordion-icon {
@@ -1033,7 +1069,12 @@
   }
 
   .footer .mega-center .link-group-title .accordion-icon {
-    color: #000;
+    color: #2f2f2f;
+    font-weight: 200;
+  }
+
+  .footer .mega-center .link-group-title .accordion-chevron {
+    display: none;
   }
 
   .footer .link-group-list {
@@ -1050,8 +1091,8 @@
     padding: 16px 0;
     border-top: 1px solid rgba(255 255 255 / 15%);
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 24px;
+    grid-template-columns: 1fr;
+    gap: 25px 0;
   }
 
   /* stylelint-disable-next-line no-descending-specificity */
@@ -1080,6 +1121,14 @@
     font-size: 12px;
     line-height: 16.8px;
     padding: 0;
+  }
+
+  .footer .email-row .email-label {
+    white-space: nowrap;
+  }
+
+  .footer .email-row .email-line {
+    display: inline;
   }
 
   /* Video banner */
