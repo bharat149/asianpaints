@@ -19,21 +19,51 @@
     max-width: 100%;
     box-sizing: border-box;
 }
-
+ .carousel-expertise-container .default-content-wrapper h2#areas-of-expertise {
+    font-size: 32px;
+    line-height: 35.2px;
+ }
 @media (width <= 991px) {
-    .fourimageinrow {
-        flex-wrap: nowrap;
-        padding-left: 16px;
-        padding-right: 0;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        gap: 0;
+    .carousel-expertise-container .default-content-wrapper {
+        text-align: center;
     }
-    
-    .fourimageinrow::-webkit-scrollbar {
-        display: none;
+    .carousel-expertise-container .default-content-wrapper h2#areas-of-expertise {
+        margin: 0 0 10px 0;
+        font-size: 20px;
+        line-height: 22px;
+        font-weight: 700;
+        color: #222 ;
+    }
+    .carousel-expertise {
+        padding: 20px;
+    }
+  .fourimageinrow {
+    flex-wrap: nowrap;
+    padding-left: 0;
+    padding-right: 16px;
+    gap: 0;
+  }
+  .fourimageinrow.swiper {
+           padding: 0 17% 0 0;
+  }
+ .carousel-expertise-container .swiper-pagination {
+    position: relative;
+    text-align: left;
+ }
+ .carousel-expertise-container .swiper-pagination .swiper-pagination-bullet-active {
+    background: #4d4d4d !important;
+    width: 19px !important;
+    opacity: 1 !important;
+    border-radius: 6px;
+ }
+}
+
+@media (width > 992px) {
+    .section.carousel-expertise-container {
+        margin: 60px 0;
+    }
+    .carousel-expertise-container .default-content-wrapper  p{
+        margin-bottom: 0;
     }
 }
 
@@ -53,13 +83,6 @@
     box-sizing: border-box;
 }
 
-@media (width <= 991px) {
-    .fourimageinrow .fourimageinrow-wraper {
-        width: 314px !important;
-        margin-right: 20px;
-        scroll-snap-align: start;
-    }
-}
 
 @media (width >= 768px) and (width <= 1024px) {
     .fourimageinrow .fourimageinrow-wraper {
@@ -118,7 +141,7 @@
     color: #fff;
     float: left;
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 600;
     line-height: 33.6px;
     font-family: Manrope, sans-serif;
 }
@@ -147,4 +170,34 @@
     outline-style: solid !important;
     outline-color: inherit !important;
     outline-width: 1px !important;
+}
+/* Mobile Swiper Fix */
+.fourimageinrow.swiper {
+  overflow: hidden;
+}
+
+.fourimageinrow .swiper-slide {
+  width: 100% !important;
+  /* flex-shrink: 0; */
+}
+
+
+
+/* Desktop Layout Restore */
+@media (min-width: 768px) {
+  .fourimageinrow .swiper-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    transform: none !important;
+  }
+
+  .fourimageinrow .swiper-slide {
+    width: 25% !important;
+  }
+}
+
+/* Pagination */
+.fourimageinrow-pagination {
+  margin-top: 16px;
+  text-align: center;
 }

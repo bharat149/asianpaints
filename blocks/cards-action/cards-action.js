@@ -7,6 +7,8 @@ Col 4 contains multiple cta label
 Col 5 contains multiple cta redirection link
 */
 
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 function getPicturesFromColumn(column) {
   if (!column) return [];
 
@@ -118,6 +120,11 @@ export default function decorate(block) {
         ctaEl.className = 'cards-action-cta';
         ctaEl.href = ctaLink;
         ctaEl.textContent = ctaLabel;
+        ctaEl.addEventListener('click', () => {
+          const btnTitle = ctaEl.textContent.trim();
+          const parentTitle = title || '';
+          triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+        });
         contentWrapper.appendChild(ctaEl);
       }
 

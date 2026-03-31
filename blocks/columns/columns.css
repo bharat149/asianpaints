@@ -99,7 +99,7 @@
   border-radius: 45px;
   color: #222;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -571,7 +571,7 @@
 /* stylelint-disable-next-line no-descending-specificity */
 .section.columns-container:has(.columns.promo) > .default-content-wrapper h2 {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
   text-align: center;
   margin: 0 0 40px;
@@ -593,5 +593,68 @@
   .section.columns-container:has(.columns.promo) > .default-content-wrapper h2 {
     font-size: 36px;
     margin: 0 0 48px;
+  }
+}
+
+/* ============================================
+   Section: Columns (royale-alt) 
+   ============================================ */
+.section.columns-container:has(.columns.royale-alt.block) {
+  background: var(--cream-bg);
+  margin: 0;
+  padding: 0;
+  margin-top: -40px;
+}
+
+.section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper {
+  padding-bottom: 20px;
+}
+
+.section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper h2 {
+  margin-bottom: 0;
+  font-size: 32px;
+}
+
+.columns.royale-alt.block {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.section.columns-container:has(.columns.royale-alt.block)>.default-content-wrapper h2 strong{
+  background: linear-gradient(270deg, #f8a12e, #be2a1d 50.07%, #45216c 98.1%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 32px;
+}
+.columns.royale-alt.block > div > div > p:nth-child(2):not(:has(strong:only-child))  {
+  font-size: 16px;
+  max-width: 100%;
+}
+
+.columns.royale-alt.block .button-container .button {
+  padding: 8px 20px;
+}
+
+@media screen and (max-width:992px) {
+  .section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper h2 {
+    font-size: 20px;
+  }
+
+  .section.columns-container:has(.columns.royale-alt.block)>.default-content-wrapper h2 strong {
+    font-size: 20px;
+  }
+
+  .section.columns-container:has(.columns.royale-alt.block)> .default-content-wrapper {
+    padding-bottom: 0;
+  }
+
+  .columns.royale-alt.block > div > div > p:nth-child(2):not(:has(strong:only-child)) {
+    margin-top: 16px;
+    font-size: 14px;
+  }
+
+  .columns.royale-alt.block > div > div > p:nth-child(3) {
+    margin-top: 10px;
   }
 }

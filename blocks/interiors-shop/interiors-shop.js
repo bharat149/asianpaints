@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   // Remove dark-blue class from parent section if present
   const section = block.closest('.section');
@@ -82,7 +84,11 @@ export default function decorate(block) {
         btn.href = link.href;
         btn.className = 'interiors-shop-button';
         const btnText = link.textContent?.trim() || 'Explore now';
-        btn.innerHTML = `${btnText} <span class="arrow">→</span>`;
+        btn.innerHTML = `${btnText} <span class="arrow"></span>`;
+        btn.addEventListener('click', () => {
+          const parentTitle = title?.textContent?.trim() || '';
+          triggerCTAClickWithLinkAndTitle(btn.href, btnText, parentTitle);
+        });
         contentDiv.appendChild(btn);
       }
 
@@ -113,11 +119,85 @@ export default function decorate(block) {
 
   block.appendChild(wrapper);
 
-  // Mobile-only DOM rearrangement
+  // -------------------------------
+  // Swiper Logic
+  // -------------------------------
+  let swiperInstance;
+  let paginationEl;
+
+  function initSwiper() {
+    const grid = block.querySelector('.interiors-shop-grid');
+    if (!grid || swiperInstance || !window.Swiper) return;
+
+    grid.classList.add('swiper');
+
+    const wrapperEl = document.createElement('div');
+    wrapperEl.className = 'swiper-wrapper';
+
+    const cards = [...grid.children].filter(
+      (el) => !el.classList.contains('interiors-shop-left-column')
+    );
+
+    cards.forEach((card) => {
+      card.classList.add('swiper-slide');
+      wrapperEl.appendChild(card);
+    });
+
+    grid.appendChild(wrapperEl);
+
+    // 👉 Pagination OUTSIDE grid
+    paginationEl = document.createElement('div');
+    paginationEl.className = 'interiors-shop-pagination swiper-pagination';
+
+    block.appendChild(paginationEl);
+
+    swiperInstance = new window.Swiper(grid, {
+      slidesPerView: 1,
+      spaceBetween: 16,
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+      },
+    });
+  }
+
+  function destroySwiper() {
+    if (!swiperInstance) return;
+
+    swiperInstance.destroy(true, true);
+    swiperInstance = null;
+
+    const grid = block.querySelector('.interiors-shop-grid');
+    if (!grid) return;
+
+    const wrapperEl = grid.querySelector('.swiper-wrapper');
+    if (!wrapperEl) return;
+
+    const slides = [...wrapperEl.children];
+    slides.forEach((slide) => {
+      slide.classList.remove('swiper-slide');
+      grid.appendChild(slide);
+    });
+
+    wrapperEl.remove();
+
+    // Remove pagination outside
+    if (paginationEl) {
+      paginationEl.remove();
+      paginationEl = null;
+    }
+
+    grid.classList.remove('swiper');
+  }
+
+  // -------------------------------
+  // Mobile Layout Logic
+  // -------------------------------
   const mobileQuery = window.matchMedia('(max-width: 899px)');
 
   function updateMobileLayout(e) {
     const isMobile = e?.matches ?? mobileQuery.matches;
+
     const grid = block.querySelector('.interiors-shop-grid');
     const leftCol = block.querySelector('.interiors-shop-left-column');
     const firstCard = block.querySelector('.card-left');
@@ -130,12 +210,14 @@ export default function decorate(block) {
         block.insertBefore(leftCol, grid);
       }
 
-      // Move first card out of left column and into grid as first item
+      // Move first card into grid
       if (firstCard.parentElement === leftCol) {
         grid.insertBefore(firstCard, grid.firstChild);
       }
+
+      initSwiper();
     } else {
-      // Restore desktop structure
+      // Restore desktop
       if (leftCol.parentElement === block) {
         block.insertBefore(grid, leftCol.nextSibling);
         grid.insertBefore(leftCol, grid.firstChild);
@@ -144,6 +226,8 @@ export default function decorate(block) {
       if (firstCard.parentElement === grid) {
         leftCol.appendChild(firstCard);
       }
+
+      destroySwiper();
     }
   }
 

@@ -11,6 +11,7 @@
     height: auto;
     min-height: unset;
     object-fit: cover;
+    display: block;
 }
 
 .carousel-hero-banner-wrapper .swiper-slide .video-overlay {
@@ -36,7 +37,7 @@
     padding: 14px 20px;
     align-items: center;
     font-size: clamp(14px, 1vw, 16px);
-    font-weight: 700;
+    font-weight: 600;
     display: inline-flex !important;
     gap: 10px;
     height: 38px;
@@ -237,4 +238,8 @@
     .carousel-hero-banner-wrapper .swiper-slide[data-slide="3"] .hero-cta:hover::after {
         filter: invert(1);
     }
+}
+.hero-media {
+  position: relative;
+  width: 100%;   /* ✅ IMPORTANT */
 }

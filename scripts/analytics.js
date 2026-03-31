@@ -1,8 +1,14 @@
 import { loadScript } from './aem.js';
-import { isProd } from './utils.js';
+import { getSiteConfig } from './configs.js';
 
-// FIXME: Replace with actual URLs
-const LAUNCH_URL = isProd() ? "https://assets.adobedtm.com/launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js" : "https://assets.adobedtm.com/launch-EN495a9f3edad74404a35ef4ec6c95ed17-staging.min.js";
+/**
+ * Returns the digitalData object or creates an empty one if it doesn't exist.
+ * @returns {Object} The digitalData object
+ */
+export function getDigitalData() {
+  window.digitalData = window.digitalData || {};
+  return window.digitalData;
+}
 
 /**
  * Tracks a custom event. Triggers a _satellite.track call.
@@ -10,24 +16,164 @@ const LAUNCH_URL = isProd() ? "https://assets.adobedtm.com/launch-ENf4c71a070606
  * @param {Object} [eventData] Optional event data
  */
 export function trackEvent(eventName, eventData = {}) {
+  getDigitalData().event = eventName;
   window._satellite && window._satellite.track(eventName, eventData);
+}
+
+function toUrl(urlLike) {
+  try {
+    return new URL(urlLike, window.location.origin);
+  } catch (e) {
+    return new URL(window.location.href);
+  }
+}
+
+function buildPageData(urlObj) {
+  const parts = urlObj.pathname.split('/').filter(Boolean);
+
+  return {
+    destinationURL: urlObj.href,
+    pageName: `in::${parts.join(':')}`,
+    section1: parts[0] || '',
+    section2: parts[1] || '',
+    section3: parts[2] || '',
+    section4: parts[3] || '',
+  };
+}
+
+function getParam(urlObj, key) {
+  return urlObj.searchParams.get(key) || '';
+}
+
+function getMcidFromCookie() {
+  return window._satellite?.getVisitorId?.()?.getMarketingCloudVisitorID?.() || '';
+}
+
+function setDigitalDataContext(destinationUrl = window.location.href) {
+  const currentUrl = toUrl(window.location.href);
+  const targetUrl = toUrl(destinationUrl);
+  const digitalData = getDigitalData();
+
+  const source = getParam(currentUrl, 'utm_source') || getParam(currentUrl, 'source')
+    || getParam(targetUrl, 'utm_source') || getParam(targetUrl, 'source');
+  const medium = getParam(currentUrl, 'utm_medium') || getParam(currentUrl, 'medium')
+    || getParam(targetUrl, 'utm_medium') || getParam(targetUrl, 'medium');
+  const campaign = getParam(currentUrl, 'utm_campaign') || getParam(currentUrl, 'campaign')
+    || getParam(targetUrl, 'utm_campaign') || getParam(targetUrl, 'campaign');
+  const cid = getParam(currentUrl, 'cid') || getParam(targetUrl, 'cid') || 'null';
+
+  digitalData.page = buildPageData(targetUrl);
+  digitalData.utmValues = {
+    source,
+    medium,
+    campaign,
+    cid,
+  };
+  digitalData.product = {
+    productName: '',
+    productCode: '',
+    productPrice: '',
+    productQuantity: 1,
+    relatedProduct: '',
+  };
+  digitalData.skuCodeList = {
+    skuCodes: '',
+  };
+  digitalData.device = {
+    deviceType: navigator.userAgent,
+  };
+  digitalData.user = {
+    loginStatus: digitalData.user?.loginStatus || 'not logged in',
+    mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    ipAddress: digitalData.user?.ipAddress || '',
+    emailId: digitalData.user?.emailId || '',
+    mobileNumber: digitalData.user?.mobileNumber || '',
+    loginFunction: digitalData.user?.loginFunction || '',
+  };
+  digitalData.event = digitalData.event || '';
+}
+
+/**
+ * Tracks CTA click interaction based on link type.
+ * @param {string} ctaLink The CTA URL
+ * @param {string} btnTitle The CTA label
+ * @param {string} parentTitle The parent card/section title
+ */
+export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) {
+  if (!ctaLink) return;
+
+  setDigitalDataContext(ctaLink);
+
+  if (ctaLink.indexOf('javascript:void') > -1) {
+    trackEvent('custom_cta_click', {
+      cta_: btnTitle,
+    });
+  } else if (ctaLink.indexOf('tel:') > -1) {
+    trackEvent('SPSContactClick');
+  } else {
+    trackEvent('custom_cta_click', {
+      cta_: btnTitle,
+      redirectionLink: ctaLink,
+      parentTitle,
+      param1: ctaLink,
+    });
+  }
+}
+
+function getTrackingLinkValue(link) {
+  const href = link.getAttribute('href') || '';
+  const redirectionLink = link.getAttribute('data-redirection-link') || '';
+
+  if (href.indexOf('javascript:void') > -1 && redirectionLink) {
+    return redirectionLink;
+  }
+
+  return href || redirectionLink;
+}
+function getButtonContainerParentTitle(link) {
+  const section = link.closest('.section');
+  const block = link.closest('.block');
+  const scopedContainer = block || section || link.closest('main') || document;
+
+  const titleInBlock = block?.querySelector('h1, h2, h3, h4, h5, h6');
+  if (titleInBlock?.textContent?.trim()) {
+    return titleInBlock.textContent.trim();
+  }
+
+  const sectionHeading = section?.querySelector(':scope > .section-metadata + div h1, :scope > .section-metadata + div h2, :scope > .section-metadata + div h3, :scope > .section-metadata + div h4, :scope > .section-metadata + div h5, :scope > .section-metadata + div h6, h1, h2, h3, h4, h5, h6');
+  if (sectionHeading?.textContent?.trim()) {
+    return sectionHeading.textContent.trim();
+  }
+
+  const nearestText = scopedContainer.querySelector('h1, h2, h3, h4, h5, h6, p');
+  return nearestText?.textContent?.trim() || '';
+}
+
+export function bindButtonContainerTracking(element) {
+  element.querySelectorAll('.button-container a.button').forEach((cta) => {
+    if (cta.dataset.analyticsBound === 'true') return;
+
+    cta.dataset.analyticsBound = 'true';
+    cta.addEventListener('click', () => {
+      const ctaLink = cta.getAttribute('href') || '';
+      const btnTitle = cta.textContent.trim();
+      const parentTitle = getButtonContainerParentTitle(cta);
+
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  });
 }
 
 /**
  * Initializes the data layer and loads the Adobe Launch script.
  */
 export async function initAnalytics() {
-  window.digitalData = window.digitalData || {};
-
-  // Add page metadata
-  window.digitalData.page = {
-    title: document.title,
-    url: window.location.href,
-    path: window.location.pathname,
-    // Add any other global meta from <meta> tags here
-  };
-
   // Load the Launch script
-  // FIXME: Uncomment the following line once we have the actual LAUNCH_URL
-  return loadScript(LAUNCH_URL, { async: true });
+  const siteConfig = await getSiteConfig();
+  const launchUrl = siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
+  if (!launchUrl) {
+    return;
+  }
+  await loadScript(launchUrl, { async: true });
+  setDigitalDataContext(window.location.href);
 }

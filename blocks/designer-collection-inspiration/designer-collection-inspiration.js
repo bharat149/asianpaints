@@ -1,0 +1,47 @@
+import { trackEvent } from '../../scripts/analytics.js';
+
+export default function decorate(block) {
+  const items = [...block.children];
+
+  items.forEach((item) => {
+    const pictures = item.querySelectorAll('picture');
+    const linkEl = item.querySelector('p a') || item.querySelector('p');
+
+    if (pictures.length < 2 || !linkEl) return;
+
+    // Extract image URLs
+    const img1 = pictures[0].querySelector('img')?.src;
+    const img2 = pictures[1].querySelector('img')?.src;
+
+    // Extract link
+    const link = linkEl.textContent.trim();
+
+    // Create elements
+    const div1 = document.createElement('div');
+    div1.style.backgroundImage = `url(${img1})`;
+    div1.style.backgroundSize = 'cover';
+
+    const div2 = document.createElement('div');
+    div2.style.backgroundImage = `url(${img2})`;
+    div2.style.backgroundSize = 'cover';
+
+    const anchor = document.createElement('a');
+    anchor.href = link;
+    anchor.innerHTML = 'Explore inspirations <img src="/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">';
+    anchor.addEventListener('click', () => {
+      const downloadPdfName = anchor.textContent?.trim() || '';
+      trackEvent('download_multiple_pdf', {
+        pdfName: downloadPdfName,
+      });
+    });
+
+    // Wrapper to hold all three as siblings
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(div1);
+    wrapper.appendChild(div2);
+    wrapper.appendChild(anchor);
+
+    // Replace original item
+    item.replaceWith(wrapper);
+  });
+}

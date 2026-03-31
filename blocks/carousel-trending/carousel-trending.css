@@ -1,0 +1,246 @@
+.section.carousel-trending-container {
+    background: rgb(236, 229, 215);
+    margin: 0 !important;
+    padding: 5rem 3.6rem;
+    font-family: Manrope, sans-serif;
+}
+
+.carousel-trending.block {
+    position: relative;
+}
+
+.section.carousel-trending-container .default-content-wrapper {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    max-width: 75%;
+    padding: 0;
+}
+
+.section.carousel-trending-container .default-content-wrapper h2 {
+    background: linear-gradient(270deg, #f8a12e, #be2a1d 50.07%, #45216c 98.1%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 0;
+    font-size: 32px;
+    margin-bottom: 1.3rem;
+}
+
+.section.carousel-trending-container .default-content-wrapper p:first-of-type {
+    margin-bottom: 2rem;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+}
+
+.section.carousel-trending-container .default-content-wrapper .button-container {
+    outline: none;
+    border: none;
+}
+
+.section.carousel-trending-container .default-content-wrapper .button-container a {
+    font-weight: 600;
+    margin-bottom: 2rem;
+    border: 1px solid #232426;
+    border-radius: 45px;
+    color: #222;
+    padding: 8px 20px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.section.carousel-trending-container .default-content-wrapper .button-container a::after {
+    content: "";
+    background: url("/icons/arrow-icon-new.svg") no-repeat;
+    width: 17px;
+    height: 20px;
+    filter: contrast(1000%) invert(100%) sepia(100%) saturate(10000%) hue-rotate(90deg);
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.section.carousel-trending-container .default-content-wrapper .button-container a:hover {
+    background: #fff7e8;
+    border: 1px solid #232426;
+}
+
+.carousel-trending .card-container {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.carousel-trending .card {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    max-height: 460px;
+    transition: all .5s ease, opacity .2s ease;
+}
+
+.carousel-trending:hover .card:not(:hover) {
+    opacity: 0.6;
+}
+
+.carousel-trending:hover .card:hover {
+    transform: scale(1.02);
+}
+
+.carousel-trending .card a {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+
+.carousel-trending .card .card-img,
+.carousel-trending .card .card-img img,
+.carousel-trending .card picture {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.carousel-trending .card .card-img img {
+    object-fit: cover;
+}
+
+.carousel-trending .card .card-body {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    text-align: center;
+    margin: 0;
+    color: rgb(255, 255, 255);
+    font-size: 20px;
+    width: 100%;
+    display: block;
+    transition: 0.5s ease-in;
+    border-radius: 0 0 8px 8px;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 18px 0;
+    transform: none;
+    font-weight: 600;
+    z-index: 3;
+}
+
+.carousel-trending .card .card-body p {
+    margin-bottom: 0;
+}
+
+/* Overlay for reveal animation */
+.carousel-trending .card .card-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgb(236, 229, 215);
+    z-index: 2;
+    pointer-events: none;
+    transform-origin: bottom;
+}
+
+/* Trigger animation */
+.carousel-trending .card .card-overlay.grow-image-bottom-to-top {
+    animation-name: grow;
+    animation-duration: 1.2s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease;
+    -webkit-animation-name: grow;
+    -webkit-animation-duration: 1.2s;
+    -webkit-animation-fill-mode: forwards;
+    -webkit-animation-timing-function: ease;
+}
+
+/* Reveal from bottom to top */
+@keyframes grow {
+    0% {
+        height: 100%;
+    }
+
+    1% {
+        height: 35%;
+    }
+
+    100% {
+        height: 0%;
+    }
+}
+
+@-webkit-keyframes grow {
+    0% {
+        height: 100%;
+    }
+
+    1% {
+        height: 35%;
+    }
+
+    100% {
+        height: 0%;
+    }
+}
+
+/* Tablet + Mobile */
+@media screen and (max-width: 992px) {
+    .section.carousel-trending-container {
+        padding: 5rem 1rem;
+    }
+
+    .section.carousel-trending-container .default-content-wrapper {
+        max-width: 100%;
+    }
+
+    .section.carousel-trending-container .default-content-wrapper h2 {
+        font-size: 20px;
+    }
+
+    .section.carousel-trending-container .default-content-wrapper p:first-of-type {
+        font-size: 14px;
+    }
+
+    .carousel-trending:hover .card:not(:hover) {
+        opacity: 1;
+    }
+
+    .carousel-trending.block .swiper {
+        overflow: hidden;
+    }
+
+    .carousel-trending.block .card {
+        max-height: none;
+    }
+
+    .carousel-trending.block .swiper-pagination {
+        position: absolute;
+        bottom: -35px;
+        left: 0;
+        text-align: left;
+    }
+
+    .carousel-trending.block .swiper-pagination .swiper-pagination-bullet {
+        width: 8px !important;
+        height: 8px !important;
+        margin-right: 3px;
+        transition: none;
+        overflow: inherit;
+        flex: 0;
+        color: #4d4d4d;
+        opacity: 1;
+    }
+
+    .carousel-trending.block .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
+        background: #4d4d4d !important;
+        width: 18px !important;
+        opacity: 1 !important;
+        border-radius: 4px;
+    }
+}

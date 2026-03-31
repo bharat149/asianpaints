@@ -76,7 +76,7 @@
   margin: 0 0 28px;
   font-size: clamp(46px, 5vw, 80px);
   line-height: 0.95;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.03em;
   color: #111;
 }

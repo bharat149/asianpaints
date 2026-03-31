@@ -1,3 +1,4 @@
+import { trackEvent } from "../../scripts/analytics.js";
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -180,6 +181,9 @@ function buildSlide(row, block) {
       e.preventDefault();
       e.stopPropagation();
       openVideoModal(block, videoLink);
+      trackEvent("test_open", {
+        "videoId": videoLink
+      });
     });
   }
 
@@ -265,12 +269,12 @@ export default async function decorate(block) {
 
   const h2 = document.createElement('h2');
   const words = headingText.split(' ');
-  const midPoint = Math.ceil(words.length / 2);
+  const midPoint = Math.ceil(words.length / 3);
   h2.innerHTML = `${words.slice(0, midPoint).join(' ')}<br>${words.slice(midPoint).join(' ')}`;
   headingWrapper.appendChild(h2);
 
   const carouselWrapper = document.createElement('div');
-  carouselWrapper.className = 'testimonial-carousel-wrapper';
+  carouselWrapper.className = 'testimonial-carousel-inner-wrapper';
 
   const swiperEl = document.createElement('div');
   swiperEl.className = 'testimonial-swiper swiper';
@@ -291,14 +295,10 @@ export default async function decorate(block) {
   navButtons.className = 'testimonial-nav-buttons';
   navButtons.innerHTML = `
     <button class="testimonial-prev" aria-label="Previous testimonial" type="button">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15 18L9 12L15 6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+
     </button>
     <button class="testimonial-next" aria-label="Next testimonial" type="button">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9 18L15 12L9 6" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+
     </button>
   `;
 
@@ -314,23 +314,54 @@ export default async function decorate(block) {
 
   const prevButton = block.querySelector('.testimonial-prev');
   const nextButton = block.querySelector('.testimonial-next');
+  function handleNav(swiper) {
+    const totalSlides = swiper.slides.length;
 
+
+
+    let slidesPerView = swiper.params.slidesPerView;
+
+    // ✅ correct way to get current slidesPerView
+    if (typeof slidesPerView !== 'number') {
+      slidesPerView = swiper.slidesPerViewDynamic();
+    }
+
+    // Hide arrows if not enough slides
+    if (totalSlides <= slidesPerView) {
+      prevButton.style.display = 'none';
+      nextButton.style.display = 'none';
+      return;
+    }
+
+    // Otherwise show and control disable
+    prevButton.style.display = '';
+    nextButton.style.display = '';
+
+    prevButton.disabled = swiper.isBeginning;
+    nextButton.disabled = swiper.isEnd;
+  }
   const swiper = new Swiper(swiperEl, {
-    slidesPerView: 1.1,
+    slidesPerView: 1,
     spaceBetween: 20,
     speed: 500,
-    watchOverflow: true,
+    slidesPerGroup: 1,
+    centeredSlides: false,
+    slideToClickedSlide: false,
+    touchRatio: 1,
+    resistanceRatio: 0.85,
+    threshold: 5,
+    watchOverflow: false,
     navigation: {
       prevEl: prevButton,
       nextEl: nextButton,
     },
     pagination: {
       el: paginationEl,
-      clickable: false,
+      clickable: true,
     },
     breakpoints: {
       600: {
-        slidesPerView: 1.2,
+        slidesPerView: 1.1,
         spaceBetween: 20,
       },
       900: {
@@ -344,16 +375,13 @@ export default async function decorate(block) {
     },
     on: {
       init(s) {
-        prevButton.disabled = s.isBeginning;
-        nextButton.disabled = s.isEnd;
+        handleNav(s);
       },
       slideChange(s) {
-        prevButton.disabled = s.isBeginning;
-        nextButton.disabled = s.isEnd;
+        handleNav(s);
       },
       resize(s) {
-        prevButton.disabled = s.isBeginning;
-        nextButton.disabled = s.isEnd;
+        handleNav(s);
       },
     },
   });

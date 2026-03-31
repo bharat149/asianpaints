@@ -1,3 +1,4 @@
+import { trackEvent, getDigitalData } from "../../scripts/analytics.js";
 /*
 ** Authoring format **
 Column 1 → logo desktop
@@ -80,6 +81,26 @@ function getHrefItem(item) {
   if (anchor?.href) return anchor.href.trim();
 
   return item.textContent?.trim() || '';
+}
+
+function trackNavClick(button, sectionTitle) {
+  if (!button) return;
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    let direction = '';
+    if (button.classList.contains('designer-collections-next') || button.classList.contains('swiper-button-next') || button.classList.contains('slick-next')) {
+      direction = 'Next';
+    } else if (button.classList.contains('designer-collections-prev') || button.classList.contains('swiper-button-prev') || button.classList.contains('slick-prev')) {
+      direction = 'Previous';
+    }
+
+    trackEvent('Navigation', {
+      direction,
+      testTitle: sectionTitle,
+    });
+  });
 }
 
 function createVideoElement(src, title) {
@@ -184,6 +205,9 @@ export default async function decorate(block) {
   nextButton.type = 'button';
   nextButton.setAttribute('aria-label', 'Next');
 
+  trackNavClick(prevButton, titleText);
+  trackNavClick(nextButton, titleText);
+
   navWrapper.appendChild(prevButton);
   navWrapper.appendChild(nextButton);
   header.appendChild(navWrapper);
@@ -274,6 +298,15 @@ export default async function decorate(block) {
 
     cta.appendChild(ctaText);
     cta.appendChild(ctaIcon);
+
+    cta.addEventListener("click", function (e) {
+      const data = {
+        "Title": title,
+        "pdfName": pdfHref.split('/').pop().replace(".pdf", "")
+      }
+      getDigitalData().download = data;
+      trackEvent("download_multiple_pdf", data);
+    });
     ctaWrap.appendChild(cta);
 
     cardInner.appendChild(logoWrap);
@@ -291,7 +324,7 @@ export default async function decorate(block) {
 
   const pagination = document.createElement('div');
   pagination.className = 'designer-collections-pagination swiper-pagination';
-  carousel.appendChild(pagination);
+  // carousel.appendChild(pagination);
 
   block.innerHTML = '';
   block.appendChild(header);
@@ -317,17 +350,13 @@ export default async function decorate(block) {
         prevEl: prevButton,
         nextEl: nextButton,
       },
-      pagination: {
-        el: pagination,
-        clickable: true,
-      },
       breakpoints: {
         0: {
-          slidesPerView: 1.15,
+          slidesPerView: 1.5,
           spaceBetween: 18,
         },
         600: {
-          slidesPerView: 1.3,
+          slidesPerView: 1.75,
           spaceBetween: 10,
         },
         900: {

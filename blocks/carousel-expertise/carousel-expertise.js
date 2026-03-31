@@ -2,8 +2,35 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
- * Carousel Expertise Block - Four Image in Row (Variant Five)
+ * Four Image Row - Mobile Only Swiper (Robust)
  */
+
+async function getSwiperClass() {
+  if (window.Swiper) return window.Swiper;
+
+  if (window.loadSwiper) {
+    return window.loadSwiper();
+  }
+
+  // ⛑️ fallback wait (EDS safe)
+  return new Promise((resolve) => {
+    let tries = 0;
+
+    const interval = setInterval(() => {
+      if (window.Swiper) {
+        clearInterval(interval);
+        resolve(window.Swiper);
+      }
+
+      tries += 1;
+      if (tries > 20) {
+        clearInterval(interval);
+        console.warn('Swiper not found');
+        resolve(null);
+      }
+    }, 100);
+  });
+}
 
 export default async function decorate(block) {
   const rows = [...block.querySelectorAll(':scope > div')];
@@ -11,14 +38,17 @@ export default async function decorate(block) {
   const container = document.createElement('div');
   container.className = 'fourimageinrow';
 
+  // Build UI
   rows.forEach((row) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'fourimageinrow-wraper';
 
     const pic = row.querySelector('picture');
     const link = row.querySelector('a');
+
     let title = '';
     const headings = row.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
     if (headings.length > 0) {
       title = headings[0].textContent;
     } else if (link) {
@@ -28,22 +58,20 @@ export default async function decorate(block) {
     }
 
     const a = document.createElement('a');
-    a.className = 'fourimageinrow-imagewithtext focus-visible-auto-imp fourimageinrow-track';
+    a.className = 'fourimageinrow-imagewithtext fourimageinrow-track';
     a.href = link ? link.href : '#';
-    if (link && link.target) {
-      a.target = link.target;
-    } else if (link) {
-      a.target = '_blank';
-    }
+
+    if (link && link.target) a.target = link.target;
+    else if (link) a.target = '_blank';
+
     a.setAttribute('aria-label', title);
-    a.setAttribute('tabindex', '0');
 
     if (pic) {
       const img = pic.querySelector('img');
       if (img) {
         img.className = 'fourimageinrow-img';
-        img.setAttribute('width', '314');
-        img.setAttribute('height', '214');
+        img.width = 314;
+        img.height = 214;
       }
       a.append(pic);
     }
@@ -57,12 +85,15 @@ export default async function decorate(block) {
 
     const arrowSpan = document.createElement('span');
     arrowSpan.className = 'fourimageinrow-imgarrow';
-    arrowSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 16 14" fill="none"><path d="M9.11103 1.1665L14.6666 6.99984M14.6666 6.99984L9.11103 12.8332M14.6666 6.99984L1.33325 6.99984" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    arrowSpan.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 16 14">
+      <path d="M9.11103 1.1665L14.6666 6.99984M14.6666 6.99984L9.11103 12.8332M14.6666 6.99984L1.33325 6.99984"
+      stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
 
     titleWrap.append(titleSpan, arrowSpan);
     a.append(titleWrap);
-    wrapper.append(a);
 
+    wrapper.append(a);
     moveInstrumentation(row, wrapper);
     container.append(wrapper);
   });
@@ -77,4 +108,88 @@ export default async function decorate(block) {
 
   block.textContent = '';
   block.append(container);
+
+  // =========================
+  // MOBILE SWIPER INIT
+  // =========================
+
+  let swiperInstance = null;
+  let paginationEl = null;
+
+  async function initSwiper() {
+    if (swiperInstance) return;
+
+    const Swiper = await getSwiperClass();
+    if (!Swiper) return;
+
+    const children = [...container.children];
+
+    container.classList.add('swiper');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'swiper-wrapper';
+
+    children.forEach((child) => {
+      child.classList.add('swiper-slide');
+      wrapper.appendChild(child);
+    });
+
+    container.innerHTML = '';
+    container.appendChild(wrapper);
+
+    paginationEl = document.createElement('div');
+    paginationEl.className = 'swiper-pagination fourimageinrow-pagination';
+    block.append(paginationEl);
+
+    swiperInstance = new Swiper(container, {
+      slidesPerView: 1,
+      spaceBetween: 20,
+      loop: false,
+
+        resistanceRatio: 0.85,
+  touchRatio: 1,
+  threshold: 5,
+  longSwipesRatio: 0.2,
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+      },
+    });
+  }
+
+  function destroySwiper() {
+    if (!swiperInstance) return;
+
+    swiperInstance.destroy(true, true);
+    swiperInstance = null;
+
+    const slides = container.querySelectorAll('.swiper-slide');
+
+    container.classList.remove('swiper');
+    container.innerHTML = '';
+
+    slides.forEach((slide) => {
+      slide.classList.remove('swiper-slide');
+      container.appendChild(slide);
+    });
+
+    if (paginationEl) {
+      paginationEl.remove();
+      paginationEl = null;
+    }
+  }
+
+  function handleResize() {
+    if (window.innerWidth < 768) {
+      initSwiper();
+    } else {
+      destroySwiper();
+    }
+  }
+
+  // ⛑️ ensure it runs after everything loads
+  window.addEventListener('load', handleResize);
+  handleResize();
+
+  window.addEventListener('resize', handleResize);
 }

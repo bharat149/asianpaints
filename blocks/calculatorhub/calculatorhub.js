@@ -1,4 +1,8 @@
-export default function decorate(block) {
+export default async function decorate(block) {
+  // Wait for jQuery because it is no longer loaded eagerly in the page head
+  await window.loadJQuery?.();
+  const $ = window.jQuery;
+
   const rows = [...block.children];
   if (rows.length < 2) return;
 
@@ -8,22 +12,19 @@ export default function decorate(block) {
   const calculatorhubContents = [...calculatorhubContent.children];
   const calculatorhubHeadingCol = calculatorhubContents[0];
 
-  calculatorhubContent.classList.add("tool-description");
-  calculatorhubHeadingCol.classList.add("miniform-calctext");
+  calculatorhubContent.classList.add('tool-description');
+  calculatorhubHeadingCol.classList.add('miniform-calctext');
 
   const heading = calculatorhubHeadingCol.children[0];
   const description = calculatorhubHeadingCol.children[1];
 
-  if (heading) heading.classList.add("calculatorhub-heading");
-  if (description) description.classList.add("calculatorhub-subheading");
+  if (heading) heading.classList.add('calculatorhub-heading');
+  if (description) description.classList.add('calculatorhub-subheading');
 
-  calculatorhubInput.classList.add("tool-fields");
+  calculatorhubInput.classList.add('tool-fields');
 
-  /* -------------------------
-     Add form wrapper
-  -------------------------- */
-
-  let formMarkup = `<form id="toolsMiniForm" class="pbc-mini-form"
+  /* Add form wrapper */
+  const formMarkup = `<form id="toolsMiniForm" class="pbc-mini-form"
     data-attr-tool-link="https://www.asianpaints.com/resources/tools/paint-quotation-tool.html?source=PBC_miniform"
     data-gtm-form-interact-id="0">
     <div class="form-group project-field">
@@ -93,101 +94,132 @@ export default function decorate(block) {
     </div>
 </form>`;
 
-  $(".tool-fields div").remove();
-  $(".tool-fields").append(formMarkup);
+  $('.tool-fields div').remove();
+  $('.tool-fields').append(formMarkup);
 
-  //WCAG
-  $(".project-field-inputs label , .space-field-inputs label").on(
-    "keydown",
-    function (event) {
-      if (event.key === "Enter") {
-        $(this).find('input[type="radio"]').prop("checked", true);
-      }
-    },
-  );
-
-  setTimeout(function () {
-    $("#toolsMiniForm").trigger("reset");
-  }, 100);
-
-  $(".project-field input[name='project']").prop("checked", false);
-  $(".space-field input[name='space']").prop("checked", false);
-  $(".area-field input[name='area']").val("");
-  $("#calculate-now").attr("disabled", "disabled");
-  $("#calculate-now").attr("aria-disabled", "true");
-
-  let miniFormValues = null;
-  miniFormValues = {
-    ProjectType: "Val1",
-    SpaceType: "Val2",
-    Area: "Val3",
-  };
-
-  $("#toolsMiniForm .form-actions #calculate-now").click(function () {
-    let project = $(".project-field input[name='project']:checked").val();
-    let space = $(".space-field input[name='space']:checked").val();
-    let area = $(".area-field input[name='area']").val();
-    miniFormValues.ProjectType = project;
-    miniFormValues.SpaceType = space;
-    miniFormValues.Area = area;
-    localStorage.setItem("miniFormValues", JSON.stringify(miniFormValues));
-
-    if (
-      $("#toolsMiniForm .space-field input[name=space]:checked").length &&
-      $("#toolsMiniForm .project-field input[name=project]:checked").length &&
-      parseInt($("#toolsMiniForm .area-field #area").val()) > 99
-    ) {
-      let toolURL = $("form#toolsMiniForm").attr("data-attr-tool-link");
-
-      let userInputValues =
-        miniFormValues.ProjectType +
-        "|" +
-        miniFormValues.SpaceType +
-        "|" +
-        miniFormValues.Area;
-
-      // ccAnalytics.calculateContinue(userInputValues);
-
-      // Redirect to the tool URL
-
-      window.location.href = toolURL;
-      $("#toolsMiniForm .form-actions .saving-progress-status").removeClass(
-        "d-none",
-      );
+  // WCAG keyboard support for option selection
+  $('.project-field-inputs label, .space-field-inputs label').on('keydown', function onKeydown(event) {
+    if (event.key === 'Enter') {
+      $(this).find('input[type="radio"]').prop('checked', true).trigger('change');
     }
   });
 
-  if ($(".mini-tools-form").length > 0) {
+  setTimeout(() => {
+    $('#toolsMiniForm').trigger('reset');
+  }, 100);
+
+  $('.project-field input[name="project"]').prop('checked', false);
+  $('.space-field input[name="space"]').prop('checked', false);
+  $('.area-field input[name="area"]').val('');
+  $('#calculate-now').attr('disabled', 'disabled');
+  $('#calculate-now').attr('aria-disabled', 'true');
+
+  const miniFormValues = {
+    ProjectType: 'Val1',
+    SpaceType: 'Val2',
+    Area: 'Val3',
+  };
+
+  $('#toolsMiniForm .form-actions #calculate-now').click(() => {
+    const project = $('.project-field input[name="project"]:checked').val();
+    const space = $('.space-field input[name="space"]:checked').val();
+    const area = $('.area-field input[name="area"]').val();
+
+    miniFormValues.ProjectType = project;
+    miniFormValues.SpaceType = space;
+    miniFormValues.Area = area;
+
+    localStorage.setItem('miniFormValues', JSON.stringify(miniFormValues));
+
+    if (
+      $('#toolsMiniForm .space-field input[name=space]:checked').length
+      && $('#toolsMiniForm .project-field input[name=project]:checked').length
+      && parseInt($('#toolsMiniForm .area-field #area').val(), 10) > 99
+    ) {
+      const toolURL = $('form#toolsMiniForm').attr('data-attr-tool-link');
+
+      const userInputValues = `${miniFormValues.ProjectType}|${miniFormValues.SpaceType}|${miniFormValues.Area}`;
+
+       calculateContinue(userInputValues);
+      console.log(userInputValues);
+
+      $('#toolsMiniForm .form-actions .saving-progress-status').removeClass('d-none');
+      window.location.href = toolURL;
+    }
+  });
+
+    const miniForm = $('#toolsMiniForm');
+    if (!miniForm.length) return;
+
     let formInteraction = false;
 
-    $(
-      "#toolsMiniForm .space-field input, #toolsMiniForm .project-field input, #toolsMiniForm .area-field #area",
-    ).on("change keyup", function (e) {
-      if (!formInteraction) {
-        // calculator start event fire
-        // ccAnalytics.calculateStart();
-        formInteraction = true;
-      }
+    miniForm.on('change keyup', '.space-field input, .project-field input, .area-field #area', () => {
+        if (!formInteraction) {
+            // calculator start event fire
+            calculateStart();
+            formInteraction = true;
+        }
 
-      if (
-        $("#toolsMiniForm .space-field input[name=space]:checked").length &&
-        $("#toolsMiniForm .project-field input[name=project]:checked").length &&
-        parseInt($("#toolsMiniForm .area-field #area").val()) > 99
-      ) {
-        $("#calculate-now").removeAttr("disabled");
-        $("#calculate-now").removeAttr("aria-disabled");
-      } else {
-        $("#calculate-now").attr("disabled", "disabled");
-        $("#calculate-now").attr("aria-disabled", "true");
-      }
+        if (
+            miniForm.find('.space-field input[name=space]:checked').length
+            && miniForm.find('.project-field input[name=project]:checked').length
+            && parseInt(miniForm.find('.area-field #area').val(), 10) > 99
+        ) {
+            $('#calculate-now').removeAttr('disabled');
+            $('#calculate-now').removeAttr('aria-disabled');
+        } else {
+            $('#calculate-now').attr('disabled', 'disabled');
+            $('#calculate-now').attr('aria-disabled', 'true');
+        }
     });
 
-    $("#toolsMiniForm .area-field #area").on("blur keyup", function () {
-      if (parseInt($(this).val()) < 100) {
-        $("#toolsMiniForm .area-field .error-msg").css("visibility", "visible");
-      } else {
-        $("#toolsMiniForm .area-field .error-msg").css("visibility", "hidden");
-      }
+    miniForm.on('blur keyup', '.area-field #area', function onAreaChange() {
+        if (parseInt($(this).val(), 10) < 100) {
+            miniForm.find('.area-field .error-msg').css('visibility', 'visible');
+        } else {
+            miniForm.find('.area-field .error-msg').css('visibility', 'hidden');
+        }
     });
-  }
+}
+
+let calculateStart = function () {
+    if(typeof(_satellite) != "undefined"){
+       let miniFormValues = window.localStorage.miniFormValues;
+        let flowType;
+        if (miniFormValues && miniFormValues.Area != 'Val3') {
+            if($(".calculatorhub .pbc-mini-form").length > 0 || $(".budgetcalculator .pbcCalculator").length > 0){
+                flowType = "SPS_PBC_miniform";
+            } else if($(".calculatorhub .wbc-mini-form").length > 0 || $(".budgetcalculator .wbcCalculator").length > 0){
+                flowType = "SPS_WPC_miniform";
+            }
+        }
+        else {
+            flowType = "";
+        }
+        _satellite.track("calc_start", {
+            flowType : flowType
+        });
+    }
+}
+
+let calculateContinue = function (userInput) {
+    if(typeof(_satellite) != "undefined"){
+        let miniFormValues = window.localStorage.miniFormValues;
+        let flowType = '';
+        if (miniFormValues && miniFormValues.Area != 'Val3') {
+            if($(".calculatorhub .pbc-mini-form").length > 0 || $(".budgetcalculator .pbcCalculator").length > 0){
+                flowType = "SPS_PBC_miniform";
+            } else if($(".calculatorhub .wbc-mini-form").length > 0 || $(".budgetcalculator .wbcCalculator").length > 0){
+                flowType = "SPS_WPC_miniform";
+            }
+        }
+        else {
+            flowType = "";
+        }
+        _satellite.track("calc_continue", {
+            filter : userInput, //Pass all selected filters separated by ""|""
+            calcType : "Basic", // Hard Coded
+            flowType : flowType
+        });
+    }
 }

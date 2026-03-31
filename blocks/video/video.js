@@ -4,6 +4,8 @@
   * https://www.hlx.live/developer/block-collection/video
   */
 
+    import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function embedYoutube(url, autoplay, background) {
@@ -169,6 +171,9 @@
       cta.href = ctaLink.href;
       cta.className = 'video-promo-cta';
       cta.innerHTML = `${ctaLink.text}<span class="video-promo-cta-arrow"></span>`;
+      cta.addEventListener('click', () => {
+        triggerCTAClickWithLinkAndTitle(ctaLink.href, ctaLink.text, headingText);
+      });
       textContent.appendChild(cta);
     }
 

@@ -1,3 +1,5 @@
+import { trackEvent } from "../../scripts/analytics.js";
+
 function getSwiperClass() {
   if (window.Swiper) return Promise.resolve(window.Swiper);
   if (window.loadSwiper) return window.loadSwiper();
@@ -7,7 +9,17 @@ function getSwiperClass() {
 }
 
 function getImage(col) {
-  return col?.querySelector("picture")?.cloneNode(true) || null;
+  const picture = col?.querySelector("picture")?.cloneNode(true);
+  if (!picture) return null;
+
+  const img = picture.querySelector("img");
+
+  if (img) {
+    img.loading = "eager";
+    img.setAttribute("fetchpriority", "high");
+  }
+
+  return picture;
 }
 
 function getVideo(url) {
@@ -26,22 +38,7 @@ function getVideo(url) {
   return video;
 }
 
-// ✅ fallback only for mobile (video case)
-const FALLBACK_MOBILE =
-  "https://static.asianpaints.com/content/dam/asian_paints/home-ph2/banner/desktop/mob-text-image-overlay.webp";
 
-function createPictureFromURL(url) {
-  if (!url) return null;
-
-  const picture = document.createElement("picture");
-  const img = document.createElement("img");
-
-  img.src = url;
-  img.alt = "";
-
-  picture.appendChild(img);
-  return picture;
-}
 
 export default async function decorate(block) {
   const rows = [...block.children];
@@ -75,7 +72,7 @@ export default async function decorate(block) {
     mediaWrap.className = "hero-media";
 
     const isMobile = window.innerWidth < 768;
-    // ✅ VIDEO CASE
+    //VIDEO CASE
     if (desktopVideo || mobileVideo) {
       const video = getVideo(
         isMobile ? mobileVideo : desktopVideo,
@@ -84,10 +81,10 @@ export default async function decorate(block) {
         mediaWrap.appendChild(video);
       }
 
-      // ✅ SAME image logic + fallback ONLY for mobile
+      //SAME image logic + fallback ONLY for mobile
       let picture;
       if (isMobile) {
-        picture = mobileImg || createPictureFromURL(FALLBACK_MOBILE);
+        picture = mobileImg
       } else {
         picture = desktopImg;
       }
@@ -117,6 +114,15 @@ export default async function decorate(block) {
       cta.className = "hero-cta";
       cta.href = ctaLink;
       cta.textContent = ctaText;
+
+      // Track Click
+      cta.addEventListener("click", function (e) {
+        trackEvent("carousel_banner_click", {
+          "bannerDestinationUrl": ctaLink,
+          "bannerTitle": e.target.closest(".hero-media").querySelector("img").alt || ""
+        });
+      })
+
       mediaWrap.appendChild(cta);
     }
 

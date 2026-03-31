@@ -8,6 +8,12 @@ Col 3 = swatch color
 Col 4 = swatch name
 Col 5 = swatch number
 */
+import {
+  getDigitalData,
+  trackEvent,
+  triggerCTAClickWithLinkAndTitle,
+} from '../../scripts/analytics.js';
+
 function getSwiperClass() {
   if (window.Swiper) return Promise.resolve(window.Swiper);
   if (window.loadSwiper) return window.loadSwiper();
@@ -108,10 +114,15 @@ function createContentPanel(contentRow) {
   if (cta) {
     cta.classList.add('popular-shades__cta');
     const label = cta.textContent.trim();
+    const ctaLink = cta.getAttribute('href') || cta.href || '';
+    const parentTitle = heading?.textContent?.trim() || '';
     cta.innerHTML = `
       <span>${label}</span>
       <span class="popular-shades__cta-icon" aria-hidden="true">➜</span>
     `;
+    cta.addEventListener('click', () => {
+      triggerCTAClickWithLinkAndTitle(ctaLink, label, parentTitle);
+    });
   }
 
   return panel;
@@ -154,6 +165,7 @@ export default async function decorate(block) {
   wrapper.className = 'popular-shades__wrapper';
 
   const contentPanel = createContentPanel(contentRow);
+  const colourTitle = contentPanel.querySelector('.popular-shades__title')?.textContent?.trim() || '';
 
   const media = document.createElement('div');
   media.className = 'popular-shades__media';
@@ -194,7 +206,7 @@ export default async function decorate(block) {
 
   slides.forEach((slide, index) => {
     const swatchItem = document.createElement('li');
-    swatchItem.className = 'popular-shades__swatch-item';
+    swatchItem.className = 'popular-shades__swatch-item track_paint_colour';
     swatchItem.dataset.index = index;
 
     const swatchBtn = document.createElement('button');
@@ -252,10 +264,6 @@ export default async function decorate(block) {
       fadeEffect: {
         crossFade: true
       },
-      autoplay: {
-        delay: 3000,
-        disableOnInteraction: false
-      },
       on: {
         init(instance) {
           updateActiveSwatch(instance.realIndex);
@@ -292,6 +300,25 @@ export default async function decorate(block) {
     [...swatchList.querySelectorAll('.popular-shades__swatch')].forEach((btn) => {
       btn.addEventListener('click', () => {
         const index = Number(btn.dataset.index);
+        const slide = slides[index] || {};
+        const colourName = slide.swatchName || '';
+        const colourCode = slide.swatchNumber || '';
+
+        if (btn.closest('.popular-shades__swatch-item')?.classList.contains('track_paint_colour')) {
+          const dd = getDigitalData();
+          dd.title = colourTitle;
+          dd.data = {
+            productName: colourName,
+            productSKU: colourCode,
+          };
+
+          trackEvent('natural_wood_shade_click', {
+            title: colourTitle,
+            productName: colourName,
+            productSKU: colourCode,
+          });
+        }
+
         swiper.slideTo(index);
       });
     });

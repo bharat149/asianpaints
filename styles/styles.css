@@ -77,8 +77,8 @@
 
 @media (width >= 992px) {
   :root {
-    /* Desktop header: 48px brand bar + 56px main header + 48px nav bar = 152px */
-    --nav-height: 152px;
+    /* Desktop header: 40px brand bar + 60px main header + 40px nav bar = 140px */
+    --nav-height: 140px;
   }
 }
 
@@ -104,8 +104,8 @@ header {
   right: 0;
   z-index: 1000;
 
-  /* 48px brand bar + 56px main header + 48px nav bar = 152px */
-  height: 152px;
+  /* 40px brand bar + 60px main header + 40px nav bar = 140px */
+  height: 140px;
 
   /* Prevent header layout changes from affecting main content */
   contain: strict;
@@ -211,60 +211,12 @@ button {
 
 /* links */
 a:any-link {
-  /* color: var(--link-color); */
   text-decoration: none;
-  overflow-wrap: break-word;
 }
 
 a:hover {
   color: var(--link-hover-color);
-  /* text-decoration: underline; */
 }
-
-/* buttons - Asian Paints brand */
-/* a.button:any-link,
-button {
-  box-sizing: border-box;
-  display: inline-block;
-  max-width: 100%;
-  margin: 12px 0;
-  border: 1px solid var(--primary-color);
-  border-radius: 40px;
-  padding: 15px 24px;
-  font-family: var(--body-font-family);
-  font-style: normal;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.86px;
-  line-height: 1.25;
-  text-align: center;
-  text-decoration: none;
-  text-transform: uppercase;
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-} */
-
-/* a.button:hover,
-a.button:focus,
-button:hover,
-button:focus {
-  background-color: var(--primary-color-light);
-  border-color: var(--primary-color-light);
-  cursor: pointer;
-} */
-
-/* button:disabled,
-button:disabled:hover {
-  background-color: #ddd;
-  border-color: #ddd;
-  color: #979797;
-  cursor: unset;
-} */
 
 /* Secondary button - outline style */
 a.button.secondary,
@@ -597,8 +549,8 @@ main > .section:has(> .default-content-wrapper:only-child > picture:only-child) 
 /* SEO/Default content typography - match Asian Paints original */
 main > .section > .default-content-wrapper h2 {
   font-size: 30px;
-  font-weight: 700;
-  line-height: 1.13;
+  font-weight: 600;
+  line-height: normal;
   color: #222;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
@@ -618,7 +570,7 @@ main > .section.center-heading > .default-content-wrapper h2 + p {
 
 main > .section > .default-content-wrapper h3 {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.1;
   color: #222;
   margin-top: 1.2em;
