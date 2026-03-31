@@ -122,6 +122,15 @@
   overflow-wrap: anywhere;
 }
 
+.footer .email-row .email-label {
+  overflow-wrap: normal;
+}
+
+.footer .email-row .email-line {
+  display: block;
+  white-space: nowrap;
+}
+
 .footer .contact-row:hover {
   color: #fff;
   opacity: 1;
