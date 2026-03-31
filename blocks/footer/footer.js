@@ -202,17 +202,14 @@ function buildBrandColumn(cell) {
 
   const emailLink = allLinks.find((a) => a.getAttribute('href')?.startsWith('mailto:'));
   if (emailLink) {
-    const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row' });
+    const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row email-row' });
     email.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
-    const emailLabel = el('span');
     const emailText = emailLink.textContent.trim();
+    const emailLabel = el('span', { className: 'email-label' });
 
-    if (emailText.endsWith('@asianpaints.com')) {
-      emailLabel.append(
-        document.createTextNode(emailText.replace('@asianpaints.com', '@asian')),
-        document.createElement('wbr'),
-        document.createTextNode('paints.com'),
-      );
+    if (emailText === 'customercare@asianpaints.com') {
+      emailLabel.appendChild(el('span', { className: 'email-line' }, 'customercare'));
+      emailLabel.appendChild(el('span', { className: 'email-line' }, '@asianpaints.com'));
     } else {
       emailLabel.appendChild(document.createTextNode(emailText));
     }
@@ -238,23 +235,27 @@ function buildBrandColumn(cell) {
   return col;
 }
 
-function buildLinkGroup(group) {
+function buildLinkGroup(group, options = {}) {
+  const { isProductGroup = false } = options;
   const section = el('div', { className: 'link-group panel-group' });
 
-  const header = el('button', {
-    className: 'link-group-title',
+  const header = el('div', {
+    className: 'link-group-title group-header',
     'aria-expanded': 'false',
-    type: 'button',
+    role: 'button',
+    tabindex: '0',
   });
-  header.appendChild(el('span', {}, group.title));
+  header.appendChild(el('div', {
+    className: `group-title clickable-title${isProductGroup ? ' product-title' : ''}`,
+  }, group.title));
   header.innerHTML += '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
   section.appendChild(header);
 
-  const list = el('ul', { className: 'link-group-list' });
+  const list = el('div', { className: 'link-group-list group-links' });
   group.links.forEach((link) => {
-    const li = el('li');
-    li.appendChild(el('a', { href: link.href }, link.text));
-    list.appendChild(li);
+    const item = el('div', { className: 'group-link' });
+    item.appendChild(el('a', { href: link.href }, link.text));
+    list.appendChild(item);
   });
   section.appendChild(list);
 
@@ -323,13 +324,13 @@ function buildMegaFooter(container, row) {
 
   const rightColPrimary = el('div', { className: 'right-col' });
   linkGroups.slice(3, 5).forEach((group) => {
-    rightColPrimary.appendChild(buildLinkGroup(group));
+    rightColPrimary.appendChild(buildLinkGroup(group, { isProductGroup: true }));
   });
   if (rightColPrimary.children.length) rightInner.appendChild(rightColPrimary);
 
   const rightColSecondary = el('div', { className: 'right-col' });
   linkGroups.slice(5).forEach((group) => {
-    rightColSecondary.appendChild(buildLinkGroup(group));
+    rightColSecondary.appendChild(buildLinkGroup(group, { isProductGroup: true }));
   });
   if (rightColSecondary.children.length) rightInner.appendChild(rightColSecondary);
 
@@ -601,19 +602,29 @@ function buildBottomBar(container, row) {
 /* ---------- MOBILE ACCORDION ---------- */
 function initMobileAccordions(block) {
   const titles = block.querySelectorAll('.link-group-title');
+  const toggleGroup = (btn) => {
+    if (window.innerWidth >= 1024) return;
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    titles.forEach((other) => {
+      other.setAttribute('aria-expanded', 'false');
+      other.nextElementSibling.style.maxHeight = null;
+    });
+    if (!expanded) {
+      btn.setAttribute('aria-expanded', 'true');
+      const list = btn.nextElementSibling;
+      list.style.maxHeight = `${list.scrollHeight}px`;
+    }
+  };
+
   titles.forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (window.innerWidth >= 1024) return;
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      titles.forEach((other) => {
-        other.setAttribute('aria-expanded', 'false');
-        other.nextElementSibling.style.maxHeight = null;
-      });
-      if (!expanded) {
-        btn.setAttribute('aria-expanded', 'true');
-        const list = btn.nextElementSibling;
-        list.style.maxHeight = `${list.scrollHeight}px`;
-      }
+      toggleGroup(btn);
+    });
+
+    btn.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      toggleGroup(btn);
     });
   });
 
@@ -642,11 +653,11 @@ function initFooterTabTracking(block) {
 
   centerGrid.dataset.footerTabBound = 'true';
   centerGrid.addEventListener('click', (event) => {
-    const link = event.target.closest('.link-group-list li a');
+    const link = event.target.closest('.link-group-list a');
     if (!link || !centerGrid.contains(link)) return;
 
     const parentTitle = link.closest('.link-group')
-      ?.querySelector(':scope > .link-group-title span')
+      ?.querySelector(':scope > .link-group-title .group-title')
       ?.textContent
       ?.trim() || 'footer';
     const ctaLink = link.getAttribute('href') || '';
@@ -656,7 +667,7 @@ function initFooterTabTracking(block) {
 }
 
 function initFooterAboutTabTracking(block) {
-  block.querySelectorAll('.mega-col.mega-col-links.mega-col-about .link-group-list li a').forEach((link) => {
+  block.querySelectorAll('.mega-col.mega-col-links.mega-col-about .link-group-list a').forEach((link) => {
     link.addEventListener('click', () => {
       trackEvent('footer_tab', {
         cta_: link.textContent.trim(),

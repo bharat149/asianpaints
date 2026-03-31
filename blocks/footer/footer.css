@@ -163,6 +163,7 @@
 /* ----- Zone 2: Center block (white background) ----- */
 .footer .mega-center {
   background: #fff;
+  color: #000;
   height: 434px;
   padding: 0;
   border-radius: 0 0 20px 20px;
@@ -174,7 +175,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 2fr;
   gap: 0;
-  align-items: start;
+  align-items: stretch;
   height: 100%;
 }
 
@@ -196,11 +197,13 @@
 .footer .mega-center .panel-middle {
   position: relative;
   padding: 0 25px;
+  align-self: stretch;
 }
 
 .footer .mega-center .panel-right {
   position: relative;
   padding: 0 25px;
+  align-self: stretch;
 }
 
 .footer .mega-center .panel-middle::before,
@@ -238,28 +241,43 @@
 }
 
 /* Section header styling */
+.footer .group-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  cursor: default;
+}
+
 .footer .link-group-title {
   width: 100%;
   text-align: left;
   background: none;
   border: none;
   border-radius: 0;
-  padding: 0 0 8px;
+  padding: 0;
   margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #222;
+  color: #000;
   cursor: default;
   font-family: inherit;
-  line-height: 21px;
+  line-height: 1;
   text-transform: none;
   letter-spacing: 0;
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
+}
+
+.footer .group-title {
+  display: block;
+}
+
+.footer .clickable-title {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  color: #000;
+  cursor: text;
 }
 
 .footer .link-group-title .accordion-icon {
@@ -267,30 +285,29 @@
 }
 
 .footer .link-group-list {
-  list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.footer .link-group-list li {
+.footer .group-link {
   margin: 0 0 10px;
   padding: 0;
 }
 
-.footer .link-group-list li:last-child {
+.footer .group-link:last-child {
   margin-bottom: 0;
 }
 
-.footer .link-group-list a {
+.footer .group-link a {
   display: block;
   padding: 0;
   font-size: 12px;
   font-weight: 400;
-  color: #666;
+  color: #000;
   line-height: 16.8px;
 }
 
-.footer .link-group-list a:hover {
+.footer .group-link a:hover {
   opacity: 1;
 }
 
@@ -311,14 +328,25 @@
   margin-top: 80px;
 }
 
-.footer .mega-center .panel-right .link-group-title {
+.footer .mega-center .panel-right .product-title {
   padding-bottom: 16px;
   border-bottom: 3px solid #b0b1b3;
 }
 
-.footer .mega-center .panel-right .link-group-list {
-  padding-top: 12px;
-  border-top: none;
+@media (width >= 992px) and (width <= 1280px) {
+  .footer .clickable-title {
+    font-size: 12px;
+  }
+
+  .footer .group-link {
+    margin-bottom: 6px;
+  }
+}
+
+@media (width >= 1281px) and (width <= 1440px) {
+  .footer .group-link {
+    margin-bottom: 8px;
+  }
 }
 
 /* ----- Zone 3: About column (right, white text on grey) ----- */
@@ -337,16 +365,20 @@
   color: #fff;
 }
 
-.footer .mega-col-about .link-group-list a {
+.footer .mega-col-about .clickable-title {
+  color: #fff;
+}
+
+.footer .mega-col-about .group-link a {
   color: rgba(255 255 255 / 70%);
 }
 
-.footer .mega-center .link-group-list a:hover {
-  color: #666;
+.footer .mega-center .group-link a:hover {
+  color: #000;
   opacity: 1;
 }
 
-.footer .mega-col-about .link-group-list a:hover {
+.footer .mega-col-about .group-link a:hover {
   color: #fff;
   opacity: 1;
 }
@@ -881,7 +913,6 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 0;
-    font-size: 14px;
   }
 
   /* Link columns inside white card on mobile */
@@ -1127,8 +1158,8 @@
     color: #000;
   }
 
-  .footer .mega-col-about .link-group-title,
-  .footer .mega-col-about .link-group-list a {
+  .footer .mega-col-about .clickable-title,
+  .footer .mega-col-about .group-link a {
     color: #000;
   }
 }
