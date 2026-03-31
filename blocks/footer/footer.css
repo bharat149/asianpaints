@@ -1052,15 +1052,11 @@
   .footer .link-group-title .accordion-icon {
     display: block;
     font-size: 20px;
-    font-weight: 300;
+    font-weight: 400;
     color: #fff;
     flex-shrink: 0;
     line-height: 1;
-    transition: transform 0.3s ease;
-  }
-
-  .footer .link-group-title[aria-expanded="true"] .accordion-icon {
-    transform: rotate(45deg);
+    transition: color 0.3s ease;
   }
 
   .footer .link-group-title .accordion-chevron {
@@ -1077,8 +1073,19 @@
   }
 
   .footer .mega-center .link-group-title .accordion-icon {
-    color: #2f2f2f;
-    font-weight: 200;
+    color: #5d4f43;
+    font-weight: 400;
+    font-size: 0;
+  }
+
+  .footer .mega-center .link-group-title .accordion-icon::before {
+    content: '+';
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .footer .mega-center .link-group-title[aria-expanded="true"] .accordion-icon::before {
+    content: '-';
   }
 
   .footer .mega-center .link-group-title .accordion-chevron {
