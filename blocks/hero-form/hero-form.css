@@ -182,7 +182,7 @@
     .hero-form .find-contractor-form-container {
         width: calc(100% - 32px);
         padding: 25px 15px;
-        margin: 0 16px;
+        margin: -25px 80px 80px;
         transform: translateY(-40px);
     }
 
