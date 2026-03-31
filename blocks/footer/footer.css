@@ -156,6 +156,7 @@
 .footer .notice-body {
   font-size: 12px;
   line-height: 16.8px;
+  font-weight: 400;
   color: #cacbcc;
   margin: 0;
 }
@@ -941,6 +942,10 @@
   .footer .footer-brand-contact,
   .footer .footer-public-notice {
     width: auto;
+  }
+
+  .footer .footer-public-notice {
+    padding: 5px 25px 10px;
   }
 
   /* Center block stacks on mobile — white card like original */
