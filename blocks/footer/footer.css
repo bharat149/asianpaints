@@ -370,7 +370,18 @@
 }
 
 .footer .mega-col-about .group-link a {
-  color: rgba(255 255 255 / 70%);
+  color: #fff;
+}
+
+.footer .mega-col-about .link-group:first-child .clickable-title {
+  font-size: 12px;
+  line-height: 16.8px;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.footer .mega-col-about .link-group:not(:first-child) .clickable-title {
+  margin-bottom: 8px;
 }
 
 .footer .mega-center .group-link a:hover {
