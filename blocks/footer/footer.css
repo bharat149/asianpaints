@@ -262,7 +262,7 @@
   align-items: center;
 }
 
-.footer .link-group-title .accordion-chevron {
+.footer .link-group-title .accordion-icon {
   display: none;
 }
 
@@ -353,8 +353,8 @@
 
 /* stylelint-disable-next-line no-descending-specificity */
 .footer .mega-col-about .link-group + .link-group {
-  padding-top: 24px;
-  border-top: 1px solid rgba(255 255 255 / 15%);
+  padding-top: 0;
+  border-top: none;
 }
 
 /* =============================================
@@ -519,6 +519,12 @@
    SECTION 3: GLOBAL PRESENCE
    Fix #8: Centered flex, gap 28px
    ============================================= */
+
+/* Wrapper for Global + Divisions (side-by-side on mobile) */
+.footer .footer-global-divisions {
+  background: #000;
+}
+
 .footer .footer-global {
   background: #000;
   color: #fff;
@@ -829,10 +835,11 @@
     width: 120px;
   }
 
-  /* Center block stacks on mobile */
+  /* Center block stacks on mobile — white card like original */
   .footer .mega-center {
     padding: 0;
-    background: transparent;
+    background: #fff;
+    border-radius: 4px;
   }
 
   .footer .mega-center-grid {
@@ -861,11 +868,11 @@
   /* Accordion behavior for link groups */
   .footer .link-group {
     margin-bottom: 0;
-    border-bottom: 1px solid rgba(255 255 255 / 10%);
+    border-bottom: 1px solid rgba(255 255 255 / 15%);
   }
 
   .footer .link-group:last-child {
-    border-bottom: none;
+    border-bottom: 1px solid rgba(255 255 255 / 15%);
   }
 
   .footer .link-group-title {
@@ -877,38 +884,53 @@
     font-size: 14px;
   }
 
-  /* All link columns on mobile — white text on grey */
+  /* Link columns inside white card on mobile */
   .footer .mega-center .mega-col-links {
     padding: 0;
     border-right: none;
-    border-bottom: 1px solid rgba(255 255 255 / 15%);
+    border-bottom: none;
+  }
+
+  .footer .mega-center .link-group {
+    border-bottom: 1px solid #e5e5e5;
   }
 
   .footer .mega-center .link-group-title {
-    color: #fff;
+    color: #000;
+    font-weight: 700;
+    padding: 0 12px 0 25px;
+    height: 40px;
   }
 
   .footer .mega-center .link-group-list a {
-    color: rgba(255 255 255 / 70%);
+    color: #666;
+    padding: 4px 25px;
   }
 
   .footer .mega-center .link-group-list a:hover {
-    color: #fff;
+    color: #222;
   }
 
   .footer .mega-center .link-group + .link-group {
-    border-top: 1px solid rgba(255 255 255 / 10%);
+    border-top: none;
   }
 
-  .footer .link-group-title .accordion-chevron {
+  .footer .link-group-title .accordion-icon {
     display: block;
-    transition: transform 0.3s ease;
+    font-size: 20px;
+    font-weight: 300;
+    color: #fff;
     flex-shrink: 0;
-    stroke: #fff;
+    line-height: 1;
+    transition: transform 0.3s ease;
   }
 
-  .footer .link-group-title[aria-expanded="true"] .accordion-chevron {
-    transform: rotate(180deg);
+  .footer .link-group-title[aria-expanded="true"] .accordion-icon {
+    transform: rotate(45deg);
+  }
+
+  .footer .mega-center .link-group-title .accordion-icon {
+    color: #000;
   }
 
   .footer .link-group-list {
@@ -922,8 +944,40 @@
   }
 
   .footer .mega-col-about {
-    padding: 0;
+    padding: 16px 0;
     border-top: 1px solid rgba(255 255 255 / 15%);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .footer .mega-col-about .link-group {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .footer .mega-col-about .link-group-title {
+    cursor: default;
+    padding: 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .footer .mega-col-about .link-group-title .accordion-icon {
+    display: none;
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .footer .mega-col-about .link-group-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .footer .mega-col-about .link-group-list a {
+    font-size: 13px;
+    padding: 6px 0;
   }
 
   /* Video banner */
@@ -959,19 +1013,33 @@
     font-size: 16px;
   }
 
-  /* Global presence */
-  .footer .footer-global-inner,
-  .footer .footer-divisions-inner {
-    padding: 0 20px;
+  /* Global Presence + Divisions: side-by-side grid */
+  .footer .footer-global-divisions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 20px;
+    background: #000;
+    padding: 25px 40px 32px;
   }
 
-  .footer .footer-global {
-    padding: 28px 0 24px;
+  .footer .footer-global,
+  .footer .footer-divisions {
+    background: transparent;
+    padding: 0;
+  }
+
+  .footer .footer-global-inner,
+  .footer .footer-divisions-inner {
+    padding: 0;
   }
 
   .footer .section-title-row {
     margin-bottom: 24px;
-    gap: 12px;
+    gap: 0;
+  }
+
+  .footer .title-line {
+    display: none;
   }
 
   .footer .section-title {
@@ -980,7 +1048,9 @@
   }
 
   .footer .country-list {
-    gap: 16px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
   }
 
   .footer .country-flag {
@@ -992,38 +1062,51 @@
     font-size: 13px;
   }
 
-  /* Divisions */
-  .footer .footer-divisions {
-    padding: 24px 0 32px;
-  }
-
   .footer .division-logos {
-    gap: 20px 28px;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 0;
   }
 
   /* stylelint-disable-next-line no-descending-specificity */
   .footer .division-logo img {
-    max-height: 28px;
+    max-height: 55px;
+    max-width: 116px;
+    width: auto;
+    height: auto;
   }
 
-  /* Bottom bar — stack on mobile */
+  /* Bottom bar — compact row on mobile */
   .footer .footer-bottom-inner {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    text-align: center;
-    padding: 20px;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px 0;
+    padding: 12px 20px;
+    text-align: left;
   }
 
   .footer .bottom-social {
+    grid-column: 1 / -1;
     justify-content: center;
+    gap: 50px;
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .footer .social-icon img {
+    width: 24px;
+    height: 24px;
   }
 
   .footer .bottom-copyright {
-    font-size: 12px;
+    font-size: 11px;
+    text-align: left;
+    grid-column: 1;
   }
 
   .footer .bottom-sitemap {
-    text-align: center;
+    text-align: right;
+    grid-column: 2;
   }
 }
 

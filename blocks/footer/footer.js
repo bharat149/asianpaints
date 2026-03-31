@@ -264,7 +264,25 @@ function buildLinkGroup(group) {
 function buildLinkColumnFromGroups(groups) {
   const col = el('div', { className: 'mega-col mega-col-links' });
   groups.forEach((group) => {
-    col.appendChild(buildLinkGroup(group));
+    const section = el('div', { className: 'link-group' });
+
+    const header = el('button', {
+      className: 'link-group-title',
+      'aria-expanded': 'false',
+      type: 'button',
+    });
+    header.appendChild(el('span', {}, group.title));
+    header.innerHTML += '<span class="accordion-icon">+</span>';
+    section.appendChild(header);
+
+    const list = el('ul', { className: 'link-group-list' });
+    group.links.forEach((link) => {
+      const li = el('li');
+      li.appendChild(el('a', { href: link.href }, link.text));
+      list.appendChild(li);
+    });
+    section.appendChild(list);
+    col.appendChild(section);
   });
   return col;
 }
@@ -729,11 +747,11 @@ export default async function decorate(block) {
   // Row 1: Video Banner
   if (rows[1]) buildVideoBanner(footerContent, rows[1]);
 
-  // Row 2: Global Presence
-  if (rows[2]) buildGlobalPresence(footerContent, rows[2]);
-
-  // Row 3: Divisions
-  if (rows[3]) buildDivisions(footerContent, rows[3]);
+  // Row 2 + 3: Global Presence & Divisions (side-by-side on mobile)
+  const globalDivGrid = el('div', { className: 'footer-global-divisions' });
+  if (rows[2]) buildGlobalPresence(globalDivGrid, rows[2]);
+  if (rows[3]) buildDivisions(globalDivGrid, rows[3]);
+  footerContent.appendChild(globalDivGrid);
 
   // Row 4: Bottom Bar
   if (rows[4]) buildBottomBar(footerContent, rows[4]);
