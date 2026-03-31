@@ -28,6 +28,8 @@ const IMAGE_FALLBACKS = {
   Pinterest: `${IMG}/pinterest.png`,
 };
 
+const FOOTER_BRAND_LOGO = 'https://static.asianpaints.com/content/dam/home-revamp/footer/ap-logo/ap-logo-4x.webp';
+
 /**
  * Fix broken images in parsed HTML fragment.
  * DA content sometimes has src="about:error" for images that weren't uploaded.
@@ -148,7 +150,7 @@ function parseLinkGroups(cell) {
       // Links paragraph without a preceding title (e.g. About section)
       groups.push({
         title: links[0].textContent.trim(),
-        links: links.map((a) => ({
+        links: links.slice(1).map((a) => ({
           text: a.textContent.trim(),
           href: a.getAttribute('href'),
         })),
@@ -176,10 +178,10 @@ function buildBrandColumn(cell) {
     const img = logoAnchor.querySelector('img');
     if (img) {
       logo.appendChild(el('img', {
-        src: img.getAttribute('src'),
+        src: FOOTER_BRAND_LOGO,
         alt: img.getAttribute('alt') || 'Asian Paints',
-        width: img.getAttribute('width') || '180',
-        height: img.getAttribute('height') || '63',
+        width: '180',
+        height: '63',
         loading: 'lazy',
       }));
     }
@@ -202,7 +204,20 @@ function buildBrandColumn(cell) {
   if (emailLink) {
     const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row' });
     email.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
-    email.appendChild(el('span', {}, emailLink.textContent.trim()));
+    const emailLabel = el('span');
+    const emailText = emailLink.textContent.trim();
+
+    if (emailText.endsWith('@asianpaints.com')) {
+      emailLabel.append(
+        document.createTextNode(emailText.replace('@asianpaints.com', '@asian')),
+        document.createElement('wbr'),
+        document.createTextNode('paints.com'),
+      );
+    } else {
+      emailLabel.appendChild(document.createTextNode(emailText));
+    }
+
+    email.appendChild(emailLabel);
     contact.appendChild(email);
   }
   col.appendChild(contact);
@@ -223,28 +238,33 @@ function buildBrandColumn(cell) {
   return col;
 }
 
+function buildLinkGroup(group) {
+  const section = el('div', { className: 'link-group panel-group' });
+
+  const header = el('button', {
+    className: 'link-group-title',
+    'aria-expanded': 'false',
+    type: 'button',
+  });
+  header.appendChild(el('span', {}, group.title));
+  header.innerHTML += '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+  section.appendChild(header);
+
+  const list = el('ul', { className: 'link-group-list' });
+  group.links.forEach((link) => {
+    const li = el('li');
+    li.appendChild(el('a', { href: link.href }, link.text));
+    list.appendChild(li);
+  });
+  section.appendChild(list);
+
+  return section;
+}
+
 function buildLinkColumnFromGroups(groups) {
   const col = el('div', { className: 'mega-col mega-col-links' });
   groups.forEach((group) => {
-    const section = el('div', { className: 'link-group' });
-
-    const header = el('button', {
-      className: 'link-group-title',
-      'aria-expanded': 'false',
-      type: 'button',
-    });
-    header.appendChild(el('span', {}, group.title));
-    header.innerHTML += '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
-    section.appendChild(header);
-
-    const list = el('ul', { className: 'link-group-list' });
-    group.links.forEach((link) => {
-      const li = el('li');
-      li.appendChild(el('a', { href: link.href }, link.text));
-      list.appendChild(li);
-    });
-    section.appendChild(list);
-    col.appendChild(section);
+    col.appendChild(buildLinkGroup(group));
   });
   return col;
 }
@@ -266,19 +286,38 @@ function buildMegaFooter(container, row) {
 
   // Zone 2: Center block (white background with link columns)
   const center = el('div', { className: 'mega-center' });
-  const centerNav = el('nav', { className: 'mega-center-grid' });
+  const centerNav = el('nav', { className: 'mega-center-grid footer-col col-two' });
 
-  const columnDist = [2, 1, 2, 1];
-  let idx = 0;
-  columnDist.forEach((count) => {
-    const slice = linkGroups.slice(idx, idx + count);
-    if (slice.length > 0) {
-      centerNav.appendChild(buildLinkColumnFromGroups(slice));
-    }
-    idx += count;
+  const panelLeft = el('div', { className: 'panel-section panel-left mega-col-links' });
+  linkGroups.slice(0, 2).forEach((group) => {
+    panelLeft.appendChild(buildLinkGroup(group));
   });
-  if (idx < linkGroups.length) {
-    centerNav.appendChild(buildLinkColumnFromGroups(linkGroups.slice(idx)));
+  if (panelLeft.children.length) centerNav.appendChild(panelLeft);
+
+  const panelMiddle = el('div', { className: 'panel-section panel-middle mega-col-links' });
+  linkGroups.slice(2, 3).forEach((group) => {
+    panelMiddle.appendChild(buildLinkGroup(group));
+  });
+  if (panelMiddle.children.length) centerNav.appendChild(panelMiddle);
+
+  const panelRight = el('div', { className: 'panel-section panel-right mega-col-links' });
+  const rightInner = el('div', { className: 'right-inner' });
+
+  const rightColPrimary = el('div', { className: 'right-col' });
+  linkGroups.slice(3, 5).forEach((group) => {
+    rightColPrimary.appendChild(buildLinkGroup(group));
+  });
+  if (rightColPrimary.children.length) rightInner.appendChild(rightColPrimary);
+
+  const rightColSecondary = el('div', { className: 'right-col' });
+  linkGroups.slice(5).forEach((group) => {
+    rightColSecondary.appendChild(buildLinkGroup(group));
+  });
+  if (rightColSecondary.children.length) rightInner.appendChild(rightColSecondary);
+
+  if (rightInner.children.length) {
+    panelRight.appendChild(rightInner);
+    centerNav.appendChild(panelRight);
   }
 
   center.appendChild(centerNav);
