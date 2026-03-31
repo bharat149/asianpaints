@@ -149,7 +149,7 @@
   font-weight: 500;
   font-size: 14px;
   line-height: 21px;
-  margin-bottom: 4px;
+  margin-bottom: 15px;
   color: #fff;
 }
 
@@ -928,12 +928,14 @@
   }
 
   .footer .footer-brand-logo {
-    width: 120px;
-    height: auto;
+    width: 180px;
+    height: 63px;
   }
 
   .footer .footer-brand-logo img {
-    width: 120px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .footer .footer-brand-contact,
@@ -1077,20 +1079,32 @@
   }
 
   .footer .mega-center .link-group-title .accordion-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #5d4f43;
     font-weight: 400;
     font-size: 0;
+    flex-shrink: 0;
   }
 
   .footer .mega-center .link-group-title .accordion-icon::before {
-    content: '+';
-    font-size: 20px;
-    line-height: 1;
+    content: '';
+    width: 24px;
+    height: 24px;
+    display: block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 6V18M6 12H18' stroke='%235d4f43' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 
   .footer .mega-center .link-group-title .accordion-icon.open::before,
   .footer .mega-center .link-group-title[aria-expanded="true"] .accordion-icon::before {
-    content: '-';
+    content: '';
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 12H18' stroke='%235d4f43' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
   }
 
   .footer .mega-center .link-group-title .accordion-chevron {
