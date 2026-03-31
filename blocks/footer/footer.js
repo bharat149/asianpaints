@@ -603,7 +603,7 @@ function buildBottomBar(container, row) {
 
 /* ---------- MOBILE ACCORDION ---------- */
 function initMobileAccordions(block) {
-  const titles = block.querySelectorAll('.link-group-title');
+  const titles = block.querySelectorAll('.mega-center .link-group-title');
   const toggleGroup = (btn) => {
     if (window.innerWidth >= 1024) return;
     const expanded = btn.getAttribute('aria-expanded') === 'true';

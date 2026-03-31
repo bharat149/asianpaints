@@ -1123,22 +1123,36 @@
   }
 
   .footer .mega-col-about {
-    padding: 16px 0;
-    border-top: 1px solid rgba(255 255 255 / 15%);
+    padding: 0;
+    border-top: none;
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 25px 0;
+    grid-template-columns: repeat(2, 48%);
+    justify-content: space-between;
+    row-gap: 0;
+    margin-top: 20px;
   }
 
   /* stylelint-disable-next-line no-descending-specificity */
   .footer .mega-col-about .link-group {
     border-bottom: none;
     margin-bottom: 0;
+    display: grid;
+    row-gap: 20px;
   }
 
   .footer .mega-col-about .link-group-title {
     cursor: default;
     padding: 0;
+  }
+
+  .footer .mega-col-about .link-group:first-child .link-group-title,
+  .footer .mega-col-about .link-group:first-child .clickable-title {
+    margin-bottom: 0;
+  }
+
+  .footer .mega-col-about .link-group:not(:first-child) .link-group-title,
+  .footer .mega-col-about .link-group:not(:first-child) .clickable-title {
+    margin-bottom: -4.2px;
   }
 
   .footer .mega-col-about .link-group-title .accordion-icon {
@@ -1147,8 +1161,14 @@
 
   /* stylelint-disable-next-line no-descending-specificity */
   .footer .mega-col-about .link-group-list {
+    display: grid;
+    row-gap: 20px;
     max-height: none;
     overflow: visible;
+  }
+
+  .footer .mega-col-about .group-link {
+    margin: 0;
   }
 
   /* stylelint-disable-next-line no-descending-specificity */
