@@ -813,7 +813,7 @@
 
   .footer .mega-grid {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 10px;
   }
 
   .footer .mega-col-brand {
@@ -914,15 +914,15 @@
   /* Mega footer: stack to single column */
   .footer .mega-grid {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 10px;
   }
 
   .footer .mega-col-brand {
     width: auto;
     height: auto;
     grid-template-rows: none;
-    gap: 24px;
-    padding: 24px 0;
+    gap: 8px;
+    padding: 0;
     justify-self: stretch;
     border-bottom: 1px solid rgba(255 255 255 / 15%);
   }
