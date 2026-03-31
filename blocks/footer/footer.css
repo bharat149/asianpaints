@@ -1011,7 +1011,7 @@
   .footer .mega-center .link-group-title {
     color: #000;
     font-weight: 600;
-    padding: 14px 20px;
+    padding: 12px 20px;
     min-height: 0;
     height: auto;
     line-height: 21px;
@@ -1022,12 +1022,12 @@
   }
 
   .footer .mega-center .group-link {
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
 
   .footer .mega-center .link-group-list a {
     color: #666;
-    padding: 2px 25px;
+    padding: 0 25px;
   }
 
   .footer .mega-center .link-group-list a:hover {
@@ -1099,7 +1099,7 @@
   }
 
   .footer .link-group-title[aria-expanded="true"] + .link-group-list {
-    padding-bottom: 8px;
+    padding-bottom: 2px;
   }
 
   .footer .mega-col-about {
