@@ -77,9 +77,18 @@ export default async function decorate(block) {
       const video = getVideo(
         isMobile ? mobileVideo : desktopVideo,
       );
-      if (video) {
-        mediaWrap.appendChild(video);
-      }
+     if (video) {
+  if (ctaLink) {
+    const videoLink = document.createElement("a");
+    videoLink.href = ctaLink;
+    videoLink.className = "hero-video-link";
+
+    videoLink.appendChild(video);
+    mediaWrap.appendChild(videoLink);
+  } else {
+    mediaWrap.appendChild(video);
+  }
+}
 
       //SAME image logic + fallback ONLY for mobile
       let picture;
@@ -105,7 +114,18 @@ export default async function decorate(block) {
       const picture =
         isMobile && mobileImg ? mobileImg : desktopImg;
 
-      if (picture) mediaWrap.appendChild(picture);
+      if (picture) {
+  if (ctaLink) {
+    const imgLink = document.createElement("a");
+    imgLink.href = ctaLink;
+    imgLink.className = "hero-media-link";
+
+    imgLink.appendChild(picture);
+    mediaWrap.appendChild(imgLink);
+  } else {
+    mediaWrap.appendChild(picture);
+  }
+}
     }
 
     // CTA
