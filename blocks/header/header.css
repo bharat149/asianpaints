@@ -987,6 +987,14 @@ body.nav-open {
 
   .header .header-brands,
   .header .header-sticky,
+  .header .mobile-search-panel {
+    transition:
+      top 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .header .header-brands,
+  .header .header-sticky,
   .header .header-main,
   .header .header-main-inner {
     width: 100vw;
@@ -1115,6 +1123,20 @@ body.nav-open {
 
   .header .header-nav-bar.mobile-open {
     display: block;
+  }
+
+  .header.mobile-scrolled .header-brands {
+    transform: translateY(calc(-1 * var(--header-brand-height)));
+    pointer-events: none;
+  }
+
+  .header.mobile-scrolled .header-sticky {
+    top: 0;
+  }
+
+  .header.mobile-scrolled .header-nav-bar {
+    inset: var(--header-main-height) 0 0;
+    min-height: calc(100dvh - var(--header-main-height));
   }
 
   .header .header-nav-inner {
@@ -1814,6 +1836,12 @@ body.nav-open {
 
 .header .mobile-search-panel.active {
   display: flex;
+}
+
+@media (width <= 991px) {
+  .header.mobile-scrolled .mobile-search-panel {
+    top: 0;
+  }
 }
 
 .header .mobile-search-panel .search-icon {

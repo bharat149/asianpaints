@@ -2620,9 +2620,37 @@ function isDesktopViewport() {
   return window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
 }
 
+function bindMobileScrollState(block) {
+  let ticking = false;
+
+  const updateScrollState = () => {
+    ticking = false;
+
+    if (isDesktopViewport()) {
+      block.classList.remove('mobile-scrolled');
+      return;
+    }
+
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    block.classList.toggle('mobile-scrolled', scrollTop > 8);
+  };
+
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateScrollState);
+  };
+
+  updateScrollState();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', updateScrollState, { passive: true });
+}
+
 function addInteractions(block) {
   const hamburger = block.querySelector('.nav-hamburger');
   const navBar = block.querySelector('.header-nav-bar');
+
+  bindMobileScrollState(block);
 
   // Mobile hamburger toggle
   if (hamburger && navBar) {
