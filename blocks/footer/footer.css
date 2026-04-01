@@ -1018,6 +1018,7 @@
   .footer .mega-center .link-group-title {
     color: #000;
     font-weight: 700;
+    font-size: 14px;
     padding: 0 12px 0 25px;
     min-height: 40px;
     height: 40px;
@@ -1038,6 +1039,7 @@
     padding: 0;
     font-size: 12px;
     line-height: 16.8px;
+    font-weight: 400;
     text-decoration: none;
   }
 
@@ -1100,7 +1102,7 @@
     width: 24px;
     height: 24px;
     display: block;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 6V18M6 12H18' stroke='%235d4f43' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 6V18M6 12H18' stroke='%235d4f43' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -1109,7 +1111,7 @@
   .footer .mega-center .link-group-title .accordion-icon.open::before,
   .footer .mega-center .link-group-title[aria-expanded="true"] .accordion-icon::before {
     content: '';
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 12H18' stroke='%235d4f43' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 12H18' stroke='%235d4f43' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
   }
 
   .footer .mega-center .link-group-title .accordion-chevron {
@@ -1228,15 +1230,18 @@
   .footer .footer-global-divisions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0 20px;
+    gap: 0;
     background: #000;
-    padding: 25px 40px 32px;
+    padding: 25px 0 32px;
   }
 
   .footer .footer-global,
   .footer .footer-divisions {
     background: transparent;
     padding: 0;
+    display: grid;
+    justify-content: center;
+    align-items: flex-start;
   }
 
   .footer .footer-global-inner,
@@ -1245,7 +1250,7 @@
   }
 
   .footer .section-title-row {
-    margin-bottom: 24px;
+    margin-bottom: 17px;
     gap: 0;
   }
 
@@ -1254,38 +1259,49 @@
   }
 
   .footer .section-title {
-    font-size: 11px;
-    letter-spacing: 1.5px;
+    font-size: 12px;
+    line-height: 16.8px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: #feeecf;
   }
 
   .footer .country-list {
     flex-direction: column;
     align-items: flex-start;
-    gap: 30px;
+    gap: 0;
   }
 
   .footer .country-flag {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
   }
 
   .footer .country-name {
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 16.8px;
+    color: #faf6ef;
+  }
+
+  .footer .country-item {
+    gap: 10px;
+    padding: 11px 10px;
   }
 
   .footer .division-logos {
     flex-direction: column;
-    align-items: center;
-    gap: 24px;
+    align-items: flex-start;
+    gap: 27px;
     padding: 0;
   }
 
   /* stylelint-disable-next-line no-descending-specificity */
   .footer .division-logo img {
-    max-height: 55px;
+    max-height: 57px;
     max-width: 116px;
     width: auto;
     height: auto;
+    opacity: 1;
   }
 
   /* Bottom bar — compact row on mobile */
