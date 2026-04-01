@@ -28,6 +28,8 @@ const IMAGE_FALLBACKS = {
   Pinterest: `${IMG}/pinterest.png`,
 };
 
+const FOOTER_BRAND_LOGO = 'https://static.asianpaints.com/content/dam/home-revamp/footer/ap-logo/ap-logo-4x.webp';
+
 /**
  * Fix broken images in parsed HTML fragment.
  * DA content sometimes has src="about:error" for images that weren't uploaded.
@@ -58,6 +60,62 @@ function el(tag, attrs = {}, ...children) {
     else if (child) elem.appendChild(child);
   });
   return elem;
+}
+
+function getFooterVideoLink(cell) {
+  return cell.querySelector('a[href*="youtube"], a[href*="youtu.be"]')?.href
+    || 'https://www.youtube.com/watch?v=c6GKMQDYI1k';
+}
+
+function getYouTubeEmbedUrl(videoUrl) {
+  try {
+    const url = new URL(videoUrl, window.location.origin);
+    let videoId = url.searchParams.get('v') || '';
+
+    if (url.hostname.includes('youtu.be')) {
+      videoId = url.pathname.split('/').filter(Boolean).pop() || '';
+    } else if (url.pathname.startsWith('/embed/')) {
+      [, , videoId] = url.pathname.split('/');
+    }
+
+    if (!videoId) return '';
+
+    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&playsinline=1`;
+  } catch (e) {
+    return '';
+  }
+}
+
+function openFooterVideo(banner, videoUrl) {
+  const player = banner.querySelector('.footer-video-player');
+  const frame = banner.querySelector('.footer-video-embed');
+  const embedUrl = getYouTubeEmbedUrl(videoUrl);
+
+  if (!player || !frame || !embedUrl) return;
+
+  frame.innerHTML = `
+    <iframe
+      src="${embedUrl}"
+      title="Asian Paints footer video"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  `;
+
+  banner.classList.add('video-active');
+  player.setAttribute('aria-hidden', 'false');
+}
+
+function closeFooterVideo(banner) {
+  const player = banner.querySelector('.footer-video-player');
+  const frame = banner.querySelector('.footer-video-embed');
+
+  if (!player || !frame) return;
+
+  banner.classList.remove('video-active');
+  player.setAttribute('aria-hidden', 'true');
+  frame.innerHTML = '';
 }
 
 /**
@@ -92,7 +150,7 @@ function parseLinkGroups(cell) {
       // Links paragraph without a preceding title (e.g. About section)
       groups.push({
         title: links[0].textContent.trim(),
-        links: links.map((a) => ({
+        links: links.slice(1).map((a) => ({
           text: a.textContent.trim(),
           href: a.getAttribute('href'),
         })),
@@ -120,10 +178,10 @@ function buildBrandColumn(cell) {
     const img = logoAnchor.querySelector('img');
     if (img) {
       logo.appendChild(el('img', {
-        src: img.getAttribute('src'),
+        src: FOOTER_BRAND_LOGO,
         alt: img.getAttribute('alt') || 'Asian Paints',
-        width: img.getAttribute('width') || '180',
-        height: img.getAttribute('height') || '63',
+        width: '180',
+        height: '63',
         loading: 'lazy',
       }));
     }
@@ -144,9 +202,21 @@ function buildBrandColumn(cell) {
 
   const emailLink = allLinks.find((a) => a.getAttribute('href')?.startsWith('mailto:'));
   if (emailLink) {
-    const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row' });
+    const email = el('a', { href: emailLink.getAttribute('href'), className: 'contact-row email-row' });
     email.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
-    email.appendChild(el('span', {}, emailLink.textContent.trim()));
+    const emailText = emailLink.textContent.trim();
+    const normalizedEmailText = emailText.replace(/\s+/g, '');
+    const emailLabel = el('span', { className: 'email-label' });
+
+    if (normalizedEmailText.includes('@')) {
+      const [localPart, domainPart] = normalizedEmailText.split('@');
+      emailLabel.appendChild(el('span', { className: 'email-line' }, localPart));
+      emailLabel.appendChild(el('span', { className: 'email-line' }, `@${domainPart}`));
+    } else {
+      emailLabel.appendChild(document.createTextNode(emailText));
+    }
+
+    email.appendChild(emailLabel);
     contact.appendChild(email);
   }
   col.appendChild(contact);
@@ -167,6 +237,33 @@ function buildBrandColumn(cell) {
   return col;
 }
 
+function buildLinkGroup(group, options = {}) {
+  const { isProductGroup = false } = options;
+  const section = el('div', { className: 'link-group panel-group' });
+
+  const header = el('div', {
+    className: 'link-group-title group-header',
+    'aria-expanded': 'false',
+    role: 'button',
+    tabindex: '0',
+  });
+  header.appendChild(el('div', {
+    className: `group-title clickable-title${isProductGroup ? ' product-title' : ''}`,
+  }, group.title));
+  header.innerHTML += '<span class="accordion-icon">+</span><svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+  section.appendChild(header);
+
+  const list = el('div', { className: 'link-group-list group-links' });
+  group.links.forEach((link) => {
+    const item = el('div', { className: 'group-link' });
+    item.appendChild(el('a', { href: link.href }, link.text));
+    list.appendChild(item);
+  });
+  section.appendChild(list);
+
+  return section;
+}
+
 function buildLinkColumnFromGroups(groups) {
   const col = el('div', { className: 'mega-col mega-col-links' });
   groups.forEach((group) => {
@@ -178,14 +275,14 @@ function buildLinkColumnFromGroups(groups) {
       type: 'button',
     });
     header.appendChild(el('span', {}, group.title));
-    header.innerHTML += '<svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    header.innerHTML += '<span class="accordion-icon">+</span>';
     section.appendChild(header);
 
-    const list = el('ul', { className: 'link-group-list' });
+    const list = el('div', { className: 'link-group-list' });
     group.links.forEach((link) => {
-      const li = el('li');
-      li.appendChild(el('a', { href: link.href }, link.text));
-      list.appendChild(li);
+      const item = el('div', { className: 'group-link' });
+      item.appendChild(el('a', { href: link.href }, link.text));
+      list.appendChild(item);
     });
     section.appendChild(list);
     col.appendChild(section);
@@ -210,19 +307,38 @@ function buildMegaFooter(container, row) {
 
   // Zone 2: Center block (white background with link columns)
   const center = el('div', { className: 'mega-center' });
-  const centerNav = el('nav', { className: 'mega-center-grid' });
+  const centerNav = el('nav', { className: 'mega-center-grid footer-col col-two' });
 
-  const columnDist = [2, 1, 2, 1];
-  let idx = 0;
-  columnDist.forEach((count) => {
-    const slice = linkGroups.slice(idx, idx + count);
-    if (slice.length > 0) {
-      centerNav.appendChild(buildLinkColumnFromGroups(slice));
-    }
-    idx += count;
+  const panelLeft = el('div', { className: 'panel-section panel-left mega-col-links' });
+  linkGroups.slice(0, 2).forEach((group) => {
+    panelLeft.appendChild(buildLinkGroup(group));
   });
-  if (idx < linkGroups.length) {
-    centerNav.appendChild(buildLinkColumnFromGroups(linkGroups.slice(idx)));
+  if (panelLeft.children.length) centerNav.appendChild(panelLeft);
+
+  const panelMiddle = el('div', { className: 'panel-section panel-middle mega-col-links' });
+  linkGroups.slice(2, 3).forEach((group) => {
+    panelMiddle.appendChild(buildLinkGroup(group));
+  });
+  if (panelMiddle.children.length) centerNav.appendChild(panelMiddle);
+
+  const panelRight = el('div', { className: 'panel-section panel-right mega-col-links' });
+  const rightInner = el('div', { className: 'right-inner' });
+
+  const rightColPrimary = el('div', { className: 'right-col' });
+  linkGroups.slice(3, 5).forEach((group) => {
+    rightColPrimary.appendChild(buildLinkGroup(group, { isProductGroup: true }));
+  });
+  if (rightColPrimary.children.length) rightInner.appendChild(rightColPrimary);
+
+  const rightColSecondary = el('div', { className: 'right-col' });
+  linkGroups.slice(5).forEach((group) => {
+    rightColSecondary.appendChild(buildLinkGroup(group, { isProductGroup: true }));
+  });
+  if (rightColSecondary.children.length) rightInner.appendChild(rightColSecondary);
+
+  if (rightInner.children.length) {
+    panelRight.appendChild(rightInner);
+    centerNav.appendChild(panelRight);
   }
 
   center.appendChild(centerNav);
@@ -244,6 +360,7 @@ function buildMegaFooter(container, row) {
 function buildVideoBanner(container, row) {
   if (!row) return;
   const cell = row.querySelector(':scope > div') || row;
+  const videoUrl = getFooterVideoLink(cell);
 
   const banner = el('section', { className: 'footer-video-banner' });
   const mediaBg = el('div', { className: 'video-bg' });
@@ -297,10 +414,36 @@ function buildVideoBanner(container, row) {
     trackEvent('video_playbotton_click', {
       videoTitle: cta.getAttribute('aria-label') || '',
     });
-    window.open('https://www.youtube.com/watch?v=c6GKMQDYI1k', '_blank', 'noopener');
+    openFooterVideo(banner, videoUrl);
   });
   overlay.appendChild(cta);
   banner.appendChild(overlay);
+
+  const player = el('div', {
+    className: 'footer-video-player',
+    'aria-hidden': 'true',
+  });
+  const closeButton = el('button', {
+    className: 'footer-video-close',
+    type: 'button',
+    'aria-label': 'Close footer video',
+  });
+  const frame = el('div', { className: 'footer-video-frame' });
+  const embed = el('div', { className: 'footer-video-embed' });
+
+  closeButton.addEventListener('click', () => {
+    closeFooterVideo(banner);
+  });
+
+  player.addEventListener('click', (event) => {
+    if (event.target === player) {
+      closeFooterVideo(banner);
+    }
+  });
+
+  frame.append(closeButton, embed);
+  player.append(frame);
+  banner.appendChild(player);
 
   container.appendChild(banner);
 }
@@ -460,20 +603,32 @@ function buildBottomBar(container, row) {
 
 /* ---------- MOBILE ACCORDION ---------- */
 function initMobileAccordions(block) {
-  const titles = block.querySelectorAll('.link-group-title');
+  const titles = block.querySelectorAll('.mega-center .link-group-title');
+  const toggleGroup = (btn) => {
+    if (window.innerWidth >= 1024) return;
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    titles.forEach((other) => {
+      other.setAttribute('aria-expanded', 'false');
+      other.nextElementSibling.style.display = 'none';
+      other.querySelector('.accordion-icon')?.classList.remove('open');
+    });
+    if (!expanded) {
+      btn.setAttribute('aria-expanded', 'true');
+      const list = btn.nextElementSibling;
+      list.style.display = 'block';
+      btn.querySelector('.accordion-icon')?.classList.add('open');
+    }
+  };
+
   titles.forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (window.innerWidth >= 1024) return;
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      titles.forEach((other) => {
-        other.setAttribute('aria-expanded', 'false');
-        other.nextElementSibling.style.maxHeight = null;
-      });
-      if (!expanded) {
-        btn.setAttribute('aria-expanded', 'true');
-        const list = btn.nextElementSibling;
-        list.style.maxHeight = `${list.scrollHeight}px`;
-      }
+      toggleGroup(btn);
+    });
+
+    btn.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      toggleGroup(btn);
     });
   });
 
@@ -481,11 +636,22 @@ function initMobileAccordions(block) {
   mq.addEventListener('change', (e) => {
     titles.forEach((btn) => {
       if (e.matches) {
-        btn.nextElementSibling.style.maxHeight = null;
+        btn.nextElementSibling.style.display = '';
         btn.setAttribute('aria-expanded', 'false');
+        btn.querySelector('.accordion-icon')?.classList.remove('open');
+      } else {
+        btn.nextElementSibling.style.display = 'none';
       }
     });
   });
+
+  if (window.innerWidth < 1024) {
+    titles.forEach((btn) => {
+      btn.nextElementSibling.style.display = 'none';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.querySelector('.accordion-icon')?.classList.remove('open');
+    });
+  }
 }
 
 function initFooterContactTracking(block) {
@@ -502,11 +668,11 @@ function initFooterTabTracking(block) {
 
   centerGrid.dataset.footerTabBound = 'true';
   centerGrid.addEventListener('click', (event) => {
-    const link = event.target.closest('.link-group-list li a');
+    const link = event.target.closest('.link-group-list a');
     if (!link || !centerGrid.contains(link)) return;
 
     const parentTitle = link.closest('.link-group')
-      ?.querySelector(':scope > .link-group-title span')
+      ?.querySelector(':scope > .link-group-title .group-title')
       ?.textContent
       ?.trim() || 'footer';
     const ctaLink = link.getAttribute('href') || '';
@@ -516,7 +682,7 @@ function initFooterTabTracking(block) {
 }
 
 function initFooterAboutTabTracking(block) {
-  block.querySelectorAll('.mega-col.mega-col-links.mega-col-about .link-group-list li a').forEach((link) => {
+  block.querySelectorAll('.mega-col.mega-col-links.mega-col-about .link-group-list a').forEach((link) => {
     link.addEventListener('click', () => {
       trackEvent('footer_tab', {
         cta_: link.textContent.trim(),
@@ -570,6 +736,16 @@ function initFooterSocialTracking(block) {
   });
 }
 
+function initFooterVideoBanner(block) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+
+    block.querySelectorAll('.footer-video-banner.video-active').forEach((banner) => {
+      closeFooterVideo(banner);
+    });
+  });
+}
+
 /* ---------- DECORATE ---------- */
 export default async function decorate(block) {
   const resp = await fetch('/footer.plain.html');
@@ -597,11 +773,11 @@ export default async function decorate(block) {
   // Row 1: Video Banner
   if (rows[1]) buildVideoBanner(footerContent, rows[1]);
 
-  // Row 2: Global Presence
-  if (rows[2]) buildGlobalPresence(footerContent, rows[2]);
-
-  // Row 3: Divisions
-  if (rows[3]) buildDivisions(footerContent, rows[3]);
+  // Row 2 + 3: Global Presence & Divisions (side-by-side on mobile)
+  const globalDivGrid = el('div', { className: 'footer-global-divisions' });
+  if (rows[2]) buildGlobalPresence(globalDivGrid, rows[2]);
+  if (rows[3]) buildDivisions(globalDivGrid, rows[3]);
+  footerContent.appendChild(globalDivGrid);
 
   // Row 4: Bottom Bar
   if (rows[4]) buildBottomBar(footerContent, rows[4]);
@@ -615,4 +791,5 @@ export default async function decorate(block) {
   initFooterCountryTracking(block);
   initFooterDivisionTracking(block);
   initFooterSocialTracking(block);
+  initFooterVideoBanner(block);
 }
