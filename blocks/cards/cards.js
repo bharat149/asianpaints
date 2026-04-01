@@ -1,6 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
-import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
@@ -151,6 +151,18 @@ export default function decorate(block) {
       const btnTitle = cta.textContent.trim();
       const body = cta.closest('.cards-card-body');
       const parentTitle = body?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent.trim() || '';
+
+      if (isRoomBlock && btnTitle.toLowerCase() === 'explore now') {
+        const roomTitle = body?.querySelector('.cards-card-title')?.textContent.trim() || parentTitle;
+
+        trackEvent('custom_cta_click', {
+          cta_: btnTitle,
+          redirectionLink: ctaLink,
+          parentTitle: roomTitle,
+          param1: ctaLink,
+        });
+        return;
+      }
 
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });

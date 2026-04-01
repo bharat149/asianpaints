@@ -1,4 +1,63 @@
+/*
+** Authoring format **
+Embedding Form Config block into form banner block.
+Row 1, col 1-2 → campaign ID (to pass as form parameter and for tracking)
+Row 2, col 1-2 → node (to pass as form parameter node path)
+*/
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+
+let formName = '';
+let campaignId = '';
+let formNodePath = '';
+let formStarted = false;
+
+function getRowValue(row) {
+  if (!row) return '';
+
+  const cells = [...row.children];
+  const preferred = cells[1]?.textContent?.trim();
+  if (preferred) return preferred;
+
+  return cells.map((cell) => cell.textContent?.trim()).filter(Boolean).join(' ').trim();
+}
+
+function extractFormConfig(block) {
+  const section = block.closest('.section');
+  const formConfigBlock = section?.querySelector('.form-config, .form-configs');
+
+  let configuredCampaignId = '';
+  let configuredNodePath = '';
+
+  if (formConfigBlock) {
+    const configRows = [...formConfigBlock.children];
+    configuredCampaignId = getRowValue(configRows[0]);
+    configuredNodePath = getRowValue(configRows[1]);
+
+    const formConfigWrapper = formConfigBlock.closest('.form-config-wrapper, .form-configs-wrapper');
+    const formConfigSection = formConfigBlock.closest('.section');
+
+    formConfigBlock.style.display = 'none';
+    if (formConfigWrapper) {
+      formConfigWrapper.style.display = 'none';
+    }
+    if (formConfigSection && formConfigSection !== section) {
+      formConfigSection.style.display = 'none';
+    }
+  }
+
+  configuredCampaignId = configuredCampaignId
+    || block.getAttribute('data-campaign-id')?.trim()
+    || '';
+
+  configuredNodePath = configuredNodePath
+    || block.getAttribute('data-node')?.trim()
+    || window.location.pathname
+    || '';
+
+  campaignId = configuredCampaignId;
+  formNodePath = configuredNodePath;
+}
 
 function getPicturesFromCell(cell) {
   if (!cell) return [];
@@ -107,6 +166,20 @@ function bindNumericInputFilter(input) {
       input.value = numericValue;
     }
   });
+}
+
+function trackFormSubmission(form) {
+  const formData = {
+    formName,
+    campaignId,
+    pincode: form.querySelector('#enquire-pincode')?.value?.trim() || '',
+    whatsappOptIn: form.querySelector('[name="updateMeOnWhatsapp"]')?.checked ? 'Y' : 'N',
+    contruction: form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
+    localpainter: form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
+  };
+
+  getDigitalData().form = formData;
+  trackEvent('form_submit', formData);
 }
 
 /**
@@ -323,7 +396,8 @@ function bindSubmitHandler(row, buttonCell) {
     submitBtn.disabled = true;
 
     submitLeadFromForm(row, {
-      resourcePath: row.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
+      resourcePath: row.getAttribute('data-attr-resourcePath') || formNodePath || window.location.pathname || '',
+      campaignId,
       selectors: {
         name: '#enquire-name',
         email: '#enquire-email',
@@ -331,6 +405,9 @@ function bindSubmitHandler(row, buttonCell) {
         pincode: '#enquire-pincode',
       },
     })
+      .then(() => {
+        trackFormSubmission(row);
+      })
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Form banner submission failed', err);
@@ -352,10 +429,11 @@ function buildFormCard(labelsRow, inputsRow) {
   const title = document.createElement('h3');
   title.className = 'form-banner__card-title';
   title.textContent = 'Let our experts help you!';
+  formName = title.textContent?.trim() || 'Form Banner';
 
   const formRow = document.createElement('div');
   formRow.className = 'form-banner__form form-attributes';
-  formRow.setAttribute('data-attr-resourcePath', window.location.pathname || '');
+  formRow.setAttribute('data-attr-resourcePath', formNodePath || window.location.pathname || '');
 
   const inputsGrid = document.createElement('div');
   inputsGrid.className = 'form-inputs-grid';
@@ -394,7 +472,14 @@ function buildFormCard(labelsRow, inputsRow) {
   }
 
   formRow.appendChild(inputsGrid);
-  formRow.appendChild(createConsentArea());
+
+  const consentArea = createConsentArea();
+  formRow.appendChild(consentArea);
+
+  const whatsappCheckbox = consentArea.querySelector('[name="updateMeOnWhatsapp"]');
+  if (whatsappCheckbox) {
+    whatsappCheckbox.checked = true;
+  }
 
   if (buttonCell.children.length) {
     formRow.appendChild(buttonCell);
@@ -402,6 +487,16 @@ function buildFormCard(labelsRow, inputsRow) {
 
   formCard.appendChild(title);
   formCard.appendChild(formRow);
+
+  formRow.addEventListener('focusin', (e) => {
+    if (!formStarted && e.target.tagName === 'INPUT') {
+      formStarted = true;
+      trackEvent('form_start', {
+        formName,
+        campaignId,
+      });
+    }
+  });
 
   if (buttonCell.children.length) {
     bindSubmitHandler(formRow, buttonCell);
@@ -411,6 +506,10 @@ function buildFormCard(labelsRow, inputsRow) {
 }
 
 export default function decorate(block) {
+  extractFormConfig(block);
+  formStarted = false;
+  formName = '';
+
   const rows = [...block.children];
   if (rows.length < 3) return;
 
