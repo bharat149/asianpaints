@@ -87,13 +87,13 @@ body {
   margin: 0;
   background-color: var(--background-color);
   color: var(--text-color);
-  font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
   line-height: 1.6;
 }
 
 body.appear {
   display: block;
+  font-family: var(--heading-font-family);
 }
 
 header {
