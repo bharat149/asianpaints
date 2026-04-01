@@ -1,4 +1,44 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
+function getNearestHeadingTitle(cta, block) {
+  let scope = cta.parentElement;
+  while (scope && scope !== block) {
+    const scopedHeading = scope.querySelector(':scope > h3');
+    if (scopedHeading?.textContent?.trim()) {
+      return scopedHeading.textContent.trim();
+    }
+    scope = scope.parentElement;
+  }
+
+  const headings = [...block.querySelectorAll('h3')].reverse();
+  const nearest = headings.find((heading) => {
+    const relation = heading.compareDocumentPosition(cta);
+    return (relation & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+  });
+  return nearest?.textContent?.trim() || 'Explore Split';
+}
+
+function bindViewAllTracking(block) {
+  block.querySelectorAll('.button-container a.button').forEach((cta) => {
+    if (cta.dataset.exploreSplitAnalyticsBound === 'true') return;
+
+    const buttonText = (cta.textContent || '').trim().toLowerCase();
+    if (!buttonText.startsWith('view all')) return;
+
+    cta.dataset.exploreSplitAnalyticsBound = 'true';
+    cta.addEventListener('click', () => {
+      const ctaLink = cta.getAttribute('href') || '';
+      const btnTitle = cta.textContent.trim();
+      const parentTitle = getNearestHeadingTitle(cta, block);
+
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  });
+}
+
 export default function decorate(block) {
+  bindViewAllTracking(block);
+
   const section = block.closest(".section");
   if (section) section.classList.add("explore-split-wrapper");
 

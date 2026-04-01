@@ -10,6 +10,7 @@ export default function decorate(block) {
   // Column 1 = text
   const textCol = columns[0];
   textCol.classList.add('services-grid-text');
+  const parentTitle = textCol.querySelector('h2, h1, h3, h4, h5, h6')?.textContent?.trim() || '';
 
   // Column 2 = mobile images
   const mobileCol = columns[1];
@@ -56,9 +57,11 @@ export default function decorate(block) {
     // Apply authored link
     card.href = link?.href || '#';
     card.addEventListener('click', () => {
+      const param1 = card.href || link?.href || '#';
       trackEvent('cta_link_text', {
         cta_: serviceName,
-        redirectionLink: card.href || link?.href || '#',
+        parentTitle,
+        param1,
       });
     });
 
