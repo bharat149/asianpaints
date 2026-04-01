@@ -1834,6 +1834,10 @@ function buildBrandBar(brandDiv) {
 
     if (img) {
       const clonedImg = img.cloneNode(true);
+      // Use mobile-optimised logo for White Teak (3rd brand)
+      if (idx === 2 && window.innerWidth < 900) {
+        clonedImg.src = '/icons/wt_logo_mob.svg';
+      }
       brandItem.appendChild(clonedImg);
     }
 
@@ -1886,7 +1890,9 @@ function buildMainHeader(mainDiv) {
   if (paragraphs[1]) {
     const imgs = paragraphs[1].querySelectorAll('img');
     if (imgs[0]) {
-      searchIconSpan.appendChild(imgs[0].cloneNode(true));
+      const searchImg = imgs[0].cloneNode(true);
+      searchImg.src = '/icons/search-icon.svg';
+      searchIconSpan.appendChild(searchImg);
     }
   }
 
@@ -1935,7 +1941,9 @@ function buildMainHeader(mainDiv) {
   if (paragraphs[1]) {
     const imgs = paragraphs[1].querySelectorAll('img');
     if (imgs[0]) {
-      mobileSearchBtn.appendChild(imgs[0].cloneNode(true));
+      const mobileSearchImg = imgs[0].cloneNode(true);
+      mobileSearchImg.src = '/icons/search-icon.svg';
+      mobileSearchBtn.appendChild(mobileSearchImg);
     }
   }
 
@@ -1968,7 +1976,6 @@ function buildMainHeader(mainDiv) {
         actionLink.appendChild(img.cloneNode(true));
         const label = img.alt || anchor.getAttribute('aria-label') || '';
         actionLink.setAttribute('aria-label', label);
-        actionLink.title = label;
       }
 
       const altText = (img?.alt || '').toLowerCase();
@@ -2045,6 +2052,28 @@ function buildMainHeader(mainDiv) {
         actionsContainer.appendChild(wrapper);
       } else {
         actionsContainer.appendChild(actionLink);
+      }
+
+      const tipLabel = actionLink.getAttribute('aria-label');
+      if (tipLabel) {
+        actionLink.removeAttribute('title');
+        const tip = document.createElement('span');
+        tip.className = 'icon-tooltip-text';
+        tip.setAttribute('aria-hidden', 'true');
+        const normalized = tipLabel.trim().replace(/\s+/g, ' ');
+        if (/^find contractor$/i.test(normalized)) {
+          tip.classList.add('icon-tooltip-text-stacked');
+          const line1 = document.createElement('span');
+          line1.className = 'icon-tooltip-line';
+          line1.textContent = 'Find';
+          const line2 = document.createElement('span');
+          line2.className = 'icon-tooltip-line';
+          line2.textContent = 'Contractor';
+          tip.append(line1, line2);
+        } else {
+          tip.textContent = tipLabel;
+        }
+        actionLink.appendChild(tip);
       }
     });
     inner.appendChild(actionsContainer);
@@ -2160,52 +2189,92 @@ function buildCartModal() {
   return overlay;
 }
 
-function buildMegamenuPanel(submenuUl) {
+function buildMegamenuPanel(submenuUl, parentLabel = '') {
   const dropdown = document.createElement('div');
   dropdown.className = 'nav-dropdown';
 
   const dropdownInner = document.createElement('div');
   dropdownInner.className = 'dropdown-inner';
 
-  submenuUl.querySelectorAll(':scope > li').forEach((colLi) => {
+  const buildMenuLinkItem = (itemLi) => {
+    const li = document.createElement('li');
+    const a = itemLi.querySelector('a');
+    if (!a) return li;
+
+    const link = document.createElement('a');
+    link.href = a.getAttribute('href');
+    link.textContent = a.textContent.trim();
+
+    const text = a.textContent.trim();
+    if (text === 'Textures For You' || text === 'Shade Cards') {
+      const badge = document.createElement('span');
+      badge.className = 'new-badge';
+      badge.textContent = 'New';
+      link.appendChild(badge);
+    }
+
+    li.appendChild(link);
+    return li;
+  };
+
+  const topLevelItems = [...submenuUl.querySelectorAll(':scope > li')];
+
+  topLevelItems.forEach((colLi) => {
     const column = document.createElement('div');
     column.className = 'dropdown-column';
 
-    const headingLink = colLi.querySelector(':scope > a, :scope > p > a');
-    if (headingLink) {
+    const headingSource = colLi.querySelector(':scope > a, :scope > p > a, :scope > strong, :scope > p > strong');
+    const headingText = headingSource?.textContent.trim() || '';
+    const shouldHideHeading = topLevelItems.length === 1
+      && headingText
+      && headingText.toLowerCase() === parentLabel.toLowerCase();
+    const hasVisibleHeading = headingSource && !shouldHideHeading;
+
+    if (hasVisibleHeading) {
       const heading = document.createElement('h4');
       heading.className = 'dropdown-title';
-      heading.textContent = headingLink.textContent.trim();
+      heading.textContent = headingText;
       column.appendChild(heading);
+    } else {
+      column.classList.add('dropdown-column-no-title');
     }
 
     const itemsUl = colLi.querySelector(':scope > ul');
     if (itemsUl) {
-      const linkList = document.createElement('ul');
-      linkList.className = 'dropdown-links';
+      const itemLis = [...itemsUl.querySelectorAll(':scope > li')];
 
-      itemsUl.querySelectorAll(':scope > li').forEach((itemLi) => {
-        const li = document.createElement('li');
-        const a = itemLi.querySelector('a');
-        if (a) {
-          const link = document.createElement('a');
-          link.href = a.getAttribute('href');
-          link.textContent = a.textContent.trim();
+      if (itemLis.length >= 8) {
+        column.classList.add('dropdown-column-wide');
 
-          const text = a.textContent.trim();
-          if (text === 'Textures For You' || text === 'Shade Cards') {
-            const badge = document.createElement('span');
-            badge.className = 'new-badge';
-            badge.textContent = 'New';
-            link.appendChild(badge);
+        const splitLists = document.createElement('div');
+        splitLists.className = 'dropdown-links-split';
+
+        const primaryList = document.createElement('ul');
+        primaryList.className = 'dropdown-links';
+        const secondaryList = document.createElement('ul');
+        secondaryList.className = 'dropdown-links';
+
+        itemLis.forEach((itemLi, index) => {
+          const li = buildMenuLinkItem(itemLi);
+          if (index < 7) {
+            primaryList.appendChild(li);
+          } else {
+            secondaryList.appendChild(li);
           }
+        });
 
-          li.appendChild(link);
-        }
-        linkList.appendChild(li);
-      });
+        splitLists.append(primaryList, secondaryList);
+        column.appendChild(splitLists);
+      } else {
+        const linkList = document.createElement('ul');
+        linkList.className = 'dropdown-links';
 
-      column.appendChild(linkList);
+        itemLis.forEach((itemLi) => {
+          linkList.appendChild(buildMenuLinkItem(itemLi));
+        });
+
+        column.appendChild(linkList);
+      }
     }
 
     dropdownInner.appendChild(column);
@@ -2217,6 +2286,15 @@ function buildMegamenuPanel(submenuUl) {
 
 function normalizeNavLabel(text) {
   return text.trim().replace(/\u2026$/, '').replace(/\.\.\.$/, '');
+}
+
+function getDisplayNavLabel(text) {
+  const trimmed = text.trim();
+  if (/^More(?:\u2026|\.{3})$/.test(trimmed)) {
+    return 'More...';
+  }
+
+  return normalizeNavLabel(trimmed);
 }
 
 function buildNavBar(navDiv, secondaryDiv) {
@@ -2239,9 +2317,10 @@ function buildNavBar(navDiv, secondaryDiv) {
     const navList = document.createElement('ul');
     navList.className = 'nav-list';
 
-    mainUl.querySelectorAll(':scope > li').forEach((li) => {
+    mainUl.querySelectorAll(':scope > li').forEach((li, index) => {
       const navItem = document.createElement('li');
       navItem.className = 'nav-item';
+      navItem.classList.add(`nav-item-${index + 1}`);
 
       const anchor = li.querySelector(':scope > a, :scope > p > a');
       if (!anchor) return;
@@ -2249,7 +2328,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       const link = document.createElement('a');
       link.className = 'nav-link';
       link.href = anchor.getAttribute('href');
-      link.textContent = normalizeNavLabel(anchor.textContent);
+      link.textContent = getDisplayNavLabel(anchor.textContent);
 
       if (link.textContent === 'Home') {
         navItem.classList.add('nav-home');
@@ -2268,7 +2347,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       navItem.appendChild(link);
 
       if (submenuUl) {
-        navItem.appendChild(buildMegamenuPanel(submenuUl));
+        navItem.appendChild(buildMegamenuPanel(submenuUl, normalizeNavLabel(anchor.textContent)));
       }
 
       navList.appendChild(navItem);
@@ -2541,9 +2620,37 @@ function isDesktopViewport() {
   return window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
 }
 
+function bindMobileScrollState(block) {
+  let ticking = false;
+
+  const updateScrollState = () => {
+    ticking = false;
+
+    if (isDesktopViewport()) {
+      block.classList.remove('mobile-scrolled');
+      return;
+    }
+
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    block.classList.toggle('mobile-scrolled', scrollTop > 8);
+  };
+
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateScrollState);
+  };
+
+  updateScrollState();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', updateScrollState, { passive: true });
+}
+
 function addInteractions(block) {
   const hamburger = block.querySelector('.nav-hamburger');
   const navBar = block.querySelector('.header-nav-bar');
+
+  bindMobileScrollState(block);
 
   // Mobile hamburger toggle
   if (hamburger && navBar) {
