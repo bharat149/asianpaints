@@ -5,6 +5,10 @@ Row 2, col 1–4 → used as form-field-label
 Row 2, col 5 → used as submit button label
 Row 3, col 1–4 → used as input placeholder/content
 
+Form Config block
+Row 1, col 1-2 → campaign ID (to pass as form parameter and for tracking)
+Row 2, col 1-2 → node (to pass as form parameter node path)
+
 Two variant: White form, Blue form
 */
 
@@ -23,8 +27,56 @@ const THANK_YOU_TWO_DESKTOP = 'https://www.asianpaints.com/content/dam/asian_pai
 const THANK_YOU_TWO_MOB = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-mobile.webp';
 
 let formName = "";
-let campaignId = ""; // FIXME: work on this
+let campaignId = "";
+let formNodePath = '';
 let formStarted = false;
+
+function getRowValue(row) {
+  if (!row) return '';
+
+  const cells = [...row.children];
+  const preferred = cells[1]?.textContent?.trim();
+  if (preferred) return preferred;
+
+  return cells.map((cell) => cell.textContent?.trim()).filter(Boolean).join(' ').trim();
+}
+
+function extractFormConfig(block) {
+  const section = block.closest('.section');
+  const formConfigBlock = section?.querySelector('.form-config, .form-configs');
+
+  let configuredCampaignId = '';
+  let configuredNodePath = '';
+
+  if (formConfigBlock) {
+    const configRows = [...formConfigBlock.children];
+    configuredCampaignId = getRowValue(configRows[0]);
+    configuredNodePath = getRowValue(configRows[1]);
+
+    const formConfigWrapper = formConfigBlock.closest('.form-config-wrapper, .form-configs-wrapper');
+    const formConfigSection = formConfigBlock.closest('.section');
+
+    formConfigBlock.style.display = 'none';
+    if (formConfigWrapper) {
+      formConfigWrapper.style.display = 'none';
+    }
+    if (formConfigSection && formConfigSection !== section) {
+      formConfigSection.style.display = 'none';
+    }
+  }
+
+  configuredCampaignId = configuredCampaignId
+    || block.getAttribute('data-campaign-id')?.trim()
+    || '';
+
+  configuredNodePath = configuredNodePath
+    || block.getAttribute('data-node')?.trim()
+    || window.location.pathname
+    || '';
+
+  campaignId = configuredCampaignId;
+  formNodePath = configuredNodePath;
+}
 
 /**
  * Ensure bootstrap utility classes where useful
@@ -635,7 +687,8 @@ function bindSubmitHandler(block, row, buttonCell) {
     submitBtn.disabled = true;
 
     submitLeadFromForm(row, {
-      resourcePath: row.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
+      resourcePath: row.getAttribute('data-attr-resourcePath') || formNodePath || window.location.pathname || '',
+      campaignId,
       selectors: {
         name: '#enquire-name',
         email: '#enquire-email',
@@ -663,6 +716,8 @@ function bindSubmitHandler(block, row, buttonCell) {
  * Render form block
  */
 function renderForm(block) {
+  extractFormConfig(block);
+
   const rows = [...block.children];
   if (rows.length < 3) return;
 
@@ -682,7 +737,7 @@ function renderForm(block) {
 
   const formRow = document.createElement('div');
   formRow.className = 'form-row form-attributes';
-  formRow.setAttribute('data-attr-resourcePath', window.location.pathname || '');
+  formRow.setAttribute('data-attr-resourcePath', formNodePath || window.location.pathname || '');
 
   const descriptionCell = document.createElement('div');
   descriptionCell.className = 'form-description-cell';

@@ -39,7 +39,7 @@ export default function decorate(block) {
 
   bannerLink.addEventListener('click', () => {
     const ctaLink = bannerLink.getAttribute('href') || '';
-    const btnTitle = linkEl.textContent.trim() || img.alt || 'Store Banner';
+    const btnTitle = img.alt || 'Store Banner';
     const parentTitle = block.closest('.section')
       ?.querySelector('h1, h2, h3, h4, h5, h6')
       ?.textContent.trim() || '';
