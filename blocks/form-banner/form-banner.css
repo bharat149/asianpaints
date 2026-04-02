@@ -224,11 +224,11 @@
   transition: transform 0.2s ease;
 }
 
-.form-banner__form .form-consent-item--toggle .form-consent-input:checked+.form-consent-toggle {
+.form-banner__form .form-consent-item--toggle .form-consent-input:checked + .form-consent-toggle {
   background: #14c759;
 }
 
-.form-banner__form .form-consent-item--toggle .form-consent-input:checked+.form-consent-toggle::after {
+.form-banner__form .form-consent-item--toggle .form-consent-input:checked + .form-consent-toggle::after {
   transform: translateX(20px);
 }
 
@@ -267,10 +267,37 @@
   transition: all 0.3s ease;
 }
 
-.form-banner__form .form-submit::after {
-  content: '→';
+.form-banner__form .form-submit__label,
+.form-banner__form .form-submit__arrow,
+.form-banner__form .rotating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-banner__form .form-submit__arrow {
   font-weight: 400;
   font-size: 18px;
+}
+
+.form-banner__form .rotating {
+  font-size: 16px;
+  line-height: 1;
+  animation: form-banner-spin 1s linear infinite;
+}
+
+.form-banner__form .d-none {
+  display: none !important;
+}
+
+@keyframes form-banner-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form-banner__form .form-submit:hover,
@@ -364,9 +391,12 @@
   color: #111;
   font-size: 40px;
   font-weight: 600;
-  text-shadow: 3px 2.5px 0 #fff, 3px 2.5px 2px #000;
   line-height: 48px;
   letter-spacing: -.8px;
+}
+
+.form-banner.block .form-popup-overlay--success .form-error-popup__title {
+  text-shadow: 3px 2.5px 0 #fff, 3px 2.5px 2px #000;
 }
 
 .form-banner.block .form-error-popup__text {
@@ -424,7 +454,7 @@
   margin: 0 0 24px;
   color: #dcdbdb;
   font-size: 16px;
-  line-height: 19.2px
+  line-height: 19.2px;
 }
 
 .form-banner.block .form-error-popup__actions {
