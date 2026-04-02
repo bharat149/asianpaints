@@ -5,8 +5,18 @@ Row 1, col 1–3 → used for form-description-cell
 Row 2, col 1–4 → used as form-field-label
 Row 2, col 5 → used as submit button label
 Row 3, col 1–4 → used as input placeholder/content
-Row 4, col 1 → desktop error image
-Row 4, col 2 → mobile error image
+
+Row 4, col 1 → form-consent-text for whatsapp
+Row 4, col 2 → display / hide
+
+Row 5, col 1 → form-consent-text for construction
+Row 5, col 2 → display / hide
+
+Row 6, col 1 → form-consent-text for local painter
+Row 6, col 2 → display / hide
+
+Row 7, col 1 → desktop error image
+Row 7, col 2 → mobile error image
 
 Form Config block
 Row 1, col 1-2 → campaign ID (to pass as form parameter and for tracking)
@@ -42,6 +52,10 @@ function getRowValue(row) {
   if (preferred) return preferred;
 
   return cells.map((cell) => cell.textContent?.trim()).filter(Boolean).join(' ').trim();
+}
+
+function getCellText(cell) {
+  return cell?.textContent?.trim() || '';
 }
 
 function extractFormConfig(block) {
@@ -282,15 +296,43 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 }
 
 /**
+ * Build consent config from authoring rows
+ */
+function getConsentConfig(consentRows = []) {
+  const [whatsappRow, constructionRow, localPainterRow] = consentRows;
+
+  const getConsentItem = (row, fallbackText) => {
+    const cells = [...(row?.children || [])];
+    const text = getCellText(cells[0]) || fallbackText;
+    const visibility = (getCellText(cells[1]) || 'display').toLowerCase();
+    const isHidden = visibility === 'hide';
+
+    return {
+      text,
+      isHidden,
+    };
+  };
+
+  return {
+    whatsapp: getConsentItem(whatsappRow, 'Update me on WhatsApp'),
+    construction: getConsentItem(constructionRow, 'Construction work going on at my house'),
+    localPainter: getConsentItem(localPainterRow, 'Local painter hired'),
+  };
+}
+
+/**
  * Create consent / checkbox area
  */
-function createConsentArea() {
+/**
+ * Create consent / checkbox area
+ */
+function createConsentArea(consentConfig) {
   const consentArea = document.createElement('div');
   consentArea.className = 'form-consent-area d-flex flex-column';
 
   consentArea.innerHTML = `
     <div class="form-consent-options d-flex flex-wrap align-items-center">
-      <label class="form-consent-item form-consent-item--toggle">
+      <label class="form-consent-item form-consent-item--toggle" data-consent="whatsapp">
         <input
           type="checkbox"
           class="form-consent-input"
@@ -298,30 +340,31 @@ function createConsentArea() {
           value="true"
         />
         <span class="form-consent-toggle" aria-hidden="true"></span>
-        <span class="form-consent-text form-consent-text-whatsapp">Update me on WhatsApp</span>
-      </label>
-  <div class = "form-consent-options-right" >
-      <label class="form-consent-item">
-        <input
-          type="checkbox"
-          class="form-consent-input"
-          name="constructionWorkGoingOn"
-          value="true"
-        />
-        <span class="form-consent-box" aria-hidden="true"></span>
-        <span class="form-consent-text">Construction work going on at my house</span>
+        <span class="form-consent-text form-consent-text-whatsapp">${consentConfig?.whatsapp?.text || 'Update me on WhatsApp'}</span>
       </label>
 
-      <label class="form-consent-item">
-        <input
-          type="checkbox"
-          class="form-consent-input"
-          name="localPainterHired"
-          value="true"
-        />
-        <span class="form-consent-box" aria-hidden="true"></span>
-        <span class="form-consent-text">Local painter hired</span>
-      </label>
+      <div class="form-consent-options-right">
+        <label class="form-consent-item" data-consent="construction">
+          <input
+            type="checkbox"
+            class="form-consent-input"
+            name="constructionWorkGoingOn"
+            value="true"
+          />
+          <span class="form-consent-box" aria-hidden="true"></span>
+          <span class="form-consent-text">${consentConfig?.construction?.text || 'Construction work going on at my house'}</span>
+        </label>
+
+        <label class="form-consent-item" data-consent="localPainter">
+          <input
+            type="checkbox"
+            class="form-consent-input"
+            name="localPainterHired"
+            value="true"
+          />
+          <span class="form-consent-box" aria-hidden="true"></span>
+          <span class="form-consent-text">${consentConfig?.localPainter?.text || 'Local painter hired'}</span>
+        </label>
       </div>
     </div>
 
@@ -329,6 +372,35 @@ function createConsentArea() {
       By proceeding, you are authorizing Asian Paints and its suggested contractors to get in touch with you through calls, sms, or e-mail.
     </div>
   `;
+
+  const whatsappItem = consentArea.querySelector('[data-consent="whatsapp"]');
+  const constructionItem = consentArea.querySelector('[data-consent="construction"]');
+  const localPainterItem = consentArea.querySelector('[data-consent="localPainter"]');
+  const rightWrapper = consentArea.querySelector('.form-consent-options-right');
+
+  if (consentConfig?.whatsapp?.isHidden && whatsappItem) {
+    whatsappItem.classList.add('d-none');
+    whatsappItem.hidden = true;
+  }
+
+  if (consentConfig?.construction?.isHidden && constructionItem) {
+    constructionItem.classList.add('d-none');
+    constructionItem.hidden = true;
+  }
+
+  if (consentConfig?.localPainter?.isHidden && localPainterItem) {
+    localPainterItem.classList.add('d-none');
+    localPainterItem.hidden = true;
+  }
+
+  // Hide the right-side wrapper completely when both right consent items are hidden
+  const isConstructionHidden = !!consentConfig?.construction?.isHidden;
+  const isLocalPainterHidden = !!consentConfig?.localPainter?.isHidden;
+
+  if (isConstructionHidden && isLocalPainterHidden && rightWrapper) {
+    rightWrapper.classList.add('d-none');
+    rightWrapper.hidden = true;
+  }
 
   return consentArea;
 }
@@ -375,7 +447,6 @@ function applyFieldConfig(input, headerCell, content) {
 /**
  * Create one description item inside description cell
  */
-
 function createDescriptionItem(cell, className) {
   const item = document.createElement('div');
   item.className = className;
@@ -394,7 +465,7 @@ function populateDescriptionCell(cell, descriptionCells) {
   const subtitle = createDescriptionItem(descriptionCells[2], 'form-subtitle');
 
   if (descriptionCells[0]?.innerHTML?.trim()) {
-    formName = smallTitle.textContent?.trim(); // FIXME: check this
+    formName = smallTitle.textContent?.trim();
     cell.appendChild(smallTitle);
   }
 
@@ -497,19 +568,17 @@ function createThankYouScreen(block) {
   ins.addEventListener('click', () => {
     trackInterestCTA(campaignId, formName);
 
-    const parent = ins.closest('.form-popup-overlay'); // ✅ scope to this instance
+    const parent = ins.closest('.form-popup-overlay');
     if (!parent) return;
 
     const videoEl = parent.querySelector('video');
     const ctaEl = parent.querySelector('.form-popup-success-cta');
     const insEl = parent.querySelector('.intereseted-cta');
 
-    // ✅ hide existing elements
     if (videoEl) videoEl.style.display = 'none';
     if (ctaEl) ctaEl.style.display = 'none';
     if (insEl) insEl.style.display = 'none';
 
-    // ✅ create new UI
     const wrapper = document.createElement('div');
     wrapper.className = 'thank-you-pop-two';
 
@@ -526,7 +595,6 @@ function createThankYouScreen(block) {
       trackExploreNowCTA(THANK_YOU_CTA_LINK);
     });
 
-    // ✅ append inside same overlay
     parent.appendChild(wrapper);
   });
 
@@ -630,12 +698,12 @@ function showThankYouScreen(block) {
 
 function trackFormSubmission(form) {
   const formData = {
-    "formName": formName, // FIXME: check this
+    "formName": formName,
     "campaignId": campaignId,
     "pincode": form.querySelector("#enquire-pincode")?.value?.trim() || '',
-    "whatsappOptIn": form.querySelector('[name="updateMeOnWhatsapp"]').checked ? 'Y' : 'N', // FIXME: check this
-    "contruction": form.querySelector('[name="constructionWorkGoingOn"]').checked ? 'Yes' : 'No', // FIXME: check this
-    "localpainter": form.querySelector('[name="localPainterHired"]').checked ? 'Yes' : 'No' // FIXME: check this
+    "whatsappOptIn": form.querySelector('[name="updateMeOnWhatsapp"]')?.checked ? 'Y' : 'N',
+    "contruction": form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
+    "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No'
   };
   getDigitalData().form = formData;
   trackEvent("form_submit", formData);
@@ -737,9 +805,13 @@ function renderForm(block) {
   const labelCells = [...labelsRow.children];
   const inputCellsSource = [...inputsRow.children];
 
-  // Extract error images from row 4
-  if (rows.length >= 4) {
-    const errorImagesRow = rows[3];
+  // Consent rows now come from authoring
+  const consentRows = rows.slice(3, 6);
+  const consentConfig = getConsentConfig(consentRows);
+
+  // Extract error images from row 7
+  if (rows.length >= 7) {
+    const errorImagesRow = rows[6];
     const errorImagesCells = [...errorImagesRow.children];
 
     const desktopImgEl = errorImagesCells[0]?.querySelector('img');
@@ -764,6 +836,10 @@ function renderForm(block) {
   descriptionRow.style.display = 'none';
   labelsRow.style.display = 'none';
   inputsRow.style.display = 'none';
+
+  consentRows.forEach((row) => {
+    if (row) row.style.display = 'none';
+  });
 
   const formRow = document.createElement('div');
   formRow.className = 'form-row form-attributes';
@@ -819,12 +895,14 @@ function renderForm(block) {
   if (!inputsGrid.children.length) return;
 
   fieldsArea.appendChild(inputsGrid);
-  const consentArea = createConsentArea();
+
+  const consentArea = createConsentArea(consentConfig);
   fieldsArea.appendChild(consentArea);
 
-  // ✅ CHECK WHATSAPP BY DEFAULT
+  // Check WhatsApp by default only if the field is visible
   const whatsappCheckbox = consentArea.querySelector('[name="updateMeOnWhatsapp"]');
-  if (whatsappCheckbox) {
+  const whatsappWrapper = whatsappCheckbox?.closest('.form-consent-item');
+  if (whatsappCheckbox && whatsappWrapper && !whatsappWrapper.classList.contains('d-none')) {
     whatsappCheckbox.checked = true;
   }
 
