@@ -116,7 +116,6 @@ function createVideoElement(src, title) {
 
   video.addEventListener('ended', () => {
     video.pause();
-    video.currentTime = 0;
   });
 
   return video;
@@ -130,14 +129,19 @@ function bindHoverPlayback(target, mediaEl) {
       mediaEl.pause();
       mediaEl.currentTime = 0;
       await mediaEl.play();
-    } catch (e) {
-      // no-op
-    }
+    } catch (e) {}
   });
 
+  // ⏹️ Hover out → reset
   target.addEventListener('mouseleave', () => {
     mediaEl.pause();
     mediaEl.currentTime = 0;
+  });
+
+  // ✅ When video ends → DO NOTHING (stay at last frame)
+  mediaEl.addEventListener('ended', () => {
+    mediaEl.pause();
+    // ❌ no reset here
   });
 }
 
