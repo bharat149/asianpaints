@@ -72,6 +72,18 @@
   width: 100%;
 }
 
+@media (min-width:992px) {
+  .form.block .form-fields-area {
+    gap: 0;
+  }
+  .form.block .form-consent-area {
+    margin-top: 0px;
+  }
+  .form.block .form-button-cell {
+    margin-top: 25px !important;
+  }
+}
+
 .form.block .form-inputs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -532,7 +544,7 @@ align-self: center;
 }
 
 .form-field-error {
-  min-height: 20px;
+  min-height: 1px;
   margin-top: 8px;
   font-size: 14px;
   line-height: 1.2;
