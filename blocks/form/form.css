@@ -118,7 +118,7 @@
 }
 
 .form.block .form-field-required {
-  color: #ff8a80;
+  color: #fff;
 }
 
 .form.block .form-input,
@@ -283,9 +283,8 @@
   justify-content: center;
   gap: 10px;
   padding: 8px 22px;
-  border: 2px solid #fcaf17;
   border-radius: 30px;
-  background: #fcaf17;
+  background: var(--gradient,linear-gradient(180deg,#fec940,#f90))!important;
   color: #1a1a1a;
   font-size: 16px;
   font-weight: 700;
@@ -303,6 +302,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .form.block .form-submit__arrow {
@@ -313,7 +314,6 @@
   background-size: cover;
   filter: invert(1);
   align-self: center;
-  transition: transform 0.3s ease;
 }
 
 .form.block .rotating {
@@ -338,14 +338,15 @@
 
 .form.block .form-submit:hover,
 .form.block .btn.form-submit:hover {
-  background: #ffca28;
-  border-color: #ffca28;
-  color: #1a1a1a;
+  background: transparent !important;
+  border: 1px solid #fff !important;
+  color: #fff !important;
 }
 
 .form.block .form-submit:hover .form-submit__arrow,
 .form.block .btn.form-submit:hover .form-submit__arrow {
   transform: translateX(2px);
+  filter: invert(0);
 }
 
 .form.block .form-submit:focus,
@@ -932,12 +933,12 @@
    ============================================ */
 
 .form.block.blue-form {
-  background-color: #3d5a80;
+  background-color: #425E8E;
 }
 
 .form.block.blue-form .form-field-label {
   color: #fff;
-  background: #3d5a80;
+  background: #425E8E;
 }
 
 .form.block.blue-form .form-input,
@@ -990,4 +991,5 @@
   font-weight: 300;
   line-height: 30px;
   word-wrap: break-word;
+  max-width: 95%;
 }
