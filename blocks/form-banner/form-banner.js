@@ -394,7 +394,15 @@ function buildFormCard(labelsRow, inputsRow) {
   }
 
   formRow.appendChild(inputsGrid);
-  formRow.appendChild(createConsentArea());
+
+  const consentArea = createConsentArea();
+  formRow.appendChild(consentArea);
+
+  //Keep toggle ON by default on page load
+  const whatsappToggle = consentArea.querySelector('[name="updateMeOnWhatsapp"]');
+  if (whatsappToggle) {
+    whatsappToggle.checked = true;
+}
 
   if (buttonCell.children.length) {
     formRow.appendChild(buttonCell);
