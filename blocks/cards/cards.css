@@ -1179,7 +1179,7 @@
 
 .cards.grid .cards-card-body {
   position: absolute;
-  bottom: 50%;
+  bottom: 48%;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0;
