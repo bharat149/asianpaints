@@ -858,6 +858,7 @@ align-self: center;
 
   .form.block .form-consent-options-right {
     display: flex;
+    gap: 0 18px;
   }
 
   .form.block .form-button-cell {
