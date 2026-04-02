@@ -543,9 +543,21 @@
   .cards.services>ul {
     grid-template-columns: 1fr;
   }
+  .cards.services .swiper-pagination {
+    position: relative;
+    margin-top: 10px;
+    text-align: left;
+    margin-left: 10px;
+  }
+ .cards.services .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
+  background: #4d4d4d !important;
+    width: 18px !important;
+  opacity: 1 !important;
+  border-radius: 6px;
+}
 }
 
-.cards.services>ul>li {
+.cards.services>ul  li {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
