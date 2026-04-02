@@ -479,7 +479,7 @@
 .section.cards-container:has(.cards.services)>.default-content-wrapper p {
   font-size: 16px;
   line-height: 21.86px;
-  max-width: 45%;
+  max-width: 55%;
   margin: 0 auto 4rem;
 }
 
@@ -612,12 +612,13 @@
 
 @media (width >=900px) {
   .cards.services>ul>li {
-    min-height: 420px;
+    /* min-height: 420px; */
   }
 
   .cards.services .cards-card-body {
-    padding: 0 60px 20px;
+    padding: 0 25px 20px;
     height: 200px;
+    max-width: 81%;
   }
 
   .cards.services .cards-card-body h2,
@@ -647,6 +648,13 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
+}
+@media screen and  (min-width: 992px) {
+  .section.cards-container:has(.cards.room) , .section.cards-container:has(.cards.services) {
+    max-width: 100%;
+    width: 100%;
+    padding : 0 4%;
+  }
 }
 
 .section.cards-container:has(.cards.room)>.default-content-wrapper {
