@@ -52,6 +52,13 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+@media (width <=600px) {
+  .cards-action-card {
+    width: 206px;
+    height: 285px;
+  }
+}
+
 .cards-action .cards-action-container .cards-action-card:not(:last-child) {
   margin-right: 20px;
 }
@@ -144,25 +151,19 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  height: 38px;
   margin-top: 12px;
   padding: 10px 20px;
   background-color: transparent;
   color: #1a1a1a;
-  border: 1.5px solid #1a1a1a;
+  border: 1px solid #1a1a1a;
   border-radius: 25px;
   font-family: var(--body-font-family);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
   white-space: nowrap;
-}
-
-@media (min-width: 600px) {
-  .cards-action-cta {
-    font-size: 14px;
-    padding: 12px 24px;
-  }
 }
 
 .cards-action-cta:hover {

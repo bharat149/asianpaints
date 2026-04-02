@@ -1,5 +1,14 @@
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
 
+let SUCCESS_DESKTOP_IMAGE = '';
+let SUCCESS_MOBILE_IMAGE = '';
+let ERROR_DESKTOP_IMAGE = '';
+let ERROR_MOBILE_IMAGE = '';
+
+const SUCCESS_CTA_LINK = 'https://www.asianpaints.com/services/interior-design-solutions.html';
+const ERROR_CTA_LINK = 'https://www.asianpaints.com/services/interior-design-solutions.html';
+const ERROR_DOWNLOAD_LINK = 'https://www.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+
 function getPicturesFromCell(cell) {
   if (!cell) return [];
   return [...cell.querySelectorAll('picture')];
@@ -296,7 +305,168 @@ function applyFieldConfig(input, headerCell, content) {
   }
 }
 
-function bindSubmitHandler(row, buttonCell) {
+/**
+ * Read authored image URL from a cell
+ */
+function getAuthoredImageFromCell(cell) {
+  if (!cell) return '';
+
+  const img = cell.querySelector('img');
+  if (img?.getAttribute('src')) return img.getAttribute('src');
+
+  const source = cell.querySelector('source');
+  const sourceSrcset = source?.getAttribute('srcset');
+  if (sourceSrcset) {
+    return sourceSrcset.split(',')[0].trim().split(' ')[0];
+  }
+
+  const link = cell.querySelector('a');
+  if (link?.href) return link.href;
+
+  return cell.textContent?.trim() || '';
+}
+
+/**
+ * Close active popup
+ */
+function closeActivePopup(block, overlay) {
+  overlay?.remove();
+  block.classList.remove('success-active', 'error-active', 'popup-active');
+  delete block.dataset.successShown;
+  delete block.dataset.errorShown;
+}
+
+/**
+ * Create close button
+ */
+function createCloseButton(labelText) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'form-popup-close';
+  button.setAttribute('aria-label', labelText);
+  button.innerHTML = '&times;';
+  return button;
+}
+
+/**
+ * Create popup screen for success / error
+ */
+function createPopupScreen(block, type = 'success') {
+  const overlay = document.createElement('div');
+  overlay.className = `form-popup-overlay form-popup-overlay--${type}`;
+
+  const closeBtn = createCloseButton(type === 'success' ? 'Close thank you popup' : 'Close error popup');
+
+  const desktopImage = type === 'success' ? SUCCESS_DESKTOP_IMAGE : ERROR_DESKTOP_IMAGE;
+  const mobileImage = type === 'success' ? SUCCESS_MOBILE_IMAGE : ERROR_MOBILE_IMAGE;
+
+  const title = type === 'success' ? 'Thank you!' : 'Try again!';
+  const text = type === 'success'
+    ? 'We value your interest in Asian Paints Beautiful Homes service. We will get in touch within 4 hours to schedule a visit by an expert.'
+    : "Oops! Something went wrong. We couldn't process your request. Please try again?";
+
+  const actionLabel = 'Book FREE site visit';
+  const actionLink = type === 'success' ? SUCCESS_CTA_LINK : ERROR_CTA_LINK;
+  const downloadMarkup = `
+    <a
+      class="form-error-popup__download"
+      href="${ERROR_DOWNLOAD_LINK}"
+      download
+    >
+      Download the asianpaints colour book
+    </a>
+  `;
+
+  overlay.innerHTML = `
+    <div class="form-error-popup">
+      <div class="form-error-popup__left">
+        <div class="form-error-popup__copy">
+          <h2 class="form-error-popup__title">${title}</h2>
+          <p class="form-error-popup__text">
+            ${text}
+          </p>
+        </div>
+      </div>
+
+      <div class="form-error-popup__right">
+        <div
+          class="form-error-popup__media"
+          style="
+            --form-error-image-desktop: url('${desktopImage}');
+            --form-error-image-mobile: url('${mobileImage}');
+          "
+        >
+          <div class="form-error-popup__content">
+            <p class="form-error-popup__content-title">
+              Are you looking for home painting services?
+            </p>
+            <p class="form-error-popup__content-subtitle">
+              Get expert execution for your dream home from Beautiful Homes Interior Design service by asian paints.
+            </p>
+            <div class="form-error-popup__actions">
+              <a
+                href="${actionLink}"
+                target="_self"
+                class="form-error-popup__button"
+              >
+                ${actionLabel}
+              </a>
+              ${downloadMarkup}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  overlay.prepend(closeBtn);
+
+  closeBtn.addEventListener('click', () => {
+    closeActivePopup(block, overlay);
+  });
+
+  return overlay;
+}
+
+/**
+ * Show success overlay
+ */
+function showSuccessScreen(block) {
+  if (!block || block.dataset.successShown === 'true') return;
+
+  const existingOverlay = block.querySelector('.form-popup-overlay--success');
+  if (existingOverlay) {
+    block.dataset.successShown = 'true';
+    block.classList.add('success-active', 'popup-active');
+    return;
+  }
+
+  const overlay = createPopupScreen(block, 'success');
+  block.appendChild(overlay);
+  block.dataset.successShown = 'true';
+  block.classList.add('success-active', 'popup-active');
+}
+
+/**
+ * Show error overlay
+ */
+function showErrorScreen(block) {
+  if (!block || block.dataset.errorShown === 'true') return;
+
+  const existingOverlay = block.querySelector('.form-popup-overlay--error');
+  if (existingOverlay) {
+    block.dataset.errorShown = 'true';
+    block.classList.add('error-active', 'popup-active');
+    return;
+  }
+
+  const overlay = createPopupScreen(block, 'error');
+  block.appendChild(overlay);
+  block.dataset.errorShown = 'true';
+  block.classList.add('error-active', 'popup-active');
+}
+
+function bindSubmitHandler(block, row, buttonCell) {
   const submitBtn = buttonCell?.querySelector('button.form-submit');
   if (!submitBtn || submitBtn.dataset.submitBound === 'true') return;
 
@@ -331,9 +501,13 @@ function bindSubmitHandler(row, buttonCell) {
         pincode: '#enquire-pincode',
       },
     })
+      .then(() => {
+        showSuccessScreen(block);
+      })
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Form banner submission failed', err);
+        showErrorScreen(block);
       })
       .finally(() => {
         row.dataset.submitting = 'false';
@@ -342,7 +516,7 @@ function bindSubmitHandler(row, buttonCell) {
   });
 }
 
-function buildFormCard(labelsRow, inputsRow) {
+function buildFormCard(block, labelsRow, inputsRow) {
   const labelCells = [...labelsRow.children];
   const inputCellsSource = [...inputsRow.children];
 
@@ -398,11 +572,11 @@ function buildFormCard(labelsRow, inputsRow) {
   const consentArea = createConsentArea();
   formRow.appendChild(consentArea);
 
-  //Keep toggle ON by default on page load
+  // Keep toggle ON by default on page load
   const whatsappToggle = consentArea.querySelector('[name="updateMeOnWhatsapp"]');
   if (whatsappToggle) {
     whatsappToggle.checked = true;
-}
+  }
 
   if (buttonCell.children.length) {
     formRow.appendChild(buttonCell);
@@ -412,7 +586,7 @@ function buildFormCard(labelsRow, inputsRow) {
   formCard.appendChild(formRow);
 
   if (buttonCell.children.length) {
-    bindSubmitHandler(formRow, buttonCell);
+    bindSubmitHandler(block, formRow, buttonCell);
   }
 
   return formCard;
@@ -442,6 +616,20 @@ export default function decorate(block) {
 
   if (!responsivePicture) return;
 
+  // Row 4 -> success popup images
+  if (rows[3]) {
+    const successRowCells = [...rows[3].children];
+    SUCCESS_DESKTOP_IMAGE = getAuthoredImageFromCell(successRowCells[0]);
+    SUCCESS_MOBILE_IMAGE = getAuthoredImageFromCell(successRowCells[1]);
+  }
+
+  // Row 5 -> error popup images
+  if (rows[4]) {
+    const errorRowCells = [...rows[4].children];
+    ERROR_DESKTOP_IMAGE = getAuthoredImageFromCell(errorRowCells[0]);
+    ERROR_MOBILE_IMAGE = getAuthoredImageFromCell(errorRowCells[1]);
+  }
+
   block.innerHTML = '';
   block.classList.add('form-banner');
 
@@ -455,7 +643,7 @@ export default function decorate(block) {
   const overlay = document.createElement('div');
   overlay.className = 'form-banner__overlay';
 
-  const formCard = buildFormCard(labelsRow, inputsRow);
+  const formCard = buildFormCard(block, labelsRow, inputsRow);
 
   overlay.appendChild(formCard);
   wrapper.append(media, overlay);
