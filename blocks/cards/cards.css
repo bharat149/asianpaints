@@ -976,11 +976,12 @@
 
 .section.cards-container:has(.cards.grid) {
   background: #ece5d7;
+  padding: 60px 100px 80px;
 }
 
 .section.cards-container:has(.cards.grid)>.cards-wrapper {
-  margin-left: 3% !important;
-  margin-right: 3% !important;
+  margin-left: 0% !important;
+  margin-right: 0% !important;
 }
 
 
@@ -1094,8 +1095,8 @@
 
 @media (min-width: 901px) and (max-width: 1530px) {
   .section.cards-container:has(.cards.grid)>.default-content-wrapper {
-    margin-left: 3%;
-    margin-right: 3%;
+    margin-left: 0%;
+    margin-right: 0%;
   }
 }
 
