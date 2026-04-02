@@ -9,7 +9,7 @@
  */
 
 import { moveInstrumentation } from '../../scripts/scripts.js';
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 function prefersReducedMotion() {
   return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -215,6 +215,9 @@ export default function decorate(block) {
       viewAllBtn.className = 'accordion-faq-view-all';
       viewAllBtn.textContent = 'View all';
       viewAllBtn.addEventListener('click', () => {
+        const parentTitle = block.closest('.section')?.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
+        triggerCTAClickWithLinkAndTitle('javascript:void(0)', viewAllBtn.textContent?.trim() || 'View all', parentTitle);
+
         block.querySelectorAll('.accordion-faq-hidden').forEach((item) => {
           item.style.display = 'block';
           item.classList.remove('accordion-faq-hidden');

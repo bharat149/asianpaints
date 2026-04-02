@@ -1,9 +1,16 @@
 /*
 ** Authoring format **
+Form block
 Row 1, col 1–3 → used for form-description-cell
 Row 2, col 1–4 → used as form-field-label
 Row 2, col 5 → used as submit button label
 Row 3, col 1–4 → used as input placeholder/content
+Row 4, col 1 → desktop error image
+Row 4, col 2 → mobile error image
+
+Form Config block
+Row 1, col 1-2 → campaign ID (to pass as form parameter and for tracking)
+Row 2, col 1-2 → node (to pass as form parameter node path)
 
 Two variant: White form, Blue form
 */
@@ -15,16 +22,64 @@ const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asia
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
 const THANK_YOU_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
 
-const ERROR_DESKTOP_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccess.webp';
-const ERROR_MOBILE_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccessMweb.webp';
+let ERROR_DESKTOP_IMAGE = '';
+let ERROR_MOBILE_IMAGE = '';
 const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
 const ERROR_DOWNLOAD_LINK = 'https://static.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
 const THANK_YOU_TWO_DESKTOP = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-desktop.webp';
 const THANK_YOU_TWO_MOB = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-mobile.webp';
 
 let formName = "";
-let campaignId = ""; // FIXME: work on this
+let campaignId = "";
+let formNodePath = '';
 let formStarted = false;
+
+function getRowValue(row) {
+  if (!row) return '';
+
+  const cells = [...row.children];
+  const preferred = cells[1]?.textContent?.trim();
+  if (preferred) return preferred;
+
+  return cells.map((cell) => cell.textContent?.trim()).filter(Boolean).join(' ').trim();
+}
+
+function extractFormConfig(block) {
+  const section = block.closest('.section');
+  const formConfigBlock = section?.querySelector('.form-config, .form-configs');
+
+  let configuredCampaignId = '';
+  let configuredNodePath = '';
+
+  if (formConfigBlock) {
+    const configRows = [...formConfigBlock.children];
+    configuredCampaignId = getRowValue(configRows[0]);
+    configuredNodePath = getRowValue(configRows[1]);
+
+    const formConfigWrapper = formConfigBlock.closest('.form-config-wrapper, .form-configs-wrapper');
+    const formConfigSection = formConfigBlock.closest('.section');
+
+    formConfigBlock.style.display = 'none';
+    if (formConfigWrapper) {
+      formConfigWrapper.style.display = 'none';
+    }
+    if (formConfigSection && formConfigSection !== section) {
+      formConfigSection.style.display = 'none';
+    }
+  }
+
+  configuredCampaignId = configuredCampaignId
+    || block.getAttribute('data-campaign-id')?.trim()
+    || '';
+
+  configuredNodePath = configuredNodePath
+    || block.getAttribute('data-node')?.trim()
+    || window.location.pathname
+    || '';
+
+  campaignId = configuredCampaignId;
+  formNodePath = configuredNodePath;
+}
 
 /**
  * Ensure bootstrap utility classes where useful
@@ -635,7 +690,8 @@ function bindSubmitHandler(block, row, buttonCell) {
     submitBtn.disabled = true;
 
     submitLeadFromForm(row, {
-      resourcePath: row.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
+      resourcePath: row.getAttribute('data-attr-resourcePath') || formNodePath || window.location.pathname || '',
+      campaignId,
       selectors: {
         name: '#enquire-name',
         email: '#enquire-email',
@@ -663,6 +719,8 @@ function bindSubmitHandler(block, row, buttonCell) {
  * Render form block
  */
 function renderForm(block) {
+  extractFormConfig(block);
+
   const rows = [...block.children];
   if (rows.length < 3) return;
 
@@ -676,13 +734,37 @@ function renderForm(block) {
   const labelCells = [...labelsRow.children];
   const inputCellsSource = [...inputsRow.children];
 
+  // Extract error images from row 4
+  if (rows.length >= 4) {
+    const errorImagesRow = rows[3];
+    const errorImagesCells = [...errorImagesRow.children];
+
+    const desktopImgEl = errorImagesCells[0]?.querySelector('img');
+    const desktopLinkEl = errorImagesCells[0]?.querySelector('a');
+    const desktopErrorImage = desktopImgEl?.src || desktopLinkEl?.href || errorImagesCells[0]?.textContent?.trim();
+
+    if (desktopErrorImage) {
+      ERROR_DESKTOP_IMAGE = desktopErrorImage;
+    }
+
+    const mobileImgEl = errorImagesCells[1]?.querySelector('img');
+    const mobileLinkEl = errorImagesCells[1]?.querySelector('a');
+    const mobileErrorImage = mobileImgEl?.src || mobileLinkEl?.href || errorImagesCells[1]?.textContent?.trim();
+
+    if (mobileErrorImage) {
+      ERROR_MOBILE_IMAGE = mobileErrorImage;
+    }
+
+    errorImagesRow.style.display = 'none';
+  }
+
   descriptionRow.style.display = 'none';
   labelsRow.style.display = 'none';
   inputsRow.style.display = 'none';
 
   const formRow = document.createElement('div');
   formRow.className = 'form-row form-attributes';
-  formRow.setAttribute('data-attr-resourcePath', window.location.pathname || '');
+  formRow.setAttribute('data-attr-resourcePath', formNodePath || window.location.pathname || '');
 
   const descriptionCell = document.createElement('div');
   descriptionCell.className = 'form-description-cell';

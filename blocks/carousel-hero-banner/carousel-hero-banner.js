@@ -1,4 +1,4 @@
-import { trackEvent } from "../../scripts/analytics.js";
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from "../../scripts/analytics.js";
 
 function getSwiperClass() {
   if (window.Swiper) return Promise.resolve(window.Swiper);
@@ -36,6 +36,25 @@ function getVideo(url) {
   video.setAttribute("playsinline", "");
 
   return video;
+}
+
+function bindCtaClickTracking(linkEl, ctaLink, btnTitle, parentTitle) {
+  if (!linkEl || !ctaLink) return;
+
+  linkEl.addEventListener("click", () => {
+    triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+  });
+}
+
+function bindMediaClickTracking(linkEl, ctaLink, bannerTitle) {
+  if (!linkEl || !ctaLink) return;
+
+  linkEl.addEventListener("click", () => {
+    trackEvent("carousel_banner_click", {
+      bannerDestinationUrl: ctaLink,
+      bannerTitle,
+    });
+  });
 }
 
 
@@ -77,18 +96,19 @@ export default async function decorate(block) {
       const video = getVideo(
         isMobile ? mobileVideo : desktopVideo,
       );
-     if (video) {
-  if (ctaLink) {
-    const videoLink = document.createElement("a");
-    videoLink.href = ctaLink;
-    videoLink.className = "hero-video-link";
+      if (video) {
+        if (ctaLink) {
+          const videoLink = document.createElement("a");
+          videoLink.href = ctaLink;
+          videoLink.className = "hero-video-link";
 
-    videoLink.appendChild(video);
-    mediaWrap.appendChild(videoLink);
-  } else {
-    mediaWrap.appendChild(video);
-  }
-}
+          videoLink.appendChild(video);
+          bindMediaClickTracking(videoLink, ctaLink, ctaText || "carousel-hero-banner");
+          mediaWrap.appendChild(videoLink);
+        } else {
+          mediaWrap.appendChild(video);
+        }
+      }
 
       //SAME image logic + fallback ONLY for mobile
       let picture;
@@ -115,17 +135,19 @@ export default async function decorate(block) {
         isMobile && mobileImg ? mobileImg : desktopImg;
 
       if (picture) {
-  if (ctaLink) {
-    const imgLink = document.createElement("a");
-    imgLink.href = ctaLink;
-    imgLink.className = "hero-media-link";
+        if (ctaLink) {
+          const imgLink = document.createElement("a");
+          imgLink.href = ctaLink;
+          imgLink.className = "hero-media-link";
 
-    imgLink.appendChild(picture);
-    mediaWrap.appendChild(imgLink);
-  } else {
-    mediaWrap.appendChild(picture);
-  }
-}
+          imgLink.appendChild(picture);
+          const imgAlt = picture.querySelector("img")?.alt?.trim() || "";
+          bindMediaClickTracking(imgLink, ctaLink, imgAlt || ctaText || "carousel-hero-banner");
+          mediaWrap.appendChild(imgLink);
+        } else {
+          mediaWrap.appendChild(picture);
+        }
+      }
     }
 
     // CTA
@@ -135,13 +157,7 @@ export default async function decorate(block) {
       cta.href = ctaLink;
       cta.textContent = ctaText;
 
-      // Track Click
-      cta.addEventListener("click", function (e) {
-        trackEvent("carousel_banner_click", {
-          "bannerDestinationUrl": ctaLink,
-          "bannerTitle": e.target.closest(".hero-media").querySelector("img").alt || ""
-        });
-      })
+      bindCtaClickTracking(cta, ctaLink, ctaText, ctaText || "carousel-hero-banner");
 
       mediaWrap.appendChild(cta);
     }

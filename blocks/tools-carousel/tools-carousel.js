@@ -6,7 +6,7 @@ col 3 = multiple titles
 col 4 = multiple URLs
 */
 
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -167,7 +167,11 @@ export default async function decorate(block) {
 
     slide.addEventListener('click', () => {
       const buttonTitle = titleText || slide.querySelector('.tools-carousel-title')?.textContent?.trim() || '';
-      triggerCTAClickWithLinkAndTitle(buttonLink, buttonTitle, parentTitle);
+      trackEvent('cta_link_text', {
+        cta_: buttonTitle,
+        parentTitle,
+        param1: buttonLink,
+      });
     });
 
     swiperWrapper.appendChild(slide);
