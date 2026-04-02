@@ -1,9 +1,12 @@
 /*
 ** Authoring format **
+Form block
 Row 1, col 1–3 → used for form-description-cell
 Row 2, col 1–4 → used as form-field-label
 Row 2, col 5 → used as submit button label
 Row 3, col 1–4 → used as input placeholder/content
+Row 4, col 1 → desktop error image
+Row 4, col 2 → mobile error image
 
 Form Config block
 Row 1, col 1-2 → campaign ID (to pass as form parameter and for tracking)
@@ -19,8 +22,8 @@ const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asia
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
 const THANK_YOU_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
 
-const ERROR_DESKTOP_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccess.webp';
-const ERROR_MOBILE_IMAGE = 'https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/ccformsthankyou/SPSFormSuccessMweb.webp';
+let ERROR_DESKTOP_IMAGE = '';
+let ERROR_MOBILE_IMAGE = '';
 const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
 const ERROR_DOWNLOAD_LINK = 'https://static.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
 const THANK_YOU_TWO_DESKTOP = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-desktop.webp';
@@ -730,6 +733,30 @@ function renderForm(block) {
   const descriptionCells = [...descriptionRow.children];
   const labelCells = [...labelsRow.children];
   const inputCellsSource = [...inputsRow.children];
+
+  // Extract error images from row 4
+  if (rows.length >= 4) {
+    const errorImagesRow = rows[3];
+    const errorImagesCells = [...errorImagesRow.children];
+
+    const desktopImgEl = errorImagesCells[0]?.querySelector('img');
+    const desktopLinkEl = errorImagesCells[0]?.querySelector('a');
+    const desktopErrorImage = desktopImgEl?.src || desktopLinkEl?.href || errorImagesCells[0]?.textContent?.trim();
+
+    if (desktopErrorImage) {
+      ERROR_DESKTOP_IMAGE = desktopErrorImage;
+    }
+
+    const mobileImgEl = errorImagesCells[1]?.querySelector('img');
+    const mobileLinkEl = errorImagesCells[1]?.querySelector('a');
+    const mobileErrorImage = mobileImgEl?.src || mobileLinkEl?.href || errorImagesCells[1]?.textContent?.trim();
+
+    if (mobileErrorImage) {
+      ERROR_MOBILE_IMAGE = mobileErrorImage;
+    }
+
+    errorImagesRow.style.display = 'none';
+  }
 
   descriptionRow.style.display = 'none';
   labelsRow.style.display = 'none';
