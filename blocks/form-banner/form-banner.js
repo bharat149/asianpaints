@@ -470,6 +470,7 @@ function bindSubmitHandler(block, row, buttonCell) {
   const submitBtn = buttonCell?.querySelector('button.form-submit');
   if (!submitBtn || submitBtn.dataset.submitBound === 'true') return;
 
+  const loaderEl = submitBtn.querySelector('.rotating');
   submitBtn.dataset.submitBound = 'true';
 
   submitBtn.addEventListener('click', (event) => {
@@ -491,6 +492,7 @@ function bindSubmitHandler(block, row, buttonCell) {
 
     row.dataset.submitting = 'true';
     submitBtn.disabled = true;
+    loaderEl?.classList.remove('d-none');
 
     submitLeadFromForm(row, {
       resourcePath: row.getAttribute('data-attr-resourcePath') || window.location.pathname || '',
@@ -512,6 +514,7 @@ function bindSubmitHandler(block, row, buttonCell) {
       .finally(() => {
         row.dataset.submitting = 'false';
         submitBtn.disabled = false;
+        loaderEl?.classList.add('d-none');
       });
   });
 }
@@ -563,7 +566,11 @@ function buildFormCard(block, labelsRow, inputsRow) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'form-submit btn';
-    button.textContent = buttonLabel;
+    button.innerHTML = `
+      <span class="form-submit__label">${buttonLabel}</span>
+      <span class="form-submit__arrow" aria-hidden="true">→</span>
+      <span class="rotating d-none" aria-hidden="true">↻</span>
+    `;
     buttonCell.appendChild(button);
   }
 
