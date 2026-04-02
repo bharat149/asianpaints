@@ -182,7 +182,7 @@
   transition: transform 1s  ease-in-out;
 }
 
-.color-gallery-card:hover .color-gallery-card-top img {
+.color-gallery-card .color-gallery-card-top:hover img {
   transform: scale(1.08);
 }
 

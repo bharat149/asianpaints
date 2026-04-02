@@ -155,4 +155,63 @@ export default function decorate(block) {
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });
   });
+  if (isServicesBlock) {
+  const initServicesSwiper = async () => {
+    const isMobile = window.innerWidth < 768;
+
+    // Destroy existing swiper on resize
+    if (ul.servicesSwiper) {
+      ul.servicesSwiper.destroy(true, true);
+      ul.servicesSwiper = null;
+    }
+
+    // Reset classes (important)
+    ul.classList.remove('swiper');
+    ul.classList.remove('swiper-wrapper');
+    [...ul.children].forEach((li) => {
+      li.classList.remove('swiper-slide');
+    });
+
+    if (!isMobile) return;
+
+    // Add swiper structure
+    ul.classList.add('swiper');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'swiper-wrapper';
+
+    const slides = [...ul.children];
+
+    slides.forEach((li) => {
+      li.classList.add('swiper-slide');
+      wrapper.appendChild(li);
+    });
+
+    ul.appendChild(wrapper);
+
+    // Pagination (dots)
+    let pagination = ul.parentElement.querySelector('.swiper-pagination');
+    if (!pagination) {
+      pagination = document.createElement('div');
+      pagination.className = 'swiper-pagination';
+      ul.parentElement.appendChild(pagination);
+    }
+
+    const Swiper = window.Swiper || (window.loadSwiper && await window.loadSwiper());
+    if (!Swiper) return;
+
+    ul.servicesSwiper = new Swiper(ul, {
+      slidesPerView: 1.2,
+      spaceBetween: 16,
+      loop: false,
+      pagination: {
+        el: pagination,
+        clickable: true,
+      },
+    });
+  };
+
+  initServicesSwiper();
+  window.addEventListener('resize', initServicesSwiper);
+}
 }

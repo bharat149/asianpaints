@@ -262,7 +262,7 @@ export default async function decorate(block) {
     const mediaEl = createVideoElement(mediaSrc, title);
     if (mediaEl) {
       mediaWrap.appendChild(mediaEl);
-      bindHoverPlayback(cardInner, mediaEl);
+      bindHoverPlayback(mediaWrap, mediaEl);
     }
 
     const content = document.createElement('div');
@@ -364,8 +364,8 @@ export default async function decorate(block) {
           spaceBetween: 10,
         },
         900: {
-          slidesPerView: 4,
-          spaceBetween: 42,
+          slidesPerView: 3.4,
+          spaceBetween: 50,
         },
       },
       on: {
