@@ -76,9 +76,11 @@
   .form.block .form-fields-area {
     gap: 0;
   }
+
   .form.block .form-consent-area {
     margin-top: 0px;
   }
+
   .form.block .form-button-cell {
     margin-top: 25px !important;
   }
@@ -305,7 +307,6 @@
   white-space: nowrap;
   text-decoration: none;
   box-shadow: none;
-  transition: all 0.3s ease;
 }
 
 .form.block .form-submit__label,
@@ -350,15 +351,14 @@
 
 .form.block .form-submit:hover,
 .form.block .btn.form-submit:hover {
-  background: transparent !important;
-  border: 1px solid #fff !important;
-  color: #fff !important;
+  background: #fed440 !important;
+  border-color: #ffca28;
+  color: #1a1a1a;
 }
 
 .form.block .form-submit:hover .form-submit__arrow,
 .form.block .btn.form-submit:hover .form-submit__arrow {
   transform: translateX(2px);
-  filter: invert(0);
 }
 
 .form.block .form-submit:focus,
@@ -1004,6 +1004,19 @@
   line-height: 30px;
   word-wrap: break-word;
   max-width: 95%;
+}
+
+.form.block.blue-form .form-submit:hover .form-submit__arrow,
+.form.block.blue-form .btn.form-submit:hover .form-submit__arrow {
+  transform: translateX(2px);
+  filter: invert(0);
+}
+
+.form.block.blue-form .form-submit:hover,
+.form.block.blue-form .btn.form-submit:hover {
+  background: transparent !important;
+  border: 1px solid #fff !important;
+  color: #fff !important;
 }
 
 /* Tablet and below adjustments for blue form*/
