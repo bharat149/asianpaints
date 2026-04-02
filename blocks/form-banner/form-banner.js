@@ -5,9 +5,9 @@ let SUCCESS_MOBILE_IMAGE = '';
 let ERROR_DESKTOP_IMAGE = '';
 let ERROR_MOBILE_IMAGE = '';
 
-const SUCCESS_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
-const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
-const ERROR_DOWNLOAD_LINK = 'https://static.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+const SUCCESS_CTA_LINK = 'https://www.asianpaints.com/services/interior-design-solutions.html';
+const ERROR_CTA_LINK = 'https://www.asianpaints.com/services/interior-design-solutions.html';
+const ERROR_DOWNLOAD_LINK = 'https://www.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
 
 function getPicturesFromCell(cell) {
   if (!cell) return [];
@@ -312,7 +312,13 @@ function getAuthoredImageFromCell(cell) {
   if (!cell) return '';
 
   const img = cell.querySelector('img');
-  if (img?.src) return img.src;
+  if (img?.getAttribute('src')) return img.getAttribute('src');
+
+  const source = cell.querySelector('source');
+  const sourceSrcset = source?.getAttribute('srcset');
+  if (sourceSrcset) {
+    return sourceSrcset.split(',')[0].trim().split(' ')[0];
+  }
 
   const link = cell.querySelector('a');
   if (link?.href) return link.href;
@@ -356,22 +362,20 @@ function createPopupScreen(block, type = 'success') {
 
   const title = type === 'success' ? 'Thank you!' : 'Try again!';
   const text = type === 'success'
-    ? "We value  your interest in Asian Paints Beautiful Homes service. We will get in touch within 4 hours to schedule a visit by an expert."
+    ? 'We value your interest in Asian Paints Beautiful Homes service. We will get in touch within 4 hours to schedule a visit by an expert.'
     : "Oops! Something went wrong. We couldn't process your request. Please try again?";
 
-  const actionLabel = type === 'success' ? 'Explore Now' : 'Get FREE Design Consultation';
+  const actionLabel = 'Book FREE site visit';
   const actionLink = type === 'success' ? SUCCESS_CTA_LINK : ERROR_CTA_LINK;
-  const downloadMarkup = type === 'error'
-    ? `
-      <a
-        class="form-error-popup__download"
-        href="${ERROR_DOWNLOAD_LINK}"
-        download
-      >
-        Download the asianpaints colour books
-      </a>
-    `
-    : '';
+  const downloadMarkup = `
+    <a
+      class="form-error-popup__download"
+      href="${ERROR_DOWNLOAD_LINK}"
+      download
+    >
+      Download the asianpaints colour book
+    </a>
+  `;
 
   overlay.innerHTML = `
     <div class="form-error-popup">
@@ -394,7 +398,7 @@ function createPopupScreen(block, type = 'success') {
         >
           <div class="form-error-popup__content">
             <p class="form-error-popup__content-title">
-              Are you looking for  home painting services?
+              Are you looking for home painting services?
             </p>
             <p class="form-error-popup__content-subtitle">
               Get expert execution for your dream home from Beautiful Homes Interior Design service by asian paints.
@@ -407,8 +411,8 @@ function createPopupScreen(block, type = 'success') {
               >
                 ${actionLabel}
               </a>
+              ${downloadMarkup}
             </div>
-            ${downloadMarkup}
           </div>
         </div>
       </div>
