@@ -260,6 +260,14 @@
     border-radius: 8px;
 }
 
+@media (min-widht:992px) {
+    .testimonial-carousel .testimonial-video-wrapper {
+        height: 81vh;
+    }
+    .testimonial-carousel .testimonial-video-close {
+        top: 6px;
+    }
+}
 .testimonial-carousel .testimonial-video-wrapper iframe {
     width: 100%;
     height: 100%;
