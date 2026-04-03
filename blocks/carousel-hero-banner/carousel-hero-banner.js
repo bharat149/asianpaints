@@ -205,6 +205,7 @@ export default async function decorate(block) {
             delay: 5000,
             disableOnInteraction: false,
             stopOnLastSlide: false,
+            pauseOnMouseEnter: true, 
           },
 
           pagination: {
