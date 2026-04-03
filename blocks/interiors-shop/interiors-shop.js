@@ -157,7 +157,7 @@ export default function decorate(block) {
       spaceBetween: 16,
       pagination: {
         el: paginationEl,
-        clickable: true,
+        clickable: false,
       },
     });
   }

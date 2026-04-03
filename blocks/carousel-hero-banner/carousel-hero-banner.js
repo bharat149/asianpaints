@@ -106,6 +106,7 @@ export default async function decorate(block) {
           const videoLink = document.createElement("a");
           videoLink.href = ctaLink;
           videoLink.className = "hero-video-link";
+          videoLink.setAttribute("aria-label", ctaText || "carousel-hero-banner");
 
           videoLink.appendChild(video);
           bindMediaClickTracking(videoLink, ctaLink, ctaText || "carousel-hero-banner");
@@ -142,9 +143,10 @@ export default async function decorate(block) {
           const imgLink = document.createElement("a");
           imgLink.href = ctaLink;
           imgLink.className = "hero-media-link";
+          const imgAlt = picture.querySelector("img")?.alt?.trim() || "";
+          imgLink.setAttribute("aria-label", imgAlt || ctaText || "carousel-hero-banner");
 
           imgLink.appendChild(picture);
-          const imgAlt = picture.querySelector("img")?.alt?.trim() || "";
           bindMediaClickTracking(
             imgLink,
             ctaLink,
