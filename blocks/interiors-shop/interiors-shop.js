@@ -1,12 +1,6 @@
 import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 export default function decorate(block) {
-  // Remove dark-blue class from parent section if present
-  const section = block.closest('.section');
-  if (section) {
-    section.classList.remove('dark-blue');
-  }
-
   // Get heading and description
   const heading = block.querySelector('h2, h3, h4');
   const description = block.querySelector('p');

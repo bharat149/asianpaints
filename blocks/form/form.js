@@ -931,11 +931,6 @@ function renderForm(block) {
 }
 
 export default function decorate(block) {
-  const section = block.closest('.section');
-  if (section) {
-    section.classList.remove('dark-blue');
-  }
-
   applyBootstrapHelpers(block);
   renderForm(block);
 }

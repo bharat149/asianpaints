@@ -455,27 +455,17 @@ main .section.read-tc-cta .button-container > a.button:focus-visible {
     box-shadow: none !important;
 }
 
-main .section.dark-blue  {
-  background-color: var(--navy-blue);
-  color: white;
-  margin: 0;
-  padding: 60px 0;
-}
 
 main .section.dark h2,
-main .section.dark h3,
-main .section.dark-blue h2,
-main .section.dark-blue h3 {
+main .section.dark h3 {
   color: white;
 }
 
-main .section.dark p,
-main .section.dark-blue p {
+main .section.dark p {
   color: rgb(255 255 255 / 90%);
 }
 
 /* Form styling in dark sections */
-main .section.dark-blue strong,
 main .section.dark strong {
   color: white;
   display: block;
@@ -484,7 +474,6 @@ main .section.dark strong {
   font-size: 1rem;
 }
 
-main .section.dark-blue em,
 main .section.dark em {
   color: rgb(255 255 255 / 70%);
   font-style: normal;
