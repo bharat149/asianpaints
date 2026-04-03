@@ -1252,7 +1252,8 @@
 
 @media screen and (max-width: 992px) {
   .cards.grid>ul {
-    grid-template-columns: auto
+    grid-template-columns: auto;
+    max-height: 640px;
   }
 
   .cards.grid>ul li:nth-child(2) {

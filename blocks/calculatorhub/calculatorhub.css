@@ -171,22 +171,20 @@
 }
 
 .tool-fields form#toolsMiniForm .form-actions .animated-arrow-button:hover::after {
-  transition: all .2s ease-in; 
-  -webkit-transform: translateX(6px);
-  -moz-transform: translateX(6px);
-  -ms-transform: translateX(6px);
-  -o-transform: translateX(6px);
-  transform: translateX(6px);
+    transition: all .2s ease-in;
+    -webkit-transform: translateX(6px);
+    -moz-transform: translateX(6px);
+    -ms-transform: translateX(6px);
+    -o-transform: translateX(6px);
+    transform: translateX(6px);
 }
 
 /* ================== Responsive ================== */
 
 /* Tablet */
 @media screen and (max-width: 992px) {
-    main > .section.calculatorhub-container {
-        width: 100%;
-        margin: 40px auto;
-
+    main>.section.calculatorhub-container {
+        margin: 0 20px !important;
     }
 
     .calculatorhub {
@@ -200,6 +198,7 @@
         line-height: 48px;
         width: 98%;
     }
+
     .calculatorhub .tool-fields {
         padding: 20px;
     }
