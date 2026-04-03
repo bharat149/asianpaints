@@ -29,6 +29,10 @@ export default function decorate(block) {
   img.alt = desktopImg.alt || mobileImg.alt || 'Banner';
   img.loading = 'eager';
 
+  // Add intrinsic dimensions to reserve layout space
+  if (desktopImg.width) img.width = desktopImg.width;
+  if (desktopImg.height) img.height = desktopImg.height;
+
   picture.append(source, img);
 
   const bannerLink = document.createElement('a');
