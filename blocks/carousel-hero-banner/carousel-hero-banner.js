@@ -8,15 +8,22 @@ function getSwiperClass() {
   return Promise.resolve(null);
 }
 
-function getImage(col) {
+function getImage(col, index) {
   const picture = col?.querySelector("picture")?.cloneNode(true);
   if (!picture) return null;
 
   const img = picture.querySelector("img");
 
   if (img) {
-    img.loading = "eager";
-    img.setAttribute("fetchpriority", "high");
+    if (index < 2) {
+      // Apply eager loading only for the first 2 slides
+      img.loading = "eager";
+      img.setAttribute("fetchpriority", "high");
+    } else {
+      // Apply lazy loading for remaining slides
+      img.loading = "lazy";
+      img.setAttribute("fetchpriority", "auto");
+    }
   }
 
   return picture;
@@ -57,8 +64,6 @@ function bindMediaClickTracking(linkEl, ctaLink, bannerTitle) {
   });
 }
 
-
-
 export default async function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
@@ -71,8 +76,8 @@ export default async function decorate(block) {
   rows.forEach((row, index) => {
     const cols = [...row.children];
 
-    const desktopImg = getImage(cols[0]);
-    const mobileImg = getImage(cols[1]);
+    const desktopImg = getImage(cols[0], index);
+    const mobileImg = getImage(cols[1], index);
 
     const desktopVideo = cols[2]?.querySelector("a")?.href;
     const mobileVideo = cols[3]?.querySelector("a")?.href;
@@ -91,11 +96,11 @@ export default async function decorate(block) {
     mediaWrap.className = "hero-media";
 
     const isMobile = window.innerWidth < 768;
-    //VIDEO CASE
+
+    // VIDEO CASE
     if (desktopVideo || mobileVideo) {
-      const video = getVideo(
-        isMobile ? mobileVideo : desktopVideo,
-      );
+      const video = getVideo(isMobile ? mobileVideo : desktopVideo);
+
       if (video) {
         if (ctaLink) {
           const videoLink = document.createElement("a");
@@ -110,10 +115,10 @@ export default async function decorate(block) {
         }
       }
 
-      //SAME image logic + fallback ONLY for mobile
+      // SAME image logic + fallback ONLY for mobile
       let picture;
       if (isMobile) {
-        picture = mobileImg
+        picture = mobileImg;
       } else {
         picture = desktopImg;
       }
@@ -129,10 +134,8 @@ export default async function decorate(block) {
       const overlay = document.createElement("div");
       overlay.className = "video-overlay";
       mediaWrap.appendChild(overlay);
-
     } else {
-      const picture =
-        isMobile && mobileImg ? mobileImg : desktopImg;
+      const picture = isMobile && mobileImg ? mobileImg : desktopImg;
 
       if (picture) {
         if (ctaLink) {
@@ -142,7 +145,11 @@ export default async function decorate(block) {
 
           imgLink.appendChild(picture);
           const imgAlt = picture.querySelector("img")?.alt?.trim() || "";
-          bindMediaClickTracking(imgLink, ctaLink, imgAlt || ctaText || "carousel-hero-banner");
+          bindMediaClickTracking(
+            imgLink,
+            ctaLink,
+            imgAlt || ctaText || "carousel-hero-banner"
+          );
           mediaWrap.appendChild(imgLink);
         } else {
           mediaWrap.appendChild(picture);
