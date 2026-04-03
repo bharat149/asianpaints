@@ -126,7 +126,7 @@ window.loadSwiper = function loadSwiper() {
     if (!document.querySelector('link[data-swiper-css]')) {
       const swiperCss = document.createElement('link');
       swiperCss.rel = 'stylesheet';
-      swiperCss.href = 'https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css';
+      swiperCss.href = '../styles/swiper.css';
       swiperCss.setAttribute('data-swiper-css', 'true');
       document.head.appendChild(swiperCss);
     }
@@ -139,7 +139,7 @@ window.loadSwiper = function loadSwiper() {
     }
 
     const swiperScript = document.createElement('script');
-    swiperScript.src = 'https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js';
+    swiperScript.src = '/scripts/swiper.js';
     swiperScript.setAttribute('data-swiper-js', 'true');
     swiperScript.async = true;
     swiperScript.onload = () => resolve(window.Swiper);
