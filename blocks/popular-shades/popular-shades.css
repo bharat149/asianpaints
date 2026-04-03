@@ -284,10 +284,11 @@
   }
 
   .popular-shades__description {
-    max-width: 280px;
+    max-width: 100%;
+    line-height: 15.03px;
     margin: 0 0 14px;
-    font-size: 13px;
-    line-height: 1.35;
+    font-size: 11px;
+    color: #222;
   }
 
   .popular-shades__image-wrap {
