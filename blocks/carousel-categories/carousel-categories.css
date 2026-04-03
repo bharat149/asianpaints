@@ -15,7 +15,7 @@
   width: 18%;
 }
 
-.categories-offer__sidebar .default-content-wrapper h2{
+.categories-offer__sidebar .default-content-wrapper h2 {
   color: #000;
   font-size: 32px;
   font-style: normal;
@@ -50,7 +50,7 @@
   line-height: 1.4;
   font-weight: 300;
   cursor: pointer;
-  transition:linear 0.25s ease;
+  transition: linear 0.25s ease;
   width: 170px;
   color: #000;
 }
@@ -60,7 +60,7 @@
 }
 
 .categories-offer__tab.is-active {
-  display:flex;
+  display: flex;
   align-items: center;
   border-color: #55d88b;
   background: #eaf4ef;
@@ -81,14 +81,38 @@
 .categories-offer__carousels {
   position: relative;
   width: 100%;
+  overflow: hidden;
+  min-height: 1px;
+  transition: height 0.45s ease;
 }
 
 .categories-offer-carousel-wrap {
+  position: absolute;
+  inset: 0;
   width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(120px);
+  transition:
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.85s;
+  z-index: 1;
 }
 
-.categories-offer-carousel-wrap[hidden] {
-  display: none;
+.categories-offer-carousel-wrap.is-active {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+  transition:
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
+  z-index: 2;
 }
 
 .categories-offer-swiper {
@@ -140,23 +164,11 @@
   background: #fff;
 }
 
-@media (width <=991px) {
+@media (width <= 991px) {
   .categories-offer.block {
     padding: 32px 20px;
   }
 
-  .categories-offer__wrapper {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .categories-offer__title {
-    margin-bottom: 16px;
-    font-size: 28px;
-    line-height: 1.2;
-    letter-spacing: 0;
-  }
-  
   .categories-offer__wrapper {
     flex-direction: column;
   }
@@ -179,7 +191,7 @@
   .categories-offer__tabs {
     flex-direction: row;
     gap: 30px;
-    padding-bottom: 4px;
+    padding-bottom: 20px;
   }
 
   .categories-offer__tab.is-active {
@@ -217,5 +229,9 @@
   .categories-offer-pagination .swiper-pagination-bullet {
     width: 8px;
     height: 8px;
+  }
+
+  .categories-offer-carousel-wrap {
+    transform: translateX(70px);
   }
 }
