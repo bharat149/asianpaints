@@ -16,14 +16,16 @@ function getImage(col, index) {
 
   if (img) {
     if (index < 2) {
-      // Apply eager loading only for the first 2 slides
       img.loading = "eager";
       img.setAttribute("fetchpriority", "high");
     } else {
-      // Apply lazy loading for remaining slides
       img.loading = "lazy";
       img.setAttribute("fetchpriority", "auto");
     }
+
+    // Prevent layout shift (VERY IMPORTANT)
+    if (!img.width) img.width = 1200;
+    if (!img.height) img.height = 600;
   }
 
   return picture;
@@ -187,64 +189,73 @@ export default async function decorate(block) {
     const Swiper = await getSwiperClass();
     if (!Swiper) return;
 
-    const swiper = new Swiper(block, {
-      slidesPerView: 1,
-      speed: 800,
-      loop: false,
 
-      effect: "fade",
-      fadeEffect: { crossFade: true },
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
 
-      autoplay: {
-        delay: 5000,
-        disableOnInteraction: false,
-        stopOnLastSlide: false,
-      },
+        const swiper = new Swiper(block, {
+          slidesPerView: 1,
+          speed: 800,
+          loop: false,
 
-      pagination: {
-        el: paginationEl,
-        clickable: true,
+          effect: "fade",
+          fadeEffect: { crossFade: true },
 
-        renderBullet: function (index, className) {
-          const total = this.snapGrid.length;
+          autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+            stopOnLastSlide: false,
+          },
 
-          if (index === 0) {
-            return `
+          pagination: {
+            el: paginationEl,
+            clickable: true,
+
+            renderBullet: function (index, className) {
+              const total = this.snapGrid.length;
+
+              if (index === 0) {
+                return `
               <span class="swiper-button-prev custom-arrow"></span>
               <span class="${className}" data-index="${index}"></span>
             `;
-          }
+              }
 
-          if (index === total - 1) {
-            return `
+              if (index === total - 1) {
+                return `
               <span class="${className}" data-index="${index}"></span>
               <span class="swiper-button-next custom-arrow"></span>
             `;
-          }
+              }
 
-          return `<span class="${className}" data-index="${index}"></span>`;
-        },
-      },
+              return `<span class="${className}" data-index="${index}"></span>`;
+            },
+          },
 
-      on: {
-        init(swiper) {
-          handleVideo(swiper);
-          bindArrowEvents(swiper);
-          toggleArrows(swiper);
-        },
+          on: {
+            init(swiper) {
+              handleVideo(swiper);
+              bindArrowEvents(swiper);
+              toggleArrows(swiper);
+            },
 
-        slideChange(swiper) {
-          toggleArrows(swiper);
-        },
+            slideChange(swiper) {
+              toggleArrows(swiper);
+            },
 
-        slideChangeTransitionStart(swiper) {
-          handleVideo(swiper);
-        },
+            slideChangeTransitionStart(swiper) {
+              handleVideo(swiper);
+            },
 
-        slideChangeTransitionEnd(swiper) {
-          toggleArrows(swiper);
-        },
-      },
+            slideChangeTransitionEnd(swiper) {
+              toggleArrows(swiper);
+            },
+          },
+        });
+
+        block.heroSwiper = swiper;
+
+      });
     });
 
     function bindArrowEvents(swiper) {
