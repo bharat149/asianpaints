@@ -108,7 +108,7 @@
 
 .form.block .form-field-label {
   position: absolute;
-  top: -10px;
+  top: -7px;
   left: 18px;
   z-index: 2;
   display: inline-flex;
@@ -117,7 +117,7 @@
   padding: 0 8px;
   background: #fff;
   color: #53565a;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   pointer-events: none;
@@ -144,7 +144,7 @@
   border-radius: 8px;
   background-color: transparent;
   color: #53565a;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.2;
   box-sizing: border-box;
   box-shadow: none;
@@ -276,10 +276,11 @@
 
 .form.block .form-consent-note {
   color: #53565a;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 16.3px;
   max-width: 920px;
   font-weight: 300;
+  letter-spacing: .5px;
 }
 
 .form.block .form-button-cell {
@@ -576,7 +577,7 @@
 
 .form-field-error {
   min-height: 1px;
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 12px;
   line-height: 1.2;
   color: #ed1c24;
@@ -1033,5 +1034,6 @@
     margin-top: 8px;
     font-weight: 500;
     margin-bottom: 0;
+    letter-spacing: .5px;
   }
 }
