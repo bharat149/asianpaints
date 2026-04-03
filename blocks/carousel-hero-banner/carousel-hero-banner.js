@@ -15,7 +15,7 @@ function getImage(col, index) {
   const img = picture.querySelector("img");
 
   if (img) {
-    if (index < 2) {
+    if (index === 0) {
       img.loading = "eager";
       img.setAttribute("fetchpriority", "high");
     } else {
