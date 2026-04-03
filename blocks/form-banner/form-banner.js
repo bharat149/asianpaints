@@ -50,6 +50,7 @@ function createResponsivePicture(desktopPicture, mobilePicture, altText = '') {
   img.alt = mobileImg?.alt || desktopImg?.alt || altText;
   img.loading = 'eager';
   img.decoding = 'async';
+  img.setAttribute('fetchpriority', 'high');
 
   if (desktopImg?.width) img.width = desktopImg.width;
   if (desktopImg?.height) img.height = desktopImg.height;
