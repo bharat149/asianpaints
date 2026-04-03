@@ -68,7 +68,8 @@ export default function decorate(block) {
       contentDiv.className = 'interiors-shop-card-content';
 
       if (title) {
-        const titleEl = document.createElement('h5');
+        const titleEl = document.createElement('div');
+        titleEl.className = 'title';
         titleEl.textContent = title.textContent.trim();
         contentDiv.appendChild(titleEl);
       }

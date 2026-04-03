@@ -129,7 +129,7 @@ function bindHoverPlayback(target, mediaEl) {
       mediaEl.pause();
       mediaEl.currentTime = 0;
       await mediaEl.play();
-    } catch (e) {}
+    } catch (e) { }
   });
 
   // ⏹️ Hover out → reset
@@ -299,6 +299,8 @@ export default async function decorate(block) {
     ctaIcon.src = 'https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg';
     ctaIcon.alt = '';
     ctaIcon.setAttribute('aria-hidden', 'true');
+    ctaIcon.setAttribute('width', '18');
+    ctaIcon.setAttribute('height', '18');
 
     cta.appendChild(ctaText);
     cta.appendChild(ctaIcon);
