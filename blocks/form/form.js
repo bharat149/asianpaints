@@ -406,7 +406,42 @@ function createConsentArea(consentConfig) {
 }
 
 /**
+ * Add a fixed +91 prefix inside the phone input without changing
+ * the actual input value submitted to the backend.
+ *
+ * DOM after enhancement:
+ * .form-field
+ *   label
+ *   .form-input-prefix-wrap
+ *      span.form-input-prefix
+ *      input.form-input
+ *   .form-field-error
+ *
+ * This keeps the prefix visible both with placeholder and while typing.
+ */
+function applyPhonePrefix(field, input) {
+  if (!field || !input || field.querySelector('.form-input-prefix-wrap')) return;
+
+  const inputWrap = document.createElement('div');
+  inputWrap.className = 'form-input-prefix-wrap';
+
+  const prefix = document.createElement('span');
+  prefix.className = 'form-input-prefix';
+  prefix.setAttribute('aria-hidden', 'true');
+  prefix.textContent = '+91';
+
+  field.insertBefore(inputWrap, input);
+  inputWrap.appendChild(prefix);
+  inputWrap.appendChild(input);
+}
+
+/**
  * Apply field-specific attributes
+ *
+ * Note:
+ * - Keep only one applyFieldConfig function in this file.
+ * - The phone field gets a visual +91 prefix, but input value remains
+ *   only the 10-digit number expected by validation/submission logic.
  */
 function applyFieldConfig(input, headerCell, content) {
   if (!input || !headerCell) return;
@@ -424,6 +459,10 @@ function applyFieldConfig(input, headerCell, content) {
     input.pattern = '[0-9]{10}';
     input.maxLength = 10;
     bindNumericInputFilter(input);
+
+    const field = input.closest('.form-field');
+    applyPhonePrefix(field, input);
+    input.classList.add('form-input--with-prefix');
   } else if (headerLabel.includes('email')) {
     input.type = 'email';
     input.id = 'enquire-email';
