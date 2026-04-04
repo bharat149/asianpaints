@@ -17,11 +17,23 @@
   display: block;
   width: 100%;
   height: auto;
+  object-fit: contain;
+}
+
+@media (min-width: 769px) {
+  .store-banner-link img {
+    aspect-ratio: 12 / 5;
+  }
 }
 
 @media (width <=768px) {
   .store-banner {
     margin: 30px 0 0;
+  }
+
+  .store-banner-link img {
+    aspect-ratio: auto;
+    object-fit: cover;
   }
 }
 
