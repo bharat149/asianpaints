@@ -68,14 +68,14 @@ export default function decorate(block) {
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, title);
     });
 
-    const paragraphs = [...contentEl.querySelectorAll('p')];
+    const anchors = [...contentEl.querySelectorAll('a')];
 
-    paragraphs.forEach((p) => {
+    anchors.forEach((a) => {
       const slide = document.createElement('div');
       slide.className = 'swiper-slide';
 
       // Find anchor inside paragraph
-      const anchor = p.querySelector('a');
+      const anchor = a;
 
       if (anchor) {
         const titleAnchor = anchor.getAttribute('title');
@@ -89,7 +89,7 @@ export default function decorate(block) {
         anchor.appendChild(infoDiv);
       }
 
-      slide.appendChild(p);
+      slide.appendChild(anchor);
       swiperWrapper.appendChild(slide);
     });
 
