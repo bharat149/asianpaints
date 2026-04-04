@@ -1,0 +1,13 @@
+.heading {
+    padding: 0 32px;
+}
+
+.heading h1 {
+    font-size: 40px;
+    font-weight: 800;
+    color: #000;
+}
+
+.heading .center {
+    text-align: center;
+}
