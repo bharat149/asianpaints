@@ -85,7 +85,7 @@
 
 .form-banner__form .form-field-error {
   min-height: 20px;
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 12px;
   line-height: 1.2;
   color: #ff2343;
@@ -136,7 +136,7 @@
   border-radius: 8px;
   background: #fff;
   color: #1f1f1f;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.2;
   box-sizing: border-box;
   box-shadow: none;
@@ -164,6 +164,30 @@
 .form-banner__form .form-field.has-value .form-input,
 .form-banner__form .form-field.is-focused .form-input {
   border-color: #8d8d8d;
+}
+
+/* Phone prefix - base styles for desktop and all breakpoints */
+.form-banner__form .form-input-prefix-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.form-banner__form .form-input-prefix {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: #1f1f1f;
+  font-size: 14px;
+  line-height: 1.2;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.form-banner__form .form-input.form-input--with-prefix,
+.form-banner__form .form-control.form-input.form-input--with-prefix {
+  padding-left: 50px;
 }
 
 .form-banner__form .form-consent-area {
@@ -551,6 +575,16 @@
     font-size: 12px;
   }
 
+  .form-banner__form .form-input-prefix {
+    left: 14px;
+    font-size: 14px;
+  }
+
+  .form-banner__form .form-input.form-input--with-prefix,
+  .form-banner__form .form-control.form-input.form-input--with-prefix {
+    padding-left: 52px;
+  }
+
   .form-banner__form .form-consent-area {
     gap: 14px;
     margin-top: 16px;
@@ -688,6 +722,16 @@
     top: -7px;
     left: 10px;
     font-size: 11px;
+  }
+
+  .form-banner__form .form-input-prefix {
+    left: 12px;
+    font-size: 13px;
+  }
+
+  .form-banner__form .form-input.form-input--with-prefix,
+  .form-banner__form .form-control.form-input.form-input--with-prefix {
+    padding-left: 48px;
   }
 
   .form-banner__form .form-button-cell {

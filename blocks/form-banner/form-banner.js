@@ -1,3 +1,64 @@
+/*
+** Authoring format **
+
+Row 1 (Images)
+Col 1 → Desktop banner image (picture)
+Col 2 → Mobile banner image (picture)
+
+Row 2 (Form Labels)
+Col 1 → Name label
+Col 2 → Email label
+Col 3 → Mobile number label
+Col 4 → Pincode label
+Col 5 → Submit button label
+
+Row 3 (Input Placeholders)
+Col 1 → Name placeholder
+Col 2 → Email placeholder
+Col 3 → Mobile number placeholder
+Col 4 → Pincode placeholder
+
+Row 4 (Success Popup Images)
+Col 1 → Desktop success image
+Col 2 → Mobile success image
+
+Row 5 (Error Popup Images)
+Col 1 → Desktop error image
+Col 2 → Mobile error image
+
+----------------------------------------
+
+Field Behavior Notes:
+
+Mobile Number Field:
+- +91 prefix is added automatically via JS (not authored)
+- User should enter only 10 digits
+- Input is restricted to numeric values
+- Validation: must be exactly 10 digits
+
+----------------------------------------
+
+Form Behavior:
+
+- Submit triggers lead API via submitLeadFromForm
+- Success → Thank you popup shown
+- Error → Error popup shown
+
+----------------------------------------
+
+Variants:
+
+- Same authoring works for both desktop & mobile
+- Responsive image handled via <picture> element
+
+----------------------------------------
+
+Important:
+
+- Do NOT include +91 in authoring
+- Do NOT include validation messages in authoring
+*/
+
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
 
 let SUCCESS_DESKTOP_IMAGE = '';
@@ -181,6 +242,26 @@ function validateInputField(input, showError = true) {
   return true;
 }
 
+/**
+ * Add a fixed +91 prefix inside the mobile number input.
+ * The prefix is purely visual; the submitted input value remains only the 10-digit number.
+ */
+function applyPhonePrefix(field, input) {
+  if (!field || !input || field.querySelector('.form-input-prefix-wrap')) return;
+
+  const inputWrap = document.createElement('div');
+  inputWrap.className = 'form-input-prefix-wrap';
+
+  const prefix = document.createElement('span');
+  prefix.className = 'form-input-prefix';
+  prefix.setAttribute('aria-hidden', 'true');
+  prefix.textContent = '+91';
+
+  field.insertBefore(inputWrap, input);
+  inputWrap.appendChild(prefix);
+  inputWrap.appendChild(input);
+}
+
 function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const field = document.createElement('div');
   field.className = 'form-field position-relative w-100';
@@ -286,6 +367,10 @@ function applyFieldConfig(input, headerCell, content) {
     input.pattern = '[0-9]{10}';
     input.maxLength = 10;
     bindNumericInputFilter(input);
+
+    const field = input.closest('.form-field');
+    applyPhonePrefix(field, input);
+    input.classList.add('form-input--with-prefix');
   } else if (headerLabel.includes('email')) {
     input.type = 'email';
     input.id = 'enquire-email';
