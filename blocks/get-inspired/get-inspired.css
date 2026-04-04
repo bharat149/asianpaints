@@ -3,13 +3,19 @@
 }
 
 .get-inspired {
-    padding: 48px;
+    padding: 32px;
     padding-top: 0;
+    padding-right: 0;
 
     @media (max-width: 990px) {
         padding: 16px;
         padding-top: 0;
     }
+}
+
+.get-inspired a {
+    position: relative;
+    display: inline-block;
 }
 
 .get-inspired > div {
@@ -118,7 +124,7 @@
     justify-content: flex-end;
     gap: 16px;
     position: absolute;
-    right: 0;
+    right: 32px;
     top: -64px;
 }
 
