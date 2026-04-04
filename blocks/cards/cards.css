@@ -543,21 +543,23 @@
   .cards.services>ul {
     grid-template-columns: 1fr;
   }
+
   .cards.services .swiper-pagination {
     position: relative;
     margin-top: 10px;
     text-align: left;
     margin-left: 10px;
   }
- .cards.services .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
-  background: #4d4d4d !important;
+
+  .cards.services .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
+    background: #4d4d4d !important;
     width: 18px !important;
-  opacity: 1 !important;
-  border-radius: 6px;
-}
+    opacity: 1 !important;
+    border-radius: 6px;
+  }
 }
 
-.cards.services>ul  li {
+.cards.services>ul li {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
@@ -661,11 +663,14 @@
   margin: 0 auto;
   padding: 0 24px;
 }
-@media screen and  (min-width: 992px) {
-  .section.cards-container:has(.cards.room) , .section.cards-container:has(.cards.services) {
+
+@media screen and (min-width: 992px) {
+
+  .section.cards-container:has(.cards.room),
+  .section.cards-container:has(.cards.services) {
     max-width: 100%;
     width: 100%;
-    padding : 0 4%;
+    padding: 0 4%;
   }
 }
 
@@ -1115,7 +1120,7 @@
   }
 
   .section.cards-container:has(.cards.grid) {
-    padding: 60px 17px 80px;
+    padding: 20px 17px 35px;
   }
 
   .section.cards-container:has(.cards.grid)>.cards-wrapper {
@@ -1253,19 +1258,19 @@
 @media screen and (max-width: 992px) {
   .cards.grid>ul {
     grid-template-columns: auto;
-    max-height: 640px;
+    max-height: 595px;
   }
 
   .cards.grid>ul li:nth-child(2) {
-    transform: translateY(-50px);
+    transform: translateY(-56px);
   }
 
   .cards.grid>ul li:nth-child(3) {
-    transform: translateY(-100px);
+    transform: translateY(-110px);
   }
 
   .cards.grid>ul li:nth-child(4) {
-    transform: translateY(-150px);
+    transform: translateY(-161px);
   }
 
   .cards.grid .cards-card-image {
