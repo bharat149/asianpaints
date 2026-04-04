@@ -274,8 +274,9 @@ async function loadLazy(doc) {
   loadHeader(doc.querySelector('header'));
   loadFooter(doc.querySelector('footer'));
 
-  const { default: loadFixedColorPartner } = await import('./fixed-color-partner-loader.js');
-  loadFixedColorPartner(doc);
+  // Floating popup button
+  // const { default: loadFixedColorPartner } = await import('./fixed-color-partner-loader.js');
+  // loadFixedColorPartner(doc);
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
 }
