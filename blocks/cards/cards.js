@@ -142,20 +142,15 @@ export default function decorate(block) {
     img.closest('picture').replaceWith(optimizedPic);
   });
 
-  // Grid block: make first visible image high priority for LCP
+  // Grid block: prioritize first visible image (but NOT as high priority)
   if (isGrid) {
-    const firstGridImage = ul.querySelector('.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img');
-    if (firstGridImage) {
-      firstGridImage.loading = 'eager';
-      firstGridImage.setAttribute('fetchpriority', 'high');
-    }
-  }
+    const firstGridImage = ul.querySelector(
+      '.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img'
+    );
 
-  if (isGrid) {
-    const firstGridImage = ul.querySelector('.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img');
     if (firstGridImage) {
       firstGridImage.loading = 'eager';
-      firstGridImage.setAttribute('fetchpriority', 'high');
+      firstGridImage.setAttribute('fetchpriority', 'auto');
     }
   }
 
