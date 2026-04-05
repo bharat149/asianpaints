@@ -1,5 +1,6 @@
 .popular-shades-container {
   padding: 0 !important;
+  max-height: 650px;
 }
 
 .popular-shades-container .popular-shades-wrapper,
