@@ -3,6 +3,10 @@
     flex-wrap: wrap;
     padding: 0 40px;
     gap: 18px;
+
+    @media (max-width: 900px) {
+        padding: 0 20px;
+    }
 }
 
 .inspiration-popular p {
@@ -20,6 +24,9 @@
 
 .inspiration-popular .inspiration-popular-image img {
     border-radius: 10px 10px 0 0;
+    @media (max-width: 900px) {
+        border-radius: 10px;
+    }
 }
 
 .inspiration-popular .inspiration-popular-title {
@@ -31,10 +38,19 @@
     padding: 20px 20px 0;
     background: #fff;
     overflow-wrap: break-word;
+
+    @media (max-width: 900px) {
+        font-size: 14px;
+        line-height: 21px;
+        padding: 20px 12px 0;
+    }
 }
 
 .inspiration-popular .inspiration-popular-read-more {
-    padding: 16px 20px 0;
+    padding: 16px 0 20px 20px;
+    @media (max-width: 900px) {
+        padding: 16px 0 12px 12px;
+    }
 }
 
 .inspiration-popular .inspiration-popular-read-more a {
@@ -45,6 +61,11 @@
     color: #000;
     display: inline-block;
     margin-bottom: 40px;
+
+    @media (max-width: 900px) {
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
 }
 
 .inspiration-popular .inspiration-popular-read-more a:hover {
