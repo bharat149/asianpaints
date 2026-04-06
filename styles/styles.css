@@ -87,13 +87,13 @@ body {
   margin: 0;
   background-color: var(--background-color);
   color: var(--text-color);
-  font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
   line-height: 1.6;
 }
 
 body.appear {
   display: block;
+  font-family: var(--heading-font-family);
 }
 
 header {
@@ -107,9 +107,13 @@ header {
   /* 40px brand bar + 60px main header + 40px nav bar = 140px */
   height: 140px;
 
-  /* Prevent header layout changes from affecting main content */
-  contain: strict;
-  overflow: hidden;
+  /*
+   * Do not use contain:strict + overflow:hidden here: they establish a paint box that
+   * clips position:fixed descendants inside the header block. The brand bar uses
+   * translateY when “scrolled”, which then disappears entirely locally.
+   */
+  contain: none;
+  overflow: visible;
 }
 
 @media (width < 992px) {
@@ -451,27 +455,17 @@ main .section.read-tc-cta .button-container > a.button:focus-visible {
     box-shadow: none !important;
 }
 
-main .section.dark-blue  {
-  background-color: var(--navy-blue);
-  color: white;
-  margin: 0;
-  padding: 60px 0;
-}
 
 main .section.dark h2,
-main .section.dark h3,
-main .section.dark-blue h2,
-main .section.dark-blue h3 {
+main .section.dark h3 {
   color: white;
 }
 
-main .section.dark p,
-main .section.dark-blue p {
+main .section.dark p {
   color: rgb(255 255 255 / 90%);
 }
 
 /* Form styling in dark sections */
-main .section.dark-blue strong,
 main .section.dark strong {
   color: white;
   display: block;
@@ -480,7 +474,6 @@ main .section.dark strong {
   font-size: 1rem;
 }
 
-main .section.dark-blue em,
 main .section.dark em {
   color: rgb(255 255 255 / 70%);
   font-style: normal;

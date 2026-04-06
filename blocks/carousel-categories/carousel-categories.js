@@ -125,6 +125,20 @@ function buildCarousel(categoryIndex) {
   };
 }
 
+function updateActiveCarouselHeight(carouselWrappers, activeIndex) {
+  const activeCarousel = carouselWrappers[activeIndex];
+  const carouselsContainer = activeCarousel?.parentElement;
+
+  if (!activeCarousel || !carouselsContainer) return;
+
+  requestAnimationFrame(() => {
+    const activeHeight = activeCarousel.offsetHeight;
+    if (activeHeight) {
+      carouselsContainer.style.height = `${activeHeight}px`;
+    }
+  });
+}
+
 function setActiveCategory({
   activeIndex,
   tabButtons,
@@ -139,17 +153,21 @@ function setActiveCategory({
 
   carouselWrappers.forEach((carousel, index) => {
     const isActive = index === activeIndex;
-    carousel.hidden = !isActive;
     carousel.classList.toggle('is-active', isActive);
   });
 
   const activeSwiper = swiperInstances[activeIndex];
+
   if (activeSwiper) {
     requestAnimationFrame(() => {
       activeSwiper.update();
       if (activeSwiper.pagination?.render) activeSwiper.pagination.render();
       if (activeSwiper.pagination?.update) activeSwiper.pagination.update();
+
+      updateActiveCarouselHeight(carouselWrappers, activeIndex);
     });
+  } else {
+    updateActiveCarouselHeight(carouselWrappers, activeIndex);
   }
 }
 
@@ -157,11 +175,11 @@ export default async function decorate(block) {
   if (block.dataset.categoriesOfferInitialized === 'true') return;
 
   const section = block.closest('.section');
-  let sectionTitle = null
+  let sectionTitle = null;
 
   if (section) {
     section.classList.add('categories-offer-section');
-    sectionTitle = section.children[0]
+    sectionTitle = section.children[0];
   }
 
   const originalRows = getDirectRows(block);
@@ -241,9 +259,7 @@ export default async function decorate(block) {
 
     if (!swiperWrapper.children.length) return;
 
-    if (rowIndex !== 0) {
-      carouselWrap.hidden = true;
-    } else {
+    if (rowIndex === 0) {
       carouselWrap.classList.add('is-active');
     }
 
@@ -262,9 +278,12 @@ export default async function decorate(block) {
 
   const tabsContainer = document.createElement('div');
   tabsContainer.className = 'categories-offer__tabs-container';
-  tabsContainer.append(tabs)
-  
-  sidebar.prepend(sectionTitle)
+  tabsContainer.append(tabs);
+
+  if (sectionTitle) {
+    sidebar.prepend(sectionTitle);
+  }
+
   sidebar.appendChild(tabsContainer);
   content.appendChild(carouselsContainer);
   wrapper.append(sidebar, content);
@@ -273,6 +292,7 @@ export default async function decorate(block) {
   tabButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
       const filterOption = button.textContent.trim();
+
       if (filterOption) {
         trackEvent('filter_click', {
           filter: filterOption,
@@ -318,6 +338,7 @@ export default async function decorate(block) {
         on: {
           init(swiper) {
             if (index !== 0) return;
+
             requestAnimationFrame(() => {
               swiper.update();
               if (swiper.pagination?.render) swiper.pagination.render();
@@ -337,6 +358,13 @@ export default async function decorate(block) {
       tabButtons,
       carouselWrappers,
       swiperInstances,
+    });
+
+    window.addEventListener('resize', () => {
+      const activeIndex = tabButtons.findIndex((btn) => btn.classList.contains('is-active'));
+      if (activeIndex >= 0) {
+        updateActiveCarouselHeight(carouselWrappers, activeIndex);
+      }
     });
   } catch (error) {
     // eslint-disable-next-line no-console

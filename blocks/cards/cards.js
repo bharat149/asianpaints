@@ -42,7 +42,7 @@ export default function decorate(block) {
       });
     }
 
-    // Room variant only: make image clickable using CTA link
+    /* Room variant only: make image clickable using CTA link */
     if (isRoomBlock) {
       li.querySelectorAll('.cards-card-body p').forEach((p) => {
         const strong = p.querySelector('strong');
@@ -92,7 +92,7 @@ export default function decorate(block) {
         }
       });
 
-      // Room variant only: make image clickable using CTA link
+      /* Room variant only: make image clickable using CTA link */
       const imageWrapper = li.querySelector('.cards-card-image');
       const bodyWrapper = li.querySelector('.cards-card-body');
       const ctaLink = bodyWrapper?.querySelector('a[href]');
@@ -124,9 +124,35 @@ export default function decorate(block) {
   const imgWidth = '750';
   ul.querySelectorAll('picture > img').forEach((img) => {
     const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: imgWidth }]);
-    moveInstrumentation(img, optimizedPic.querySelector('img'));
+    const optimizedImg = optimizedPic.querySelector('img');
+
+    moveInstrumentation(img, optimizedImg);
+
+    // Copy existing intrinsic dimensions if present
+    const originalWidth = img.getAttribute('width') || img.naturalWidth;
+    const originalHeight = img.getAttribute('height') || img.naturalHeight;
+
+    if (originalWidth) optimizedImg.setAttribute('width', originalWidth);
+    if (originalHeight) optimizedImg.setAttribute('height', originalHeight);
+
+    optimizedImg.decoding = 'async';
+    optimizedImg.loading = 'lazy';
+    optimizedImg.setAttribute('fetchpriority', 'auto');
+
     img.closest('picture').replaceWith(optimizedPic);
   });
+
+  // Grid block: prioritize first visible image (but NOT as high priority)
+  if (isGrid) {
+    const firstGridImage = ul.querySelector(
+      '.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img'
+    );
+
+    if (firstGridImage) {
+      firstGridImage.loading = 'eager';
+      firstGridImage.setAttribute('fetchpriority', 'auto');
+    }
+  }
 
   if (!isServicesBlock && !isRoomBlock && !isBenefitsBlock) {
     ul.querySelectorAll('.cards-card-body p').forEach((p) => {
@@ -167,4 +193,60 @@ export default function decorate(block) {
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });
   });
+
+  if (isServicesBlock) {
+    const initServicesSwiper = async () => {
+      const isMobile = window.innerWidth < 768;
+
+      if (ul.servicesSwiper) {
+        ul.servicesSwiper.destroy(true, true);
+        ul.servicesSwiper = null;
+      }
+
+      ul.classList.remove('swiper');
+      ul.classList.remove('swiper-wrapper');
+      [...ul.children].forEach((li) => {
+        li.classList.remove('swiper-slide');
+      });
+
+      if (!isMobile) return;
+
+      ul.classList.add('swiper');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'swiper-wrapper';
+
+      const slides = [...ul.children];
+
+      slides.forEach((li) => {
+        li.classList.add('swiper-slide');
+        wrapper.appendChild(li);
+      });
+
+      ul.appendChild(wrapper);
+
+      let pagination = ul.parentElement.querySelector('.swiper-pagination');
+      if (!pagination) {
+        pagination = document.createElement('div');
+        pagination.className = 'swiper-pagination';
+        ul.parentElement.appendChild(pagination);
+      }
+
+      const Swiper = window.Swiper || (window.loadSwiper && await window.loadSwiper());
+      if (!Swiper) return;
+
+      ul.servicesSwiper = new Swiper(ul, {
+        slidesPerView: 1.2,
+        spaceBetween: 16,
+        loop: false,
+        pagination: {
+          el: pagination,
+          clickable: true,
+        },
+      });
+    };
+
+    initServicesSwiper();
+    window.addEventListener('resize', initServicesSwiper);
+  }
 }

@@ -1,12 +1,6 @@
 import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 export default function decorate(block) {
-  // Remove dark-blue class from parent section if present
-  const section = block.closest('.section');
-  if (section) {
-    section.classList.remove('dark-blue');
-  }
-
   // Get heading and description
   const heading = block.querySelector('h2, h3, h4');
   const description = block.querySelector('p');
@@ -68,7 +62,8 @@ export default function decorate(block) {
       contentDiv.className = 'interiors-shop-card-content';
 
       if (title) {
-        const titleEl = document.createElement('h5');
+        const titleEl = document.createElement('div');
+        titleEl.className = 'title';
         titleEl.textContent = title.textContent.trim();
         contentDiv.appendChild(titleEl);
       }
@@ -156,7 +151,7 @@ export default function decorate(block) {
       spaceBetween: 16,
       pagination: {
         el: paginationEl,
-        clickable: true,
+        clickable: false,
       },
     });
   }

@@ -36,11 +36,19 @@ function bindViewAllTracking(block) {
   });
 }
 
+function debounce(fn, delay = 150) {
+  let timer;
+  return (...args) => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => fn(...args), delay);
+  };
+}
+
 export default function decorate(block) {
   bindViewAllTracking(block);
 
-  const section = block.closest(".section");
-  if (section) section.classList.add("explore-split-wrapper");
+  const section = block.closest('.section');
+  if (section) section.classList.add('explore-split-wrapper');
 
   const rows = [...block.children];
   if (rows.length < 1) return;
@@ -48,8 +56,8 @@ export default function decorate(block) {
   const desktopRow = rows[0] || null;
   const mobileRow = rows[1] || null;
 
-  const isDesktop = window.matchMedia("(min-width: 992px)").matches;
-  const isMobile = window.matchMedia("(max-width: 991px)").matches;
+  const isDesktop = window.matchMedia('(min-width: 992px)').matches;
+  const isMobile = window.matchMedia('(max-width: 991px)').matches;
 
   /* ---------------- DESKTOP ---------------- */
 
@@ -60,11 +68,11 @@ export default function decorate(block) {
     const texturesHeadingCol = desktopCols[0];
     const texturesImagesCol = desktopCols[1];
 
-    desktopRow.classList.add("explore-split-desktop");
-    texturesHeadingCol.classList.add("textures-desktop");
-    texturesImagesCol.classList.add("wallpapers-desktop");
+    desktopRow.classList.add('explore-split-desktop');
+    texturesHeadingCol.classList.add('textures-desktop');
+    texturesImagesCol.classList.add('wallpapers-desktop');
 
-    const paragraphs = texturesHeadingCol.querySelectorAll("p");
+    const paragraphs = texturesHeadingCol.querySelectorAll('p');
     paragraphs.forEach((p, index) => {
       p.classList.add(`img-${index + 1}`);
     });
@@ -81,22 +89,22 @@ export default function decorate(block) {
     const texturesCol = mobileCols[0];
     const wallpapersCol = mobileCols[1];
 
-    mobileRow.classList.add("explore-split-mobile");
-    texturesCol.classList.add("textures-mobile");
-    wallpapersCol.classList.add("wallpapers-mobile");
+    mobileRow.classList.add('explore-split-mobile');
+    texturesCol.classList.add('textures-mobile');
+    wallpapersCol.classList.add('wallpapers-mobile');
 
-    const paragraphs = texturesCol.querySelectorAll("p");
+    const paragraphs = texturesCol.querySelectorAll('p');
     paragraphs.forEach((p, index) => {
       p.classList.add(`img-${index + 1}`);
     });
 
-    const texturesTab = texturesCol.querySelector("h3");
-    const wallpapersTab = wallpapersCol.querySelector("h3");
+    const texturesTab = texturesCol.querySelector('h3');
+    const wallpapersTab = wallpapersCol.querySelector('h3');
     if (!texturesTab || !wallpapersTab) return;
 
     /* Tabs */
-    const tabsNav = document.createElement("div");
-    tabsNav.className = "explore-mobile-tabs";
+    const tabsNav = document.createElement('div');
+    tabsNav.className = 'explore-mobile-tabs';
 
     const texturesTabClone = texturesTab.cloneNode(true);
     const wallpapersTabClone = wallpapersTab.cloneNode(true);
@@ -104,36 +112,40 @@ export default function decorate(block) {
     tabsNav.append(texturesTabClone, wallpapersTabClone);
     mobileRow.insertBefore(tabsNav, mobileRow.firstChild);
 
-    wallpapersCol.style.display = "none";
-    texturesCol.style.display = "block";
-    texturesTabClone.classList.add("active");
+    wallpapersCol.style.display = 'none';
+    texturesCol.style.display = 'block';
+    texturesTabClone.classList.add('active');
 
-    texturesTabClone.addEventListener("click", () => {
-      texturesCol.style.display = "block";
-      wallpapersCol.style.display = "none";
+    texturesTabClone.addEventListener('click', () => {
+      texturesCol.style.display = 'block';
+      wallpapersCol.style.display = 'none';
 
-      texturesTabClone.classList.add("active");
-      wallpapersTabClone.classList.remove("active");
+      texturesTabClone.classList.add('active');
+      wallpapersTabClone.classList.remove('active');
 
-      runLayout(texturesCol); // 🔥 recalc
+      runLayout(texturesCol);
     });
 
-    wallpapersTabClone.addEventListener("click", () => {
-      texturesCol.style.display = "none";
-      wallpapersCol.style.display = "grid";
+    wallpapersTabClone.addEventListener('click', () => {
+      texturesCol.style.display = 'none';
+      wallpapersCol.style.display = 'grid';
 
-      wallpapersTabClone.classList.add("active");
-      texturesTabClone.classList.remove("active");
+      wallpapersTabClone.classList.add('active');
+      texturesTabClone.classList.remove('active');
     });
 
     if (desktopRow) desktopRow.remove();
 
-    /* 🔥 INIT */
+    /* INIT */
     runLayout(texturesCol);
 
-    window.addEventListener("resize", () => {
-      runLayout(texturesCol);
-    });
+    const debouncedResize = debounce(() => {
+      if (texturesCol.style.display !== 'none') {
+        runLayout(texturesCol);
+      }
+    }, 150);
+
+    window.addEventListener('resize', debouncedResize);
   }
 }
 
@@ -141,11 +153,8 @@ export default function decorate(block) {
 
 function runLayout(container) {
   waitForImages(container, () => {
-    // 🔥 WAIT FOR PAINT (critical fix)
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        adjustTextureLayout(container);
-      });
+      applyTextureLayout(container);
     });
   });
 }
@@ -153,33 +162,35 @@ function runLayout(container) {
 /* ---------------- IMAGE LOAD HELPER ---------------- */
 
 function waitForImages(container, callback) {
-  const images = container.querySelectorAll("img");
-  let loaded = 0;
+  const images = container.querySelectorAll('img');
 
-  if (images.length === 0) {
+  if (!images.length) {
     callback();
     return;
   }
 
+  let loaded = 0;
+  const done = () => {
+    loaded += 1;
+    if (loaded === images.length) callback();
+  };
+
   images.forEach((img) => {
-    if (img.complete && img.naturalHeight !== 0) {
-      loaded++;
-      if (loaded === images.length) callback();
+    if (img.complete && img.naturalHeight > 0) {
+      done();
     } else {
-      img.addEventListener("load", () => {
-        loaded++;
-        if (loaded === images.length) callback();
-      });
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
     }
   });
 }
 
 /* ---------------- LAYOUT ---------------- */
 
-function adjustTextureLayout(container) {
-  if (!container || container.offsetParent === null) return;
+function applyTextureLayout(container) {
+  if (!container) return;
 
-  const items = container.querySelectorAll("p:not(.button-container)");
+  const items = container.querySelectorAll('p:not(.button-container)');
   if (items.length < 4) return;
 
   const img1 = items[0];
@@ -189,35 +200,47 @@ function adjustTextureLayout(container) {
 
   const gap = 12;
 
-  // reset
-  img1.style.top = "0px";
-  img2.style.top = "0px";
+  /* Reset all writes first */
+  img1.style.top = '0px';
+  img2.style.top = '0px';
+  img3.style.top = '0px';
+  img4.style.top = '0px';
 
-  // 🔥 robust height (never 0)
-  const h1 = getHeight(img1);
-  const h2 = getHeight(img2);
+  /* Read sizes once, after reset */
+  const h1 = getStableHeight(img1);
+  const h2 = getStableHeight(img2);
+  const h3 = getStableHeight(img3);
+  const h4 = getStableHeight(img4);
 
+  /* Apply final writes */
   img3.style.top = `${h1 + gap}px`;
   img4.style.top = `${h2 + gap}px`;
 
   const totalHeight = Math.max(
-    h1 + getHeight(img3),
-    h2 + getHeight(img4)
+    h1 + h3 + gap,
+    h2 + h4 + gap
   );
 
-  // container.style.height = `${totalHeight}px`;
+  if (totalHeight > 0) {
+    container.style.minHeight = `${totalHeight}px`;
+  }
 }
 
 /* ---------------- HEIGHT HELPER ---------------- */
 
-function getHeight(el) {
-  const rect = el.getBoundingClientRect().height;
-  if (rect > 0) return rect;
+function getStableHeight(el) {
+  if (!el) return 0;
 
-  const img = el.querySelector("img");
-  if (img) {
-    return img.clientHeight || img.naturalHeight || 0;
+  const img = el.querySelector('img');
+  if (!img) return 0;
+
+  const renderedWidth = img.offsetWidth;
+  const naturalWidth = img.naturalWidth;
+  const naturalHeight = img.naturalHeight;
+
+  if (renderedWidth > 0 && naturalWidth > 0 && naturalHeight > 0) {
+    return Math.round((renderedWidth / naturalWidth) * naturalHeight);
   }
 
-  return 0;
+  return img.offsetHeight || 0;
 }

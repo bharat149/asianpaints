@@ -8,15 +8,24 @@ function getSwiperClass() {
   return Promise.resolve(null);
 }
 
-function getImage(col) {
+function getImage(col, index) {
   const picture = col?.querySelector("picture")?.cloneNode(true);
   if (!picture) return null;
 
   const img = picture.querySelector("img");
 
   if (img) {
-    img.loading = "eager";
-    img.setAttribute("fetchpriority", "high");
+    if (index === 0) {
+      img.loading = "eager";
+      img.setAttribute("fetchpriority", "high");
+    } else {
+      img.loading = "lazy";
+      img.setAttribute("fetchpriority", "auto");
+    }
+
+    // Prevent layout shift (VERY IMPORTANT)
+    if (!img.width) img.width = 1200;
+    if (!img.height) img.height = 600;
   }
 
   return picture;
@@ -57,8 +66,6 @@ function bindMediaClickTracking(linkEl, ctaLink, bannerTitle) {
   });
 }
 
-
-
 export default async function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
@@ -71,8 +78,8 @@ export default async function decorate(block) {
   rows.forEach((row, index) => {
     const cols = [...row.children];
 
-    const desktopImg = getImage(cols[0]);
-    const mobileImg = getImage(cols[1]);
+    const desktopImg = getImage(cols[0], index);
+    const mobileImg = getImage(cols[1], index);
 
     const desktopVideo = cols[2]?.querySelector("a")?.href;
     const mobileVideo = cols[3]?.querySelector("a")?.href;
@@ -91,16 +98,17 @@ export default async function decorate(block) {
     mediaWrap.className = "hero-media";
 
     const isMobile = window.innerWidth < 768;
-    //VIDEO CASE
+
+    // VIDEO CASE
     if (desktopVideo || mobileVideo) {
-      const video = getVideo(
-        isMobile ? mobileVideo : desktopVideo,
-      );
+      const video = getVideo(isMobile ? mobileVideo : desktopVideo);
+
       if (video) {
         if (ctaLink) {
           const videoLink = document.createElement("a");
           videoLink.href = ctaLink;
           videoLink.className = "hero-video-link";
+          videoLink.setAttribute("aria-label", ctaText || "carousel-hero-banner");
 
           videoLink.appendChild(video);
           bindMediaClickTracking(videoLink, ctaLink, ctaText || "carousel-hero-banner");
@@ -110,10 +118,10 @@ export default async function decorate(block) {
         }
       }
 
-      //SAME image logic + fallback ONLY for mobile
+      // SAME image logic + fallback ONLY for mobile
       let picture;
       if (isMobile) {
-        picture = mobileImg
+        picture = mobileImg;
       } else {
         picture = desktopImg;
       }
@@ -129,20 +137,23 @@ export default async function decorate(block) {
       const overlay = document.createElement("div");
       overlay.className = "video-overlay";
       mediaWrap.appendChild(overlay);
-
     } else {
-      const picture =
-        isMobile && mobileImg ? mobileImg : desktopImg;
+      const picture = isMobile && mobileImg ? mobileImg : desktopImg;
 
       if (picture) {
         if (ctaLink) {
           const imgLink = document.createElement("a");
           imgLink.href = ctaLink;
           imgLink.className = "hero-media-link";
+          const imgAlt = picture.querySelector("img")?.alt?.trim() || "";
+          imgLink.setAttribute("aria-label", imgAlt || ctaText || "carousel-hero-banner");
 
           imgLink.appendChild(picture);
-          const imgAlt = picture.querySelector("img")?.alt?.trim() || "";
-          bindMediaClickTracking(imgLink, ctaLink, imgAlt || ctaText || "carousel-hero-banner");
+          bindMediaClickTracking(
+            imgLink,
+            ctaLink,
+            imgAlt || ctaText || "carousel-hero-banner"
+          );
           mediaWrap.appendChild(imgLink);
         } else {
           mediaWrap.appendChild(picture);
@@ -178,64 +189,74 @@ export default async function decorate(block) {
     const Swiper = await getSwiperClass();
     if (!Swiper) return;
 
-    const swiper = new Swiper(block, {
-      slidesPerView: 1,
-      speed: 800,
-      loop: false,
 
-      effect: "fade",
-      fadeEffect: { crossFade: true },
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
 
-      autoplay: {
-        delay: 5000,
-        disableOnInteraction: false,
-        stopOnLastSlide: false,
-      },
+        const swiper = new Swiper(block, {
+          slidesPerView: 1,
+          speed: 800,
+          loop: false,
 
-      pagination: {
-        el: paginationEl,
-        clickable: true,
+          effect: "fade",
+          fadeEffect: { crossFade: true },
 
-        renderBullet: function (index, className) {
-          const total = this.snapGrid.length;
+          autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+            stopOnLastSlide: false,
+            pauseOnMouseEnter: true, 
+          },
 
-          if (index === 0) {
-            return `
+          pagination: {
+            el: paginationEl,
+            clickable: true,
+
+            renderBullet: function (index, className) {
+              const total = this.snapGrid.length;
+
+              if (index === 0) {
+                return `
               <span class="swiper-button-prev custom-arrow"></span>
               <span class="${className}" data-index="${index}"></span>
             `;
-          }
+              }
 
-          if (index === total - 1) {
-            return `
+              if (index === total - 1) {
+                return `
               <span class="${className}" data-index="${index}"></span>
               <span class="swiper-button-next custom-arrow"></span>
             `;
-          }
+              }
 
-          return `<span class="${className}" data-index="${index}"></span>`;
-        },
-      },
+              return `<span class="${className}" data-index="${index}"></span>`;
+            },
+          },
 
-      on: {
-        init(swiper) {
-          handleVideo(swiper);
-          bindArrowEvents(swiper);
-          toggleArrows(swiper);
-        },
+          on: {
+            init(swiper) {
+              handleVideo(swiper);
+              bindArrowEvents(swiper);
+              toggleArrows(swiper);
+            },
 
-        slideChange(swiper) {
-          toggleArrows(swiper);
-        },
+            slideChange(swiper) {
+              toggleArrows(swiper);
+            },
 
-        slideChangeTransitionStart(swiper) {
-          handleVideo(swiper);
-        },
+            slideChangeTransitionStart(swiper) {
+              handleVideo(swiper);
+            },
 
-        slideChangeTransitionEnd(swiper) {
-          toggleArrows(swiper);
-        },
-      },
+            slideChangeTransitionEnd(swiper) {
+              toggleArrows(swiper);
+            },
+          },
+        });
+
+        block.heroSwiper = swiper;
+
+      });
     });
 
     function bindArrowEvents(swiper) {

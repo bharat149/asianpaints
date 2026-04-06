@@ -27,7 +27,7 @@ calculatorBlocks.forEach((block) => {
 // Select all direct div children of .inspiration-calculator
 const calculatorDivs = document.querySelectorAll('.inspiration-calculator > div');
 
-calculatorDivs.forEach(div => {
+calculatorDivs.forEach((div) => {
   const children = Array.from(div.children);
   if (children.length === 0) return; // Skip if no children
 
@@ -45,11 +45,11 @@ calculatorDivs.forEach(div => {
 
     // Process remaining children
     const remainingChildren = children.slice(1);
-    remainingChildren.forEach(child => {
+    remainingChildren.forEach((child) => {
       const link = child.querySelector('a');
       if (link) {
         // Get the href
-        const href = link.href;
+        const { href } = link;
 
         // Remove the original link from the DOM
         link.remove();
@@ -57,7 +57,7 @@ calculatorDivs.forEach(div => {
         // Create new "Calculate Now" anchor
         const calculateNowLink = document.createElement('a');
         calculateNowLink.href = href;
-        calculateNowLink.textContent = 'Calculate Now';
+        calculateNowLink.innerHTML = 'Calculate Now <img src="/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">';
         calculateNowLink.classList.add('calculate-now-link'); // optional class
         contentWrapper.appendChild(calculateNowLink);
       } else {

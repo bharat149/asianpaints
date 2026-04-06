@@ -13,7 +13,7 @@ export default function decorate(block) {
 
   // scope links inside block
   block.querySelectorAll('a').forEach((a) => {
-    a.textContent = 'Read more';
+    a.innerHTML = `Read more <img src="/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">`;
   });
 
   block.addEventListener('click', (event) => {

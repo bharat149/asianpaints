@@ -72,10 +72,24 @@
   width: 100%;
 }
 
+@media (min-width:992px) {
+  .form.block .form-fields-area {
+    gap: 0;
+  }
+
+  .form.block .form-consent-area {
+    margin-top: 0px;
+  }
+
+  .form.block .form-button-cell {
+    margin-top: 25px !important;
+  }
+}
+
 .form.block .form-inputs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -94,7 +108,7 @@
 
 .form.block .form-field-label {
   position: absolute;
-  top: -10px;
+  top: -7px;
   left: 18px;
   z-index: 2;
   display: inline-flex;
@@ -103,7 +117,7 @@
   padding: 0 8px;
   background: #fff;
   color: #53565a;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   pointer-events: none;
@@ -118,7 +132,7 @@
 }
 
 .form.block .form-field-required {
-  color: #ff8a80;
+  color: #fff;
 }
 
 .form.block .form-input,
@@ -130,7 +144,7 @@
   border-radius: 8px;
   background-color: transparent;
   color: #53565a;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.2;
   box-sizing: border-box;
   box-shadow: none;
@@ -158,6 +172,29 @@
 .form.block .form-field.has-value .form-input,
 .form.block .form-field:not(.is-focused):not(.has-value) .form-input {
   border-color: #53565a;
+}
+
+.form.block .form-input-prefix-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.form.block .form-input-prefix {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: #53565a;
+  font-size: 16px;
+  line-height: 1.2;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.form.block .form-input.form-input--with-prefix,
+.form.block .form-control.form-input.form-input--with-prefix {
+  padding-left: 62px;
 }
 
 .form.block .form-consent-area {
@@ -196,6 +233,7 @@
   font-weight: 400;
   line-height: 16.8px;
 }
+
 .form.block .form-consent-text-whatsapp {
   color: #000000;
   font-weight: 500;
@@ -203,11 +241,11 @@
 
 .form.block .form-consent-box {
   position: relative;
-  flex: 0 0 22px;
-  width: 22px;
-  height: 22px;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
   border: 1px solid #b0b1b3;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   transition: all 0.2s ease;
 }
@@ -222,10 +260,10 @@
   position: absolute;
   top: 4px;
   left: 7px;
-  width: 6px;
-  height: 12px;
-  border-right: 2px solid #011c5f;
-  border-bottom: 2px solid #011c5f;
+  width: 5px;
+  height: 10px;
+  border-right: 2px solid #b0b1b3;
+  border-bottom: 2px solid #b0b1b3;
   transform: rotate(45deg);
 }
 
@@ -261,10 +299,11 @@
 
 .form.block .form-consent-note {
   color: #53565a;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 16.3px;
   max-width: 920px;
   font-weight: 300;
+  letter-spacing: .5px;
 }
 
 .form.block .form-button-cell {
@@ -282,9 +321,8 @@
   justify-content: center;
   gap: 10px;
   padding: 8px 22px;
-  border: 2px solid #fcaf17;
   border-radius: 30px;
-  background: #fcaf17;
+  background: var(--gradient, linear-gradient(180deg, #fec940, #f90)) !important;
   color: #1a1a1a;
   font-size: 16px;
   font-weight: 700;
@@ -293,30 +331,58 @@
   white-space: nowrap;
   text-decoration: none;
   box-shadow: none;
-  transition: all 0.3s ease;
 }
 
-.form.block .form-submit::after {
-  content: ' ';
-background-image: url("/icons/arrow-icon-new.svg");
-background-repeat: no-repeat;
-width: 20px;
-height: 18px;
-object-fit:cover;
-filter: invert(1);
-align-self: center;
+.form.block .form-submit__label,
+.form.block .form-submit__arrow,
+.form.block .rotating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form.block .form-submit__arrow {
+  width: 20px;
+  height: 18px;
+  background-image: url("/icons/arrow-icon-new.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: invert(1);
+  align-self: center;
+}
+
+.form.block .rotating {
+  font-size: 16px;
+  line-height: 1;
+  animation: form-submit-spin 1s linear infinite;
+}
+
+.form.block .d-none {
+  display: none !important;
+}
+
+@keyframes form-submit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form.block .form-submit:hover,
 .form.block .btn.form-submit:hover {
-  background: #ffca28;
+  background: #fed440 !important;
   border-color: #ffca28;
   color: #1a1a1a;
- 
 }
-.form.block .form-submit:hover,
-.form.block .btn.form-submit:hover::after {
-   transform: translateX(2px);
+
+.form.block .form-submit:hover .form-submit__arrow,
+.form.block .btn.form-submit:hover .form-submit__arrow {
+  transform: translateX(2px);
 }
 
 .form.block .form-submit:focus,
@@ -391,7 +457,8 @@ align-self: center;
   clip-path: inset(0 round 20px);
 }
 
-.form.block .form-popup-success-cta , .form.block .explore-now-rewamp {
+.form.block .form-popup-success-cta,
+.form.block .explore-now-rewamp {
   position: absolute;
   opacity: 0;
   z-index: 2;
@@ -532,11 +599,11 @@ align-self: center;
 }
 
 .form-field-error {
-  min-height: 20px;
-  margin-top: 8px;
-  font-size: 14px;
+  min-height: 1px;
+  margin-top: 4px;
+  font-size: 12px;
   line-height: 1.2;
-  color: #ff2343;
+  color: #ed1c24;
   text-align: left;
 }
 
@@ -552,25 +619,29 @@ align-self: center;
 
 /* Tablet */
 @media (width <=991px) {
-    .intereseted-cta {
-        top: 37%;
-        left: 50%;
-        padding: 0;
-        transform: translate(-50%, -42%);
-        width: 52%;
-        height: 40px;
-        position: absolute;
-        border-radius: 20px;
-      }
-      .thank-you-pop-two .thank-img-desk {
-        display: none;
-      }
+  .intereseted-cta {
+    top: 37%;
+    left: 50%;
+    padding: 0;
+    transform: translate(-50%, -42%);
+    width: 52%;
+    height: 40px;
+    position: absolute;
+    border-radius: 20px;
+  }
+
+  .thank-you-pop-two .thank-img-desk {
+    display: none;
+  }
+
   .form.block .form-title-small {
     margin: 0;
   }
+
   .form.block .form-title-small p {
     margin: 0;
   }
+
   .form.block {
     padding: 40px;
     border-radius: 0 !important;
@@ -596,21 +667,21 @@ align-self: center;
     gap: 22px 24px;
   }
 
-    .form.block .form-popup-success-cta {
-      bottom: 50%;
-      right: 6%;
-      width: 31%;
-      height: 16%;
-      transform: translateY(93%);
-    }
-  
-    .form.block .explore-now-rewamp {
-      width: 29%;
-      height: 13%;
-      bottom: 50%;
-      right: 6%;
-      transform: translateY(93%);
-    }
+  .form.block .form-popup-success-cta {
+    bottom: 50%;
+    right: 6%;
+    width: 31%;
+    height: 16%;
+    transform: translateY(93%);
+  }
+
+  .form.block .explore-now-rewamp {
+    width: 29%;
+    height: 13%;
+    bottom: 50%;
+    right: 6%;
+    transform: translateY(93%);
+  }
 
   .form.block .form-error-popup {
     grid-template-columns: 1fr;
@@ -688,7 +759,6 @@ align-self: center;
 /* Mobile */
 @media (width <=600px) {
   .section.form-container {
-    /* padding: 20px 16px; */
     padding: 0;
   }
 
@@ -723,6 +793,7 @@ align-self: center;
   .form.block .form-subtitle {
     font-size: 14px;
   }
+
   .form.block .form-subtitle p {
     font-size: inherit;
     margin-bottom: 0;
@@ -750,6 +821,16 @@ align-self: center;
     border-radius: 12px;
   }
 
+  .form.block .form-input-prefix {
+    left: 18px;
+    font-size: 16px;
+  }
+
+  .form.block .form-input.form-input--with-prefix,
+  .form.block .form-control.form-input.form-input--with-prefix {
+    padding-left: 62px;
+  }
+
   .form.block .form-consent-area {
     gap: 18px;
   }
@@ -764,8 +845,8 @@ align-self: center;
     width: 100%;
     gap: 16px;
   }
-  .form.block .form-consent-item:nth-of-type(1)
-  {
+
+  .form.block .form-consent-item:nth-of-type(1) {
     margin-bottom: 10px;
   }
 
@@ -816,24 +897,25 @@ align-self: center;
   }
 }
 
+/* Form Verical Variant - Home page   */
 
-/*Form Verical Variant - Home page   */
-
-@media(min-width:992px) {
+@media (min-width: 992px) {
   .intereseted-cta {
-      left: 34%;
-      bottom: 20%;
-      padding: 0;
-      height: 10%;
-      width: 16%;
-      transform: translateX(-4px);
-      position: absolute;
-      border-radius: 20px;
-    }
-         .thank-you-pop-two .thank-img-mob {
-        display: none;
-      }
-  .section.form-container .form.block .form-row{
+    left: 34%;
+    bottom: 20%;
+    padding: 0;
+    height: 10%;
+    width: 16%;
+    transform: translateX(-4px);
+    position: absolute;
+    border-radius: 20px;
+  }
+
+  .thank-you-pop-two .thank-img-mob {
+    display: none;
+  }
+
+  .section.form-container .form.block .form-row {
     padding: 51px 47px 38px 70px;
   }
 
@@ -858,7 +940,7 @@ align-self: center;
 
   .form.block .form-consent-options-right {
     display: flex;
-    gap: 28px 34px;
+    gap: 0 18px;
   }
 
   .form.block .form-button-cell {
@@ -872,7 +954,6 @@ align-self: center;
 
   .form.block .form-row .form-fields-area {
     flex: 0 70%;
-
   }
 }
 
@@ -885,25 +966,24 @@ align-self: center;
     flex: 0 40%;
     min-width: unset;
     max-width: unset;
-
   }
 
   .form.block .form-row .form-fields-area {
     flex: 0 60%;
-
   }
 }
+
 /* ============================================
    Variant: Form — Blue Form
    ============================================ */
 
 .form.block.blue-form {
-  background-color: #3d5a80;
+  background-color: #425E8E;
 }
 
 .form.block.blue-form .form-field-label {
   color: #fff;
-  background: #3d5a80;
+  background: #425E8E;
 }
 
 .form.block.blue-form .form-input,
@@ -928,6 +1008,10 @@ align-self: center;
 .form.block.blue-form .form-field.has-value .form-input,
 .form.block.blue-form .form-field:not(.is-focused):not(.has-value) .form-input {
   border-color: #fff;
+}
+
+.form.block.blue-form .form-input-prefix {
+  color: #fff;
 }
 
 .form.block.blue-form .form-consent-text {
@@ -956,4 +1040,36 @@ align-self: center;
   font-weight: 300;
   line-height: 30px;
   word-wrap: break-word;
+  max-width: 95%;
+}
+
+.form.block.blue-form .form-submit:hover .form-submit__arrow,
+.form.block.blue-form .btn.form-submit:hover .form-submit__arrow {
+  transform: translateX(2px);
+  filter: invert(0);
+}
+
+.form.block.blue-form .form-submit:hover,
+.form.block.blue-form .btn.form-submit:hover {
+  background: transparent !important;
+  border: 1px solid #fff !important;
+  color: #fff !important;
+}
+
+/* Tablet and below adjustments for blue form*/
+@media screen and (max-width: 992px) {
+  .form.block.blue-form .form-title-small {
+    font-size: 24px;
+    padding-bottom: 0;
+    line-height: 36px;
+  }
+
+  .form.block.blue-form .form-title-large {
+    font-size: 14px;
+    line-height: 21px;
+    margin-top: 8px;
+    font-weight: 500;
+    margin-bottom: 0;
+    letter-spacing: .5px;
+  }
 }

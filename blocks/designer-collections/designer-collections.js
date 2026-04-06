@@ -116,7 +116,6 @@ function createVideoElement(src, title) {
 
   video.addEventListener('ended', () => {
     video.pause();
-    video.currentTime = 0;
   });
 
   return video;
@@ -130,14 +129,19 @@ function bindHoverPlayback(target, mediaEl) {
       mediaEl.pause();
       mediaEl.currentTime = 0;
       await mediaEl.play();
-    } catch (e) {
-      // no-op
-    }
+    } catch (e) { }
   });
 
+  // ⏹️ Hover out → reset
   target.addEventListener('mouseleave', () => {
     mediaEl.pause();
     mediaEl.currentTime = 0;
+  });
+
+  // ✅ When video ends → DO NOTHING (stay at last frame)
+  mediaEl.addEventListener('ended', () => {
+    mediaEl.pause();
+    // ❌ no reset here
   });
 }
 
@@ -258,7 +262,7 @@ export default async function decorate(block) {
     const mediaEl = createVideoElement(mediaSrc, title);
     if (mediaEl) {
       mediaWrap.appendChild(mediaEl);
-      bindHoverPlayback(cardInner, mediaEl);
+      bindHoverPlayback(mediaWrap, mediaEl);
     }
 
     const content = document.createElement('div');
@@ -295,6 +299,8 @@ export default async function decorate(block) {
     ctaIcon.src = 'https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon-shade-tool.svg';
     ctaIcon.alt = '';
     ctaIcon.setAttribute('aria-hidden', 'true');
+    ctaIcon.setAttribute('width', '18');
+    ctaIcon.setAttribute('height', '18');
 
     cta.appendChild(ctaText);
     cta.appendChild(ctaIcon);
@@ -360,8 +366,8 @@ export default async function decorate(block) {
           spaceBetween: 10,
         },
         900: {
-          slidesPerView: 4,
-          spaceBetween: 42,
+          slidesPerView: 3.4,
+          spaceBetween: 50,
         },
       },
       on: {

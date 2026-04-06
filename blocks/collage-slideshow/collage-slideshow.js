@@ -69,12 +69,25 @@ function buildImageMedia(cell, altText = '') {
 
   if (tag === 'picture') {
     const img = media.querySelector('img');
-    if (img && !img.alt) img.alt = altText;
+    if (img) {
+      if (!img.alt) img.alt = altText;
+
+      // Apply lazy loading to all images in this block
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.setAttribute('fetchpriority', 'auto');
+    }
     return media;
   }
 
   if (tag === 'img') {
     if (!media.alt) media.alt = altText;
+
+    // Apply lazy loading to standalone img too
+    media.loading = 'lazy';
+    media.decoding = 'async';
+    media.setAttribute('fetchpriority', 'auto');
+
     return media;
   }
 

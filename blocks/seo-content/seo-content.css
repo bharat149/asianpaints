@@ -16,6 +16,13 @@
     font-weight: 600;
 }
 
+.seo-content.block h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+    margin-top: 2.5rem;
+}
+
 .seo-content.block p {
     font-size: 14px;
     letter-spacing: .5px;
@@ -34,9 +41,22 @@
     padding: 0 16px;
 }
 
+.seo-content.block ul li {
+    font-size: 14px;
+    color: #222;
+    margin-bottom: 14px;
+    letter-spacing: .5px;
+    line-height: 22px;
+}
+
+.seo-content.block ul li a{
+    color: #00e;
+    text-decoration: underline;
+}
+
 .seo-content.block ul li::marker {
-    font-size: 20px;
-    font-weight: 600;
+    font-size: inherit;
+    font-weight: inherit;
 }
 
 .seo-content.block ul li p:nth-child(1) {
@@ -55,6 +75,16 @@
 .seo-content.block.hide-list-style li {
     list-style: none;
 }
+
+
+/* ============================================
+   Variant: List Padding 1
+   ============================================ */
+.seo-content.block.list-padding-1 ul {
+    margin-top: 0;
+    padding-left: 20px;
+}
+
 
 
 /* Responsive */
