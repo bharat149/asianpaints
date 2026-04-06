@@ -49,7 +49,7 @@ function cleanUpXwalkContent() {
   deleteDirectory('models');
 
   // Process blocks directory
-  const blocksDir = 'blocks';
+  const blocksDir = 'eds/blocks';
   if (fs.existsSync(blocksDir)) {
     // Delete block JSON files
     const blockDirs = fs.readdirSync(blocksDir);
