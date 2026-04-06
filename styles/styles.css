@@ -30,6 +30,7 @@
   --black: #000;
   --navy-blue: #011c5f;
   --cream-bg: #fefcf7;
+  --dark-cream-bg: #ece5d7;
   ;
   --text-color-muted: #666;
   --text-color-dark: #1a1a1a;
@@ -358,6 +359,10 @@ main .section.dark {
 
 main .section.cream {
   background: var(--cream-bg);
+}
+
+main .section.dark-cream {
+  background: var(--dark-cream-bg);
 }
 
 /* Yellow section - Asian Paints */
