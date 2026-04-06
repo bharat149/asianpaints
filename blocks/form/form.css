@@ -1,7 +1,7 @@
 /* Override section and wrapper inherited styles */
 .section.form-container {
-  background-color: transparent !important;
   padding: 0 40px;
+  margin: 0;
 }
 
 .section.form-container>.form-wrapper {

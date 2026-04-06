@@ -102,7 +102,7 @@ function applyBootstrapHelpers(block) {
   const section = block.closest('.section.form-container');
   const wrapper = block.closest('.form-wrapper');
 
-  section?.classList.add('bg-transparent');
+  // section?.classList.add('bg-transparent');
   wrapper?.classList.add('m-0', 'p-0', 'w-100');
   block.classList.add('position-relative', 'overflow-hidden', 'w-100');
 }
