@@ -32,7 +32,7 @@
       "id": "blocks",
       "components": [
         {
-          "...": "../blocks/*/_*.json#/definitions"
+          "...": "../eds/blocks/*/_*.json#/definitions"
         }
       ]
     }
