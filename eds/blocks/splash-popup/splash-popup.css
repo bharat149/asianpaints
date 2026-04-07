@@ -1,0 +1,326 @@
+/* ============================================
+   Splash Popup — two-panel promotional overlay
+   ============================================ */
+
+.splash-popup {
+  display: none;
+}
+
+.splash-dialog::backdrop {
+  background: rgb(0 0 0 / 80%);
+}
+
+.splash-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: 70%;
+  height: 70%;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: none;
+  border-radius: 4%;
+  background: transparent;
+  overflow: hidden;
+}
+
+.splash-dialog .splash-close-btn {
+  position: absolute;
+  top: 3%;
+  right: 1%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.splash-dialog .splash-close-btn::before,
+.splash-dialog .splash-close-btn::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+}
+
+.splash-dialog .splash-close-btn::before {
+  transform: rotate(45deg);
+}
+
+.splash-dialog .splash-close-btn::after {
+  transform: rotate(-45deg);
+}
+
+/* Body — side-by-side panels */
+.splash-dialog .splash-body {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+/* Shared panel rules */
+.splash-dialog .splash-left,
+.splash-dialog .splash-right {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Left panel — BH background image */
+.splash-dialog .splash-left {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 4% 0 0 4%;
+}
+
+/* Right panel — solid colour */
+.splash-dialog .splash-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #9c6b60;
+  border-radius: 0 4% 4% 0;
+}
+
+/* Circle image in right panel */
+.splash-dialog .splash-circle-image {
+  width: auto;
+  height: 80%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Logos */
+.splash-dialog .splash-logo {
+  position: absolute;
+  top: 4%;
+  left: 4.5%;
+  object-fit: contain;
+}
+
+.splash-dialog .splash-logo-bh {
+  width: 135px;
+  height: auto;
+}
+
+.splash-dialog .splash-logo-ap {
+  width: 154px;
+  height: 29px;
+}
+
+/* Text block */
+.splash-dialog .splash-text {
+  position: absolute;
+  bottom: 40%;
+  left: 4.5%;
+  width: auto;
+}
+
+.splash-dialog .splash-right .splash-text {
+  left: 24%;
+  width: 55%;
+}
+
+.splash-dialog .splash-heading-one {
+  font-size: 2.3vw;
+  line-height: 2.3vw;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 5px;
+  max-width: 95%;
+}
+
+.splash-dialog .splash-heading-two {
+  font-size: 1.3vw;
+  line-height: 1.4vw;
+  font-weight: 400;
+  color: #fff;
+}
+
+/* CTA buttons */
+.splash-dialog .splash-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0 16px;
+  height: 40px;
+  border: none;
+  border-radius: 20px;
+  background: #f7c948;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.splash-dialog .splash-cta:hover,
+.splash-dialog .splash-cta:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.splash-dialog .splash-cta .splash-arrow {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s;
+}
+
+.splash-dialog .splash-cta:hover .splash-arrow {
+  transform: translateX(4px);
+}
+
+/* ── Tablet (768–991 px) ── */
+@media (width <= 991px) {
+  .splash-dialog {
+    width: 85%;
+    height: 80%;
+  }
+
+  .splash-dialog .splash-body {
+    flex-direction: column;
+  }
+
+  .splash-dialog .splash-left,
+  .splash-dialog .splash-right {
+    width: 100%;
+    height: 50%;
+  }
+
+  .splash-dialog .splash-left {
+    border-radius: 4% 4% 0 0;
+  }
+
+  .splash-dialog .splash-right {
+    border-radius: 0 0 4% 4%;
+  }
+
+  .splash-dialog .splash-close-btn {
+    top: 1%;
+    right: 1.5%;
+  }
+
+  .splash-dialog .splash-close-btn::before,
+  .splash-dialog .splash-close-btn::after {
+    width: 14px;
+  }
+
+  .splash-dialog .splash-logo-bh {
+    top: 5%;
+    width: 95px;
+  }
+
+  .splash-dialog .splash-logo-ap {
+    top: 3%;
+    width: 84px;
+    height: 16px;
+  }
+
+  .splash-dialog .splash-text {
+    left: 25%;
+    bottom: 38%;
+  }
+
+  .splash-dialog .splash-right .splash-text {
+    left: 25%;
+    bottom: 38%;
+  }
+
+  .splash-dialog .splash-heading-one {
+    font-size: 18px;
+    line-height: 18px;
+    margin-bottom: 3px;
+  }
+
+  .splash-dialog .splash-heading-two {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+  }
+
+  .splash-dialog .splash-cta {
+    margin-top: 8px;
+    font-size: 10px;
+    padding: 0 8px;
+    height: 30px;
+  }
+
+  .splash-dialog .splash-circle-image {
+    height: 90%;
+  }
+}
+
+/* ── Larger tablets (481–991 px) ── */
+@media (width >= 481px) and (width <= 991px) {
+  .splash-dialog .splash-text {
+    left: 35%;
+    bottom: 45%;
+  }
+
+  .splash-dialog .splash-right .splash-text {
+    left: 35%;
+    bottom: 45%;
+  }
+}
+
+/* ── Small phones (≤ 400 px) ── */
+@media (width <= 400px) {
+  .splash-dialog {
+    width: 95%;
+    height: 85%;
+  }
+
+  .splash-dialog .splash-text {
+    bottom: 35%;
+  }
+
+  .splash-dialog .splash-right .splash-text {
+    bottom: 35%;
+    width: 51%;
+  }
+
+  .splash-dialog .splash-logo-bh {
+    top: 4%;
+    left: 2.5%;
+  }
+
+  .splash-dialog .splash-logo-ap {
+    top: 2%;
+    left: 2.5%;
+  }
+
+  .splash-dialog .splash-heading-one {
+    font-size: 16px;
+    line-height: 16px;
+  }
+
+  .splash-dialog .splash-cta {
+    padding: 0 4px;
+    gap: 2px;
+  }
+}
+
+/* ── Aspect-ratio edge case on desktop ── */
+@media (width >= 992px) and (aspect-ratio <= 1.6) {
+  .splash-dialog .splash-circle-image {
+    width: 80%;
+    height: auto;
+  }
+}
