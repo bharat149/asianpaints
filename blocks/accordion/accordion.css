@@ -27,6 +27,7 @@
     margin: 0 auto;
     padding: 0 4%;
     box-sizing: border-box;
+    padding-bottom: 50px;
 }
 
 /* Each FAQ item = AEM each-container */

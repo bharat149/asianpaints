@@ -1,5 +1,6 @@
 .popular-shades-container {
   padding: 0 !important;
+  max-height: 650px;
 }
 
 .popular-shades-container .popular-shades-wrapper,
@@ -58,10 +59,7 @@
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.popular-shades__picture img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .popular-shades__content {
@@ -69,17 +67,17 @@
   flex: 0 0 420px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 88px 64px 48px;
   box-sizing: border-box;
+  padding-top: 7%;
+  padding-left: 2%;
 }
 
 .popular-shades__title {
   margin: 0 0 28px;
   font-size: clamp(46px, 5vw, 80px);
-  line-height: 0.95;
+  line-height: 70.4px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: .62px;
   color: #111;
 }
 
@@ -93,9 +91,11 @@
 
 .popular-shades__description {
   margin: 0 0 36px;
-  font-size: 18px;
-  line-height: 1.45;
+  font-size: 16px;
+  line-height: 22px;
   color: #222;
+  font-weight: 500;
+  max-width: 80%;
 }
 
 .popular-shades__cta {
@@ -104,13 +104,13 @@
   justify-content: space-between;
   gap: 14px;
   width: fit-content;
-  min-height: 48px;
+  height: 38px;
   padding: 10px 24px;
   border: 1px solid #2d2d2d;
   border-radius: 999px;
   text-decoration: none;
   color: #2d2d2d;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1;
   margin-top: 20px;
@@ -130,8 +130,8 @@
 
 .popular-shades__swatches {
   width: 100%;
-  margin-top: 18px;
-  padding: 0 32px;
+  margin-top: -50px;
+  padding: 0 38px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -229,7 +229,6 @@
   margin-top: 2px;
   font-size: 14px;
   line-height: 1.3;
-  color: #5b5b5b;
   text-align: center;
   font-size: 10px;
   line-height: 9px;
@@ -365,7 +364,7 @@
 
 @media (min-width:992px) {
   .popular-shades__media {
-    width: 70%;
+    width: 69%;
     flex: unset;
     min-width: unset;
   }
