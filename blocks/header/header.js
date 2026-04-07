@@ -13,6 +13,14 @@
  */
 
 import { getMetadata, decorateIcons } from '../../scripts/aem.js';
+import {
+  getDigitalData,
+  trackEvent,
+  trackNoResultFound,
+  trackImageSearchStart,
+  trackImageSearchClose,
+  trackImageSearchComplete,
+} from '../../scripts/analytics.js';
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
@@ -755,6 +763,11 @@ async function uploadVisualSearchImage(file, modal) {
       }
 
       if (typeof data?.totalCount !== 'undefined') {
+        const totalCount = Number(data.totalCount) || 0;
+        trackImageSearchComplete(totalCount);
+        if (totalCount === 0) {
+          trackNoResultFound('Image');
+        }
         localStorage.setItem('uploaded-image-search-name', fileName.replace(/\.[^.]+$/, ''));
         window.location.href = `${getApApi().SEARCH_RESULTS}?variantType=visualsearch&ts=${Date.now()}`;
         return;
@@ -2196,7 +2209,7 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
   const dropdownInner = document.createElement('div');
   dropdownInner.className = 'dropdown-inner';
 
-  const buildMenuLinkItem = (itemLi) => {
+  const buildMenuLinkItem = (itemLi, subsectionNameParent) => {
     const li = document.createElement('li');
     const a = itemLi.querySelector('a');
     if (!a) return li;
@@ -2206,6 +2219,10 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
     link.textContent = a.textContent.trim();
 
     const text = a.textContent.trim();
+    link.dataset.siteSection = parentLabel;
+    link.dataset.subSection = subsectionNameParent || parentLabel;
+    link.dataset.subSectionTwo = text;
+
     if (text === 'Textures For You' || text === 'Shade Cards') {
       const badge = document.createElement('span');
       badge.className = 'new-badge';
@@ -2242,6 +2259,7 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
     const itemsUl = colLi.querySelector(':scope > ul');
     if (itemsUl) {
       const itemLis = [...itemsUl.querySelectorAll(':scope > li')];
+      const subsectionNameParent = headingText || parentLabel;
 
       if (itemLis.length >= 8) {
         column.classList.add('dropdown-column-wide');
@@ -2255,7 +2273,7 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
         secondaryList.className = 'dropdown-links';
 
         itemLis.forEach((itemLi, index) => {
-          const li = buildMenuLinkItem(itemLi);
+          const li = buildMenuLinkItem(itemLi, subsectionNameParent);
           if (index < 7) {
             primaryList.appendChild(li);
           } else {
@@ -2270,7 +2288,7 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
         linkList.className = 'dropdown-links';
 
         itemLis.forEach((itemLi) => {
-          linkList.appendChild(buildMenuLinkItem(itemLi));
+          linkList.appendChild(buildMenuLinkItem(itemLi, subsectionNameParent));
         });
 
         column.appendChild(linkList);
@@ -2482,6 +2500,7 @@ function buildVisualSearchModal() {
   const close = () => {
     overlay.classList.remove('active');
     resetState();
+    trackImageSearchClose();
   };
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', (e) => {
@@ -2620,6 +2639,111 @@ function isDesktopViewport() {
   return window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
 }
 
+function getNavSectionName(navItem, navLink) {
+  if (!navItem || !navLink) return '';
+
+  let sectionName = navLink.querySelector('span')?.textContent?.trim() || '';
+  if (!sectionName) sectionName = navLink.textContent?.trim() || '';
+  if (!sectionName) sectionName = navLink.querySelector('.menu-title')?.textContent?.trim() || '';
+  if (!sectionName && navItem.classList.contains('nav-home')) sectionName = 'Home';
+  if (!sectionName) sectionName = navLink.getAttribute('aria-label')?.trim() || '';
+
+  return sectionName;
+}
+
+function trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName) {
+  if (!sectionName && !subsectionNameParent && !subsectionName) return;
+
+  const sectionData = {
+    siteSection: sectionName,
+    subSection: subsectionNameParent,
+    subSectionTwo: subsectionName,
+  };
+
+  getDigitalData().section = sectionData;
+  trackEvent('subsection_two_click', sectionData);
+}
+
+function bindDropdownLinkAnalytics(block) {
+  block.querySelectorAll('.dropdown-links li a').forEach((link) => {
+    if (link.dataset.analyticsBound === 'true') return;
+
+    link.dataset.analyticsBound = 'true';
+    link.addEventListener('click', (event) => {
+      const sectionName = link.dataset.siteSection || '';
+      const subsectionNameParent = link.dataset.subSection || '';
+      const subsectionName = link.dataset.subSectionTwo || link.textContent?.trim() || '';
+
+      trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName);
+
+      const isModifiedClick = event.defaultPrevented
+        || event.button !== 0
+        || event.metaKey
+        || event.ctrlKey
+        || event.shiftKey
+        || event.altKey
+        || link.target === '_blank';
+
+      if (isModifiedClick) return;
+
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+
+      event.preventDefault();
+      window.setTimeout(() => {
+        window.location.assign(href);
+      }, 150);
+    });
+  });
+}
+
+function trackSiteSectionClick(siteSection, redirectionLink) {
+  if (!siteSection && !redirectionLink) return;
+
+  const digitalData = getDigitalData();
+  digitalData.section = {
+    siteSection,
+    redirectionLink,
+  };
+
+  trackEvent('sitesection_click', {
+    siteSection,
+    redirectionLink,
+  });
+}
+
+function bindMainNavAnalytics(block) {
+  const navList = block.querySelector('.main-nav .nav-list');
+  if (!navList) return;
+
+  navList.addEventListener('click', (event) => {
+    const navItem = event.target.closest('.nav-item');
+    const navLink = event.target.closest('.nav-link');
+    if (!navItem || !navLink || !navList.contains(navItem)) return;
+
+    const siteSection = getNavSectionName(navItem, navLink);
+    const redirectionLink = navLink.getAttribute('href')?.trim() || '';
+
+    trackSiteSectionClick(siteSection, redirectionLink);
+  });
+}
+
+function bindSecondaryNavAnalytics(block) {
+  const secondaryNavList = block.querySelector('.secondary-nav .secondary-nav-list');
+  if (!secondaryNavList) return;
+
+  secondaryNavList.addEventListener('click', (event) => {
+    const navLink = event.target.closest('a');
+    if (!navLink || !secondaryNavList.contains(navLink)) return;
+
+    const navItem = navLink.closest('li');
+    const siteSection = getNavSectionName(navItem, navLink) || navLink.textContent?.trim() || '';
+    const redirectionLink = navLink.getAttribute('href')?.trim() || '';
+
+    trackSiteSectionClick(siteSection, redirectionLink);
+  });
+}
+
 function bindMobileScrollState(block) {
   let ticking = false;
 
@@ -2651,6 +2775,9 @@ function addInteractions(block) {
   const navBar = block.querySelector('.header-nav-bar');
 
   bindMobileScrollState(block);
+  bindMainNavAnalytics(block);
+  bindSecondaryNavAnalytics(block);
+  bindDropdownLinkAnalytics(block);
 
   // Mobile hamburger toggle
   if (hamburger && navBar) {
@@ -2835,6 +2962,7 @@ function addInteractions(block) {
           sdOverlay.classList.remove('active');
           document.body.classList.remove('search-dialog-open');
         }
+        trackImageSearchStart();
         vsModal.classList.add('active');
       });
     });
