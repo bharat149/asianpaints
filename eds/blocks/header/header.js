@@ -2161,23 +2161,30 @@ function buildCartModal() {
   closeBtn.setAttribute('aria-label', 'Close cart');
   closeBtn.innerHTML = '&times;';
 
-  const iconWrap = document.createElement('div');
+  const iconWrap = document.createElement('img');
   iconWrap.className = 'cart-modal-icon';
+  iconWrap.src = '/eds/icons/empty-cart-icon.webp';
+  iconWrap.alt = 'empty-cart-icon';
+  iconWrap.width = 200;
+  iconWrap.height = 200;
+  iconWrap.loading = 'lazy';
 
-  const cartTitle = document.createElement('p');
+  const cartTitle = document.createElement('h4');
   cartTitle.className = 'cart-modal-title';
   cartTitle.textContent = 'Your cart is empty';
+
+  const cartItems = document.createElement('div');
+  cartItems.className = 'cart-items-list';
+
+  const totalRow = document.createElement('div');
+  totalRow.className = 'cart-modal-total';
 
   const shopBtn = document.createElement('a');
   shopBtn.className = 'cart-modal-shop';
   shopBtn.href = getApApi().SHOP_URL;
   shopBtn.textContent = 'Shop now';
 
-  // Cart items list (populated when items exist)
-  const cartItems = document.createElement('div');
-  cartItems.className = 'cart-items-list';
-
-  modal.append(closeBtn, iconWrap, cartTitle, cartItems, shopBtn);
+  modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
   overlay.appendChild(modal);
 
   const close = () => overlay.classList.remove('active');
@@ -2534,13 +2541,17 @@ async function refreshCartModal(block) {
   if (!modal) return;
 
   const titleEl = modal.querySelector('.cart-modal-title');
-  const iconEl = modal.querySelector('.cart-modal-icon');
   const itemsList = modal.querySelector('.cart-items-list');
+  const totalRow = modal.querySelector('.cart-modal-total');
   const shopBtn = modal.querySelector('.cart-modal-shop');
   const setShopState = () => {
+    modal.classList.remove('has-items');
     if (titleEl) titleEl.textContent = 'Your cart is empty';
-    if (iconEl) iconEl.style.display = '';
     if (itemsList) itemsList.innerHTML = '';
+    if (totalRow) {
+      totalRow.classList.remove('visible');
+      totalRow.innerHTML = '';
+    }
     if (shopBtn) {
       shopBtn.textContent = 'Shop now';
       shopBtn.href = getApApi().SHOP_URL;
@@ -2560,8 +2571,11 @@ async function refreshCartModal(block) {
       return;
     }
 
-    if (titleEl) titleEl.textContent = `Your cart (${data.entries.length} items)`;
-    if (iconEl) iconEl.style.display = 'none';
+    const count = data.entries.length;
+    modal.classList.add('has-items');
+    if (titleEl) {
+      titleEl.textContent = `You have ${count} item${count !== 1 ? 's' : ''}`;
+    }
     if (itemsList) {
       itemsList.innerHTML = '';
       data.entries.forEach((entry) => {
@@ -2572,18 +2586,31 @@ async function refreshCartModal(block) {
         name.className = 'cart-item-name';
         name.textContent = entry.product?.name || entry.name || 'Product';
 
-        const qty = document.createElement('span');
-        qty.className = 'cart-item-qty';
-        qty.textContent = `Qty: ${entry.quantity || 1}`;
+        const price = document.createElement('span');
+        price.className = 'cart-item-qty';
+        const priceVal = entry.totalPrice?.value || entry.price || '';
+        price.textContent = priceVal ? `\u20B9 ${priceVal}` : `Qty: ${entry.quantity || 1}`;
 
-        row.append(name, qty);
+        row.append(name, price);
         itemsList.appendChild(row);
       });
+    }
+    if (totalRow) {
+      const totalPrice = data.totalprice
+        || data.totalPrice || data.total || '';
+      if (totalPrice) {
+        totalRow.classList.add('visible');
+        totalRow.innerHTML = ''
+          + '<span class="total-label">Total Amount</span>'
+          + `<span class="total-price">\u20B9 ${totalPrice}</span>`;
+      } else {
+        totalRow.classList.remove('visible');
+      }
     }
     if (shopBtn) {
       const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
       if (cartPathOrUrl) {
-        shopBtn.textContent = 'View cart';
+        shopBtn.textContent = 'Checkout';
         shopBtn.href = resolveApLink(cartPathOrUrl);
       } else {
         shopBtn.textContent = 'Shop now';
@@ -2738,9 +2765,23 @@ function addInteractions(block) {
   const cartBtn = block.querySelector('.cart-btn');
   const cartModal = block.querySelector('.cart-modal-overlay');
   if (cartBtn && cartModal) {
+    const positionCartModal = () => {
+      const modalEl = cartModal.querySelector('.cart-modal');
+      if (!modalEl) return;
+      const rect = cartBtn.getBoundingClientRect();
+      const modalW = 440;
+      let rightPos = window.innerWidth - rect.right - 10;
+      const minR = 12;
+      const maxR = window.innerWidth - modalW - 12;
+      rightPos = Math.max(minR, Math.min(rightPos, maxR));
+      modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
+      modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+    };
+
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
       refreshCartModal(block);
+      positionCartModal();
       cartModal.classList.add('active');
     });
   }
