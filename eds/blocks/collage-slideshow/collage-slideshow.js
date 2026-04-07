@@ -167,7 +167,13 @@ function createContentPanel(contentRow) {
     if (paragraphs[3]) paragraphs[3].classList.add('collage-slideshow__description');
   }
 
-  const parentTitle = panel.querySelector('.collage-slideshow__title-line, h1, h2, h3, h4, h5, h6, p')?.textContent?.trim() || '';
+  const eyebrowText = panel.querySelector('.collage-slideshow__eyebrow')?.textContent?.trim() || '';
+  const titleLineTexts = [...panel.querySelectorAll('.collage-slideshow__title-line')]
+    .map((node) => node.textContent?.trim() || '')
+    .filter(Boolean);
+  const parentTitle = [eyebrowText, ...titleLineTexts].filter(Boolean).join(' ').trim()
+    || panel.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent?.trim()
+    || '';
 
   const firstLink = links[0];
   if (firstLink) {

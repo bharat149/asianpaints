@@ -20,6 +20,40 @@ export function trackEvent(eventName, eventData = {}) {
   window._satellite && window._satellite.track(eventName, eventData);
 }
 
+/**
+ * Tracks no result event for search journeys.
+ * @param {string} searchTerm The search term (use 'Image' for image search)
+ */
+export function trackNoResultFound(searchTerm) {
+  trackEvent('no_result', {
+    search_term: searchTerm,
+  });
+}
+
+/**
+ * Tracks image search dialog open/start.
+ */
+export function trackImageSearchStart() {
+  trackEvent('ub_imagesearch_start');
+}
+
+/**
+ * Tracks image search dialog close.
+ */
+export function trackImageSearchClose() {
+  trackEvent('ub_imagesearch_close');
+}
+
+/**
+ * Tracks image search completion with total result count.
+ * @param {number} totalResults Total results returned by image search
+ */
+export function trackImageSearchComplete(totalResults) {
+  trackEvent('ub_imagesearch_complete', {
+    totalResults,
+  });
+}
+
 function toUrl(urlLike) {
   try {
     return new URL(urlLike, window.location.origin);

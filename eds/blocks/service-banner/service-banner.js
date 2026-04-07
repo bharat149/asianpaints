@@ -1,3 +1,5 @@
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   const wrapper = block.firstElementChild;
   wrapper.classList.add("wrapper");
@@ -11,4 +13,17 @@ export default function decorate(block) {
   content.className = "content";
 
   banner.appendChild(img);
+
+  content.querySelectorAll('.button-container a.button').forEach((cta) => {
+    if (cta.dataset.serviceBannerAnalyticsBound === 'true') return;
+
+    cta.dataset.serviceBannerAnalyticsBound = 'true';
+    cta.addEventListener('click', () => {
+      const ctaLink = cta.getAttribute('href') || '';
+      const btnTitle = cta.textContent.trim();
+      const parentTitle = content.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() || 'service-banner';
+
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  });
 }
