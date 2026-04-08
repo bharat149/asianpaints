@@ -7,7 +7,7 @@ const configCache = {};
  */
 export async function loadConfig(name) {
   if (!configCache[name]) {
-    configCache[name] = fetch(`/configs/${name}.json`)
+    configCache[name] = fetch(`/eds/configs/${name}.json`)
       .then((resp) => resp.json())
       .catch((err) => {
         console.error(`Failed loading config: ${name}`, err);
