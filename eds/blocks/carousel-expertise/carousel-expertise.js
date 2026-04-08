@@ -1,4 +1,5 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
@@ -108,6 +109,34 @@ export default async function decorate(block) {
 
   block.textContent = '';
   block.append(container);
+
+  const cardLinks = block.querySelectorAll('.fourimageinrow-track');
+  cardLinks.forEach((linkEl) => {
+    if (linkEl.dataset.analyticsBound === 'true') return;
+    linkEl.dataset.analyticsBound = 'true';
+
+    linkEl.addEventListener('click', () => {
+      const exploreLink = linkEl.getAttribute('href') || '';
+      const exploreTitle = (linkEl.querySelector('.text-explore-stores')?.textContent || '').trim()
+        || (linkEl.querySelector('.fourimageinrow-imgtitle')?.textContent || '').trim();
+      const exploreMainTitle = (linkEl.querySelector('.track-main-title')?.textContent || '').trim()
+        || (linkEl.querySelector('.fourimageinrow-imgtitle')?.textContent || '').trim();
+
+      if (!exploreLink) return;
+
+      getDigitalData().data = {
+        cta_: exploreTitle,
+        param1: exploreMainTitle,
+        param2: exploreLink,
+      };
+
+      trackEvent('squarecross_click', {
+        cta_: exploreTitle,
+        param1: exploreMainTitle,
+        param2: exploreLink,
+      });
+    });
+  });
 
   // =========================
   // MOBILE SWIPER INIT

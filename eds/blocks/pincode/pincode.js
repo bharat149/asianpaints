@@ -1,3 +1,5 @@
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+
 function handleRedirection(pincode, options = {}) {
   if (!pincode || pincode.length < 5) return;
 
@@ -57,6 +59,32 @@ function getPicture(cell) {
   if (!cell) return null;
   const picture = cell.querySelector('picture');
   return picture ? picture.cloneNode(true) : null;
+}
+
+function trackContractorSearch(searchKeyWord) {
+  if (!searchKeyWord) return;
+
+  const digitalData = getDigitalData();
+  if (window.ccAnalytics?.digitalData?.()) {
+    digitalData.contractor = {
+      cityPincode: searchKeyWord,
+    };
+  } else {
+    digitalData.contractor = {
+      cityPincode: searchKeyWord,
+    };
+  }
+
+  if (window.ccAnalytics?.satelliteCheck?.()) {
+    window._satellite?.track('contractor_search', {
+      cityPincode: searchKeyWord,
+    });
+    return;
+  }
+
+  trackEvent('contractor_search', {
+    cityPincode: searchKeyWord,
+  });
 }
 
 function decorateSearch(block) {
@@ -131,7 +159,10 @@ function decorateSearch(block) {
     type: 'pincode',
   });
 
-  button.addEventListener('click', onSearch);
+  button.addEventListener('click', () => {
+    trackContractorSearch(input.value.trim());
+    onSearch();
+  });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') onSearch();
   });
@@ -208,7 +239,10 @@ function decorateCta(block) {
     type: 'pincode',
   });
 
-  button.addEventListener('click', onGo);
+  button.addEventListener('click', () => {
+    trackContractorSearch(input.value.trim());
+    onGo();
+  });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') onGo();
   });

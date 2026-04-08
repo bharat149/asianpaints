@@ -4,7 +4,7 @@ import {
   toClassName,
 } from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
-import { trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
 const AMS_BASE = 'https://beta.asianpaints.com';
 
@@ -258,6 +258,18 @@ function trackInterestCTA(campaignId, formName) {
   });
 }
 
+function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn) {
+  const formData = {
+    formName,
+    campaignId,
+    pincode,
+    whatsappOptIn,
+  };
+
+  getDigitalData().form = formData;
+  trackEvent('form_submit', formData);
+}
+
 export default function decorate(block) {
   const config = readBlockConfig(block);
   const ds = block.dataset;
@@ -374,6 +386,11 @@ export default function decorate(block) {
   const spinner = block.querySelector('.get-contractor-progress-status');
   const thankyou = block.querySelector('.mf-thankyou-revamp-container');
   const closeBtn = thankyou?.querySelector('.mf__dismissible-container--head');
+  const currentFormName = getTextFromHtml(cfg.formTitle) || 'hero-form';
+  const configuredCampaignId = (cfg.campaignId || container?.getAttribute('data-attr-campaignId') || '').trim();
+  const currentCampaignId = configuredCampaignId || getCampaignIdFromUrl();
+  let formStarted = false;
+  let thankYouTracked = false;
 
   const fieldIsReqMsg = container?.getAttribute('data-attr-emptyFieldError') || 'Field is required';
   const validMobNoMsg = container?.getAttribute('data-attr-mobileError') || 'Phone number is invalid';
@@ -423,17 +440,14 @@ export default function decorate(block) {
     if (e.key === 'Enter') consentInput?.click();
   });
 
-  const thankYouCta = block.querySelector('.explore-painting-btn');
-  if (thankYouCta && thankYouCta.dataset.analyticsBound !== 'true') {
-    thankYouCta.dataset.analyticsBound = 'true';
-    thankYouCta.addEventListener('click', () => {
-      const configuredCampaignId = (cfg.campaignId || container.getAttribute('data-attr-campaignId') || '').trim();
-      const currentCampaignId = configuredCampaignId || getCampaignIdFromUrl();
-      const currentFormName = getTextFromHtml(cfg.formTitle) || 'hero-form';
-
-      trackInterestCTA(currentCampaignId, currentFormName);
+  form?.addEventListener('focusin', (evt) => {
+    if (formStarted || evt.target.tagName !== 'INPUT') return;
+    formStarted = true;
+    trackEvent('form_start', {
+      formName: currentFormName,
+      campaignId: currentCampaignId,
     });
-  }
+  });
 
   function isFormValid() {
     const m = mobileInput.value.trim();
@@ -474,6 +488,11 @@ export default function decorate(block) {
       okLeft.style.display = success ? 'block' : 'none';
       errLeft.style.display = success ? 'none' : 'block';
     }
+
+    if (success && !thankYouTracked) {
+      thankYouTracked = true;
+      trackInterestCTA(currentCampaignId, currentFormName);
+    }
   }
 
   function resetFromThankYou() {
@@ -511,8 +530,9 @@ export default function decorate(block) {
     const pinEnc = aesUtil.ltyEncrypt(pinInput.value.trim());
     const email = `${mobileInput.value.trim()}na@asianpaints.com`;
 
-    const configuredCampaignId = (cfg.campaignId || container.getAttribute('data-attr-campaignId') || '').trim();
-    const campaignId = configuredCampaignId || getCampaignIdFromUrl();
+    const campaignId = currentCampaignId;
+
+    trackFormSubmission(currentFormName, campaignId, pinInput.value.trim(), whatsAppConsent);
 
     const payload = buildBasePayload();
     payload.pageUrl = window.location.href;
