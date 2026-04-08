@@ -1,3 +1,5 @@
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+
 /*
  * Embed Block
  * Show videos and social posts directly on your page
@@ -90,6 +92,31 @@ const EMBEDS_CONFIG = [
   { match: ['twitter', 'x.com'], embed: embedTwitter },
 ];
 
+function trackYoutubePlay(block, link) {
+  const videoPlayUrl = block.closest('.video-elem__wrapper')
+    ?.querySelector('.video-elem__player')
+    ?.getAttribute('data-video-key')
+    || link
+    || '';
+
+  if (!videoPlayUrl) return;
+
+  getDigitalData().data = {
+    url: videoPlayUrl,
+  };
+
+  if (window.ccAnalytics?.satelliteCheck?.()) {
+    window._satellite?.track('youtube_play', {
+      url: videoPlayUrl,
+    });
+    return;
+  }
+
+  trackEvent('youtube_play', {
+    url: videoPlayUrl,
+  });
+}
+
 const loadEmbed = (block, link, autoplay, options = {}) => {
   if (block.classList.contains('embed-is-loaded')) return;
 
@@ -170,6 +197,7 @@ export default function decorate(block) {
     const wrapper = document.createElement('div');
     wrapper.className = 'embed-placeholder';
     wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" aria-label="Play Video"></button></div>';
+    const playButton = wrapper.querySelector('.embed-placeholder-play button');
 
     if (placeholders.length >= 2) {
       placeholders[0].classList.add('embed-placeholder-desktop');
@@ -182,6 +210,11 @@ export default function decorate(block) {
     wrapper.addEventListener('click', () => {
       loadEmbed(block, link, true, options);
     });
+
+    playButton?.addEventListener('click', () => {
+      trackYoutubePlay(block, link);
+    });
+
     block.append(wrapper);
   } else if (link) {
     const observer = new IntersectionObserver((entries) => {

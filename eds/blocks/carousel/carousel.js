@@ -1,3 +1,5 @@
+import { trackEvent } from '../../scripts/analytics.js';
+
 function loadScript(src) {
   return new Promise((resolve) => {
     const exists = [...document.scripts].some((s) => s.src && s.src.includes(src));
@@ -122,6 +124,14 @@ function buildVariant2(block) {
     const h4 = document.createElement('h4');
     h4.className = 'contractors-in-your-city-card-title';
     h4.textContent = it.cityTitle;
+
+    a.addEventListener('click', () => {
+      trackEvent('product_tile_click', {
+        productName: it.cityTitle || '',
+        param1: it.href || '',
+        Title: title || '',
+      });
+    });
 
     picture.appendChild(img);
     a.append(picture, h4);
