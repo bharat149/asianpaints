@@ -10,7 +10,7 @@
 const DWELL_MS = 15_000;
 const SCROLL_THRESHOLD = 0.75;
 const STORAGE_KEY = 'bfsv-modal-shown';
-const MODAL_PATH = '/forms/book-free-site-visit';
+const MODAL_PATH = '/eds/forms/book-free-site-visit';
 
 function wasShown() {
   try { return !!sessionStorage.getItem(STORAGE_KEY); } catch { return false; }

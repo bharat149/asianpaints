@@ -58,10 +58,10 @@ function getApiBaseUrl() {
   return headerConfig.apiBaseUrl || DEFAULT_API_BASE;
 }
 
-const FORM_MODAL_PATH_SEGMENT = '/forms/';
+const FORM_MODAL_PATH_SEGMENT = '/eds/forms/';
 const BOOK_SITE_VISIT_HASH = '#book-site-visit';
-const BOOK_SITE_VISIT_PAGE_PATH = '/forms/book-free-site-visit.html';
-const BOOK_SITE_VISIT_FRAGMENT_PATH = '/forms/book-free-site-visit';
+const BOOK_SITE_VISIT_PAGE_PATH = '/eds/forms/book-free-site-visit.html';
+const BOOK_SITE_VISIT_FRAGMENT_PATH = '/eds/forms/book-free-site-visit';
 
 function isOnAsianPaintsDomain() {
   const host = window.location.hostname.toLowerCase();
