@@ -283,14 +283,32 @@ async function loadLazy(doc) {
   // Load splash popup from authored content fragment
   if (!localStorage.getItem('splash-popup-shown')) {
     try {
-      const splashPath = `${window.hlx.codeBasePath}/content/fragments/splash-popup.plain.html`;
-      const resp = await fetch(splashPath);
+      const splashPath = '/eds/fragments/splash-popup';
+      const resp = await fetch(`${splashPath}.plain.html`);
       if (resp.ok) {
-        const html = await resp.text();
         const temp = document.createElement('div');
-        temp.innerHTML = html;
-        const splashBlock = temp.querySelector('.splash-popup');
-        if (splashBlock) {
+        temp.innerHTML = await resp.text();
+        const baseUrl = new URL(splashPath, window.location);
+        temp.querySelectorAll('img[src^="./media_"]').forEach((img) => {
+          img.src = new URL(img.getAttribute('src'), baseUrl).href;
+        });
+        temp.querySelectorAll('source[srcset^="./media_"]').forEach((s) => {
+          s.srcset = new URL(s.getAttribute('srcset'), baseUrl).href;
+        });
+        const contentDiv = temp.querySelector('div');
+        const firstCta = contentDiv?.querySelector(':scope > p > a');
+        if (firstCta) {
+          const children = [...contentDiv.children];
+          const splitAt = children.indexOf(firstCta.closest('p')) + 1;
+          const leftCell = document.createElement('div');
+          const rightCell = document.createElement('div');
+          children.slice(0, splitAt).forEach((el) => leftCell.append(el));
+          children.slice(splitAt).forEach((el) => rightCell.append(el));
+          const row = document.createElement('div');
+          row.append(leftCell, rightCell);
+          const splashBlock = document.createElement('div');
+          splashBlock.className = 'splash-popup';
+          splashBlock.append(row);
           const { default: decorateSplashPopup } = await import('../blocks/splash-popup/splash-popup.js');
           await decorateSplashPopup(splashBlock);
         }
