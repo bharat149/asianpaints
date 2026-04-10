@@ -262,6 +262,8 @@ async function loadEager(doc) {
  */
 async function loadLazy(doc) {
   const main = doc.querySelector('main');
+
+  const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);
 
   /* Load Bootstrap CSS globally once the page is usable */
@@ -271,7 +273,7 @@ async function loadLazy(doc) {
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
   if (hash && element) element.scrollIntoView();
 
-  loadHeader(doc.querySelector('header'));
+  await headerLoaded;
   loadFooter(doc.querySelector('footer'));
 
   // Floating popup button
