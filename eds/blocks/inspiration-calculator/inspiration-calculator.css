@@ -1,15 +1,20 @@
 .inspiration-calculator {
     display: flex;
-    padding: 40px;
+    padding: 0 40px;
     gap: 18px;
 
     @media (max-width: 900px) {
+        padding: 0 16px;
         flex-direction: column;
     }
 }
 .inspiration-calculator h3 {
     font-size: 40px;
     font-weight: 700;
+
+    @media (max-width: 900px) {
+        font-size: 16px;
+    }
 }
 
 .inspiration-calculator > div {
@@ -33,6 +38,10 @@
     border-radius: 45px;
     display: inline-block;
     margin-top: 40px;
+
+    @media (max-width: 900px) {
+        margin-top: 0;
+    }
 }
 
 .inspiration-calculator .content-wrapper a:hover {
@@ -45,4 +54,9 @@
     font-size: 20px;
     margin-top: 20px;
     font-weight: 700;
+
+    @media (max-width: 900px) {
+        margin-top: 0;
+        font-size: 14px;
+    }
 }
