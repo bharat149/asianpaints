@@ -19,7 +19,7 @@ import { bindButtonContainerTracking } from './analytics.js';
 
   const script = document.createElement('script');
   script.src = '/eds/scripts/crypto.js';
-  script.async = false;
+  script.async = true;
   document.head.appendChild(script);
 }());
 
