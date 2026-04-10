@@ -84,18 +84,24 @@
   }
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   display: none;
   margin: 0;
   background-color: var(--background-color);
-  color: var(--text-color);
-  font-size: var(--body-font-size-m);
-  line-height: 1.6;
 }
 
 body.appear {
   display: block;
   font-family: var(--heading-font-family);
+  color: var(--text-color);
+  font-size: var(--body-font-size-m);
+  line-height: 1.6;
 }
 
 header {
@@ -160,12 +166,12 @@ footer {
   min-height: 200px;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6 {
   margin-top: 0.8em;
   margin-bottom: 0.25em;
   font-family: var(--heading-font-family);
@@ -174,36 +180,36 @@ h6 {
   scroll-margin: 40px;
 }
 
-h1 {
+body h1 {
   font-size: var(--heading-font-size-xxl);
 }
 
-h2 {
+body h2 {
   font-size: var(--heading-font-size-xl);
 }
 
-h3 {
+body h3 {
   font-size: var(--heading-font-size-l);
 }
 
-h4 {
+body h4 {
   font-size: var(--heading-font-size-m);
 }
 
-h5 {
+body h5 {
   font-size: var(--heading-font-size-s);
 }
 
-h6 {
+body h6 {
   font-size: var(--heading-font-size-xs);
 }
 
-p,
-dl,
-ol,
-ul,
-pre,
-blockquote {
+body p,
+body dl,
+body ol,
+body ul,
+body pre,
+body blockquote {
   margin-top: 0.8em;
   margin-bottom: 0.25em;
 }
@@ -291,6 +297,10 @@ button.accent:focus {
 .embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
   background: none;
   color: var(--link-hover-color);
+}
+
+img {
+  vertical-align: middle;
 }
 
 main img {
