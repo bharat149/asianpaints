@@ -15,7 +15,7 @@ function getImage(col, index) {
   const img = picture.querySelector("img");
 
   if (img) {
-    if (index === 0) {
+    if (index <= 1) {
       img.loading = "eager";
       img.setAttribute("fetchpriority", "high");
     } else {
@@ -205,7 +205,7 @@ export default async function decorate(block) {
             delay: 5000,
             disableOnInteraction: false,
             stopOnLastSlide: false,
-            pauseOnMouseEnter: true, 
+            pauseOnMouseEnter: true,
           },
 
           pagination: {
