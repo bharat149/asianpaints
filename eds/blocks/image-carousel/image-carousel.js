@@ -7,40 +7,9 @@ function cellText(cell) {
   return (cell?.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
-/**
- * ✅ NEW: Accept pasted images inside the block cell.
- * Priority:
- *  1) <picture><img src> or <img src>
- *  2) <picture><source srcset> (fallback)
- *  3) <a href>
- *  4) textContent
- *
- * Notes:
- * - If srcset has multiple candidates ("url1 1x, url2 2x"), we take the first URL.
- * - Works for both table-based and div-based EDS transformed structures.
- */
-function cellMediaOrHrefOrText(cell) {
-  if (!cell) return '';
-
-  // 1) Pasted image: EDS often results in <picture><img src="...">
-  const img = cell.querySelector?.('picture img[src], img[src]');
-  const imgSrc = img?.getAttribute?.('src');
-  if (imgSrc) return imgSrc.trim();
-
-  // 2) Fallback: <source srcset="..."> - pick first URL
-  const source = cell.querySelector?.('picture source[srcset], source[srcset]');
-  const srcset = source?.getAttribute?.('srcset');
-  if (srcset) {
-    const first = srcset.trim().split(',')[0]?.trim()?.split(/\s+/)[0];
-    return (first || srcset).trim();
-  }
-
-  // 3) Original behavior: accept href string
-  const a = cell.querySelector?.('a[href]');
-  const href = a?.getAttribute?.('href');
-  if (href) return href.trim();
-
-  // 4) fallback to text
+function cellHrefOrText(cell) {
+  const a = cell?.querySelector?.('a[href]');
+  if (a?.getAttribute('href')) return a.getAttribute('href').trim();
   return cellText(cell);
 }
 
@@ -82,10 +51,7 @@ function parseConfig(block) {
   const readRows = () => {
     if (usingTable) {
       // Skip header row
-      return tableRows
-        .slice(1)
-        .map((tr) => qsa(tr, 'th, td'))
-        .filter((cells) => cells.length >= 2);
+      return tableRows.slice(1).map((tr) => qsa(tr, 'th, td')).filter((cells) => cells.length >= 2);
     }
 
     // div-based (EDS-transformed) structure:
@@ -101,26 +67,18 @@ function parseConfig(block) {
   readRows().forEach((cells) => {
     const key = cellText(cells[0]).toLowerCase();
     const valText = cellText(cells[1]);
+    const valHrefOrText = cellHrefOrText(cells[1]);
 
-    // ✅ Changed: supports pasted images OR href OR text
-    const valMediaOrHrefOrText = cellMediaOrHrefOrText(cells[1]);
-
-    cfg.debug.parsed.push({ key, valText, valMediaOrHrefOrText });
+    cfg.debug.parsed.push({ key, valText, valHrefOrText });
 
     if (key === 'autoplay') cfg.autoplay = yesNo(valText, true);
-
     if (key === 'interval') {
       const n = Number(valText);
       if (!Number.isNaN(n) && n >= 1000) cfg.interval = n;
     }
-
     if (key === 'fade') cfg.fade = yesNo(valText, false);
     if (key === 'clickable') cfg.clickable = yesNo(valText, false);
-
-    // ctaLink can still be text or href (and now also tolerates pasted media,
-    // though typically CTA would be href/text)
-    if (key === 'ctalink') cfg.ctaLink = valMediaOrHrefOrText;
-
+    if (key === 'ctalink') cfg.ctaLink = valHrefOrText;
     if (key === 'overlaysubtitle') cfg.overlaySubtitle = valText;
     if (key === 'overlaytitle') cfg.overlayTitle = valText;
 
@@ -130,12 +88,12 @@ function parseConfig(block) {
       if (!Number.isNaN(n) && n >= 320) cfg.mobileMaxWidth = n;
     }
 
-    // ✅ NEW KEYS: accept pasted images too
-    if (key === 'desktopimage') cfg.desktopImages.push(...splitUrls(valMediaOrHrefOrText || valText));
-    if (key === 'mobileimage') cfg.mobileImages.push(...splitUrls(valMediaOrHrefOrText || valText));
+    // ✅ NEW KEYS
+    if (key === 'desktopimage') cfg.desktopImages.push(...splitUrls(valHrefOrText || valText));
+    if (key === 'mobileimage') cfg.mobileImages.push(...splitUrls(valHrefOrText || valText));
 
     // Backward compat: old "image" behaves as desktopImage
-    if (key === 'image') cfg.desktopImages.push(...splitUrls(valMediaOrHrefOrText || valText));
+    if (key === 'image') cfg.desktopImages.push(...splitUrls(valHrefOrText || valText));
   });
 
   // De-dupe preserving order
@@ -179,7 +137,7 @@ export default function decorate(block) {
 
   if (!slides.length) {
     const parsed = cfg.debug.parsed
-      .map((r) => `${r.key}: text="${r.valText}" mediaOrHrefOrText="${r.valMediaOrHrefOrText}"`)
+      .map((r) => `${r.key}: text="${r.valText}" hrefOrText="${r.valHrefOrText}"`)
       .join('\n');
 
     block.innerHTML = `
@@ -187,13 +145,13 @@ export default function decorate(block) {
 ${VERSION}
 No slides configured because I could not read any URLs from "desktopImage" (or legacy "image").
 
-What I parsed from your rows:
+What I parsed from your table rows:
 ${parsed}
 
-Expected (URL OR pasted image in the cell):
-desktopImage | [paste image here OR https://.../banner-desktop.png]
-mobileImage  | [paste image here OR https://.../banner-mobile.png]
-(comma-separated lists allowed when using URLs/text)
+Expected:
+desktopImage | https://.../banner-desktop.png
+mobileImage  | https://.../banner-mobile.png
+(comma-separated lists allowed)
       </pre>
     `;
     return;
@@ -248,11 +206,15 @@ mobileImage  | [paste image here OR https://.../banner-mobile.png]
   const next = qs(block, '.carousel__next');
   const dotsWrap = qs(block, '.carousel__dots');
 
+
   if (slideEls.length <= 1) {
     if (dotsWrap) dotsWrap.style.display = 'none';
     if (prev) prev.style.display = 'none';
     if (next) next.style.display = 'none';
+    // optional: stop autoplay even if enabled
+    // cfg.autoplay = false;
   }
+
 
   let idx = 0;
   let timer = null;
@@ -263,9 +225,9 @@ mobileImage  | [paste image here OR https://.../banner-mobile.png]
     if (!cfg.fade) {
       track.style.transform = `translateX(${-idx * 100}%)`;
     } else {
-      slideEls.forEach((sEl, si) => { sEl.style.display = si === idx ? 'block' : 'none'; });
+      slideEls.forEach((s, si) => { s.style.display = si === idx ? 'block' : 'none'; });
     }
-    dotEls.forEach((dEl, di) => dEl.classList.toggle('is-active', di === idx));
+    dotEls.forEach((d, di) => d.classList.toggle('is-active', di === idx));
   }
 
   function stop() { if (timer) clearInterval(timer); timer = null; }
