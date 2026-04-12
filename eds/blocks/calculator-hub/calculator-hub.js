@@ -61,8 +61,13 @@ function normalizeStoredValue(value) {
     'Tank': 'Water Tank',
     'Water tank': 'Water Tank',
 
+
+    'Bathroom': 'Bathroom & Kitchen',
     'Bathroom and Kitchen': 'Bathroom & Kitchen',
+    'Bathroom & Kitchen': 'Bathroom & Kitchen',
     'Bathroom &amp; Kitchen': 'Bathroom & Kitchen',
+    'Bathroom &amp;amp; Kitchen': 'Bathroom & Kitchen',
+
   };
 
   return map[v] || v;
