@@ -41,6 +41,33 @@ function getStoredMiniFormValues(storageKey) {
   }
 }
 
+/**
+ * ✅ Normalize stored values to match what the next page expects (AEM/prod parity).
+ * This fixes cases like:
+ * "Terrace/Roof" -> "Terrace or Roof"
+ */
+function normalizeStoredValue(value) {
+  const v = (value || '').trim();
+
+  const map = {
+    'Terrace/Roof': 'Terrace or Roof',
+    'Terrace / Roof': 'Terrace or Roof',
+    'Terrace-Roof': 'Terrace or Roof',
+
+    'Repair/Renovation': 'Repair or Renovation',
+    'Repair & Renovation': 'Repair or Renovation',
+    'Repair Renovation': 'Repair or Renovation',
+
+    'Tank': 'Water Tank',
+    'Water tank': 'Water Tank',
+
+    'Bathroom and Kitchen': 'Bathroom & Kitchen',
+    'Bathroom &amp; Kitchen': 'Bathroom & Kitchen',
+  };
+
+  return map[v] || v;
+}
+
 function resolveFlowType(form, values) {
   if (!values || values.Area === 'Val3') return '';
 
@@ -109,7 +136,7 @@ function renderIconOptions({ name, options, icons = [], idPrefix, wrapperClass, 
     input.type = 'radio';
     input.id = inputId;
     input.name = name;
-    input.value = opt;
+    input.value = opt; // stored raw; we normalize on submit
 
     const span = document.createElement('span');
     span.className = 'radiobtn';
@@ -178,7 +205,7 @@ function renderRadioOptions({ name, options, idPrefix }) {
     input.id = inputId;
     input.name = name;
     input.type = 'radio';
-    input.value = opt;
+    input.value = opt; // stored raw; we normalize on submit
 
     label.appendChild(input);
     wrapper.appendChild(label);
@@ -217,7 +244,7 @@ function buildFormUI(config) {
   const q2Icons = csvToArray(config.q2Icons);
   const q2Style = (config.q2Style || (isWbc ? 'radio' : 'icon')).toLowerCase();
 
-  // ✅ NEW: authorable area label above input (maps to AMS QuestionThree)
+  // ✅ authorable area label above input (maps to AMS QuestionThree)
   const q3Label = config.q3Label || config.areaLabel || 'Area';
 
   const root = document.createElement('div');
@@ -320,7 +347,7 @@ function buildFormUI(config) {
 
   q2.appendChild(q2Inputs);
 
-  // Area group (authorable label)
+  // Area group
   const areaGroup = document.createElement('div');
   areaGroup.className = 'form-group area-field';
 
@@ -395,11 +422,15 @@ function buildFormUI(config) {
   // Behavior (same logic as AMS miniForm)
   const state = { started: false };
 
+  function clearLoading() {
+    spinner.classList.add('d-none');
+  }
+
   function resetForm() {
     form.reset();
     cta.setAttribute('disabled', 'disabled');
     cta.setAttribute('aria-disabled', 'true');
-    spinner.classList.add('d-none');
+    clearLoading();
     error.style.visibility = 'hidden';
   }
 
@@ -440,12 +471,28 @@ function buildFormUI(config) {
     toggleCTA();
   });
 
+  // ✅ FIX: browser back/forward cache restores DOM with spinner visible.
+  // Always reset loading state on pageshow.
+  window.addEventListener('pageshow', () => {
+    clearLoading();
+    updateError();
+    toggleCTA();
+  });
+
   cta.addEventListener('click', () => {
     if (!isValid()) return;
 
-    const project = form.querySelector("input[name='project']:checked")?.value || '';
-    const space = form.querySelector("input[name='space']:checked")?.value || '';
-    const area = areaInput.value || '';
+    // Prevent double click
+    cta.setAttribute('disabled', 'disabled');
+    cta.setAttribute('aria-disabled', 'true');
+
+    let project = form.querySelector("input[name='project']:checked")?.value || '';
+    let space = form.querySelector("input[name='space']:checked")?.value || '';
+    const area = (areaInput.value || '').trim();
+
+    // ✅ FIX: normalize to match next page expected strings
+    project = normalizeStoredValue(project);
+    space = normalizeStoredValue(space);
 
     localStorage.setItem(storageKey, JSON.stringify({
       ProjectType: project,
@@ -454,6 +501,7 @@ function buildFormUI(config) {
     }));
 
     calculatorContinue(form, `${project}|${space}|${area}`, storageKey);
+
     spinner.classList.remove('d-none');
 
     if (toolLink) window.location.href = toolLink;
