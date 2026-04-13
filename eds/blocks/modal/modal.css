@@ -2,6 +2,10 @@ body.modal-open {
   overflow: hidden;
 }
 
+.modal {
+  display: block !important;
+}
+
 .modal dialog::backdrop {
   background-color: rgb(19 19 19 / 75%);
 }

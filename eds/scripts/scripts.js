@@ -30,9 +30,9 @@ import { bindButtonContainerTracking } from './analytics.js';
  * - useful for legacy modules such as analytics or older blocks
  */
 window.loadJQuery = function loadJQuery() {
-  if (window.__jqueryPromise) return window.__jqueryPromise;
+  if (window.jqueryLoadPromise) return window.jqueryLoadPromise;
 
-  window.__jqueryPromise = new Promise((resolve, reject) => {
+  window.jqueryLoadPromise = new Promise((resolve, reject) => {
     if (window.jQuery) {
       resolve(window.jQuery);
       return;
@@ -54,7 +54,7 @@ window.loadJQuery = function loadJQuery() {
     document.head.appendChild(jqueryScript);
   });
 
-  return window.__jqueryPromise;
+  return window.jqueryLoadPromise;
 };
 
 /**
@@ -63,8 +63,8 @@ window.loadJQuery = function loadJQuery() {
  * - optionally loads Bootstrap JS bundle once
  */
 window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
-  if (!window.__bootstrapCssPromise) {
-    window.__bootstrapCssPromise = new Promise((resolve, reject) => {
+  if (!window.bootstrapCssLoadPromise) {
+    window.bootstrapCssLoadPromise = new Promise((resolve, reject) => {
       if (document.querySelector('link[data-bootstrap-css]')) {
         resolve();
         return;
@@ -80,10 +80,10 @@ window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
     });
   }
 
-  if (!withJS) return window.__bootstrapCssPromise;
+  if (!withJS) return window.bootstrapCssLoadPromise;
 
-  if (!window.__bootstrapJsPromise) {
-    window.__bootstrapJsPromise = new Promise((resolve, reject) => {
+  if (!window.bootstrapJsLoadPromise) {
+    window.bootstrapJsLoadPromise = new Promise((resolve, reject) => {
       if (window.bootstrap) {
         resolve(window.bootstrap);
         return;
@@ -106,7 +106,7 @@ window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
     });
   }
 
-  return Promise.all([window.__bootstrapCssPromise, window.__bootstrapJsPromise]);
+  return Promise.all([window.bootstrapCssLoadPromise, window.bootstrapJsLoadPromise]);
 };
 
 /**
@@ -115,9 +115,9 @@ window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
  * - keeps a single promise to avoid duplicate requests
  */
 window.loadSwiper = function loadSwiper() {
-  if (window.__swiperPromise) return window.__swiperPromise;
+  if (window.swiperLoadPromise) return window.swiperLoadPromise;
 
-  window.__swiperPromise = new Promise((resolve, reject) => {
+  window.swiperLoadPromise = new Promise((resolve, reject) => {
     if (window.Swiper) {
       resolve(window.Swiper);
       return;
@@ -147,7 +147,7 @@ window.loadSwiper = function loadSwiper() {
     document.head.appendChild(swiperScript);
   });
 
-  return window.__swiperPromise;
+  return window.swiperLoadPromise;
 };
 
 /**
@@ -281,6 +281,44 @@ async function loadLazy(doc) {
   // loadFixedColorPartner(doc);
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
+
+  // Load splash popup from authored content fragment
+  if (!localStorage.getItem('splash-popup-shown')) {
+    try {
+      const splashPath = '/eds/fragments/splash-popup';
+      const resp = await fetch(`${splashPath}.plain.html`);
+      if (resp.ok) {
+        const temp = document.createElement('div');
+        temp.innerHTML = await resp.text();
+        const baseUrl = new URL(splashPath, window.location);
+        temp.querySelectorAll('img[src^="./media_"]').forEach((img) => {
+          img.src = new URL(img.getAttribute('src'), baseUrl).href;
+        });
+        temp.querySelectorAll('source[srcset^="./media_"]').forEach((s) => {
+          s.srcset = new URL(s.getAttribute('srcset'), baseUrl).href;
+        });
+        const contentDiv = temp.querySelector('div');
+        const firstCta = contentDiv?.querySelector(':scope > p > a');
+        if (firstCta) {
+          const children = [...contentDiv.children];
+          const splitAt = children.indexOf(firstCta.closest('p')) + 1;
+          const leftCell = document.createElement('div');
+          const rightCell = document.createElement('div');
+          children.slice(0, splitAt).forEach((el) => leftCell.append(el));
+          children.slice(splitAt).forEach((el) => rightCell.append(el));
+          const row = document.createElement('div');
+          row.append(leftCell, rightCell);
+          const splashBlock = document.createElement('div');
+          splashBlock.className = 'splash-popup';
+          splashBlock.append(row);
+          const { default: decorateSplashPopup } = await import('../blocks/splash-popup/splash-popup.js');
+          await decorateSplashPopup(splashBlock);
+        }
+      }
+    } catch (e) {
+      // Splash popup content not available, skip silently
+    }
+  }
 }
 
 /**
@@ -297,6 +335,7 @@ async function loadLazy(doc) {
  */
 function loadDelayed() {
   window.setTimeout(() => {
+    // eslint-disable-next-line import/no-cycle
     import('./delayed.js');
   }, 3000);
 
