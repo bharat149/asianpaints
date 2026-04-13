@@ -298,7 +298,7 @@
     .quick-links .ql-list {
         grid-template-columns: 1fr;
         gap: 14px;
-        padding: 0 16px;
+        /*padding: 0 16px;*/
     }
 
     .quick-links .ql-card {
