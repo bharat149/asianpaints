@@ -319,6 +319,53 @@ async function loadLazy(doc) {
       // Splash popup content not available, skip silently
     }
   }
+
+  window.sprChatSettings = window.sprChatSettings || {};
+  window.sprChatSettings = {
+    appId: '65d88620e479600565c07099_app_600025303',
+    skin: 'MODERN',
+  };
+
+  (function loadSprinklrChat() {
+    const t = window;
+    const e = t.sprChat;
+    const a = e && !!e.loaded;
+    const n = document;
+    const r = function sprinklrChatProxy() { r.m(arguments); };
+    r.q = [];
+    r.m = (args) => { r.q.push(args); };
+    t.sprChat = a ? e : r;
+
+    const e2 = t.sprTeamChat;
+    const r2 = function sprinklrTeamChatProxy() { r2.m(arguments); };
+    r2.q = [];
+    r2.m = (args) => { r2.q.push(args); };
+    t.sprTeamChat = e2 ? e2 : r2;
+
+    const o = function insertSprinklrScript() {
+      const script = n.createElement('script');
+      script.type = 'text/javascript';
+      script.async = true;
+      script.src = `https://prod4-live-chat.sprinklr.com/api/livechat/handshake/widget/${t.sprChatSettings.appId}`;
+      script.onerror = () => {
+        t.sprChat.loaded = false;
+      };
+      script.onload = () => {
+        t.sprChat.loaded = true;
+      };
+      const firstScript = n.getElementsByTagName('script')[0];
+      firstScript.parentNode.insertBefore(script, firstScript);
+    };
+
+    if (typeof e === 'function') {
+      if (a) e('update', t.sprChatSettings);
+      else o();
+    } else if (n.readyState !== 'loading') {
+      o();
+    } else {
+      n.addEventListener('DOMContentLoaded', o);
+    }
+  }());
 }
 
 /**
