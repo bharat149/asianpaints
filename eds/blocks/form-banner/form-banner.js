@@ -724,7 +724,9 @@ function buildFormCard(block, labelsRow, inputsRow) {
     button.className = 'form-submit btn';
     button.innerHTML = `
       <span class="form-submit__label">${buttonLabel}</span>
-      <span class="form-submit__arrow" aria-hidden="true">→</span>
+      <span class="form-submit__arrow" aria-hidden="true">
+        <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">
+      </span>
       <span class="rotating d-none" aria-hidden="true">↻</span>
     `;
     buttonCell.appendChild(button);
