@@ -92,6 +92,19 @@ function createCTA(cell, buttonType) {
   const cta = link.cloneNode(true);
   cta.className = 'royal-play-banner__cta';
 
+  const text = cta.textContent.trim();
+  cta.innerHTML = '';
+
+  const span = document.createElement('span');
+  span.textContent = text;
+
+  const icon = document.createElement('img');
+  icon.src = '/eds/icons/arrow-icon-new.svg';
+  icon.alt = 'arrow icon';
+  icon.className = 'link-icon';
+
+  cta.append(span, icon);
+
   const type = (buttonType || '').trim().toUpperCase();
 
   if (type === 'TRANSPARENT BUTTON') {
@@ -382,6 +395,22 @@ export default async function decorate(block) {
   const Swiper = await getSwiper();
   if (!Swiper) return;
 
+  function attachArrows(swiper, paginationEl) {
+  if (paginationEl.querySelector('.custom-arrow')) return;
+
+  const prev = document.createElement('button');
+  prev.className = 'custom-arrow custom-arrow-prev';
+
+  const next = document.createElement('button');
+  next.className = 'custom-arrow custom-arrow-next';
+
+  prev.onclick = () => swiper.slidePrev();
+  next.onclick = () => swiper.slideNext();
+
+  paginationEl.prepend(prev);
+  paginationEl.append(next);
+}
+
   const desktopSwiper = new Swiper(desktop.swiperEl, {
     slidesPerView: 1,
     loop: rows.length > 1,
@@ -391,6 +420,16 @@ export default async function decorate(block) {
     },
   });
 
+desktopSwiper.on('paginationRender', () => {
+  attachArrows(desktopSwiper, desktop.pagination);
+});
+
+desktopSwiper.on('init', () => {
+  attachArrows(desktopSwiper, desktop.pagination);
+});
+
+desktopSwiper.init();
+
   const mobileSwiper = new Swiper(mobile.swiperEl, {
     slidesPerView: 1,
     loop: rows.length > 1,
@@ -399,6 +438,16 @@ export default async function decorate(block) {
       clickable: true,
     },
   });
+
+  mobileSwiper.on('init', () => {
+  attachArrows(mobileSwiper, mobile.pagination);
+});
+
+mobileSwiper.on('paginationRender', () => {
+  attachArrows(mobileSwiper, mobile.pagination);
+});
+
+mobileSwiper.init();
 
   // Add custom arrows inside pagination pill
   addCustomArrowsToPagination(desktop.pagination, desktopSwiper);

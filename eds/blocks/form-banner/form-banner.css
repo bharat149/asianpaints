@@ -279,7 +279,7 @@
   padding: 8px 28px;
   border: 2px solid #f5b21f;
   border-radius: 999px;
-  background: #f5b21f;
+  background: linear-gradient(180deg, #fec940, #f90);;
   color: #111;
   font-size: 15px;
   font-weight: 600;
@@ -288,7 +288,7 @@
   white-space: nowrap;
   text-decoration: none;
   box-shadow: none;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .form-banner__form .form-submit__label,
@@ -302,6 +302,10 @@
 .form-banner__form .form-submit__arrow {
   font-weight: 400;
   font-size: 18px;
+}
+
+.form-banner__form .form-submit__arrow .link-icon {
+  filter: invert(1);
 }
 
 .form-banner__form .rotating {
@@ -326,7 +330,7 @@
 
 .form-banner__form .form-submit:hover,
 .form-banner__form .btn.form-submit:hover {
-  background: #ffca28;
+  background-color: linear(180deg, #ffd65a, #ffb300);
   border-color: #ffca28;
   color: #111;
 }

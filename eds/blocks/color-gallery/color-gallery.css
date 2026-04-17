@@ -43,6 +43,11 @@
   font-size: 16px;
   line-height: 24.8px;
 }
+
+.color-gallery-text p.button-container {
+  margin-top: 50px;
+}
+
 .color-gallery p:has(picture) {
   margin: 0;
 }

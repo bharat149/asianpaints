@@ -177,6 +177,13 @@
     color: #000;
 }
 
+.royal-play-banner__cta .link-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    filter: invert(1);
+}
+
 /* Mobile hero */
 .royal-play-banner__mobile-logo {
     position: absolute;
@@ -297,18 +304,18 @@
 /* Desktop bullets */
 .royal-play-banner .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .swiper-pagination-bullet {
     margin: 0 !important;
-    width: 12px;
-    height: 12px;
-    background: #c8c8c8;
+    width: 5px;
+    height: 5px;
+    background: #75787b;
     opacity: 1;
     transition: all 0.2s ease;
 }
 
 .royal-play-banner .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .swiper-pagination-bullet.swiper-pagination-bullet-active {
-    width: 28px;
+    width: 30px;
     height: 8px;
     border-radius: 999px;
-    background: #5a5d61 !important;
+    background: #232426 !important;
 }
 
 /* Desktop arrows */
@@ -325,11 +332,8 @@
     background-size: 20px 20px;
     cursor: pointer;
     flex: 0 0 22px;
-    opacity: 0.7;
-}
-
-.royal-play-banner .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .custom-arrow:hover {
     opacity: 1;
+    filter: invert(1);
 }
 
 .royal-play-banner .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .custom-arrow-prev {
@@ -339,6 +343,7 @@
 .royal-play-banner .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .custom-arrow::after {
     content: none !important;
 }
+
 
 /* Mobile */
 @media (max-width: 767px) {
