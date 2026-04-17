@@ -47,9 +47,9 @@
 }
 
 .inspiration-popular .inspiration-popular-read-more {
-    padding: 16px 0 20px 20px;
+    padding: 10px 20 20px 20px;
     @media (max-width: 900px) {
-        padding: 16px 0 12px 12px;
+        padding: 10px 12px 20px 12px;
     }
 }
 
@@ -57,10 +57,11 @@
     padding: 6px 20px;
     border: 1px solid #232426;
     border-radius: 45px;
-    font-size: 16px;
+    font-size: 14px;
     color: #000;
     display: inline-block;
     margin-bottom: 40px;
+    font-weight: 700;
 
     @media (max-width: 900px) {
         margin-bottom: 8px;
@@ -74,4 +75,5 @@
 
 .inspiration-popular .inspiration-popular-read-more a .link-icon {
     filter: invert(1);
+    margin-left: 8px;
 }
