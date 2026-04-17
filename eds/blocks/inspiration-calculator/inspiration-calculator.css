@@ -42,12 +42,19 @@
     @media (max-width: 900px) {
         margin-top: 0;
     }
+     @media(min-width: 1200px) and (max-width: 1360px){
+        margin-top: 10px;
+    }
+
 }
 
 .inspiration-calculator .content-wrapper a:hover {
     background: #fff7e8;
     color: #000;
     border-color: #232426;
+}
+.inspiration-calculator .content-wrapper a:hover .link-icon {
+    filter: invert(1);
 }
 
 .inspiration-calculator .content-wrapper > div:nth-child(2) {

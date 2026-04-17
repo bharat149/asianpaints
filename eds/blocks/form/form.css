@@ -13,7 +13,7 @@
 
 .section.form-container>.form-wrapper>div,
 .section.form-container .form-wrapper {
-  margin: 0 !important;
+  margin: 40px 0px !important;
   max-width: none !important;
   width: 100%;
 }
