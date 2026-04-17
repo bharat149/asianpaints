@@ -208,7 +208,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 28px 34px;
+  gap: 20px 34px;
 }
 
 .form.block .form-consent-item {
@@ -219,6 +219,7 @@
   min-height: 32px;
   cursor: pointer;
   user-select: none;
+  align-self:self-start;
 }
 
 .form.block .form-consent-input {
@@ -917,6 +918,7 @@
 
   .section.form-container .form.block .form-row {
     padding: 51px 47px 38px 70px;
+    justify-content: space-between;
   }
 
   .form.block .form-row {
@@ -932,15 +934,19 @@
     flex: 0 30%;
     min-width: unset;
     max-width: unset;
+    align-self:center;
+
   }
 
   .form.block .form-consent-options {
     justify-content: space-between;
+    flex-direction:column;
   }
 
   .form.block .form-consent-options-right {
     display: flex;
     gap: 0 18px;
+    align-self:self-start;
   }
 
   .form.block .form-button-cell {
@@ -963,9 +969,10 @@
   }
 
   .form.block .form-row .form-description-cell {
-    flex: 0 40%;
+    flex: 0 33%;
     min-width: unset;
     max-width: unset;
+    align-self:center;
   }
 
   .form.block .form-row .form-fields-area {
