@@ -518,6 +518,7 @@
   transition: background-color 0.25s ease;
   width: 169.14px;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 .header .cta-btn:hover {

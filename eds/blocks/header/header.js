@@ -66,11 +66,6 @@ function getApiBaseUrl() {
   return headerConfig.apiBaseUrl || DEFAULT_API_BASE;
 }
 
-const FORM_MODAL_PATH_SEGMENT = '/eds/forms/';
-const BOOK_SITE_VISIT_HASH = '#book-site-visit';
-const BOOK_SITE_VISIT_PAGE_PATH = '/eds/forms/book-free-site-visit.html';
-const BOOK_SITE_VISIT_FRAGMENT_PATH = '/eds/forms/book-free-site-visit';
-
 function isOnAsianPaintsDomain() {
   const host = window.location.hostname.toLowerCase();
   return host === 'asianpaints.com' || host.endsWith('.asianpaints.com');
@@ -98,17 +93,6 @@ function normalizeInternalPath(href) {
   } catch {
     return '';
   }
-}
-
-function getModalPathFromHref(href) {
-  if (href === BOOK_SITE_VISIT_HASH) return BOOK_SITE_VISIT_FRAGMENT_PATH;
-  if (href?.startsWith('#')) return '';
-  const path = normalizeInternalPath(href);
-  return path.includes(FORM_MODAL_PATH_SEGMENT) ? path : '';
-}
-
-function resolveCtaHref(href) {
-  return href === BOOK_SITE_VISIT_HASH ? BOOK_SITE_VISIT_PAGE_PATH : href;
 }
 
 /* eslint-disable max-len */
@@ -2101,15 +2085,8 @@ function buildMainHeader(mainDiv) {
       ctaContainer.className = 'header-cta';
 
       const ctaLink = document.createElement('a');
-      ctaLink.className = 'cta-btn';
-      const ctaHref = ctaAnchor.getAttribute('href');
-      ctaLink.href = resolveCtaHref(ctaHref);
+      ctaLink.className = 'cta-btn trigger-exit-intent-popup-form';
       ctaLink.textContent = ctaAnchor.textContent.trim();
-      const modalPath = getModalPathFromHref(ctaHref);
-      if (modalPath) {
-        ctaLink.dataset.modalPath = modalPath;
-        ctaLink.setAttribute('aria-haspopup', 'dialog');
-      }
 
       ctaContainer.appendChild(ctaLink);
       inner.appendChild(ctaContainer);

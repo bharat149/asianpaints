@@ -227,7 +227,7 @@
   margin: 24px 0 0;
   font-size: 18px;
   line-height: 1.45;
-  font-weight: 400;
+  font-weight: 500;
   color: #232323;
   max-width: 640px;
 }
@@ -241,7 +241,7 @@
   margin-top: 22px;
   /* padding: 10px 22px; */
   border-radius: 999px;
-  background: #f5ad14;
+  background: linear-gradient(180deg, #fec940, #f90);
   color: #111;
   text-decoration: none;
   /* font-size: 18px; */
@@ -283,6 +283,7 @@
   width: 19px;
   height: 16px;
   filter: contrast(1000%) invert(100%) sepia(100%) saturate(10000%) hue-rotate(90deg);
+  margin-left:-8px;
 }
 
 .collage-slideshow__pagination {
