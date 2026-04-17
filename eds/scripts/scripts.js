@@ -266,8 +266,8 @@ async function loadLazy(doc) {
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);
 
-  /* Load Bootstrap CSS globally once the page is usable */
-  await window.loadBootstrap?.({ withJS: false });
+  /* Load Bootstrap CSS — fire-and-forget to avoid blocking */
+  window.loadBootstrap?.({ withJS: false });
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
@@ -276,114 +276,111 @@ async function loadLazy(doc) {
   await headerLoaded;
   loadFooter(doc.querySelector('footer'));
 
-  // Floating popup button
-  // const { default: loadFixedColorPartner } = await import('./fixed-color-partner-loader.js');
-  // loadFixedColorPartner(doc);
-
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
+}
 
-  // Load splash popup from authored content fragment
-  if (!localStorage.getItem('splash-popup-shown')) {
-    try {
-      const splashPath = '/eds/fragments/splash-popup';
-      const resp = await fetch(`${splashPath}.plain.html`);
-      if (resp.ok) {
-        const temp = document.createElement('div');
-        temp.innerHTML = await resp.text();
-        const baseUrl = new URL(splashPath, window.location);
-        temp.querySelectorAll('img[src^="./media_"]').forEach((img) => {
-          img.src = new URL(img.getAttribute('src'), baseUrl).href;
-        });
-        temp.querySelectorAll('source[srcset^="./media_"]').forEach((s) => {
-          s.srcset = new URL(s.getAttribute('srcset'), baseUrl).href;
-        });
-        const contentDiv = temp.querySelector('div');
-        const firstCta = contentDiv?.querySelector(':scope > p > a');
-        if (firstCta) {
-          const children = [...contentDiv.children];
-          const splitAt = children.indexOf(firstCta.closest('p')) + 1;
-          const leftCell = document.createElement('div');
-          const rightCell = document.createElement('div');
-          children.slice(0, splitAt).forEach((el) => leftCell.append(el));
-          children.slice(splitAt).forEach((el) => rightCell.append(el));
-          const row = document.createElement('div');
-          row.append(leftCell, rightCell);
-          const splashBlock = document.createElement('div');
-          splashBlock.className = 'splash-popup';
-          splashBlock.append(row);
-          const { default: decorateSplashPopup } = await import('../blocks/splash-popup/splash-popup.js');
-          await decorateSplashPopup(splashBlock);
-        }
+/**
+ * Loads the splash popup from the authored content fragment.
+ * Deferred to loadDelayed so it doesn't compete with LCP.
+ */
+async function loadSplashPopup() {
+  try {
+    const splashPath = '/eds/fragments/splash-popup';
+    const resp = await fetch(`${splashPath}.plain.html`);
+    if (resp.ok) {
+      const temp = document.createElement('div');
+      temp.innerHTML = await resp.text();
+      const baseUrl = new URL(splashPath, window.location);
+      temp.querySelectorAll('img[src^="./media_"]').forEach((img) => {
+        img.src = new URL(img.getAttribute('src'), baseUrl).href;
+      });
+      temp.querySelectorAll('source[srcset^="./media_"]').forEach((s) => {
+        s.srcset = new URL(s.getAttribute('srcset'), baseUrl).href;
+      });
+      const contentDiv = temp.querySelector('div');
+      const firstCta = contentDiv?.querySelector(':scope > p > a');
+      if (firstCta) {
+        const children = [...contentDiv.children];
+        const splitAt = children.indexOf(firstCta.closest('p')) + 1;
+        const leftCell = document.createElement('div');
+        const rightCell = document.createElement('div');
+        children.slice(0, splitAt).forEach((el) => leftCell.append(el));
+        children.slice(splitAt).forEach((el) => rightCell.append(el));
+        const row = document.createElement('div');
+        row.append(leftCell, rightCell);
+        const splashBlock = document.createElement('div');
+        splashBlock.className = 'splash-popup';
+        splashBlock.append(row);
+        const { default: decorateSplashPopup } = await import('../blocks/splash-popup/splash-popup.js');
+        await decorateSplashPopup(splashBlock);
       }
-    } catch (e) {
-      // Splash popup content not available, skip silently
     }
+  } catch (e) {
+    // Splash popup content not available, skip silently
   }
-
-  window.sprChatSettings = window.sprChatSettings || {};
-  window.sprChatSettings = {
-    appId: '65d88620e479600565c07099_app_600025303',
-    skin: 'MODERN',
-  };
-
-  (function loadSprinklrChat() {
-    const t = window;
-    const e = t.sprChat;
-    const a = e && !!e.loaded;
-    const n = document;
-    const r = function sprinklrChatProxy() { r.m(arguments); };
-    r.q = [];
-    r.m = (args) => { r.q.push(args); };
-    t.sprChat = a ? e : r;
-
-    const e2 = t.sprTeamChat;
-    const r2 = function sprinklrTeamChatProxy() { r2.m(arguments); };
-    r2.q = [];
-    r2.m = (args) => { r2.q.push(args); };
-    t.sprTeamChat = e2 ? e2 : r2;
-
-    const o = function insertSprinklrScript() {
-      const script = n.createElement('script');
-      script.type = 'text/javascript';
-      script.async = true;
-      script.src = `https://prod4-live-chat.sprinklr.com/api/livechat/handshake/widget/${t.sprChatSettings.appId}`;
-      script.onerror = () => {
-        t.sprChat.loaded = false;
-      };
-      script.onload = () => {
-        t.sprChat.loaded = true;
-      };
-      const firstScript = n.getElementsByTagName('script')[0];
-      firstScript.parentNode.insertBefore(script, firstScript);
-    };
-
-    if (typeof e === 'function') {
-      if (a) e('update', t.sprChatSettings);
-      else o();
-    } else if (n.readyState !== 'loading') {
-      o();
-    } else {
-      n.addEventListener('DOMContentLoaded', o);
-    }
-  }());
 }
 
 /**
  * Loads delayed resources that should not compete with the initial render.
- * This includes:
- * - delayed.js
- * - Swiper preload
- * - Bootstrap preload
- * - jQuery preload for legacy code
- * - analytics initialization
- *
- * Analytics is loaded here on purpose because it depends on jQuery,
- * and neither should block LCP / initial page rendering.
+ * Splash popup, Sprinklr chat, Swiper, Bootstrap, jQuery, and analytics
+ * are all deferred here to keep them out of the critical rendering path.
  */
 function loadDelayed() {
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
     import('./delayed.js');
+  }, 3000);
+
+  /* Splash popup — delayed 3s so it doesn't become the LCP element */
+  window.setTimeout(() => {
+    if (!localStorage.getItem('splash-popup-shown')) {
+      loadSplashPopup();
+    }
+  }, 3000);
+
+  /* Sprinklr chat — delayed to avoid TBT impact */
+  window.setTimeout(() => {
+    window.sprChatSettings = {
+      appId: '65d88620e479600565c07099_app_600025303',
+      skin: 'MODERN',
+    };
+
+    (function initSprinklrChat() {
+      const t = window;
+      const e = t.sprChat;
+      const a = e && !!e.loaded;
+      const n = document;
+      const r = function sprinklrChatProxy() { r.m(arguments); };
+      r.q = [];
+      r.m = (args) => { r.q.push(args); };
+      t.sprChat = a ? e : r;
+
+      const e2 = t.sprTeamChat;
+      const r2 = function sprinklrTeamChatProxy() { r2.m(arguments); };
+      r2.q = [];
+      r2.m = (args) => { r2.q.push(args); };
+      t.sprTeamChat = e2 ? e2 : r2;
+
+      const o = function insertSprinklrScript() {
+        const script = n.createElement('script');
+        script.type = 'text/javascript';
+        script.async = true;
+        script.src = `https://prod4-live-chat.sprinklr.com/api/livechat/handshake/widget/${t.sprChatSettings.appId}`;
+        script.onerror = () => { t.sprChat.loaded = false; };
+        script.onload = () => { t.sprChat.loaded = true; };
+        const firstScript = n.getElementsByTagName('script')[0];
+        firstScript.parentNode.insertBefore(script, firstScript);
+      };
+
+      if (typeof e === 'function') {
+        if (a) e('update', t.sprChatSettings);
+        else o();
+      } else if (n.readyState !== 'loading') {
+        o();
+      } else {
+        n.addEventListener('DOMContentLoaded', o);
+      }
+    }());
   }, 3000);
 
   /**
