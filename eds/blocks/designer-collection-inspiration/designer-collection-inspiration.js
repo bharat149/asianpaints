@@ -27,6 +27,7 @@ export default function decorate(block) {
 
     const anchor = document.createElement('a');
     anchor.href = link;
+    anchor.target = '_blank';
     anchor.innerHTML = 'Explore inspirations <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">';
     anchor.addEventListener('click', () => {
       const downloadPdfName = anchor.textContent?.trim() || '';
