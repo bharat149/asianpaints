@@ -91,6 +91,23 @@ body {
   color: var(--text-color);
   font-size: var(--body-font-size-m);
   line-height: 1.6;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #fefdf9;
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  width: 5px;
+}
+
+body::-webkit-scrollbar-track-piece,
+html::-webkit-scrollbar-track-piece {
+  background: #fefdf9;
+}
+
+body::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
 }
 
 body.appear {
