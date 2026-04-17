@@ -313,8 +313,6 @@ export default async function decorate(block) {
       const activeVideo = block.querySelector(".swiper-slide-active video");
       if (activeVideo) activeVideo.play();
     }
-
-    block.heroSwiper = swiper;
   } catch (e) {
     console.error("Swiper init failed", e);
   }
