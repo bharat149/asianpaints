@@ -25,7 +25,7 @@ export default async function decorate(block) {
 
     /* Add form wrapper */
     const formMarkup = `<form id="toolsMiniForm" class="pbc-mini-form"
-    data-attr-tool-link="https://www.asianpaints.com/resources/tools/paint-quotation-tool.html?source=PBC_miniform"
+    data-attr-tool-link="https://beta.asianpaints.com/resources/tools/paint-quotation-tool.html?source=PBC_miniform"
     data-gtm-form-interact-id="0">
     <div class="form-group project-field">
         <div tabindex="0" class="focus-visible-auto-imp project-field-heading">1. Select your type of
