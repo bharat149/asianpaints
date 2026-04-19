@@ -19,7 +19,7 @@ Col 6 - CTA label and Redirection link
 Col 7 - Button type
 */
 
-import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
 
 async function getSwiper() {
   if (window.Swiper) return window.Swiper;
@@ -46,6 +46,27 @@ function getPicture(cell) {
  */
 function getLink(cell) {
   return cell?.querySelector('a') || null;
+}
+
+function getBannerImageTitle(picture) {
+  const img = picture?.querySelector('img');
+  return img?.getAttribute('title')?.trim() || img?.getAttribute('alt')?.trim() || '';
+}
+
+function wrapTrackableBannerImage(picture, ctaSourceLink) {
+  if (!picture) return null;
+
+  const destinationUrl = ctaSourceLink?.getAttribute('href') || '';
+  if (!destinationUrl) return picture;
+
+  const wrapper = document.createElement('a');
+  wrapper.className = 'track-banner-image';
+  wrapper.href = destinationUrl;
+  if (ctaSourceLink?.target) wrapper.target = ctaSourceLink.target;
+  if (ctaSourceLink?.rel) wrapper.rel = ctaSourceLink.rel;
+  wrapper.setAttribute('aria-label', getBannerImageTitle(picture) || 'Banner image');
+  wrapper.appendChild(picture);
+  return wrapper;
 }
 
 /**
@@ -133,6 +154,7 @@ function createFirstSlideDesktop(row) {
 
   const logo = updateImageAttributes(getPicture(cols[0]), true);
   const desktopImage = updateImageAttributes(getPicture(cols[1]), true);
+  const ctaSourceLink = getLink(cols[5]);
   const { line1, line2 } = getTitleLines(cols[3]);
   const subtitle = getTextContent(cols[4]);
   const buttonType = getTextContent(cols[6]);
@@ -149,7 +171,7 @@ function createFirstSlideDesktop(row) {
 
   if (desktopImage) {
     desktopImage.classList.add('royal-play-banner__image', 'royal-play-banner__image--hero');
-    imageWrap.appendChild(desktopImage);
+    imageWrap.appendChild(wrapTrackableBannerImage(desktopImage, ctaSourceLink));
   }
 
   // Gradient overlay section
@@ -219,6 +241,7 @@ function createFirstSlideMobile(row) {
 
   const logo = updateImageAttributes(getPicture(cols[0]), true);
   const mobileImage = updateImageAttributes(getPicture(cols[2]), true);
+  const ctaSourceLink = getLink(cols[5]);
   const buttonType = getTextContent(cols[6]);
   const cta = createCTA(cols[5], buttonType);
 
@@ -230,7 +253,7 @@ function createFirstSlideMobile(row) {
 
   if (mobileImage) {
     mobileImage.classList.add('royal-play-banner__image');
-    wrap.appendChild(mobileImage);
+    wrap.appendChild(wrapTrackableBannerImage(mobileImage, ctaSourceLink));
   }
 
   /* logo top-left */
@@ -268,6 +291,7 @@ function createRegularSlide(row, isMobile = false) {
 
   const logo = updateImageAttributes(getPicture(cols[0]), true);
   const image = updateImageAttributes(getPicture(cols[isMobile ? 2 : 1]), true);
+  const ctaSourceLink = getLink(cols[5]);
   const titleImage = updateImageAttributes(getPicture(cols[isMobile ? 4 : 3]), true);
   const buttonType = getTextContent(cols[6]);
   const cta = createCTA(cols[5], buttonType);
@@ -278,7 +302,7 @@ function createRegularSlide(row, isMobile = false) {
   const inner = document.createElement('div');
   inner.className = 'royal-play-banner__slide-inner';
 
-  if (image) inner.appendChild(image);
+  if (image) inner.appendChild(wrapTrackableBannerImage(image, ctaSourceLink));
 
   if (logo) {
     const logoWrap = document.createElement('div');
@@ -458,6 +482,30 @@ mobileSwiper.init();
     block.dataset.royalPlayAnalyticsBound = 'true';
 
     block.addEventListener('click', (event) => {
+      const bannerImage = event.target.closest('.track-banner-image');
+      if (bannerImage && block.contains(bannerImage)) {
+        const destinationUrl = bannerImage.getAttribute('href') || '';
+        const img = bannerImage.querySelector('img');
+        let bannerTitle = img?.getAttribute('title')?.trim() || '';
+        if (!bannerTitle && img?.getAttribute('alt')?.trim()) {
+          bannerTitle = img.getAttribute('alt').trim();
+        }
+
+        if (destinationUrl) {
+          if (window.ccAnalytics?.satelliteCheck?.()) {
+            window._satellite?.track('carousel_banner_click', {
+              bannerDestinationUrl: destinationUrl,
+              bannerTitle,
+            });
+          } else {
+            trackEvent('carousel_banner_click', {
+              bannerDestinationUrl: destinationUrl,
+              bannerTitle,
+            });
+          }
+        }
+      }
+
       const cta = event.target.closest('.royal-play-banner__cta');
       if (!cta || !block.contains(cta)) return;
 
