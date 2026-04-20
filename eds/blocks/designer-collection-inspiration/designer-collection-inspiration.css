@@ -23,6 +23,27 @@
     }
 }
 
+@media (min-width: 1024px) {
+  /* default state */
+  .designer-collection-inspiration > div a {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+
+  /* when container is hovered, hide all CTAs first */
+  .designer-collection-inspiration:hover > div a {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* then show CTA only for the hovered card */
+  .designer-collection-inspiration:hover > div:hover a {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 .designer-collection-inspiration > div:hover {
     @media (min-width: 1024px) {
         width: 75%;
