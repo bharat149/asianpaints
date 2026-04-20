@@ -183,8 +183,33 @@ function getButtonContainerParentTitle(link) {
   return nearestText?.textContent?.trim() || '';
 }
 
+export function trackPdfDownload(target) {
+  const pdfName = (target?.textContent || '').trim();
+  trackEvent('download_form_pdf', {
+    pdfName,
+  });
+}
+
+export function bindReadTermsPdfTracking(element) {
+  element.querySelectorAll('.button-container a.button').forEach((cta) => {
+    if (cta.dataset.readTermsPdfAnalyticsBound === 'true') return;
+
+    const ctaLink = (cta.getAttribute('href') || '').toLowerCase();
+    const btnTitle = (cta.textContent || '').trim().toLowerCase();
+    if (btnTitle !== 'read t&c' || ctaLink.indexOf('.pdf') === -1) return;
+
+    cta.dataset.readTermsPdfAnalyticsBound = 'true';
+    cta.dataset.analyticsBound = 'true';
+
+    cta.addEventListener('click', () => {
+      trackPdfDownload(cta);
+    });
+  });
+}
+
 export function bindButtonContainerTracking(element) {
   element.querySelectorAll('.button-container a.button').forEach((cta) => {
+    if (cta.closest('.explore-split')) return;
     if (cta.dataset.analyticsBound === 'true') return;
 
     cta.dataset.analyticsBound = 'true';
@@ -195,6 +220,22 @@ export function bindButtonContainerTracking(element) {
 
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });
+  });
+}
+
+export function royalePlayAnimatedImageTracking(element) {
+  if (!element || element.dataset.royalePlayAnimatedTrackingBound === 'true') return;
+
+  element.dataset.royalePlayAnimatedTrackingBound = 'true';
+  element.addEventListener('click', (event) => {
+    const cta = event.target.closest('.default-content-wrapper a[href]');
+    if (!cta || !element.contains(cta)) return;
+
+    const href = cta.getAttribute('href') || '';
+    if (href.indexOf('interior-textures.html') === -1 || href.toLowerCase().indexOf('play') === -1) return;
+
+    const btnTitle = cta.querySelector('img')?.alt?.trim() || 'Royale Play Playlist';
+    triggerCTAClickWithLinkAndTitle(href, btnTitle, 'default-content-wrapper');
   });
 }
 
