@@ -68,8 +68,29 @@ const isVideoFile = (url) => VIDEO_EXTENSIONS.some(
   (ext) => url.pathname.toLowerCase().endsWith(ext),
 );
 
+function getVideoTitleFromUrl(url) {
+  const fileName = url.pathname.split('/').pop() || '';
+  return decodeURIComponent(fileName).replace(/\.[^.]+$/, '');
+}
+
+function trackVideoPlayButtonClick(wrapper) {
+  const videoTitle = wrapper?.getAttribute('aria-label') || '';
+
+  if (window.ccAnalytics?.satelliteCheck?.()) {
+    window._satellite?.track('video_playbotton_click', {
+      videoTitle,
+    });
+    return;
+  }
+
+  trackEvent('video_playbotton_click', {
+    videoTitle,
+  });
+}
+
 const embedVideo = (url, options = {}) => {
   const { autoplay, loop, muted } = options;
+  const videoTitle = getVideoTitleFromUrl(url);
   const attrs = [
     'playsinline',
     autoplay ? 'autoplay' : '',
@@ -78,7 +99,7 @@ const embedVideo = (url, options = {}) => {
     'controls',
   ].filter(Boolean).join(' ');
 
-  return `<div class="embed-media-video-wrapper">
+  return `<div class="embed-media-video-wrapper youtube-cta-section" aria-label="${videoTitle}">
     <video ${attrs} preload="metadata">
       <source src="${url.href}" type="video/${url.pathname.split('.').pop()}">
       Your browser does not support the video tag.
@@ -130,6 +151,13 @@ const loadEmbed = (block, link, autoplay, options = {}) => {
       loop: options.loop,
       muted: options.muted,
     });
+    const videoWrapper = block.querySelector('.youtube-cta-section');
+    if (videoWrapper && videoWrapper.dataset.videoPlayButtonTracked !== 'true') {
+      videoWrapper.dataset.videoPlayButtonTracked = 'true';
+      videoWrapper.addEventListener('click', () => {
+        trackVideoPlayButtonClick(videoWrapper);
+      });
+    }
     block.classList.add('embed-video');
   } else if (config) {
     block.innerHTML = config.embed(url, autoplay);

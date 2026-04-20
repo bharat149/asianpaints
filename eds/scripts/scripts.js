@@ -12,7 +12,11 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
-import { bindButtonContainerTracking } from './analytics.js';
+import {
+  bindButtonContainerTracking,
+  bindReadTermsPdfTracking,
+  royalePlayAnimatedImageTracking,
+} from './analytics.js';
 
 (function loadCryptoJSGlobally() {
   if (window.CryptoJS) return;
@@ -221,7 +225,9 @@ function buildAutoBlocks(main) {
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateButtons(main);
+  bindReadTermsPdfTracking(main);
   bindButtonContainerTracking(main);
+  royalePlayAnimatedImageTracking(main);
   decorateIcons(main);
   decorateLinkedPictures(main);
   buildAutoBlocks(main);
