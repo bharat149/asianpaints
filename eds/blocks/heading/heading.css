@@ -19,3 +19,15 @@
 .heading.center {
     text-align: center;
 }
+/* heading font for inspiration */
+.heading.block #get-inspired{
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 42px;
+    color: #000;
+    @media (max-width: 990px) {
+        margin-bottom: 5px;
+        font-size: 32px;
+        line-height: 24px;
+    }
+}
