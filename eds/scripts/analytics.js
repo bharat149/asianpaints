@@ -16,8 +16,11 @@ export function getDigitalData() {
  * @param {Object} [eventData] Optional event data
  */
 export function trackEvent(eventName, eventData = {}) {
-  getDigitalData().event = eventName;
-  window._satellite && window._satellite.track(eventName, eventData);
+  const normalizedEventName = typeof eventName === 'string' ? eventName.trim() : '';
+  if (!normalizedEventName) return;
+
+  getDigitalData().event = normalizedEventName;
+  window._satellite && window._satellite.track(normalizedEventName, eventData);
 }
 
 /**
