@@ -1,6 +1,5 @@
 // add delayed functionality here
 
-
 /**
  * Global function to trigger the exit-intent modal from any CTA with class 'trigger-exit-intent-popup-form'
  * Can be called from JavaScript, Target, or data attributes
@@ -13,16 +12,15 @@ window.triggerExitIntentModal = async function triggerExitIntentModal(modalPath 
     // eslint-disable-next-line import/no-cycle
     const { openModal } = await import('../blocks/modal/modal.js');
     await openModal(modalPath);
-    markShown();
-    cleanup();
   } catch (e) {
     console.error('Failed to trigger exit-intent modal:', e);
   }
 };
 
-function triggerExitIntentPopupForm() {
+// Expose this globally too, so it can be called from DevTools if needed
+window.triggerExitIntentPopupForm = function triggerExitIntentPopupForm() {
   window.triggerExitIntentModal();
-}
+};
 
 // Global click listener for all trigger buttons
 function setupGlobalClickListener() {
@@ -31,8 +29,25 @@ function setupGlobalClickListener() {
     if (!trigger) return;
 
     e.preventDefault();
-    triggerExitIntentPopupForm();
+    window.triggerExitIntentPopupForm();
   });
 }
 
 setupGlobalClickListener();
+
+// Below is the function with same name in aem code to allow Target to call it directly.
+window.modalHandler = {
+  // Triggers the full logic to fetch fragment and create modal
+  showModal() {
+    window.triggerExitIntentPopupForm();
+  },
+
+  // Targets the native <dialog> element stored during creation
+  closeModal() {
+    if (window.activeModalElement) {
+      window.activeModalElement.close();
+    } else {
+      console.warn('No active modal found to close.');
+    }
+  }
+};
