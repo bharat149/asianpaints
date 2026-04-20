@@ -132,7 +132,7 @@
 }
 
 .form.block .form-field-required {
-  color: #fff;
+  color: #53565a;
 }
 
 .form.block .form-input,
@@ -996,6 +996,10 @@
 .form.block.blue-form .form-input,
 .form.block.blue-form .form-control.form-input {
   border: 1px solid #fff;
+  color: #fff;
+}
+
+.form.block.blue-form .form-field-required {
   color: #fff;
 }
 
