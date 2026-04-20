@@ -363,3 +363,6 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
     border-radius: 0;
   }
 }
+.cards-textures.width-alt.block{
+  border-radius: 0;
+}
