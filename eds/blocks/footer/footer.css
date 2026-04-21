@@ -1209,6 +1209,14 @@
     min-height: 200px;
   }
 
+  .footer .footer-video-player {
+    padding: 0;
+  }
+
+  .footer .footer-video-frame {
+    height: auto;
+  }
+
   .footer .video-bg picture {
     width: 100%;
     height: auto;
