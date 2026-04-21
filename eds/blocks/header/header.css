@@ -1299,7 +1299,7 @@ body.nav-open {
     box-sizing: border-box;
     font-family: Manrope, sans-serif;
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 34px;
     color: var(--header-text-dark);
     cursor: pointer;
@@ -1310,6 +1310,7 @@ body.nav-open {
     font-size: 24px;
     margin-right: 10px;
     line-height: 1;
+    font-weight: 500;;
   }
 
   .header .dropdown-inner {
