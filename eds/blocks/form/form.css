@@ -942,7 +942,6 @@
 
   .form.block .form-consent-options {
     justify-content: space-between;
-    flex-direction:column;
   }
 
   .form.block .form-consent-options-right {
