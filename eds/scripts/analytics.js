@@ -1,6 +1,12 @@
 import { loadScript } from './aem.js';
 import { getSiteConfig } from './configs.js';
 
+const BETA_LAUNCH_URL_KEY = 'beta_launchUrl';
+const PROD_LAUNCH_URL_KEY = 'prod_launchUrl';
+const LEGACY_LAUNCH_URL_KEY = 'launchUrl';
+const BETA_DOMAIN = 'beta.asianpaints.com';
+const PROD_DOMAIN = 'www.asianpaints.com';
+
 /**
  * Returns the digitalData object or creates an empty one if it doesn't exist.
  * @returns {Object} The digitalData object
@@ -239,13 +245,28 @@ export function royalePlayAnimatedImageTracking(element) {
   });
 }
 
+function getLaunchUrlKey(hostname = window.location.hostname) {
+  if (hostname === BETA_DOMAIN) {
+    return BETA_LAUNCH_URL_KEY;
+  }
+
+  if (hostname === PROD_DOMAIN || hostname === 'asianpaints.com') {
+    return PROD_LAUNCH_URL_KEY;
+  }
+
+  return BETA_LAUNCH_URL_KEY;
+}
+
 /**
  * Initializes the data layer and loads the Adobe Launch script.
  */
 export async function initAnalytics() {
   // Load the Launch script
   const siteConfig = await getSiteConfig();
-  const launchUrl = siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
+
+  const launchUrlKey = getLaunchUrlKey();
+  const launchUrl = siteConfig?.data?.find((entry) => entry?.key === launchUrlKey)?.value
+    || siteConfig?.data?.find((entry) => entry?.key === LEGACY_LAUNCH_URL_KEY)?.value;
   if (!launchUrl) {
     return;
   }
