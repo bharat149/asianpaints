@@ -104,8 +104,8 @@
   color: #fff;
   text-decoration: underline;
   text-decoration-color: currentcolor;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 1px;
   opacity: 1;
   cursor: pointer;
 }
@@ -149,7 +149,7 @@
   font-weight: 500;
   font-size: 14px;
   line-height: 21px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   color: #fff;
 }
 
@@ -306,10 +306,10 @@
 .footer .group-link a {
   display: block;
   padding: 0;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 400;
   color: #000;
-  line-height: 16.8px;
+  line-height: 22px;
 }
 
 .footer .group-link a:hover {
@@ -515,7 +515,6 @@
 
 .footer .watch-now-btn:hover {
   background: rgba(255 255 255 / 95%);
-  transform: scale(1.04);
 }
 
 .footer .watch-now-btn .yt-icon {
@@ -539,7 +538,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0 0 0 / 82%);
+  padding: 0 17% 0 calc(180px + 2%);
 }
 
 .footer .footer-video-banner.video-active .footer-video-player {
@@ -553,8 +552,8 @@
 
 .footer .footer-video-close {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 0;
+  right: 0;
   z-index: 2;
   width: 48px;
   height: 48px;
@@ -571,7 +570,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 34px;
+  width: 25px;
   height: 3px;
   background: #fff;
   border-radius: 999px;
@@ -592,8 +591,8 @@
   width: min(100%, 912px);
   aspect-ratio: 16 / 9;
   background: #000;
-  border-radius: 16px;
   overflow: hidden;
+  height: 400px;
 }
 
 .footer .footer-video-embed {
@@ -760,7 +759,6 @@
 }
 
 .footer .social-icon:hover {
-  transform: scale(1.15);
   opacity: 1;
 }
 

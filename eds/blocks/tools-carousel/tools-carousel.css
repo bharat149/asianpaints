@@ -248,6 +248,7 @@
   border-radius: 50%;
   background: #fcaf17;
   transform: translate(2px, -2px);
+  color: black;
 }
 
 /* Mobile responsive */
@@ -346,14 +347,5 @@
 
   .tools-carousel-slide img {
     opacity: 1;
-  }
-
-  .tools-carousel-slide::after {
-    opacity: 1;
-    height: 50px;
-    width: 50px;
-    border-radius: 50%;
-    background: #fcaf17;
-    transform: translate(2px, -2px);
   }
 }
