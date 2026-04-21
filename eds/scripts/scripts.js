@@ -12,7 +12,11 @@ import {
   loadSections,
   loadCSS,
 } from './aem.js';
-import { bindButtonContainerTracking } from './analytics.js';
+import {
+  bindButtonContainerTracking,
+  bindReadTermsPdfTracking,
+  royalePlayAnimatedImageTracking,
+} from './analytics.js';
 
 (function loadCryptoJSGlobally() {
   if (window.CryptoJS) return;
@@ -221,7 +225,9 @@ function buildAutoBlocks(main) {
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
   decorateButtons(main);
+  bindReadTermsPdfTracking(main);
   bindButtonContainerTracking(main);
+  royalePlayAnimatedImageTracking(main);
   decorateIcons(main);
   decorateLinkedPictures(main);
   buildAutoBlocks(main);
@@ -246,13 +252,7 @@ async function loadEager(doc) {
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
 
-  try {
-    if (window.innerWidth >= 900 || sessionStorage.getItem('fonts-loaded')) {
-      loadFonts();
-    }
-  } catch (e) {
-    // sessionStorage may be unavailable; fonts load lazily instead
-  }
+  loadFonts();
 }
 
 /**
@@ -326,19 +326,53 @@ async function loadSplashPopup() {
  * are all deferred here to keep them out of the critical rendering path.
  */
 function loadDelayed() {
+  /* ── Tier 1 (3 s) — lightweight, needed early ────────────────────── */
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
     import('./delayed.js');
   }, 3000);
 
-  /* Splash popup — delayed 3s so it doesn't become the LCP element */
   window.setTimeout(() => {
     if (!localStorage.getItem('splash-popup-shown')) {
       loadSplashPopup();
     }
   }, 3000);
 
-  /* Sprinklr chat — delayed to avoid TBT impact */
+  /* ── Tier 2 (6 s) — CSS-only preloads, low main-thread cost ───── */
+  window.setTimeout(() => {
+    window.loadSwiper?.().catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload Swiper', e);
+    });
+  }, 6000);
+
+  window.setTimeout(() => {
+    window.loadBootstrap?.({ withJS: false }).catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload Bootstrap', e);
+    });
+  }, 6000);
+
+  /* ── Tier 3 (9 s) — heavy JS: jQuery, analytics, Sprinklr chat ── */
+  window.setTimeout(() => {
+    window.loadJQuery?.().catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preload jQuery', e);
+    });
+  }, 9000);
+
+  window.setTimeout(async () => {
+    try {
+      await window.loadJQuery?.();
+      const { initAnalytics } = await import('./analytics.js');
+      initAnalytics();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize analytics', e);
+    }
+  }, 9000);
+
+  /* Sprinklr chat — heaviest 3rd-party, load last */
   window.setTimeout(() => {
     window.sprChatSettings = {
       appId: '65d88620e479600565c07099_app_600025303',
@@ -381,57 +415,7 @@ function loadDelayed() {
         n.addEventListener('DOMContentLoaded', o);
       }
     }());
-  }, 3000);
-
-  /**
-   * Preload Swiper later so it does not affect LCP,
-   * while still keeping window.loadSwiper available for on-demand block usage.
-   */
-  window.setTimeout(() => {
-    window.loadSwiper?.().catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to preload Swiper', e);
-    });
-  }, 3000);
-
-  /**
-   * Preload Bootstrap CSS later so frequently used components
-   * can benefit without moving Bootstrap into the eager phase.
-   */
-  window.setTimeout(() => {
-    window.loadBootstrap?.({ withJS: false }).catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to preload Bootstrap', e);
-    });
-  }, 3000);
-
-  /**
-   * Load jQuery only in the delayed phase.
-   * This keeps jQuery out of the critical rendering path,
-   * but still makes it available for legacy modules such as analytics.
-   */
-  window.setTimeout(() => {
-    window.loadJQuery?.().catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to preload jQuery', e);
-    });
-  }, 3000);
-
-  /**
-   * Lazy load analytics after jQuery is available.
-   * This prevents analytics from failing due to missing window.jQuery
-   * and avoids eager-loading analytics during initial page render.
-   */
-  window.setTimeout(async () => {
-    try {
-      await window.loadJQuery?.();
-      const { initAnalytics } = await import('./analytics.js');
-      initAnalytics();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to initialize analytics', e);
-    }
-  }, 3000);
+  }, 12000);
 }
 
 async function loadPage() {

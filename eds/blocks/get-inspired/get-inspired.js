@@ -172,7 +172,7 @@ export default function decorate(block) {
       }
 
       panel.swiperInstance = new Swiper(swiperEl, {
-        slidesPerView: 5,
+        slidesPerView: 3,
         spaceBetween: 18,
         loop: false,
         watchOverflow: true,
@@ -184,10 +184,10 @@ export default function decorate(block) {
         },
         breakpoints: {
           0: {
-            slidesPerView: 3.5,
+            slidesPerView: 1.5,
           },
           1024: {
-            slidesPerView: 5,
+            slidesPerView: 3,
           },
         },
         navigation: {

@@ -18,6 +18,32 @@ function getNearestHeadingTitle(cta, block) {
   return nearest?.textContent?.trim() || 'Explore Split';
 }
 
+function getNearestHeadingId(cta, block) {
+  let scope = cta.parentElement;
+  while (scope && scope !== block) {
+    const scopedHeading = scope.querySelector(':scope > h3[id]');
+    if (scopedHeading?.id) {
+      return scopedHeading.id.trim();
+    }
+    scope = scope.parentElement;
+  }
+
+  const orderedNodes = [...block.querySelectorAll('h3[id], .button-container a.button')];
+  let nearestHeadingId = '';
+
+  for (let i = 0; i < orderedNodes.length; i += 1) {
+    const node = orderedNodes[i];
+    if (node.matches('h3[id]')) {
+      nearestHeadingId = node.id.trim();
+    }
+    if (node === cta) {
+      return nearestHeadingId;
+    }
+  }
+
+  return nearestHeadingId;
+}
+
 function bindViewAllTracking(block) {
   block.querySelectorAll('.button-container a.button').forEach((cta) => {
     if (cta.dataset.exploreSplitAnalyticsBound === 'true') return;
@@ -26,9 +52,10 @@ function bindViewAllTracking(block) {
     if (!buttonText.startsWith('view all')) return;
 
     cta.dataset.exploreSplitAnalyticsBound = 'true';
+    cta.dataset.analyticsBound = 'true';
     cta.addEventListener('click', () => {
       const ctaLink = cta.getAttribute('href') || '';
-      const btnTitle = cta.textContent.trim();
+      const btnTitle = getNearestHeadingId(cta, block) || cta.textContent.trim();
       const parentTitle = getNearestHeadingTitle(cta, block);
 
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
