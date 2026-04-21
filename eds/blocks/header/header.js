@@ -20,6 +20,7 @@ import {
   trackImageSearchStart,
   trackImageSearchClose,
   trackImageSearchComplete,
+  triggerCTAClickWithLinkAndTitle,
 } from '../../scripts/analytics.js';
 
 const DESKTOP_BREAKPOINT = 992;
@@ -1812,6 +1813,18 @@ async function buildProfileAuthUrl(redirectUri) {
 }
 
 function buildBrandBar(brandDiv) {
+  const triggerDomainSwitch = (destinationUrl) => {
+    const normalizedDestination = (destinationUrl || '').trim();
+    if (!normalizedDestination || normalizedDestination.startsWith('javascript:void')) {
+      return;
+    }
+    if (window._satellite) {
+      window._satellite.track('domain_swicth', {
+        destinationUrl: normalizedDestination,
+      });
+    }
+  };
+
   const brandBar = document.createElement('div');
   brandBar.className = 'header-brands';
 
@@ -1839,7 +1852,14 @@ function buildBrandBar(brandDiv) {
     const brandItem = document.createElement('a');
     brandItem.className = 'brand-item';
     if (idx === 0) brandItem.classList.add('active');
-    brandItem.href = '#';
+    brandItem.href = anchor ? anchor.getAttribute('href') : '#';
+    brandItem.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (brandItem.classList.contains('active')) return;
+
+      const destinationUrl = event.currentTarget?.href || brandItem.href || brandItem.getAttribute('href');
+      triggerDomainSwitch(destinationUrl);
+    });
 
     // Wrapper so CSS can decide which image to show
     const pictureWrapper = document.createElement('span');
@@ -3016,12 +3036,45 @@ function addInteractions(block) {
   const searchBarEl = block.querySelector('.header-search');
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
+      if (window._satellite) {
+        window._satellite.track('search_icon');
+      }
       openSearchDialog(block);
     });
     searchBarEl.style.cursor = 'pointer';
     const searchInput = searchBarEl.querySelector('.search-input');
     if (searchInput) searchInput.style.cursor = 'pointer';
   }
+
+  const headerLogoEl = block.querySelector('.header-logo');
+  if (headerLogoEl) {
+    headerLogoEl.addEventListener('click', () => {
+      const ctaLink = headerLogoEl.getAttribute('href') || '';
+      const isHomeIcon = headerLogoEl.classList.contains('home_icon');
+      const btnTitle = isHomeIcon ? 'Home' : 'Home logo';
+      const parentTitle = isHomeIcon ? 'Menu Header' : 'Header';
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  }
+
+  block.querySelectorAll('.action-btn').forEach((actionBtn) => {
+    actionBtn.addEventListener('click', () => {
+      if (!window._satellite) return;
+
+      const rawTitle = actionBtn.getAttribute('aria-label')
+        || actionBtn.querySelector('.icon-tooltip-text')?.textContent
+        || actionBtn.textContent
+        || '';
+      const title = rawTitle.replace(/\s+/g, ' ').trim();
+      const rawHref = actionBtn.getAttribute('href') || '';
+      const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : rawHref;
+
+      window._satellite.track('header_icons', {
+        title,
+        param1,
+      });
+    });
+  });
 
   // Mobile search: open search dialog instead of inline panel
   const mobileSearchBtn = block.querySelector('.mobile-search-btn');

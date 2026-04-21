@@ -1,3 +1,5 @@
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+
 export default function decorate(block) {
   const ul = document.createElement('ul');
   ul.className = 'ql-list';
@@ -148,15 +150,25 @@ export default function decorate(block) {
 
   block.textContent = '';
   block.append(ul);
-  $(".ql-card--call a").click(function () {
-    if (ccAnalytics.satelliteCheck()) {
-         _satellite.track('SPSContactClick');
-    }
-});
 
-$(".ql-card--whatsapp.ql-action-row a").click(function () {
-    if (ccAnalytics.satelliteCheck()) {
-         _satellite.track('contact_us_click_whatsapp');
-    }
-});
+  block.querySelectorAll('.ql-card--call a').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('SPSContactClick');
+    });
+  });
+
+  block.querySelectorAll('.ql-card--whatsapp .ql-action-row a').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('contact_us_click_whatsapp');
+    });
+  });
+
+  block.querySelectorAll('.ql-card:not(.ql-card--call):not(.ql-card--whatsapp) .ql-action-row .ql-btn').forEach((link) => {
+    link.addEventListener('click', () => {
+      const ctaLink = link.getAttribute('href') || '';
+      const btnTitle = (link.querySelector('.ql-btntext')?.textContent || link.textContent || '').trim();
+      const parentTitle = (link.closest('.ql-card')?.querySelector('.ql-title')?.textContent || '').trim();
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  });
 }
