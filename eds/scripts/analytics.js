@@ -1,5 +1,10 @@
 import { loadScript } from './aem.js';
 import { getSiteConfig } from './configs.js';
+import { DOMAIN_ENV, getDomainEnvironment } from './environment.js';
+
+const BETA_LAUNCH_URL_KEY = 'beta_launchUrl';
+const PROD_LAUNCH_URL_KEY = 'prod_launchUrl';
+const LEGACY_LAUNCH_URL_KEY = 'launchUrl';
 
 /**
  * Returns the digitalData object or creates an empty one if it doesn't exist.
@@ -16,8 +21,11 @@ export function getDigitalData() {
  * @param {Object} [eventData] Optional event data
  */
 export function trackEvent(eventName, eventData = {}) {
-  getDigitalData().event = eventName;
-  window._satellite && window._satellite.track(eventName, eventData);
+  const normalizedEventName = typeof eventName === 'string' ? eventName.trim() : '';
+  if (!normalizedEventName) return;
+
+  getDigitalData().event = normalizedEventName;
+  window._satellite && window._satellite.track(normalizedEventName, eventData);
 }
 
 /**
@@ -239,13 +247,24 @@ export function royalePlayAnimatedImageTracking(element) {
   });
 }
 
+function getLaunchUrlKey(hostname = window.location.hostname) {
+  if (getDomainEnvironment(hostname) === DOMAIN_ENV.BETA) {
+    return BETA_LAUNCH_URL_KEY;
+  }
+
+  return PROD_LAUNCH_URL_KEY;
+}
+
 /**
  * Initializes the data layer and loads the Adobe Launch script.
  */
 export async function initAnalytics() {
   // Load the Launch script
   const siteConfig = await getSiteConfig();
-  const launchUrl = siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
+
+  const launchUrlKey = getLaunchUrlKey();
+  const launchUrl = siteConfig?.data?.find((entry) => entry?.key === launchUrlKey)?.value
+    || siteConfig?.data?.find((entry) => entry?.key === LEGACY_LAUNCH_URL_KEY)?.value;
   if (!launchUrl) {
     return;
   }
