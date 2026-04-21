@@ -1831,16 +1831,25 @@ function buildBrandBar(brandDiv) {
   const inner = document.createElement('div');
   inner.className = 'header-brands-inner';
 
-  const logos = brandDiv.querySelectorAll('p');
-  logos.forEach((p, idx) => {
-    const anchor = p.querySelector('a');
-    const img = p.querySelector('img');
-    if (!anchor && !img) return;
+  // Brand logo authoring structure:
+  // brandDiv > ul > li (each brand item)
+  const brandItems = brandDiv.querySelectorAll(':scope > ul > li');
+
+  brandItems.forEach((brandLi, idx) => {
+    const imageList = brandLi.querySelector(':scope > ul');
+    if (!imageList) return;
+
+    const imageLis = imageList.querySelectorAll(':scope > li');
+    const desktopPicture = imageLis[0]?.querySelector('picture');
+    const mobilePicture = imageLis[1]?.querySelector('picture');
+
+    if (!desktopPicture && !mobilePicture) return;
 
     const brandItem = document.createElement('a');
     brandItem.className = 'brand-item';
     if (idx === 0) brandItem.classList.add('active');
-    brandItem.href = anchor ? anchor.getAttribute('href') : '#';
+    brandItem.href = '#';
+
     brandItem.addEventListener('click', (event) => {
       event.stopPropagation();
       if (brandItem.classList.contains('active')) return;
@@ -1849,15 +1858,24 @@ function buildBrandBar(brandDiv) {
       triggerDomainSwitch(destinationUrl);
     });
 
-    if (img) {
-      const clonedImg = img.cloneNode(true);
-      // Use mobile-optimised logo for White Teak (3rd brand)
-      if (idx === 2 && window.innerWidth < 900) {
-        clonedImg.src = '/eds/icons/wt_logo_mob.svg';
-      }
-      brandItem.appendChild(clonedImg);
+    const pictureWrap = document.createElement('span');
+    pictureWrap.className = 'brand-item-picture-wrap';
+
+    if (desktopPicture) {
+      const desktopWrap = document.createElement('span');
+      desktopWrap.className = 'brand-item-picture-desktop';
+      desktopWrap.appendChild(desktopPicture.cloneNode(true));
+      pictureWrap.appendChild(desktopWrap);
     }
 
+    if (mobilePicture) {
+      const mobileWrap = document.createElement('span');
+      mobileWrap.className = 'brand-item-picture-mobile';
+      mobileWrap.appendChild(mobilePicture.cloneNode(true));
+      pictureWrap.appendChild(mobileWrap);
+    }
+
+    brandItem.appendChild(pictureWrap);
     inner.appendChild(brandItem);
   });
 
