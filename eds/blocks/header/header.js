@@ -1831,23 +1831,11 @@ function buildBrandBar(brandDiv) {
   const inner = document.createElement('div');
   inner.className = 'header-brands-inner';
 
-  // Logo structure:
-  // brandDiv > ul > li (each brand)
-  // each brand li contains:
-  //   optional p (reference text only - ignore)
-  //   ul > li:first-child  => desktop image
-  //   ul > li:last-child   => mobile image
-  const brandItems = brandDiv.querySelectorAll(':scope > ul > li');
-
-  brandItems.forEach((brandLi, idx) => {
-    const imageList = brandLi.querySelector(':scope > ul');
-    if (!imageList) return;
-
-    const imageLis = imageList.querySelectorAll(':scope > li');
-    const desktopPicture = imageLis[0]?.querySelector('picture');
-    const mobilePicture = imageLis[1]?.querySelector('picture');
-
-    if (!desktopPicture && !mobilePicture) return;
+  const logos = brandDiv.querySelectorAll('p');
+  logos.forEach((p, idx) => {
+    const anchor = p.querySelector('a');
+    const img = p.querySelector('img');
+    if (!anchor && !img) return;
 
     const brandItem = document.createElement('a');
     brandItem.className = 'brand-item';
@@ -1861,25 +1849,15 @@ function buildBrandBar(brandDiv) {
       triggerDomainSwitch(destinationUrl);
     });
 
-    // Wrapper so CSS can decide which image to show
-    const pictureWrapper = document.createElement('span');
-    pictureWrapper.className = 'brand-item-picture-wrap';
-
-    if (desktopPicture) {
-      const desktopWrap = document.createElement('span');
-      desktopWrap.className = 'brand-item-picture brand-item-picture-desktop';
-      desktopWrap.appendChild(desktopPicture.cloneNode(true));
-      pictureWrapper.appendChild(desktopWrap);
+    if (img) {
+      const clonedImg = img.cloneNode(true);
+      // Use mobile-optimised logo for White Teak (3rd brand)
+      if (idx === 2 && window.innerWidth < 900) {
+        clonedImg.src = '/eds/icons/wt_logo_mob.svg';
+      }
+      brandItem.appendChild(clonedImg);
     }
 
-    if (mobilePicture) {
-      const mobileWrap = document.createElement('span');
-      mobileWrap.className = 'brand-item-picture brand-item-picture-mobile';
-      mobileWrap.appendChild(mobilePicture.cloneNode(true));
-      pictureWrapper.appendChild(mobileWrap);
-    }
-
-    brandItem.appendChild(pictureWrapper);
     inner.appendChild(brandItem);
   });
 
