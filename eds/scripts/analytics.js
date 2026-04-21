@@ -1,11 +1,10 @@
 import { loadScript } from './aem.js';
 import { getSiteConfig } from './configs.js';
+import { DOMAIN_ENV, getDomainEnvironment } from './environment.js';
 
 const BETA_LAUNCH_URL_KEY = 'beta_launchUrl';
 const PROD_LAUNCH_URL_KEY = 'prod_launchUrl';
 const LEGACY_LAUNCH_URL_KEY = 'launchUrl';
-const BETA_DOMAIN = 'beta.asianpaints.com';
-const PROD_DOMAIN = 'www.asianpaints.com';
 
 /**
  * Returns the digitalData object or creates an empty one if it doesn't exist.
@@ -249,15 +248,11 @@ export function royalePlayAnimatedImageTracking(element) {
 }
 
 function getLaunchUrlKey(hostname = window.location.hostname) {
-  if (hostname === BETA_DOMAIN) {
+  if (getDomainEnvironment(hostname) === DOMAIN_ENV.BETA) {
     return BETA_LAUNCH_URL_KEY;
   }
 
-  if (hostname === PROD_DOMAIN || hostname === 'asianpaints.com') {
-    return PROD_LAUNCH_URL_KEY;
-  }
-
-  return BETA_LAUNCH_URL_KEY;
+  return PROD_LAUNCH_URL_KEY;
 }
 
 /**
