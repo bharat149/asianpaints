@@ -617,6 +617,7 @@
   line-height: 1.6;
   margin: 0;
   color: rgb(255 255 255 / 90%);
+  font-weight: 600;
 }
 
 
@@ -632,7 +633,7 @@
   .cards.services .cards-card-body {
     padding: 0 25px 20px;
     height: 200px;
-    max-width: 81%;
+    max-width: 82%;
   }
 
   .cards.services .cards-card-body h2,
@@ -651,6 +652,7 @@
 
   .cards.services .cards-card-body p {
     font-size: 14px;
+    font-weight: 600;
   }
 }
 

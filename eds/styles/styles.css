@@ -423,6 +423,14 @@ main .section.section-padding-top {
   padding-top: 100px;
 }
 
+main .section.section-padding-top-15 {
+  padding-top: 15px;
+}
+
+main .section.text-grey {
+  color: rgb(93,79,67);
+}
+
 main .section.zero-margin {
   margin: 0;
 }

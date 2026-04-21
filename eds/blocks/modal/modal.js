@@ -19,6 +19,7 @@ export async function createModal(contentNodes) {
     dialog.classList.add('book-free-site-visit-dialog');
   }
   dialog.append(dialogContent);
+  window.activeModalElement = dialog;
 
   const closeButton = document.createElement('button');
   closeButton.classList.add('close-button');
@@ -46,6 +47,7 @@ export async function createModal(contentNodes) {
 
   dialog.addEventListener('close', () => {
     document.body.classList.remove('modal-open');
+    window.activeModalElement = null; // Clear reference on close
     block.remove();
   });
 
@@ -56,7 +58,6 @@ export async function createModal(contentNodes) {
     block,
     showModal: () => {
       dialog.showModal();
-      // reset scroll position
       setTimeout(() => { dialogContent.scrollTop = 0; }, 0);
       document.body.classList.add('modal-open');
     },

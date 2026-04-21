@@ -2101,11 +2101,15 @@ function buildMainHeader(mainDiv) {
   if (lastP) {
     const ctaAnchor = lastP.querySelector('a');
     if (ctaAnchor && !ctaAnchor.querySelector('img')) {
+      const defaultExitIntentPath = '/eds/forms/book-free-site-visit';
+      const ctaHref = ctaAnchor.getAttribute('href') || defaultExitIntentPath;
       const ctaContainer = document.createElement('div');
       ctaContainer.className = 'header-cta';
 
       const ctaLink = document.createElement('a');
       ctaLink.className = 'cta-btn trigger-exit-intent-popup-form';
+      ctaLink.href = ctaHref;
+      ctaLink.dataset.modalPath = ctaHref;
       ctaLink.textContent = ctaAnchor.textContent.trim();
 
       ctaContainer.appendChild(ctaLink);
@@ -3064,6 +3068,7 @@ function addInteractions(block) {
       if (!modalPath || ctaBtn.dataset.loading === 'true') return;
 
       e.preventDefault();
+      e.stopPropagation();
       ctaBtn.dataset.loading = 'true';
 
       try {
