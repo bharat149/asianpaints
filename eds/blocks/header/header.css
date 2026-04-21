@@ -72,14 +72,6 @@
   box-sizing: border-box;
 }
 
-.header .brand-item-picture-desktop {
-  display: inline-flex;
-}
-
-.header .brand-item-picture-mobile {
-  display: none;
-}
-
 .header .brand-item:nth-child(1) {
   margin-right: 25px;
 }
@@ -1028,7 +1020,7 @@ body.nav-open {
   }
 
   .header .brand-item:nth-child(1) {
-    width: 127px;
+    width: 116px;
     margin-right: 0;
   }
 
@@ -1048,15 +1040,6 @@ body.nav-open {
     height: 100%;
     object-fit: contain;
   }
-
-  .header .brand-item-picture-desktop {
-    display: none;
-  }
-
-  .header .brand-item-picture-mobile {
-    display: inline-flex;
-  }
-
 
   .header .brand-item:nth-child(3) img {
     width: 129px;
