@@ -124,9 +124,15 @@ export default function decorate(block) {
   /* Identify the first grid image BEFORE the optimisation loop so we can
      set loading="eager" + fetchpriority="high" at creation time.
      Setting these attributes after the element is created has no effect
-     because the browser commits to lazy-loading when the <img> is parsed. */
+     because the browser commits to lazy-loading when the <img> is parsed.
+     Pick the image that is actually visible — mob-view on mobile,
+     desktop image on wider viewports — so we don't eagerly fetch a
+     display:none image that blocks the network pipe. */
+  const isMobileViewport = window.innerWidth < 768;
   const firstGridImg = isGrid
-    ? ul.querySelector('.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img')
+    ? ul.querySelector(isMobileViewport
+      ? '.cards-card-image.mob-view img'
+      : '.cards-card-image:not(.mob-view) img')
     : null;
 
   const imgWidth = '750';
