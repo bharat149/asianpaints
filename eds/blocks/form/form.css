@@ -252,8 +252,10 @@
 }
 
 .form.block .form-consent-input:checked+.form-consent-box {
-  background: #fff;
-  border-color: #53565a;
+  /* background: #fff;
+  border-color: #53565a; */
+  background-color: transparent;
+  border: 1px solid #fff;
 }
 
 .form.block .form-consent-input:checked+.form-consent-box::after {
@@ -263,8 +265,8 @@
   left: 7px;
   width: 5px;
   height: 10px;
-  border-right: 2px solid #b0b1b3;
-  border-bottom: 2px solid #b0b1b3;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
   transform: rotate(45deg);
 }
 
