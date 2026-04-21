@@ -317,16 +317,16 @@
   opacity: 1;
 }
 
-.footer .mega-center .link-group + .link-group {
+.footer .mega-center .link-group+.link-group {
   padding-top: 0;
   border-top: none;
 }
 
-.footer .mega-center .panel-left .link-group + .link-group {
+.footer .mega-center .panel-left .link-group+.link-group {
   margin-top: 25px;
 }
 
-.footer .mega-center .panel-right .link-group + .link-group {
+.footer .mega-center .panel-right .link-group+.link-group {
   margin-top: 0;
 }
 
@@ -339,7 +339,7 @@
   border-bottom: 3px solid #b0b1b3;
 }
 
-@media (width >= 992px) and (width <= 1280px) {
+@media (width >=992px) and (width <=1280px) {
   .footer .clickable-title {
     font-size: 12px;
   }
@@ -349,7 +349,7 @@
   }
 }
 
-@media (width >= 1281px) and (width <= 1440px) {
+@media (width >=1281px) and (width <=1440px) {
   .footer .group-link {
     margin-bottom: 8px;
   }
@@ -445,7 +445,7 @@
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-.footer .mega-col-about .link-group + .link-group {
+.footer .mega-col-about .link-group+.link-group {
   padding-top: 0;
   border-top: none;
 }
@@ -807,7 +807,7 @@
 /* =============================================
    RESPONSIVE — TABLET (768px – 1023px)
    ============================================= */
-@media (width >= 768px) and (width < 1024px) {
+@media (width >=768px) and (width < 1024px) {
   .footer .footer-mega-inner {
     padding: 0 24px;
   }
@@ -1047,7 +1047,7 @@
     color: #000;
   }
 
-  .footer .mega-center .link-group + .link-group {
+  .footer .mega-center .link-group+.link-group {
     border-top: none;
   }
 
@@ -1057,7 +1057,7 @@
     border-bottom: none;
   }
 
-  .footer .mega-center .panel-left .link-group + .link-group,
+  .footer .mega-center .panel-left .link-group+.link-group,
   .footer .mega-center .panel-right .right-col:first-child .link-group:nth-child(2) {
     margin-top: 0;
   }
@@ -1123,7 +1123,7 @@
     overflow: visible;
   }
 
-  .footer .link-group-title[aria-expanded="true"] + .link-group-list {
+  .footer .link-group-title[aria-expanded="true"]+.link-group-list {
     display: block;
     padding: 10px 12px 10px 25px;
     background: #faf6ef;
@@ -1193,10 +1193,14 @@
     display: inline;
   }
 
-  .footer .contact-row svg{
+  .footer .contact-row {
+    gap: 55px;
+  }
+
+  .footer .contact-row svg {
     width: 20px;
     height: 20px;
-    margin-left: 10px;
+    margin-left: 15px;
   }
 
   /* Video banner */
@@ -1362,6 +1366,7 @@
    PRINT STYLES
    ============================================= */
 @media print {
+
   .footer .footer-video-banner,
   .footer .bottom-social {
     display: none;

@@ -248,6 +248,7 @@
     inset: 0;
     border-radius: var(--ql-radius);
     text-indent: -9999px;
+    cursor: pointer;
 }
 
 /* =========================================================
