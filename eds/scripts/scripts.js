@@ -374,8 +374,6 @@ async function loadSplashPopup() {
   } catch (e) {
     // Splash popup content not available, skip silently
   }
-  // Sprinklr chat widget based on current environment
-  loadSprinklrChatWidget();
 }
 
 /**
