@@ -121,9 +121,18 @@ export default function decorate(block) {
     ul.append(li);
   });
 
+  /* Identify the first grid image BEFORE the optimisation loop so we can
+     set loading="eager" + fetchpriority="high" at creation time.
+     Setting these attributes after the element is created has no effect
+     because the browser commits to lazy-loading when the <img> is parsed. */
+  const firstGridImg = isGrid
+    ? ul.querySelector('.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img')
+    : null;
+
   const imgWidth = '750';
   ul.querySelectorAll('picture > img').forEach((img) => {
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: imgWidth }]);
+    const isLCPCandidate = img === firstGridImg;
+    const optimizedPic = createOptimizedPicture(img.src, img.alt, isLCPCandidate, [{ width: imgWidth }]);
     const optimizedImg = optimizedPic.querySelector('img');
 
     moveInstrumentation(img, optimizedImg);
@@ -136,23 +145,17 @@ export default function decorate(block) {
     if (originalHeight) optimizedImg.setAttribute('height', originalHeight);
 
     optimizedImg.decoding = 'async';
-    optimizedImg.loading = 'lazy';
-    optimizedImg.setAttribute('fetchpriority', 'auto');
+
+    if (isLCPCandidate) {
+      optimizedImg.loading = 'eager';
+      optimizedImg.setAttribute('fetchpriority', 'high');
+    } else {
+      optimizedImg.loading = 'lazy';
+      optimizedImg.setAttribute('fetchpriority', 'auto');
+    }
 
     img.closest('picture').replaceWith(optimizedPic);
   });
-
-  // Grid block: prioritize first visible image (but NOT as high priority)
-  if (isGrid) {
-    const firstGridImage = ul.querySelector(
-      '.cards-card-image:not(.mob-view) img, .cards-card-image.mob-view img'
-    );
-
-    if (firstGridImage) {
-      firstGridImage.loading = 'eager';
-      firstGridImage.setAttribute('fetchpriority', 'auto');
-    }
-  }
 
   if (!isServicesBlock && !isRoomBlock && !isBenefitsBlock) {
     ul.querySelectorAll('.cards-card-body p').forEach((p) => {
