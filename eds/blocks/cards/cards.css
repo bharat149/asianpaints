@@ -378,7 +378,7 @@
   flex-grow: 1;
   align-items: center;
   text-align: center;
-  padding: 0 11px;
+  /* padding: 0 11px;*/
   min-width: 120px;
   /* flex: 1 1 auto;*/
   margin: 0;

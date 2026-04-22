@@ -126,9 +126,34 @@
     }
 }
 
-/* Slightly larger desktop text */
+/* Slightly larger desktop text + DESKTOP tile constraints */
 @media (min-width: 1024px) {
     .square-image-cross-links__title {
         font-size: 20px;
+    }
+
+    /* ============================================================
+       DESKTOP ONLY: Force the image tile size to match AEM geometry
+       Target tile: 371.31px (W) x 285.62px (H)
+       ============================================================ */
+
+    /* 1) Constrain the media box height exactly (AEM behavior) */
+    .square-image-cross-links__media {
+        height: 285.62px;
+        overflow: hidden;
+    }
+
+    /* 2) Force picture/img to fill the constrained box so cover works */
+    .square-image-cross-links__media picture,
+    .square-image-cross-links__media img {
+        width: 100%;
+        height: 100% !important; /* override base height:auto */
+        display: block;
+    }
+
+    /* 3) Crop to fill like AEM */
+    .square-image-cross-links__media img {
+        object-fit: cover;
+        object-position: center;
     }
 }
