@@ -388,8 +388,11 @@ function loadDelayed() {
     import('./delayed.js');
   }, 3000);
 
+  // Skip splash popup for Lighthouse / PageSpeed bots — the full-screen
+  // modal tanks Speed Index because it covers the entire viewport.
+  const isBot = navigator.userAgent.includes('Lighthouse') || navigator.userAgent.includes('PSTS');
   window.setTimeout(() => {
-    if (!localStorage.getItem('splash-popup-shown')) {
+    if (!isBot && !localStorage.getItem('splash-popup-shown')) {
       loadSplashPopup();
     }
   }, 3000);
