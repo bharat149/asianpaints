@@ -671,15 +671,16 @@
 }
 
 .footer .country-flag {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .footer .country-name {
-  font-size: 14px;
+  font-size: 12px;
   color: #ccc;
+  font-weight: 500;
 }
 
 /* =============================================
