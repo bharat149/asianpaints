@@ -2790,19 +2790,23 @@ function bindSecondaryNavAnalytics(block) {
   });
 }
 
-function bindMobileScrollState(block) {
+function bindHeaderScrollState(block) {
   let ticking = false;
 
   const updateScrollState = () => {
     ticking = false;
 
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    const isScrolled = scrollTop > 8;
+
     if (isDesktopViewport()) {
       block.classList.remove('mobile-scrolled');
+      block.classList.toggle('desktop-scrolled', isScrolled);
       return;
     }
 
-    const scrollTop = window.scrollY || window.pageYOffset || 0;
-    block.classList.toggle('mobile-scrolled', scrollTop > 8);
+    block.classList.remove('desktop-scrolled');
+    block.classList.toggle('mobile-scrolled', isScrolled);
   };
 
   const onScroll = () => {
@@ -2820,7 +2824,7 @@ function addInteractions(block) {
   const hamburger = block.querySelector('.nav-hamburger');
   const navBar = block.querySelector('.header-nav-bar');
 
-  bindMobileScrollState(block);
+  bindHeaderScrollState(block);
   bindMainNavAnalytics(block);
   bindSecondaryNavAnalytics(block);
   bindDropdownLinkAnalytics(block);
