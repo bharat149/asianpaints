@@ -56,87 +56,65 @@ setupGlobalClickListener();
 /* CHECK TARGET*/
 
 window.modalHandler = window.modalHandler || {};
-  const modalHandler = window.modalHandler;
+const modalHandler = window.modalHandler;
 
-  function initModalHandlers() {
-    document.addEventListener('click', function (e) {
-      const closeBtn = e.target.closest("[data-bs-dismiss='modal'], [data-dismiss='modal']");
-      if (closeBtn) {
-        const modal = closeBtn.closest('.modal');
-        if (modal) {
-          modalHandler.closeModal(modal);
-        }
-      }
-    });
+function resolveModal(modalOrSelector) {
+  if (!modalOrSelector) return null;
 
-    document.querySelectorAll(".modal").forEach((modal) => {
-      modal.classList.add("fade-scale");
-    });
-
-    if (!document.querySelector(".modal-backdrop")) {
-      const backdrop = document.createElement("div");
-      backdrop.className = "modal-backdrop fade";
-      backdrop.style.display = "none";
-      document.body.appendChild(backdrop);
-    }
-
-    document.querySelectorAll(".modal").forEach((modal) => {
-      modal.addEventListener("click", function (event) {
-        if (modal.id !== "splash-popup" && modal.classList.contains("in")) {
-          const target = event.target;
-          if (
-            window.getComputedStyle(target).display !== "none" &&
-            target.classList.contains("modal")
-          ) {
-            modalHandler.closeModal(modal);
-          }
-        }
-      });
-    });
+  // CSS selector
+  if (typeof modalOrSelector === 'string') {
+    return document.querySelector(modalOrSelector);
   }
 
-  modalHandler.showModal = function (modalOrSelector) {
-    const modal = typeof modalOrSelector === "string"
-      ? document.querySelector(modalOrSelector)
-      : modalOrSelector;
+  // jQuery object
+  if (window.jQuery && modalOrSelector instanceof jQuery) {
+    return modalOrSelector[0] || null;
+  }
 
-    if (!modal) {
-      console.error("Modal not found:", modalOrSelector);
-      return;
-    }
+  // DOM node
+  if (modalOrSelector.nodeType === 1) {
+    return modalOrSelector;
+  }
 
-    modal.style.display = "block";
+  return null;
+}
 
-    const backdrop = document.querySelector(".modal-backdrop");
-    if (backdrop) {
-      backdrop.style.display = "block";
-      backdrop.classList.add("show");
-    }
+modalHandler.showModal = function (modalOrSelector) {
+  const modal = resolveModal(modalOrSelector);
 
-    document.body.classList.add("modal-open");
-    modal.classList.add("in");
-  };
+  if (!modal) {
+    console.error('Modal not found:', modalOrSelector);
+    return;
+  }
 
-  modalHandler.closeModal = function (modalOrSelector) {
-    const modal = typeof modalOrSelector === "string"
-      ? document.querySelector(modalOrSelector)
-      : modalOrSelector;
+  modal.style.display = 'block';
+  modal.classList.add('in');
 
-    if (!modal) {
-      console.error("Modal not found:", modalOrSelector);
-      return;
-    }
+  const backdrop = document.querySelector('.modal-backdrop');
+  if (backdrop) {
+    backdrop.style.display = 'block';
+    backdrop.classList.add('show');
+  }
 
-    modal.classList.remove("in");
-    modal.style.display = "none";
-    document.body.classList.remove("modal-open");
+  document.body.classList.add('modal-open');
+};
 
-    const backdrop = document.querySelector(".modal-backdrop");
-    if (backdrop) {
-      backdrop.style.display = "none";
-      backdrop.classList.remove("show");
-    }
-  };
+modalHandler.closeModal = function (modalOrSelector) {
+  const modal = resolveModal(modalOrSelector);
 
-  initModalHandlers();
+  if (!modal) {
+    console.error('Modal not found:', modalOrSelector);
+    return;
+  }
 
+  modal.classList.remove('in');
+  modal.style.display = 'none';
+
+  const backdrop = document.querySelector('.modal-backdrop');
+  if (backdrop) {
+    backdrop.style.display = 'none';
+    backdrop.classList.remove('show');
+  }
+
+  document.body.classList.remove('modal-open');
+};
