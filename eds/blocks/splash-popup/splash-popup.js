@@ -47,8 +47,15 @@ function extractPanelContent(cell) {
   // Get logo from first picture
   const logoImg = pictures[0]?.querySelector('img');
 
-  // Get background/circle image from second picture (if exists)
-  const bgImg = pictures[1]?.querySelector('img');
+  // Get background/circle image from second picture (if exists).
+  // Prefer the WebP <source> srcset over the PNG <img> src — WebP is
+  // typically 10-15× smaller, which avoids heavy PNG loads.
+  const bgPicture = pictures[1];
+  const bgImg = bgPicture?.querySelector('img');
+  const webpSource = bgPicture?.querySelector('source[type="image/webp"]');
+  if (bgImg && webpSource?.srcset) {
+    bgImg.src = webpSource.srcset;
+  }
 
   // Get text content - look for paragraphs or direct text
   const texts = [];
@@ -80,11 +87,17 @@ function extractPanelContent(cell) {
 function buildPanel(side, content, mobileBgUrl) {
   const panel = createElement('div', { className: `splash-${side}` });
 
-  // Handle background image for left panel
+  // Background image for left panel — use <img> with WebP source (19KB vs 286KB PNG).
   if (side === 'left' && content.backgroundImage) {
     const isMobile = window.matchMedia('(max-width: 719px)').matches;
     const bgSrc = isMobile && mobileBgUrl ? mobileBgUrl : content.backgroundImage.src;
-    panel.style.backgroundImage = `url("${bgSrc}")`;
+    const bgImg = createElement('img', {
+      className: 'splash-bg-img',
+      src: bgSrc,
+      alt: '',
+      'aria-hidden': 'true',
+    });
+    panel.append(bgImg);
   }
 
   // Add logo
@@ -97,7 +110,6 @@ function buildPanel(side, content, mobileBgUrl) {
       width: content.logo.width || 'auto',
       height: content.logo.height || 'auto',
       'aria-hidden': 'true',
-      loading: 'eager',
     });
     panel.append(logo);
   }
@@ -109,7 +121,6 @@ function buildPanel(side, content, mobileBgUrl) {
       src: content.backgroundImage.src,
       alt: content.backgroundImage.alt || '',
       'aria-hidden': 'true',
-      loading: 'eager',
     });
     panel.append(circleImg);
   }
