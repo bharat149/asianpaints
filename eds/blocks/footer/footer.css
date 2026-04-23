@@ -641,7 +641,28 @@
 .footer .title-line {
   flex: 1;
   height: 1px;
-  background: #444;
+  /* background: #444; */
+}
+.footer .section-title-row .title-line:first-child::after {
+  content: '';
+    width: 100%;
+    background: url('/eds/icons/gradient-border-left-line.svg');
+    display: block;
+    height: 2px;
+    background-repeat: no-repeat;
+    display: flex;
+    background-position: right;
+}
+
+.footer .section-title-row .title-line:last-child::after {
+  content: '';
+    width: 100%;
+    background: url('/eds/icons/gradient-border-right-line.svg');
+    display: block;
+    height: 2px;
+    background-repeat: no-repeat;
+    display: flex;
+    background-position: left;
 }
 
 .footer .section-title {
