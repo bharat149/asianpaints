@@ -419,6 +419,21 @@ main .section.sectionpadding {
   padding-left: 4%;
 }
 
+main .section.sectionpadding-large {
+  padding-right: 18%;
+  padding-left: 18%;
+
+  @media (min-width: 320px) and (max-width: 991px) {   
+    padding-left: 0px;
+    padding-right: 0px;
+
+    .default-content-wrapper {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  }
+}
+
 main .section.section-padding-top {
   padding-top: 100px;
 }
