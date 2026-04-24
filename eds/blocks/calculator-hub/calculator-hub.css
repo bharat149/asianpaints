@@ -84,7 +84,7 @@
     @media (min-width: 992px) {
         .calculator-hub .tool-description .heading:focus-visible { display: inline-block; }
         .form-group.project-field{
-            margin-right: 30px;
+            margin-right: 60px;
         }
     }
 
@@ -292,7 +292,7 @@
        CTA (local button styles)
     ---------------------------------------- */
     @media (min-width: 992px) {
-        .calculator-hub .form-actions { margin-top: 35px; }
+        .calculator-hub .form-actions { margin-top: 35px;padding-bottom: 13px }
     }
 
     .calculator-hub .form-actions .animated-arrow-button {
@@ -302,9 +302,10 @@
         align-items: center;
         gap: 12px;
         border-radius: 999px;
-        height: 52px;
+        height: 38px;
         background: linear-gradient(180deg, #ffc63c, #ffa20c);
         color: #222;
+        font-size: 14px;
         font-weight: 600;
     }
 
@@ -315,7 +316,22 @@
         }
     }
 
-    .calculator-hub .form-actions .arrow::after { content: "→"; }
+
+    .calculator-hub .form-actions .arrow::after {
+        content: "🡢";
+        display: inline-block;
+        font-size: 16px;
+        line-height: 1;
+        transform: translateY(1px); /* align optically */
+
+        /* ✅ fake bold */
+        text-shadow:
+            0.4px 0 0 currentColor,
+            -0.4px 0 0 currentColor,
+            0 0.4px 0 currentColor,
+            0 -0.4px 0 currentColor;
+    }
+
 
     /* disabled */
     .calculator-hub a[disabled="disabled"] {
@@ -591,6 +607,24 @@
             margin-bottom: 20px;
         }
     }
+
+
+    /* ✅ 1920×1080 AND ABOVE — FONT SCALE UP */
+    @media (min-width: 1800px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 64px;
+            line-height: 70.4px;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 40px;
+            line-height: 48px;
+            margin-bottom: 20px;
+        }
+    }
+
 
     /* FIX: Type of project – text first, radio after */
     .calculator-hub

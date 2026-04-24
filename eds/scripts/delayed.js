@@ -36,18 +36,85 @@ function setupGlobalClickListener() {
 setupGlobalClickListener();
 
 // Below is the function with same name in aem code to allow Target to call it directly.
-window.modalHandler = {
-  // Triggers the full logic to fetch fragment and create modal
-  showModal() {
-    window.triggerExitIntentPopupForm();
-  },
+// window.modalHandler = {
+//   // Triggers the full logic to fetch fragment and create modal
+//   showModal() {
+//     window.triggerExitIntentPopupForm();
+//   },
 
-  // Targets the native <dialog> element stored during creation
-  closeModal() {
-    if (window.activeModalElement) {
-      window.activeModalElement.close();
-    } else {
-      console.warn('No active modal found to close.');
-    }
+//   // Targets the native <dialog> element stored during creation
+//   closeModal() {
+//     if (window.activeModalElement) {
+//       window.activeModalElement.close();
+//     } else {
+//       console.warn('No active modal found to close.');
+//     }
+//   }
+// };
+
+
+/* CHECK TARGET*/
+
+window.modalHandler = window.modalHandler || {};
+const modalHandler = window.modalHandler;
+
+function resolveModal(modalOrSelector) {
+  if (!modalOrSelector) return null;
+
+  // CSS selector
+  if (typeof modalOrSelector === 'string') {
+    return document.querySelector(modalOrSelector);
   }
+
+  // jQuery object
+  if (window.jQuery && modalOrSelector instanceof jQuery) {
+    return modalOrSelector[0] || null;
+  }
+
+  // DOM node
+  if (modalOrSelector.nodeType === 1) {
+    return modalOrSelector;
+  }
+
+  return null;
+}
+
+modalHandler.showModal = function (modalOrSelector) {
+  const modal = resolveModal(modalOrSelector);
+
+  if (!modal) {
+    console.error('Modal not found:', modalOrSelector);
+    return;
+  }
+
+  modal.style.display = 'block';
+  modal.classList.add('in');
+
+  const backdrop = document.querySelector('.modal-backdrop');
+  if (backdrop) {
+    backdrop.style.display = 'block';
+    backdrop.classList.add('show');
+  }
+
+  document.body.classList.add('modal-open');
+};
+
+modalHandler.closeModal = function (modalOrSelector) {
+  const modal = resolveModal(modalOrSelector);
+
+  if (!modal) {
+    console.error('Modal not found:', modalOrSelector);
+    return;
+  }
+
+  modal.classList.remove('in');
+  modal.style.display = 'none';
+
+  const backdrop = document.querySelector('.modal-backdrop');
+  if (backdrop) {
+    backdrop.style.display = 'none';
+    backdrop.classList.remove('show');
+  }
+
+  document.body.classList.remove('modal-open');
 };

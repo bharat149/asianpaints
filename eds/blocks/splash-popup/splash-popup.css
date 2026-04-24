@@ -77,12 +77,19 @@
   overflow: hidden;
 }
 
-/* Left panel — BH background image */
+/* Left panel */
 .splash-dialog .splash-left {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   border-radius: 4% 0 0 4%;
+}
+
+/* Background image as <img> instead of CSS background-image to exclude from LCP */
+.splash-dialog .splash-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
 }
 
 /* Right panel — solid colour */
@@ -108,6 +115,7 @@
   top: 4%;
   left: 4.5%;
   object-fit: contain;
+  z-index: 1;
 }
 
 .splash-dialog .splash-logo-bh {
@@ -126,6 +134,7 @@
   bottom: 40%;
   left: 4.5%;
   width: auto;
+  z-index: 1;
 }
 
 .splash-dialog .splash-right .splash-text {
