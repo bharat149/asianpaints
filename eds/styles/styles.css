@@ -426,11 +426,6 @@ main .section.sectionpadding-large {
   @media (min-width: 320px) and (max-width: 991px) {   
     padding-left: 0px;
     padding-right: 0px;
-
-    .default-content-wrapper {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
   }
 }
 
