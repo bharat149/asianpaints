@@ -608,6 +608,24 @@
         }
     }
 
+
+    /* ✅ 1920×1080 AND ABOVE — FONT SCALE UP */
+    @media (min-width: 1800px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 64px;
+            line-height: 70.4px;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 40px;
+            line-height: 48px;
+            margin-bottom: 20px;
+        }
+    }
+
+
     /* FIX: Type of project – text first, radio after */
     .calculator-hub
     .mini-pbc.wbc-variant
