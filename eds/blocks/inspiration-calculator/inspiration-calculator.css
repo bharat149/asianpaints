@@ -38,6 +38,7 @@
     border-radius: 45px;
     display: inline-block;
     margin-top: 40px;
+    font-weight: 700;
 
     @media (max-width: 900px) {
         margin-top: 0;

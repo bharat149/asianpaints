@@ -61,8 +61,8 @@
     color: #000;
     display: inline-block;
     margin-bottom: 40px;
-    font-weight: 700;
-    margin-top: 5px;
+    font-weight: 500;
+    margin-top: 12px;
     margin-left: 15px;
 
     @media (max-width: 900px) {

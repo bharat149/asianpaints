@@ -296,13 +296,17 @@ button.accent:focus {
   border: none;
   padding: 0;
   margin: 0;
-  color: var(--link-color);
+  color: black;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: underline;
   text-transform: none;
   letter-spacing: normal;
   border-radius: 0;
+  text-decoration:none;
+  border:1px solid black;
+  padding: 6px 24px;
+  border-radius:20px;
 }
 
 .embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
@@ -726,10 +730,10 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type p {
 
 /* Video section CTA link - Pixel perfect */
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a {
-  color: rgb(0 0 0);
   /* Pixel-perfect: black */
   text-decoration: underline;
   font-weight: 400;
+  display: inline;
 }
 
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover {

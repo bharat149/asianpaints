@@ -50,6 +50,7 @@
     box-shadow: 1px 6px 25px -4px rgba(16 24 40 / 16%);
     border-radius: 8px;
     overflow: hidden;
+    margin-left:10px;
 }
 
 .testimonial-carousel .testimonial-image {
