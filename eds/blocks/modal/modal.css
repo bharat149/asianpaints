@@ -142,8 +142,8 @@ body.modal-open {
 }
 
 .modal dialog.book-free-site-visit-dialog .close-button {
-  top: 8px;
-  right: 8px;
+  top: 78px;
+  right: 50px;
   width: 29px;
   height: 25px;
   border: 1px solid #d9d9d9;

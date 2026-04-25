@@ -16,6 +16,7 @@ Variant: search (default) — Pincode (search)
     font-family:Manrope,sans-serif;
     line-height:35px;
     letter-spacing:1px;
+    font-weight: 700;
 }
 
 .pincode.search p,
@@ -199,8 +200,8 @@ Variant: cta — Pincode (cta)
     flex-direction: row;
     align-items: center;
     background-color: #e6f3fa;
-    border-radius: 12px;
     overflow: hidden;
+    margin-top: 7%;
 }
 
 @media (width <= 991px) {
