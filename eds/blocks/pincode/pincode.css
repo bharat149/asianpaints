@@ -16,7 +16,7 @@ Variant: search (default) — Pincode (search)
     font-family:Manrope,sans-serif;
     line-height:35px;
     letter-spacing:1px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .pincode.search p,
@@ -47,6 +47,7 @@ Variant: search (default) — Pincode (search)
     text-align:center;
     font-family:Manrope,sans-serif;
     margin:0;
+    margin-bottom:12px;
 }
 
 .pincode .pincode-input-wrapper{
@@ -230,7 +231,8 @@ Variant: cta — Pincode (cta)
 
 @media (width >= 992px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper {
-        width: 37%;
+        width: 53%;
+        height:stretch;
     }
 }
 
@@ -276,7 +278,7 @@ Variant: cta — Pincode (cta)
 
 @media (width >= 992px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading {
-        width: 65% !important;
+        //width: 65% !important;
     }
 }
 
@@ -349,7 +351,7 @@ Variant: cta — Pincode (cta)
     text-transform: inherit;
     width: 55%;
     padding-right: 0;
-    border: 1px solid #75787b;
+    border: 1px solid #75787b !important;
     background: #fff;
     border-radius: 6px;
 }
