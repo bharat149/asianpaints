@@ -7,11 +7,9 @@
     text-align: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px 20px;
 }
 
 .section.accordion-container:has(.accordion.faq) > .default-content-wrapper h2 {
-    font-family: Manrope, sans-serif;
     font-size: 32px;
     font-weight: 600;
     line-height: 38px;
@@ -20,12 +18,25 @@
     color: #222;
 }
 
+main .section.sectionpadding-large.accordion-container {
+  padding-right: 18%;
+  padding-left: 18%;
+
+  @media (min-width: 320px) and (max-width: 991px) {   
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+}
+
+main .section.sectionpadding.accordion-container {
+  padding-right: 4%;
+  padding-left: 4%;
+}
+
 /* Container */
 .accordion.faq {
     width: 100%;
-    /* max-width: 1400px; */
     margin: 0 auto;
-    /* padding: 0 18%; */
     box-sizing: border-box;
     padding-bottom: 50px;
 }
@@ -231,10 +242,6 @@
         line-height: 28px;
         text-align: left;
         margin-bottom: 0px;
-    }
-
-    .accordion.faq {
-        padding: 0 16px;
     }
 
     .accordion.faq details summary {
