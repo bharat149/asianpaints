@@ -640,7 +640,7 @@ export default async function decorate(block) {
 
   slides.forEach((slide, index) => {
     const slideEl = document.createElement('div');
-    slideEl.className = 'collage-slideshow__slide swiper-slide';
+    slideEl.className = `collage-slideshow__slide swiper-slide collage-slideshow__slide--${index + 1}`;
     slideEl.dataset.index = index;
 
     const labelText = 'Range of Royale collections';
