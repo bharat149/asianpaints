@@ -662,6 +662,13 @@ export default async function decorate(block) {
   const contentPanel = createContentPanel(contentRow);
   rightSection.appendChild(contentPanel);
 
+  // MOBILE: move CTA + description below left section
+  if (window.innerWidth <= 991) {
+    const description = contentPanel.querySelector('.collage-slideshow__description');
+    const cta = contentPanel.querySelector('.collage-slideshow__cta');
+    if (cta) leftSection.appendChild(cta);
+  }
+
   wrapper.append(leftSection, rightSection);
   block.appendChild(wrapper);
 
