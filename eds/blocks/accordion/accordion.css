@@ -247,6 +247,10 @@ main .section.sectionpadding.accordion-container {
         line-height: 24px;
     }
 
+    .accordion.faq details summary p {
+        max-width: 85%;
+    }
+
     .accordion.faq details summary::after {
         margin-top: 2px;
         margin-right: -1px;

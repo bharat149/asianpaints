@@ -1,6 +1,5 @@
 .popular-shades-container {
   padding: 0 !important;
-  max-height: 650px;
 }
 
 .popular-shades-container .popular-shades-wrapper,
@@ -295,7 +294,7 @@
     height: auto;
     aspect-ratio: auto;
     background: transparent;
-    padding-left: 0;
+    padding: 0 30px;
   }
 
   .popular-shades__picture,

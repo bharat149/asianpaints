@@ -879,12 +879,12 @@
 
   .form.block .form-button-cell {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .form.block .form-submit,
   .form.block .btn.form-submit {
-    width: 100%;
+    width: 57%;
   }
 
   .form.block .form-popup-overlay {
