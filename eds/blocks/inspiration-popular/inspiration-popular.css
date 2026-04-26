@@ -1,3 +1,22 @@
+/* Title */
+.section.inspiration-popular-container:has(.inspiration-popular)>.default-content-wrapper {
+  text-align: center;
+}
+
+.section.inspiration-popular-container:has(.inspiration-popular)>.default-content-wrapper h2 {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 80px;
+    margin: 0 0 20px;
+    text-align: center;
+    color: #222;
+
+    @media (min-width: 320px) and (max-width: 991px) {
+        font-size: 20px;
+        line-height: 27.32px;
+    }
+}
+
 .inspiration-popular {
     display: flex;
     flex-wrap: wrap;
@@ -57,11 +76,12 @@
     padding: 6px 20px;
     border: 1px solid #232426;
     border-radius: 45px;
-    font-size: 14px;
+    font-size: 14.5px;
+    letter-spacing: 0.2px;
     color: #000;
     display: inline-block;
     margin-bottom: 40px;
-    font-weight: 500;
+    font-weight: 600;
     margin-top: 12px;
     margin-left: 15px;
 
