@@ -42,13 +42,17 @@
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 991px) {
   /* default state */
   .designer-collection-inspiration > div a {
     opacity: 1;
     visibility: visible;
     transition: opacity 0.25s ease, visibility 0.25s ease;
-  }
+    top: 55px !important;
+    bottom: unset !important;
+    left: unset !important;
+    right: 35px !important;
+}
 
   /* when container is hovered, hide all CTAs first */
   .designer-collection-inspiration:hover > div a {
@@ -103,8 +107,10 @@
     position: absolute;
     border-radius: 45px;
     padding: 7px 20px;
-    top: 50px;
-    right: 20px;
+    top: unset;
+    bottom: 10px;
+    left: 10px;
+    right: unset;
 }
 
 .designer-collection-inspiration .link-icon {
