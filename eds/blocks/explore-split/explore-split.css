@@ -23,7 +23,8 @@ main>.section .explore-split-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1.5rem 0
+  margin: 1.5rem 0;
+  gap: 15px;
 }
 
 .explore-mobile-tabs h3 {
