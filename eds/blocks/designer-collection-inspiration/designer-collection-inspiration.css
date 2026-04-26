@@ -1,3 +1,22 @@
+/* Title */
+.section.designer-collection-inspiration-container:has(.designer-collection-inspiration)>.default-content-wrapper {
+  text-align: center;
+}
+
+.section.designer-collection-inspiration-container:has(.designer-collection-inspiration)>.default-content-wrapper h2 {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 80px;
+    margin: 0 0 20px;
+    text-align: center;
+    color: #222;
+
+    @media (min-width: 320px) and (max-width: 991px) {
+        font-size: 20px;
+        line-height: 27.32px;
+    }
+}
+
 .designer-collection-inspiration {
     display: flex;
     gap: 25px;
@@ -23,13 +42,17 @@
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 991px) {
   /* default state */
   .designer-collection-inspiration > div a {
     opacity: 1;
     visibility: visible;
     transition: opacity 0.25s ease, visibility 0.25s ease;
-  }
+    top: 55px !important;
+    bottom: unset !important;
+    left: unset !important;
+    right: 35px !important;
+}
 
   /* when container is hovered, hide all CTAs first */
   .designer-collection-inspiration:hover > div a {
@@ -84,8 +107,10 @@
     position: absolute;
     border-radius: 45px;
     padding: 7px 20px;
-    top: 50px;
-    right: 20px;
+    top: unset;
+    bottom: 10px;
+    left: 10px;
+    right: unset;
 }
 
 .designer-collection-inspiration .link-icon {

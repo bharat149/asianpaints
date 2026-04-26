@@ -31,7 +31,7 @@
   --header-main-height: 60px;
   --header-nav-height: 40px;
   --header-logo-slot-width: clamp(204px, calc(15vw - 12px), 275.39px);
-  --header-search-width-fluid: clamp(280px, calc(20vw - 20px), 459px);
+  --header-search-width-fluid: clamp(345px, calc(20vw - 20px), 459px);
   --header-action-gap: clamp(14.3906px, calc(1.5vw - 7.2094px), 21.5312px);
   --header-cta-gap: clamp(14.5px, calc(23.5vw - 323.9px), 126.359px);
 }
@@ -184,7 +184,7 @@
   width: var(--header-search-width-fluid);
   max-width: var(--header-search-width-fluid);
   height: 41px;
-  margin-left: 0;
+  margin-left: 40px;
   border: none;
   border-bottom: 0.5px solid var(--header-search-underline);
   box-sizing: border-box;
@@ -274,6 +274,7 @@
   align-items: center;
   gap: var(--header-action-gap);
   margin-left: auto;
+  margin-right: 9px;
 }
 
 .header .action-btn {
@@ -287,6 +288,12 @@
   border-radius: 0;
   transition: background 0.2s ease;
   position: relative;
+}
+
+@media  (min-width: 1280px) and (max-width: 1365px) {
+  .header .header-search {
+
+  }
 }
 
 @media (width >=992px) {
@@ -512,7 +519,7 @@
 .header .cart-badge {
   position: absolute;
   top: 6px;
-  right: 4px;
+  right: 0;
   background: #7345b2;
   color: white;
   font-size: 8px;
@@ -1120,7 +1127,7 @@ body.nav-open {
 
   .header .header-actions {
     margin-left: auto;
-    gap: 4px;
+    gap: 6px;
   }
 
   .header .icon-tooltip-text {
