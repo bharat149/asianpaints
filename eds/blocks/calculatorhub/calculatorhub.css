@@ -216,6 +216,24 @@
     }
 }
 
+/* Disable CTA */
+#calculate-now[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Hide spin buttons for number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 /* Mobile */
 @media (max-width: 991px) {
     #toolsMiniForm {
