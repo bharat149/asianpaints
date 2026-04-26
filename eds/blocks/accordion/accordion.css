@@ -21,11 +21,6 @@
 main .section.sectionpadding-large.accordion-container {
     padding-right: 18%;
     padding-left: 18%;
-
-    @media (min-width: 320px) and (max-width: 991px) {
-        padding-left: 0px;
-        padding-right: 0px;
-    }
 }
 
 main .section.sectionpadding.accordion-container {
@@ -68,17 +63,13 @@ main .section.sectionpadding.accordion-container {
     display: flex;
     align-items: anchor-center;
     justify-content: space-between;
-    /*gap: 16px;*/
-
     position: relative;
     padding: 0;
     cursor: pointer;
     list-style: none;
-    overflow: visible;
+    overflow: hidden;
     background: transparent;
     transition: none;
-
-    font-family: Manrope, sans-serif;
     font-size: 18px;
     font-weight: 600;
     line-height: 23.4px;
@@ -228,6 +219,12 @@ main .section.sectionpadding.accordion-container {
 
 /* Mobile parity */
 @media (width <=600px) {
+
+    main .section.sectionpadding-large.accordion-container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
     .section.accordion-container:has(.accordion.faq) {
         margin-top: 4rem;
     }
@@ -251,8 +248,8 @@ main .section.sectionpadding.accordion-container {
     }
 
     .accordion.faq details summary::after {
-        margin-top: -5px;
-        margin-right: -15px;
+        margin-top: 2px;
+        margin-right: -1px;
     }
 
     .accordion.faq details .accordion-item-body {
