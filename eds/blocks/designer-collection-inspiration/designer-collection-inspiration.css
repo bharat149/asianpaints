@@ -1,3 +1,22 @@
+/* Title */
+.section.designer-collection-inspiration-container:has(.designer-collection-inspiration)>.default-content-wrapper {
+  text-align: center;
+}
+
+.section.designer-collection-inspiration-container:has(.designer-collection-inspiration)>.default-content-wrapper h2 {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 80px;
+    margin: 0 0 20px;
+    text-align: center;
+    color: #222;
+
+    @media (min-width: 320px) and (max-width: 991px) {
+        font-size: 20px;
+        line-height: 27.32px;
+    }
+}
+
 .designer-collection-inspiration {
     display: flex;
     gap: 25px;
