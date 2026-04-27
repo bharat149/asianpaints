@@ -42,6 +42,13 @@
   cursor: pointer;
 }
 
+.splash-dialog .splash-close-btn:focus,
+.splash-dialog .splash-close-btn:focus-visible,
+.splash-dialog .splash-close-btn:active {
+  outline: none;
+  box-shadow: none;
+}
+
 .splash-dialog .splash-close-btn::before,
 .splash-dialog .splash-close-btn::after {
   content: "";
