@@ -1354,7 +1354,6 @@ body.nav-open {
 
   .header .dropdown-inner {
     flex-direction: column;
-    min-height: 100%;
     padding: 0;
     gap: 0;
   }
