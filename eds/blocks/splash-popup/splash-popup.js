@@ -188,6 +188,13 @@ async function showSplashDialog(leftContent, rightContent, mobileBgUrl) {
     'aria-label': 'Splash Popup',
   }, closeBtn, body);
 
+  const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+  const isDesktop = window.innerWidth > 991;
+
+  if (!isHome && isDesktop) {
+    dialog.classList.add('splash-small');
+  }
+
   document.body.append(dialog);
 
   closeBtn.addEventListener('click', () => dialog.close());
