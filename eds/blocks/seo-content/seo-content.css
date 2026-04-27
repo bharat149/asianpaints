@@ -1,8 +1,6 @@
 .section.seo-content-container {
-    max-width: 1400px;
     padding: 0 25px;
     margin: 40px auto;
-    font-family: Manrope, sans-serif;
 }
 
 .seo-content.mt-5.block {
@@ -14,6 +12,12 @@
     margin-bottom: .5rem;
     font-size: 30px;
     font-weight: 600;
+
+    @media (max-width: 991px) {
+        font-size: 22px;
+        line-height: 24px;
+        letter-spacing: normal;
+    }
 }
 
 .seo-content.block h3 {
@@ -21,14 +25,26 @@
     font-weight: 700;
     color: #222;
     margin-top: 2.5rem;
+
+    @media (max-width: 991px) {
+        font-size: 16px;
+        line-height: 22px;
+        letter-spacing: normal;
+    }
 }
 
 .seo-content.block p {
     font-size: 14px;
     letter-spacing: .5px;
+
+    @media (max-width: 991px) {
+        font-size: 12px;
+        line-height: 1.57;
+        letter-spacing: .5px;
+    }
 }
 
-.seo-content.block ul li  strong {
+.seo-content.block ul li strong {
     font-size: 20px;
 }
 
@@ -49,7 +65,7 @@
     line-height: 22px;
 }
 
-.seo-content.block ul li a{
+.seo-content.block ul li a {
     color: #00e;
     text-decoration: underline;
 }
@@ -105,5 +121,54 @@
 
     .seo-content.block ul li strong {
         font-size: 16px;
+    }
+}
+
+/* ============================================
+   Variant: Table Style
+   ============================================ */
+
+.seo-content.block.table-style {
+    overflow-x: auto;
+    padding: 0 30px;
+}
+
+.seo-content.block.table-style table {
+    width: fit-content;
+    max-width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: #222;
+}
+
+.seo-content.block.table-style th,
+.seo-content.block.table-style td {
+    border: 1px solid #ddd;
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: top;
+    line-height: 22px;
+    letter-spacing: 0.5px;
+}
+
+.seo-content.block.table-style th {
+    font-weight: 700;
+    background: #f7f7f7;
+}
+
+.seo-content.block.table-style td p,
+.seo-content.block.table-style th p {
+    margin: 0;
+}
+
+@media screen and (max-width: 992px) {
+    .seo-content.block.table-style table {
+        min-width: 640px;
+    }
+
+    .seo-content.block.table-style th,
+    .seo-content.block.table-style td {
+        padding: 12px;
+        font-size: 13px;
     }
 }

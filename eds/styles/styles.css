@@ -666,6 +666,7 @@ main>.section>.default-content-wrapper p {
   margin-bottom: 0;
 
   @media (max-width: 991px) {
+    font-size: 12px;
     line-height: 1.57;
     letter-spacing: .5px;
   }
