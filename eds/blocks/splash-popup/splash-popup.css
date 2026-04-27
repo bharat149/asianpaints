@@ -175,14 +175,13 @@
   height: 40px;
   border: none;
   border-radius: 20px;
-  background: #f7c948;
+  background: var(--gradient, linear-gradient(180deg, #fec940, #f90));
   color: #000;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
 }
 
 .splash-dialog .splash-cta:hover,
@@ -192,11 +191,15 @@
 }
 
 .splash-dialog .splash-cta .splash-arrow {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z'/%3E%3C/svg%3E") center / contain no-repeat;
-  transition: transform 0.2s;
+  content: " ";
+  background: url('/eds/icons/arrow-icon-new.svg');
+  background-repeat: no-repeat;
+  width: 20px;
+  height: 18px;
+  display: inline-flex;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+  filter: invert(1);
 }
 
 .splash-dialog .splash-cta:hover .splash-arrow {
