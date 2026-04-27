@@ -52,10 +52,14 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-@media (width <=600px) {
-  .cards-action-card {
+@media (max-width: 600px) {
+.cards-action-card {
+    flex: 0 0 206px;
     width: 206px;
+    max-width: 206px;
+    min-width: 206px;
     height: 285px;
+    box-sizing: border-box;
   }
 }
 

@@ -190,6 +190,10 @@
   box-sizing: border-box;
   padding: 0;
   position: relative;
+
+  @media (min-width: 1440px) {
+    margin-left: 5px;
+  }
 }
 
 .header .search-icon {
@@ -950,7 +954,6 @@
   padding: 1px 3px;
   border-radius: 2px;
   margin-left: 3px;
-  text-transform: uppercase;
   vertical-align: middle;
   line-height: 1.2;
 }

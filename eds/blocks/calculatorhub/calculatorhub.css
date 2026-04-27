@@ -206,22 +206,32 @@
 
 @media (max-width: 1200px) {
     .calculatorhub .radiobtn {
-        width: 90px;
-        height: 90px;
-    }
-
-    .calculatorhub .option-icon {
-        transform: translate(37%, 25%);
-    }
-
-    .calculatorhub .option-title {
-        margin-top: 12px;
+        width: 110px;
+        height: 110px;
     }
 
     .area-field input,
     .animated-arrow-button {
         width: 195px !important;
     }
+}
+
+/* Disable CTA */
+#calculate-now[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Hide spin buttons for number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 /* Mobile */

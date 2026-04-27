@@ -464,8 +464,9 @@
   inset: 0;
   z-index: 3;
   display: flex;
-  align-items: center;  
-  left: 15%;
+  align-items: center;
+  left: 17%;
+  top: 19%;
 }
 
 .footer .watch-now-btn {
