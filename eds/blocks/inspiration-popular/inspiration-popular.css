@@ -1,6 +1,6 @@
 /* Title */
 .section.inspiration-popular-container:has(.inspiration-popular)>.default-content-wrapper {
-  text-align: center;
+    text-align: center;
 }
 
 .section.inspiration-popular-container:has(.inspiration-popular)>.default-content-wrapper h2 {
@@ -24,7 +24,8 @@
     gap: 18px;
 
     @media (max-width: 900px) {
-        padding: 0 20px;
+        padding: 0 10px;
+        gap: 10px;
     }
 }
 
@@ -32,17 +33,18 @@
     margin: 0;
 }
 
-.inspiration-popular > div {
+.inspiration-popular>div {
     width: calc(33.33% - 12px);
     margin-bottom: 40px;
 
     @media (max-width: 900px) {
-        width: calc(50% - 12px);
+        width: calc(50% - 5px);
     }
 }
 
 .inspiration-popular .inspiration-popular-image img {
     border-radius: 10px 10px 0 0;
+
     @media (max-width: 900px) {
         border-radius: 10px;
     }
@@ -61,14 +63,22 @@
     @media (max-width: 900px) {
         font-size: 14px;
         line-height: 21px;
-        padding: 20px 12px 0;
+        max-width: 90%;
+        padding: 10px 0 0 12px;
     }
 }
 
 .inspiration-popular .inspiration-popular-read-more {
     padding: 10px 20 20px 20px;
+
     @media (max-width: 900px) {
-        padding: 10px 12px 20px 12px;
+        padding: 0 12px 20px 0;
+    }
+}
+
+.inspiration-popular .inspiration-popular-read-more p {
+    @media (max-width: 900px) {
+        margin-left: -10px;
     }
 }
 
@@ -98,4 +108,10 @@
 .inspiration-popular .inspiration-popular-read-more a .link-icon {
     filter: invert(1);
     margin-left: 8px;
+}
+
+@media (max-width: 991px) {
+    .inspiration-popular .inspiration-popular-read-more a .link-icon {
+        margin-left: 0px;
+    }
 }
