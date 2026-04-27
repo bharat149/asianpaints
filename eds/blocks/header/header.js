@@ -2591,6 +2591,7 @@ async function refreshCartModal(block) {
       totalRow.innerHTML = '';
     }
     if (shopBtn) {
+      shopBtn.style.display = '';
       shopBtn.textContent = 'Shop now';
       shopBtn.href = getApApi().SHOP_URL;
     }
@@ -2634,8 +2635,14 @@ async function refreshCartModal(block) {
       });
     }
     if (totalRow) {
-      const totalPrice = data.totalprice
-        || data.totalPrice || data.total || '';
+
+      const rawTotal = data.totalprice || data.totalPrice || data.total || '';
+
+      const totalPrice =
+        typeof rawTotal === 'object'
+          ? rawTotal.value || rawTotal.amount || ''
+          : rawTotal;
+
       if (totalPrice) {
         totalRow.classList.add('visible');
         totalRow.innerHTML = ''
@@ -2645,12 +2652,21 @@ async function refreshCartModal(block) {
         totalRow.classList.remove('visible');
       }
     }
+
     if (shopBtn) {
-      const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
-      if (cartPathOrUrl) {
+      const hasItems = data.entries && data.entries.length > 0;
+
+      if (hasItems) {
+        const cartPathOrUrl =
+          data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
+
+        shopBtn.style.display = ''; // show
         shopBtn.textContent = 'Checkout';
-        shopBtn.href = resolveApLink(cartPathOrUrl);
+        shopBtn.href = cartPathOrUrl
+          ? resolveApLink(cartPathOrUrl)
+          : getApApi().SHOP_URL;
       } else {
+        shopBtn.style.display = ''; // show
         shopBtn.textContent = 'Shop now';
         shopBtn.href = getApApi().SHOP_URL;
       }

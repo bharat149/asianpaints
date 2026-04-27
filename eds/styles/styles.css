@@ -303,10 +303,10 @@ button.accent:focus {
   text-transform: none;
   letter-spacing: normal;
   border-radius: 0;
-  text-decoration:none;
-  border:1px solid black;
+  text-decoration: none;
+  border: 1px solid black;
   padding: 6px 24px;
-  border-radius:20px;
+  border-radius: 20px;
 }
 
 .embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
@@ -431,8 +431,12 @@ main .section.section-padding-top-15 {
   padding-top: 15px;
 }
 
+main .section.section-margin-top {
+  margin-top: 100px;
+}
+
 main .section.text-grey {
-  color: rgb(93,79,67);
+  color: rgb(93, 79, 67);
 }
 
 main .section.zero-margin {
@@ -617,6 +621,13 @@ main>.section>.default-content-wrapper h2 {
   color: #222;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+
+  @media (max-width: 991px) {
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 24px;
+    letter-spacing: normal;
+  }
 }
 
 /*
@@ -638,6 +649,12 @@ main>.section>.default-content-wrapper h3 {
   color: #222;
   margin-top: 1.2em;
   margin-bottom: 0.4em;
+
+  @media (max-width: 991px) {
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: normal;
+  }
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -647,6 +664,12 @@ main>.section>.default-content-wrapper p {
   line-height: 1.57;
   color: #222;
   margin-bottom: 0;
+
+  @media (max-width: 991px) {
+    font-size: 12px;
+    line-height: 1.57;
+    letter-spacing: .5px;
+  }
 }
 
 main>.section>.default-content-wrapper ul,
@@ -753,8 +776,8 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   }
 } */
 
- @media (min-width: 1280px) and (max-width: 1365px) {
-   body {
-     zoom: .85;
-   }
- }
+@media (min-width: 1280px) and (max-width: 1365px) {
+  body {
+    zoom: .85;
+  }
+}
