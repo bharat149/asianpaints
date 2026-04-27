@@ -20,7 +20,7 @@
   max-height: none;
   padding: 0;
   border: none;
-  border-radius: 4%;
+  border-radius: 0;
   background: transparent;
   overflow: hidden;
 }
@@ -28,17 +28,17 @@
 .splash-dialog .splash-close-btn {
   position: absolute;
   top: 3%;
-  right: 1%;
+  right: 1.5%;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 25px;
+  height: 25px;
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: transparent;
+  background: white;
   cursor: pointer;
 }
 
@@ -46,9 +46,9 @@
 .splash-dialog .splash-close-btn::after {
   content: "";
   position: absolute;
-  width: 18px;
-  height: 2px;
-  background: #fff;
+  width: 12px;
+  height: 3px;
+  background: #9c6b60;
   border-radius: 2px;
 }
 
@@ -197,7 +197,7 @@
 }
 
 /* ── Tablet (768–991 px) ── */
-@media (width <= 991px) {
+@media (width <=991px) {
   .splash-dialog {
     width: 85%;
     height: 80%;
@@ -277,7 +277,7 @@
 }
 
 /* ── Larger tablets (481–991 px) ── */
-@media (width >= 481px) and (width <= 991px) {
+@media (width >=481px) and (width <=991px) {
   .splash-dialog .splash-text {
     left: 35%;
     bottom: 45%;
@@ -290,7 +290,7 @@
 }
 
 /* ── Small phones (≤ 400 px) ── */
-@media (width <= 400px) {
+@media (width <=400px) {
   .splash-dialog {
     width: 95%;
     height: 85%;
@@ -327,7 +327,7 @@
 }
 
 /* ── Aspect-ratio edge case on desktop ── */
-@media (width >= 992px) and (aspect-ratio <= 1.6) {
+@media (width >=992px) and (aspect-ratio <=1.6) {
   .splash-dialog .splash-circle-image {
     width: 80%;
     height: auto;
