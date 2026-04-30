@@ -6,7 +6,17 @@ import {
 import { AesUtil } from '../../scripts/aesUtil.module.js';
 import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
-const AMS_BASE = 'https://beta.asianpaints.com';
+function getAmsBase() {
+  if (typeof window === 'undefined') return 'https://beta.asianpaints.com';
+
+  const host = window.location.hostname;
+  if (host === 'beta.asianpaints.com') return 'https://beta.asianpaints.com';
+  if (host === 'www.asianpaints.com') return 'https://www.asianpaints.com';
+
+  return 'https://beta.asianpaints.com';
+}
+
+const AMS_BASE = getAmsBase();
 
 function htmlToEl(html) {
   const t = document.createElement('template');

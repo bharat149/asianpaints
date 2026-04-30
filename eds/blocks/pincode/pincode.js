@@ -1,10 +1,10 @@
 import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
 function handleRedirection(pincode, options = {}) {
-  if (!pincode || pincode.length < 5) return;
+  if (!pincode || pincode.length < 6) return;
 
   const {
-    baseUrl = 'https://www.asianpaints.com/contractor-listing-page.html',
+    baseUrl = '/contractor-listing-page.html',
     target = '_self',
     type = 'pincode',
   } = options;
@@ -193,9 +193,9 @@ function decorateCta(block) {
   const headingWrap = document.createElement('div');
   headingWrap.className = 'righttext-heading';
   if (titleText) {
-    const h2 = document.createElement('h2');
-    h2.textContent = titleText;
-    headingWrap.appendChild(h2);
+    const h1 = document.createElement('h1');
+    h1.textContent = titleText;
+    headingWrap.appendChild(h1);
   }
   rightWrap.appendChild(headingWrap);
 

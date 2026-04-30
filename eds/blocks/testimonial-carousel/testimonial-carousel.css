@@ -38,6 +38,11 @@
     padding-bottom: 20px;
 }
 
+.multi-video-column-container .carousel-section.waterproofing-section .slick-list .slick-track,
+.testimonial-carousel .testimonial-swiper .swiper-wrapper {
+    left: 20px !important;
+}
+
 .testimonial-carousel .swiper-wrapper {
     align-items: stretch;
 }
