@@ -141,6 +141,12 @@ body.modal-open {
   border-radius: 4px;
 }
 
+@media (min-width:991px) and (max-width:1500px) {
+  .modal dialog.book-free-site-visit-dialog .modal-content {
+    max-height: 100%;
+  }
+}
+
 .modal dialog.book-free-site-visit-dialog .close-button {
   top: 78px;
   right: 50px;
