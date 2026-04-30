@@ -199,7 +199,7 @@
   /* background: white; */
   background: transparent;
   /* border: 1px solid #ddd; */
-  
+
   width: 48px;
   height: 48px;
   min-width: 48px;
@@ -233,23 +233,25 @@
   display: none !important;
 }
 
-.designer-collections-next , .designer-collections-prev {
+.designer-collections-next,
+.designer-collections-prev {
   border: unset !important;
 }
+
 .designer-collections-prev::before {
-     content: " ";
-    background-image: url("/eds/icons/round-black-prev-icon.svg");
-    background-repeat: no-repeat;
-    width: 44px;
-    height: 44px;
+  content: " ";
+  background-image: url("/eds/icons/round-black-prev-icon.svg");
+  background-repeat: no-repeat;
+  width: 44px;
+  height: 44px;
 }
 
 .designer-collections-next::before {
-    content: " ";
-    background-image: url("/eds/icons/round-black-next-icon.svg");
-    background-repeat: no-repeat;
-    width: 44px;
-    height: 44px;
+  content: " ";
+  background-image: url("/eds/icons/round-black-next-icon.svg");
+  background-repeat: no-repeat;
+  width: 44px;
+  height: 44px;
 }
 
 .designer-collections-pagination {

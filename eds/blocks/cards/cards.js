@@ -32,6 +32,31 @@ export default function decorate(block) {
       li.children[1].classList.add('mob-view');
     }
 
+    if (isGrid) {
+      const bodyWrapper = li.querySelector('.cards-card-body');
+      const ctaLink = bodyWrapper?.querySelector('a[href]');
+
+      if (ctaLink) {
+        li.querySelectorAll('.cards-card-image').forEach((imageWrapper) => {
+          if (imageWrapper.querySelector('a')) return;
+
+          const imageLink = document.createElement('a');
+          imageLink.href = ctaLink.href;
+          imageLink.className = 'cards-card-image-link';
+
+          if (ctaLink.target) imageLink.target = ctaLink.target;
+          if (ctaLink.rel) imageLink.rel = ctaLink.rel;
+          else if (ctaLink.target === '_blank') imageLink.rel = 'noopener noreferrer';
+
+          while (imageWrapper.firstChild) {
+            imageLink.append(imageWrapper.firstChild);
+          }
+
+          imageWrapper.append(imageLink);
+        });
+      }
+    }
+
     if (isStats) {
       li.classList.add('data-parent-container');
 

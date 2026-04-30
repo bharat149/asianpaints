@@ -3,15 +3,13 @@
    ============================================ */
 
 /* Section heading wrapper (matches AEM main-title behavior) */
-.section.accordion-container:has(.accordion.faq) > .default-content-wrapper {
+.section.accordion-container:has(.accordion.faq)>.default-content-wrapper {
     text-align: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px 20px;
 }
 
-.section.accordion-container:has(.accordion.faq) > .default-content-wrapper h2 {
-    font-family: Manrope, sans-serif;
+.section.accordion-container:has(.accordion.faq)>.default-content-wrapper h2 {
     font-size: 32px;
     font-weight: 600;
     line-height: 38px;
@@ -20,12 +18,20 @@
     color: #222;
 }
 
+main .section.sectionpadding-large.accordion-container {
+    padding-right: 18%;
+    padding-left: 18%;
+}
+
+main .section.sectionpadding.accordion-container {
+    padding-right: 4%;
+    padding-left: 4%;
+}
+
 /* Container */
 .accordion.faq {
     width: 100%;
-    /* max-width: 1400px; */
     margin: 0 auto;
-    padding: 0 4%;
     box-sizing: border-box;
     padding-bottom: 50px;
 }
@@ -48,7 +54,7 @@
 } */
 
 /* No extra gap between items */
-.accordion.faq details + details {
+.accordion.faq details+details {
     margin-top: 0;
 }
 
@@ -57,17 +63,13 @@
     display: flex;
     align-items: anchor-center;
     justify-content: space-between;
-    /*gap: 16px;*/
-
     position: relative;
     padding: 0;
     cursor: pointer;
     list-style: none;
-    overflow: visible;
+    overflow: hidden;
     background: transparent;
     transition: none;
-
-    font-family: Manrope, sans-serif;
     font-size: 18px;
     font-weight: 600;
     line-height: 23.4px;
@@ -115,7 +117,7 @@
     border: none;
 
     margin-top: 2px;
-    margin-right: -19px;
+    margin-right: 3px;
 
     background-repeat: no-repeat;
     background-position: center;
@@ -216,25 +218,27 @@
 }
 
 /* Mobile parity */
-@media (width <= 600px) {
+@media (width <=600px) {
+
+    main .section.sectionpadding-large.accordion-container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
     .section.accordion-container:has(.accordion.faq) {
         margin-top: 4rem;
     }
 
-    .section.accordion-container:has(.accordion.faq) > .default-content-wrapper {
-        padding-bottom: 0;
+    .section.accordion-container:has(.accordion.faq)>.default-content-wrapper {
+        padding: 0;
     }
 
-    .section.accordion-container:has(.accordion.faq) > .default-content-wrapper h2 {
+    .section.accordion-container:has(.accordion.faq)>.default-content-wrapper h2 {
         font-size: 20px;
         font-weight: 600;
         line-height: 28px;
         text-align: left;
         margin-bottom: 0px;
-    }
-
-    .accordion.faq {
-        padding: 0 16px;
     }
 
     .accordion.faq details summary {
@@ -243,9 +247,13 @@
         line-height: 24px;
     }
 
+    .accordion.faq details summary p {
+        max-width: 85%;
+    }
+
     .accordion.faq details summary::after {
-        margin-top: -5px;
-        margin-right: -15px;
+        margin-top: 2px;
+        margin-right: -1px;
     }
 
     .accordion.faq details .accordion-item-body {

@@ -284,18 +284,25 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a {
 }
 
 main>.section.cards-textures-container>.default-content-wrapper p strong a::after {
-  content: '→';
-  transition: transform 0.3s ease;
+  content: " ";
+  background: url('/eds/icons/arrow-icon-new.svg');
+  background-repeat: no-repeat;
+  width: 20px;
+  height: 18px;
+  display: inline-flex;
+  object-fit: cover;
+  filter: invert(1);
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
 main>.section.cards-textures-container>.default-content-wrapper p strong a:hover {
-  background: var(--text-color-dark);
-  color: #fff;
+   background: #fff7e8;
+  border: 1px solid #232426;
+  color: #222
 }
 
 main>.section.cards-textures-container>.default-content-wrapper p strong a:hover::after {
-  transform: translateX(4px);
+ transform: none;
 }
 
 @media (width >=768px) {

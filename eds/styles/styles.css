@@ -296,13 +296,17 @@ button.accent:focus {
   border: none;
   padding: 0;
   margin: 0;
-  color: var(--link-color);
+  color: black;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: underline;
   text-transform: none;
   letter-spacing: normal;
   border-radius: 0;
+  text-decoration: none;
+  border: 1px solid black;
+  padding: 6px 24px;
+  border-radius: 20px;
 }
 
 .embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
@@ -345,12 +349,12 @@ main>.section:first-of-type {
 /* Constrained width for default content (text, etc.) */
 main>.section>.default-content-wrapper {
   margin: auto;
-  padding: 0 24px;
+  padding: 0 30px;
 }
 
-@media (width >=900px) {
+@media (max-width: 990px) {
   main>.section>.default-content-wrapper {
-    padding: 0 32px;
+    padding: 0 15px;
   }
 }
 
@@ -427,8 +431,12 @@ main .section.section-padding-top-15 {
   padding-top: 15px;
 }
 
+main .section.section-margin-top {
+  margin-top: 100px;
+}
+
 main .section.text-grey {
-  color: rgb(93,79,67);
+  color: rgb(93, 79, 67);
 }
 
 main .section.zero-margin {
@@ -613,6 +621,13 @@ main>.section>.default-content-wrapper h2 {
   color: #222;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+
+  @media (max-width: 991px) {
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 24px;
+    letter-spacing: normal;
+  }
 }
 
 /*
@@ -634,6 +649,12 @@ main>.section>.default-content-wrapper h3 {
   color: #222;
   margin-top: 1.2em;
   margin-bottom: 0.4em;
+
+  @media (max-width: 991px) {
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: normal;
+  }
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -643,6 +664,12 @@ main>.section>.default-content-wrapper p {
   line-height: 1.57;
   color: #222;
   margin-bottom: 0;
+
+  @media (max-width: 991px) {
+    font-size: 12px;
+    line-height: 1.57;
+    letter-spacing: .5px;
+  }
 }
 
 main>.section>.default-content-wrapper ul,
@@ -683,43 +710,35 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper {
 }
 
 /* Video section title - Pixel perfect */
-main>.section:has(.embed-wrapper)>.default-content-wrapper h2 {
+/* main>.section:has(.embed-wrapper)>.default-content-wrapper h2 {
   font-size: 32px;
-  /* Pixel-perfect */
   font-weight: 800;
-  /* Pixel-perfect */
   font-family: Manrope, sans-serif;
   color: rgb(34 34 34);
-  /* Pixel-perfect */
   line-height: 40px;
-  /* Pixel-perfect */
   margin: 0 0 24px;
   text-align: center;
-}
+} */
 
 /* Video section description - Pixel perfect */
 /* stylelint-disable-next-line no-descending-specificity */
-main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type p {
+/* main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type p {
   font-size: 16px;
-  /* Pixel-perfect */
   font-weight: 400;
-  /* Pixel-perfect */
   font-family: Manrope, sans-serif;
   color: rgb(34 34 34);
-  /* Pixel-perfect */
   line-height: 26px;
-  /* Pixel-perfect */
   margin: 24px auto 16px;
   max-width: 900px;
   text-align: center;
-}
+} */
 
 /* Video section CTA link - Pixel perfect */
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a {
-  color: rgb(0 0 0);
   /* Pixel-perfect: black */
   text-decoration: underline;
   font-weight: 400;
+  display: inline;
 }
 
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover {
@@ -732,7 +751,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
 }
 
 /* interior-design-solutions-for-your-home */
-.section:has(#interior-design-solutions-for-your-home) {
+/* .section:has(#interior-design-solutions-for-your-home) {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
@@ -745,14 +764,20 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
 
 .section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper h2 {
   text-align: center;
-}
+} */
 
-@media screen and (max-width:992px) {
+/* @media screen and (max-width:992px) {
   .section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper {
     margin-top: 2rem;
   }
 
   .section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper h2 {
     font-size: 22px;
+  }
+} */
+
+@media (min-width: 1280px) and (max-width: 1365px) {
+  body {
+    zoom: .85;
   }
 }

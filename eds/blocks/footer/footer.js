@@ -28,7 +28,7 @@ const IMAGE_FALLBACKS = {
   Pinterest: `${IMG}/pinterest.png`,
 };
 
-const FOOTER_BRAND_LOGO = 'https://static.asianpaints.com/content/dam/home-revamp/footer/ap-logo/ap-logo-4x.webp';
+const FOOTER_BRAND_LOGO = 'https://static.asianpaints.com/content/dam/home-revamp/footer/ap-logo/ap-logo-footer.png';
 
 /**
  * Fix broken images in parsed HTML fragment.
@@ -194,9 +194,19 @@ function buildBrandColumn(cell) {
 
   const phoneLink = allLinks.find((a) => a.getAttribute('href')?.startsWith('tel:'));
   if (phoneLink) {
-    const phone = el('a', { href: phoneLink.getAttribute('href'), className: 'contact-row' });
+    const phone = el('a', {
+      href: phoneLink.getAttribute('href'),
+      className: 'contact-row'
+    });
+
+    // tracking on actual clickable element
+    phone.addEventListener('click', () => {
+      trackEvent('footer_phone_number_click', {});
+    });
+
     phone.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
     phone.appendChild(el('span', {}, phoneLink.textContent.trim()));
+
     contact.appendChild(phone);
   }
 
@@ -372,29 +382,33 @@ function buildVideoBanner(container, row) {
     return !w || w > 100;
   }) || allImgs[0];
 
-  // Use the picture wrapping the banner image, or create one
-  const bannerPicture = bannerImg?.closest('picture');
-  if (bannerPicture) {
-    const pic = bannerPicture.cloneNode(true);
-    const picImg = pic.querySelector('img');
-    if (picImg) {
-      picImg.setAttribute('width', '755');
-      picImg.setAttribute('height', '513');
-      picImg.setAttribute('loading', 'lazy');
-    }
-    mediaBg.appendChild(pic);
-  } else if (bannerImg) {
-    const pic = document.createElement('picture');
-    const imgEl = el('img', {
-      src: bannerImg.getAttribute('src'),
-      alt: bannerImg.getAttribute('alt') || 'Har Ghar Kuch Kehta Hai',
-      loading: 'lazy',
-      width: '755',
-      height: '513',
-    });
-    pic.appendChild(imgEl);
-    mediaBg.appendChild(pic);
+// Banner image authoring:
+// Desktop image = first large image
+// Mobile image = image added below desktop image in DA
+const desktopImg = bannerImg;
+const mobileImg = allImgs.find((img) => img !== desktopImg && (parseInt(img.getAttribute('width'), 10) > 100 || !img.getAttribute('width')));
+
+if (desktopImg) {
+  const pic = document.createElement('picture');
+
+  if (mobileImg?.getAttribute('src')) {
+    pic.appendChild(el('source', {
+      media: '(max-width: 767px)',
+      srcset: mobileImg.getAttribute('src'),
+    }));
   }
+
+  const imgEl = el('img', {
+    src: desktopImg.getAttribute('src'),
+    alt: desktopImg.getAttribute('alt') || 'Har Ghar Kuch Kehta Hai',
+    loading: 'lazy',
+    width: '755',
+    height: '513',
+  });
+
+  pic.appendChild(imgEl);
+  mediaBg.appendChild(pic);
+}
   banner.appendChild(mediaBg);
 
   // Gradient overlay
@@ -654,14 +668,6 @@ function initMobileAccordions(block) {
   }
 }
 
-function initFooterContactTracking(block) {
-  block.querySelectorAll('.footer-brand-contact').forEach((contact) => {
-    contact.addEventListener('click', () => {
-      trackEvent('footer_phone_number_click', {});
-    });
-  });
-}
-
 function initFooterTabTracking(block) {
   const centerGrid = block.querySelector('.mega-center-grid');
   if (!centerGrid || centerGrid.dataset.footerTabBound === 'true') return;
@@ -784,7 +790,6 @@ export default async function decorate(block) {
 
   block.append(footerContent);
   initMobileAccordions(block);
-  initFooterContactTracking(block);
   initFooterTabTracking(block);
   initFooterAboutTabTracking(block);
   initFooterSitemapTracking(block);

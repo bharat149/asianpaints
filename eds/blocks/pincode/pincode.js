@@ -193,9 +193,9 @@ function decorateCta(block) {
   const headingWrap = document.createElement('div');
   headingWrap.className = 'righttext-heading';
   if (titleText) {
-    const h1 = document.createElement('h1');
-    h1.textContent = titleText;
-    headingWrap.appendChild(h1);
+    const h2 = document.createElement('h2');
+    h2.textContent = titleText;
+    headingWrap.appendChild(h2);
   }
   rightWrap.appendChild(headingWrap);
 

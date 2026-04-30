@@ -43,7 +43,6 @@
 .section.store-banner-container:has(.store-banner.bg-cream) {
   margin: 0;
   background-color: rgb(236, 229, 215);
-  padding: 2rem 0;
 }
 
 .store-banner.bg-cream {

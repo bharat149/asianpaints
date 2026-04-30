@@ -76,7 +76,7 @@
 }
 
 .home-icon-content-wrapper .homepage-icons-container-wrapper .homepage-icons-container a figcaption {
-    font-size: 11px;
+    font-size: 13px;
     line-height: 22px;
     font-weight: 400;
     width: auto;
@@ -136,15 +136,17 @@
 }
 
 @media (min-width: 992px) and (max-width: 1440px) {
-     .home-icon-content-wrapper { 
+    .home-icon-content-wrapper {
         padding: 30px 20px !important;
-     }
+    }
 }
+
 @media(min-width: 1025px) and (max-width: 1440px) {
     .home-icon-content-wrapper {
         transform: translateY(-50%) scale(.9);
-    right: 40px;
+        right: 40px;
     }
+
     .home-icon-content-wrapper .homepage-icons-container-wrapper .homepage-icons-container a figcaption {
         font-size: 13px !important;
     }
@@ -152,15 +154,17 @@
 
 @media(min-width: 1101px) and (max-width: 1280px) {
     .home-icon-content-wrapper {
-                width: 35% !important;
+        width: 33% !important;
     }
 }
+
 @media(min-width: 1281px) and (max-width: 1440px) {
     .home-icon-content-wrapper {
         width: 32% !important;
         padding: 30px 20px !important;
     }
 }
+
 @media (min-width: 1680px) {
     .home-icon-content-wrapper .default-content-wrapper #transform-your-space {
         width: 75%;

@@ -2591,6 +2591,7 @@ async function refreshCartModal(block) {
       totalRow.innerHTML = '';
     }
     if (shopBtn) {
+      shopBtn.style.display = '';
       shopBtn.textContent = 'Shop now';
       shopBtn.href = getApApi().SHOP_URL;
     }
@@ -2617,40 +2618,79 @@ async function refreshCartModal(block) {
     if (itemsList) {
       itemsList.innerHTML = '';
       data.entries.forEach((entry) => {
+        const product = entry.product || {};
         const row = document.createElement('div');
         row.className = 'cart-item-row';
 
-        const name = document.createElement('span');
-        name.className = 'cart-item-name';
-        name.textContent = entry.product?.name || entry.name || 'Product';
+        const imgSrc =
+          product.productImage ||
+          product.productThumbnailImg?.url ||
+          product.hybrisProductId ||
+          '';
 
-        const price = document.createElement('span');
-        price.className = 'cart-item-qty';
-        const priceVal = entry.totalPrice?.value || entry.price || '';
-        price.textContent = priceVal ? `\u20B9 ${priceVal}` : `Qty: ${entry.quantity || 1}`;
+        const productUrl = product.productUrl || product.url || '#';
 
-        row.append(name, price);
+        row.innerHTML = `
+    <a class="cart-item-image" href="${productUrl}">
+      <img src="${imgSrc}" alt="${product.name || 'Product'}" loading="lazy">
+    </a>
+
+    <div class="cart-item-details">
+      <a class="cart-item-name" href="${productUrl}">
+        ${product.name || 'Product'}
+      </a>
+
+      <span class="cart-item-price">
+        ₹ ${entry.totalPrice?.value || ''}
+      </span>
+    </div>
+
+    <button class="cart-item-remove" type="button" aria-label="Remove item"></button>
+
+    <div class="cart-item-qty-control">
+      <button type="button" class="cart-qty-minus">-</button>
+      <span>${entry.quantity || 1}</span>
+      <button type="button" class="cart-qty-plus">+</button>
+    </div>
+  `;
+
         itemsList.appendChild(row);
       });
     }
     if (totalRow) {
-      const totalPrice = data.totalprice
-        || data.totalPrice || data.total || '';
+
+      const rawTotal = data.totalprice || data.totalPrice || data.total || '';
+
+      const totalPrice =
+        typeof rawTotal === 'object'
+          ? rawTotal.value || rawTotal.amount || ''
+          : rawTotal;
+
       if (totalPrice) {
         totalRow.classList.add('visible');
         totalRow.innerHTML = ''
+          + '<div class="cart-total-info">'
           + '<span class="total-label">Total Amount</span>'
-          + `<span class="total-price">\u20B9 ${totalPrice}</span>`;
+          + `<span class="total-price">\u20B9 ${totalPrice}</span>`
+          + '</div>';
       } else {
         totalRow.classList.remove('visible');
       }
     }
+
     if (shopBtn) {
-      const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
-      if (cartPathOrUrl) {
+      const hasItems = data.entries && data.entries.length > 0;
+
+      if (hasItems) {
+        const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
+
+        shopBtn.style.display = '';
         shopBtn.textContent = 'Checkout';
-        shopBtn.href = resolveApLink(cartPathOrUrl);
+        shopBtn.href = cartPathOrUrl ? resolveApLink(cartPathOrUrl) : getApApi().SHOP_URL;
+
+        totalRow.appendChild(shopBtn);
       } else {
+        shopBtn.style.display = ''; // show
         shopBtn.textContent = 'Shop now';
         shopBtn.href = getApApi().SHOP_URL;
       }

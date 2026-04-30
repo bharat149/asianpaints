@@ -42,7 +42,7 @@
     @media (min-width: 992px) {
         .calculator-hub .mini-pbc {
             display: flex;
-            padding: 30px 50px 30px 100px;
+            padding: 30px 50px 30px 50px;
             justify-content: center;
         }
     }
@@ -94,6 +94,12 @@
         line-height: 55.4px;
         letter-spacing: -0.02em;
         text-align: left;
+    }
+    @media (min-width: 1366px) {
+        .calculator-hub .tool-description .sub-heading{
+            font-size: 52px;
+            line-height: 58px
+        }
     }
 
     @media (min-width: 1280px) {
@@ -607,6 +613,24 @@
             margin-bottom: 20px;
         }
     }
+
+
+    /* ✅ 1920×1080 AND ABOVE — FONT SCALE UP */
+    @media (min-width: 1800px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 64px;
+            line-height: 70.4px;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 40px;
+            line-height: 48px;
+            margin-bottom: 20px;
+        }
+    }
+
 
     /* FIX: Type of project – text first, radio after */
     .calculator-hub

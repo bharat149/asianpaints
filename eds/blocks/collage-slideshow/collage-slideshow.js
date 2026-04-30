@@ -640,7 +640,7 @@ export default async function decorate(block) {
 
   slides.forEach((slide, index) => {
     const slideEl = document.createElement('div');
-    slideEl.className = 'collage-slideshow__slide swiper-slide';
+    slideEl.className = `collage-slideshow__slide swiper-slide collage-slideshow__slide--${index + 1}`;
     slideEl.dataset.index = index;
 
     const labelText = 'Range of Royale collections';
@@ -661,6 +661,13 @@ export default async function decorate(block) {
 
   const contentPanel = createContentPanel(contentRow);
   rightSection.appendChild(contentPanel);
+
+  // MOBILE: move CTA + description below left section
+  if (window.innerWidth <= 991) {
+    const description = contentPanel.querySelector('.collage-slideshow__description');
+    const cta = contentPanel.querySelector('.collage-slideshow__cta');
+    if (cta) leftSection.appendChild(cta);
+  }
 
   wrapper.append(leftSection, rightSection);
   block.appendChild(wrapper);

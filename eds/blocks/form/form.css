@@ -13,7 +13,6 @@
 
 .section.form-container>.form-wrapper>div,
 .section.form-container .form-wrapper {
-  margin: 40px 0px !important;
   max-width: none !important;
   width: 100%;
 }
@@ -219,7 +218,7 @@
   min-height: 32px;
   cursor: pointer;
   user-select: none;
-  align-self:self-start;
+  align-self: self-start;
 }
 
 .form.block .form-consent-input {
@@ -879,12 +878,12 @@
 
   .form.block .form-button-cell {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .form.block .form-submit,
   .form.block .btn.form-submit {
-    width: 100%;
+    width: 65%;
   }
 
   .form.block .form-popup-overlay {
@@ -936,7 +935,7 @@
     flex: 0 30%;
     min-width: unset;
     max-width: unset;
-    align-self:center;
+    align-self: center;
 
   }
 
@@ -947,7 +946,7 @@
   .form.block .form-consent-options-right {
     display: flex;
     gap: 0 18px;
-    align-self:self-start;
+    align-self: self-start;
   }
 
   .form.block .form-button-cell {
@@ -973,7 +972,7 @@
     flex: 0 33%;
     min-width: unset;
     max-width: unset;
-    align-self:center;
+    align-self: center;
   }
 
   .form.block .form-row .form-fields-area {

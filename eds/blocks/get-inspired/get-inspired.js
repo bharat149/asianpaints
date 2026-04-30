@@ -74,22 +74,19 @@ export default function decorate(block) {
       const slide = document.createElement('div');
       slide.className = 'swiper-slide';
 
-      // Find anchor inside paragraph
-      const anchor = a;
+      const titleAnchor = a.getAttribute('title');
 
-      if (anchor) {
-        const titleAnchor = anchor.getAttribute('title');
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'link-fwd';
 
-        // Create div to append inside anchor
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'link-fwd';
+      infoDiv.innerHTML = `
+        <span class="link-title">${titleAnchor}</span>
+        <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">
+      `;
 
-        infoDiv.innerHTML = `<span class="link-title">${titleAnchor}</span> <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">`;
+      a.appendChild(infoDiv);
 
-        anchor.appendChild(infoDiv);
-      }
-
-      slide.appendChild(anchor);
+      slide.appendChild(a);
       swiperWrapper.appendChild(slide);
     });
 
@@ -99,7 +96,6 @@ export default function decorate(block) {
     paginationEl.className = 'swiper-pagination';
 
     swiperContainerWrapper.appendChild(swiperEl);
-
     swiperPaginationWrapper.appendChild(paginationEl);
     panel.appendChild(swiperContainerWrapper);
 
@@ -108,38 +104,9 @@ export default function decorate(block) {
       panel.classList.add('active');
     }
 
-    // ✅ Function to fix widths BEFORE swiper update
-    function fixSwiperLayout() {
-      const containerWidth = tabsContainer.getBoundingClientRect().width
-        - tabNav.getBoundingClientRect().width;
-
-      if (!containerWidth) return;
-
-      // Set container width
-      swiperContainerWrapper.style.width = `${containerWidth}px`;
-
-      const slides = swiperWrapper.querySelectorAll('.swiper-slide');
-      const slidesPerView = 5;
-      const spaceBetween = 18;
-
-      const slideWidth = (containerWidth - (slidesPerView - 1) * spaceBetween) / slidesPerView;
-
-      let totalWidth = 0;
-
-      slides.forEach((slide, i) => {
-        slide.style.width = `${slideWidth}px`;
-        totalWidth += slideWidth;
-
-        if (i !== slides.length - 1) {
-          totalWidth += spaceBetween;
-        }
-      });
-
-      swiperWrapper.style.width = `${totalWidth}px`;
-    }
-
     btn.addEventListener('click', () => {
       const currentTabName = btn.textContent.trim();
+
       trackEvent('waterproofing_categories', {
         categories: currentTabName,
       });
@@ -151,8 +118,6 @@ export default function decorate(block) {
       panel.classList.add('active');
 
       requestAnimationFrame(() => {
-        fixSwiperLayout();
-
         if (panel.swiperInstance) {
           panel.swiperInstance.update();
         }
@@ -166,13 +131,8 @@ export default function decorate(block) {
       const Swiper = await getSwiperClass();
       if (!Swiper) return;
 
-      // Initial fix (only works if visible)
-      if (index === 0) {
-        requestAnimationFrame(fixSwiperLayout);
-      }
-
       panel.swiperInstance = new Swiper(swiperEl, {
-        slidesPerView: 3,
+        slidesPerView: 1.5,
         spaceBetween: 18,
         loop: false,
         watchOverflow: true,
@@ -185,9 +145,11 @@ export default function decorate(block) {
         breakpoints: {
           0: {
             slidesPerView: 1.5,
+            spaceBetween: 16,
           },
           1024: {
-            slidesPerView: 3,
+            slidesPerView: 'auto',
+            spaceBetween: 18,
           },
         },
         navigation: {
