@@ -1,10 +1,10 @@
 /* ===== HERO ROOT – FULL BLEED ===== */
 .hero-form {
     position: relative;
-    width: 100vw;
+    width: 100%;
     min-height: 520px;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
+    margin-left: 0;
+    margin-right: 0;
     background: transparent;
     overflow: hidden;
 }
@@ -43,7 +43,7 @@
 
 /* ===== TYPOGRAPHY & FORM STYLES ===== */
 .hero-form .title-section p {
-    font-weight: 600;
+    font-weight: 800;
     font-size: 32px;
     line-height: 41.6px;
     color: #2F2F2F;
@@ -212,6 +212,21 @@
     gap: 3px;
 }
 
+.hero-form .error-msg::before {
+    content: "!";
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid #FF4D00;
+    color: #FF4D00;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .hero-form .error-msg.d-none { display: none; }
 .hero-form .has-error .input-label { color: #FF4D00; }
 .hero-form .has-error input { border-color: #FF4D00; }
@@ -283,6 +298,12 @@
     margin-bottom: 20px;
 }
 
+.hero-form .disclaimer-section a {
+    color: #000;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
 /* Spinner */
 .hero-form .get-contractor-progress-status {
     display: inline-block;
@@ -339,7 +360,7 @@
         height: 32px;
         background: #EEEEEF;
     }
-    
+
     .hero-form .mf__dismissible-container--head img {
         width: 16px;
         height: 16px;

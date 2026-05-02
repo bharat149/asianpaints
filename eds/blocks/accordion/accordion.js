@@ -178,7 +178,15 @@ export default function decorate(block) {
       const label = row.children[0];
       const summary = document.createElement('summary');
       summary.className = 'accordion-item-label';
-      summary.append(...label.childNodes);
+      const questionPrefix = `${index + 1}. `;
+      const questionText = label.textContent.trim();
+      if (questionText && !/^\d+\./.test(questionText)) {
+        const numbered = document.createElement('span');
+        numbered.textContent = `${questionPrefix}${questionText}`;
+        summary.append(numbered);
+      } else {
+        summary.append(...label.childNodes);
+      }
 
       const body = row.children[1];
       body.className = 'accordion-item-body';
@@ -213,7 +221,7 @@ export default function decorate(block) {
     if (validRows.length > initialVisibleCount) {
       const viewAllBtn = document.createElement('button');
       viewAllBtn.className = 'accordion-faq-view-all';
-      viewAllBtn.textContent = 'View all';
+      viewAllBtn.textContent = 'VIEW ALL';
       viewAllBtn.addEventListener('click', () => {
         const parentTitle = block.closest('.section')?.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
         triggerCTAClickWithLinkAndTitle('javascript:void(0)', viewAllBtn.textContent?.trim() || 'View all', parentTitle);
