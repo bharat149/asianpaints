@@ -344,6 +344,10 @@
   font-weight: 600;
   font-size: 14px;
 }
+.form.block .form-row .form-fields-area .form-button-cell .form-submit .form-submit__label{
+  font-size: 16px;
+  line-height: 24px;
+}
 
 .form.block .form-submit__arrow {
   width: 20px;
