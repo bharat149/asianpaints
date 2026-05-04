@@ -418,7 +418,7 @@ function loadDelayed() {
       // eslint-disable-next-line no-console
       console.error('Failed to preload jQuery', e);
     });
-  }, 9000);
+  }, 5000);
 
   window.setTimeout(async () => {
     try {
@@ -429,7 +429,7 @@ function loadDelayed() {
       // eslint-disable-next-line no-console
       console.error('Failed to initialize analytics', e);
     }
-  }, 9000);
+  }, 5000);
 
   /* Sprinklr chat — heaviest 3rd-party, load last */
   window.setTimeout(() => {

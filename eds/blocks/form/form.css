@@ -949,6 +949,12 @@
     align-self: self-start;
   }
 
+  .form.block.blue-form .form-consent-options-right .form-consent-item .form-consent-text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 19.12px;
+  }
+
   .form.block .form-button-cell {
     justify-content: flex-end;
   }
@@ -1047,9 +1053,9 @@
 
 .form.block.blue-form .form-title-large {
   color: #fff;
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 30px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
   word-wrap: break-word;
   max-width: 95%;
 }

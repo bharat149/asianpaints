@@ -18,7 +18,46 @@ async function getSwiperClass() {
   console.warn('Swiper loader is not available on window.loadSwiper');
   return null;
 }
+function initVideoOnView(video) {
+  if (!video) return;
 
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+
+      if (video.dataset.loaded) {
+        obs.unobserve(video);
+        return;
+      }
+
+      video.dataset.loaded = 'true';
+
+      // Force video to load
+      if (typeof video.load === 'function') {
+        video.load();
+      }
+
+      // Try to play → triggers frame rendering
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Autoplay blocked → expected on mobile
+        });
+      }
+
+      // Immediately pause → keeps first frame visible
+      video.pause();
+
+      obs.unobserve(video);
+    });
+  }, {
+    root: null,
+    rootMargin: '200px 0px',
+    threshold: 0.01,
+  });
+
+  observer.observe(video);
+}
 function updateNavState(swiper, prevButton, nextButton) {
   if (!swiper || !prevButton || !nextButton) return;
 
@@ -111,7 +150,7 @@ function createVideoElement(src, title) {
   video.src = src;
   video.muted = true;
   video.playsInline = true;
-  video.preload = 'metadata';
+  video.preload = 'auto';
   video.setAttribute('aria-label', title || 'Collection preview');
 
   video.addEventListener('ended', () => {
@@ -262,6 +301,9 @@ export default async function decorate(block) {
     const mediaEl = createVideoElement(mediaSrc, title);
     if (mediaEl) {
       mediaWrap.appendChild(mediaEl);
+
+        // ✅ ADD THIS LINE
+      initVideoOnView(mediaEl);
       bindHoverPlayback(mediaWrap, mediaEl);
     }
 
