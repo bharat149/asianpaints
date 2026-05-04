@@ -423,6 +423,9 @@ function loadDelayed() {
   window.setTimeout(async () => {
     try {
       await window.loadJQuery?.();
+      if (typeof (_satellite) != "undefined") {
+        _satellite.track("pageload");
+      }
       const { initAnalytics } = await import('./analytics.js');
       initAnalytics();
     } catch (e) {
