@@ -528,6 +528,50 @@ main .section.read-tc-cta .button-container>a.button:focus-visible {
   box-shadow: none !important;
 }
 
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 0;
+  gap: 8px;
+  height: 34px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #232426;
+  border-radius: 45px;
+  background: transparent;
+  color: #232426;
+  font-family: Manrope, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
+  background: #fff7e8;
+  border-color: #232426;
+  color: #232426;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:focus,
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:focus-visible {
+  background: #feeecf;
+  border-color: #232426;
+  color: #232426;
+  outline: none;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  background: url('https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon.svg') no-repeat center / contain;
+}
 
 main .section.dark h2,
 main .section.dark h3 {
