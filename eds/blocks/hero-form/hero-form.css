@@ -213,18 +213,10 @@
 }
 
 .hero-form .error-msg::before {
-    content: "!";
-    width: 14px;
+    content: url("https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/components/content/miniform/clientlibs/resources/image/circle-info-red.svg");
+    width: 15px;
     height: 14px;
-    border-radius: 50%;
-    border: 1px solid #FF4D00;
-    color: #FF4D00;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
 }
 
 .hero-form .error-msg.d-none { display: none; }
