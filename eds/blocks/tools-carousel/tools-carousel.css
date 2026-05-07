@@ -222,7 +222,7 @@
 
 /* Arrow icon at bottom right */
 .tools-carousel-slide::after {
-  content: '↗';
+  content: url('/eds/icons/redirection-arrow-white.svg');
   position: absolute;
   bottom: 24px;
   right: 24px;
@@ -231,7 +231,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 4px;
   color: white;
   opacity: 0.8;
   z-index: 2;
@@ -251,6 +251,9 @@
   color: black;
 }
 
+.tools-carousel-slide:hover::after {
+  content:url('/eds/icons/redirection-arrow-black.svg') ;
+}
 /* Mobile responsive */
 @media (width < 1000px) {
   .tools-carousel {
@@ -347,5 +350,9 @@
 
   .tools-carousel-slide img {
     opacity: 1;
+  }
+  .tools-carousel-slide::after{
+    content: url('/eds/icons/redirection-arrow-black.svg');
+    background: #fcaf17;
   }
 }

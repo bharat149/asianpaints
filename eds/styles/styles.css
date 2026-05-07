@@ -781,3 +781,54 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
     zoom: .85;
   }
 }
+
+
+
+/* animation start */
+@keyframes move-from-bottom-to-top {
+    1% {
+        bottom: -250px
+    }
+
+    to {
+        bottom: 0;
+        opacity: 1
+    }
+}
+
+@keyframes fade-from-bottom-to-top {
+    to {
+        opacity: 1
+    }
+}
+
+.allow-bottom-up-animation {
+    opacity: 0
+}
+
+.animate-bottom-to-top {
+    display: block;
+    opacity: 0;
+    position: relative;
+    animation: move-from-bottom-to-top 1.5s forwards
+}
+
+.animate-fade-to-top {
+    display: block;
+    opacity: 0;
+    position: relative;
+    animation: fade-from-bottom-to-top 1.5s ease-in forwards
+}
+/* end animation styles */
+
+/* title styles for inspiration page */
+.default-content-wrapper #ideas-gallery{
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 36.4px;
+
+    @media (max-width: 990px) {
+      font-size: 16px;
+      line-height: 24px;
+    }
+}
