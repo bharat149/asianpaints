@@ -26,8 +26,10 @@ import {
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
-const DEFAULT_API_BASE = 'https://beta.asianpaints.com';
-const DEFAULT_KEYCLOAK_AUTH = 'https://betaauth.asianpaints.com';
+// Use relative URL for same-origin fetch (avoids CORS when on branch previews)
+const CONFIG_URL = '/config.json';
+const DEFAULT_API_BASE = 'https://www.asianpaints.com';
+const DEFAULT_KEYCLOAK_AUTH = 'https://auth.asianpaints.com';
 
 const headerConfig = {
   apiBaseUrl: DEFAULT_API_BASE,
