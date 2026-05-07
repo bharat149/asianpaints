@@ -290,30 +290,6 @@ button.accent:focus {
   border-color: var(--accent-color-hover);
 }
 
-/* Text link style - for links that should appear as plain links, not buttons */
-.embed-container .default-content-wrapper p.button-container:last-of-type a.button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  color: black;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: underline;
-  text-transform: none;
-  letter-spacing: normal;
-  border-radius: 0;
-  text-decoration: none;
-  border: 1px solid black;
-  padding: 6px 24px;
-  border-radius: 20px;
-}
-
-.embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
-  background: none;
-  color: var(--link-hover-color);
-}
-
 main img {
   max-width: 100%;
   width: auto;
@@ -431,12 +407,15 @@ main .section.section-padding-top-15 {
   padding-top: 15px;
 }
 
-main .section.section-margin-top {
-  margin-top: 100px;
+main .section.text-grey {
+  color: rgb(93,79,67);
 }
 
-main .section.text-grey {
-  color: rgb(93, 79, 67);
+/* Contractor Finder Tool link styling to match live */
+main .section .default-content-wrapper #how-to-hire-an-asian-paints-contractor + p + ol li:first-child a,
+main .section.rte-section .default-content-wrapper a[href*="contractors/painting-contractors.html"] {
+  color: #00e !important;
+  text-decoration: underline !important;
 }
 
 main .section.zero-margin {
@@ -528,6 +507,51 @@ main .section.read-tc-cta .button-container>a.button:focus-visible {
   box-shadow: none !important;
 }
 
+/* Match live Read T&C CTA after video embed */
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 0;
+  gap: 8px;
+  height: 34px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #232426;
+  border-radius: 45px;
+  background: transparent;
+  color: #232426;
+  font-family: Manrope, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:hover {
+  background: #fff7e8;
+  border-color: #232426;
+  color: #232426;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:focus,
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button:focus-visible {
+  background: #feeecf;
+  border-color: #232426;
+  color: #232426;
+  outline: none;
+}
+
+.embed-container .default-content-wrapper p.button-container:last-of-type a.button::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  background: url('https://www.asianpaints.com/etc.clientlibs/apcolourcatalogue/clientlibs/clientlib-global/resources/images/download-icon.svg') no-repeat center / contain;
+}
 
 main .section.dark h2,
 main .section.dark h3 {
@@ -621,13 +645,6 @@ main>.section>.default-content-wrapper h2 {
   color: #222;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-
-  @media (max-width: 991px) {
-    font-weight: 700;
-    font-size: 22px;
-    line-height: 24px;
-    letter-spacing: normal;
-  }
 }
 
 /*
@@ -649,12 +666,6 @@ main>.section>.default-content-wrapper h3 {
   color: #222;
   margin-top: 1.2em;
   margin-bottom: 0.4em;
-
-  @media (max-width: 991px) {
-    font-size: 16px;
-    line-height: 22px;
-    letter-spacing: normal;
-  }
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -664,12 +675,6 @@ main>.section>.default-content-wrapper p {
   line-height: 1.57;
   color: #222;
   margin-bottom: 0;
-
-  @media (max-width: 991px) {
-    font-size: 12px;
-    line-height: 1.57;
-    letter-spacing: .5px;
-  }
 }
 
 main>.section>.default-content-wrapper ul,
@@ -692,6 +697,77 @@ main>.section>.default-content-wrapper a:any-link {
 /* stylelint-disable-next-line no-descending-specificity */
 main>.section>.default-content-wrapper a:hover {
   text-decoration: underline;
+}
+
+/* Live-aligned long-form contractors RTE section (metadata style: contractors-rte-live) */
+/* stylelint-disable-next-line no-descending-specificity */
+main .section.contractors-rte-live>.default-content-wrapper {
+  padding-right: 4%;
+  padding-left: 4%;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper h2 {
+  font-family: Manrope, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: normal;
+  color: #222;
+  margin: 0 0 16px;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper h3 {
+  font-family: Manrope, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  color: #222;
+  margin: 20px 0 10px;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .section.contractors-rte-live>.default-content-wrapper p,
+main .section.contractors-rte-live>.default-content-wrapper li {
+  font-family: Manrope, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: .5px;
+  color: #222;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .section.contractors-rte-live>.default-content-wrapper p {
+  margin: 0 0 12px;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper ol,
+main .section.contractors-rte-live>.default-content-wrapper ul {
+  padding-left: 24px;
+  margin: 0 0 16px;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper li {
+  margin-bottom: 8px;
+}
+
+@media (width <= 991px) {
+  main .section.contractors-rte-live>.default-content-wrapper {
+    padding-right: 4.5%;
+    padding-left: 4.5%;
+  }
+}
+
+@media (width >= 992px) {
+  main .section.contractors-rte-live>.default-content-wrapper h2 {
+    font-size: 30px;
+    line-height: 34px;
+  }
+
+  main .section.contractors-rte-live>.default-content-wrapper h3 {
+    font-size: 20px;
+    line-height: 22px;
+  }
 }
 
 /* Video Section (Kaamyabi ke rang) - Pixel perfect matching Asian Paints */
@@ -776,6 +852,11 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   }
 } */
 
+ @media (min-width: 1280px) and (max-width: 1365px) {
+   body {
+     zoom: .85;
+   }
+ }
 @media (min-width: 1280px) and (max-width: 1365px) {
   body {
     zoom: .85;
