@@ -118,3 +118,31 @@ modalHandler.closeModal = function (modalOrSelector) {
 
   document.body.classList.remove('modal-open');
 };
+
+// common bottomUpAnimation
+function bottomUpAnimation() {
+let $win = $(window);
+let $stat = $('.allow-bottom-up-animation');
+let $fade = $('.allow-fade-up-animation');
+
+$win.on('scroll', function () {
+  let scrollTop = $win.scrollTop();
+
+  $stat.each(function () {
+    let $self = $(this);
+    let offsetTop = $self.offset().top;
+    if ((scrollTop - offsetTop) > -450) {
+      $self.addClass('animate-bottom-to-top');
+    }
+  });
+
+  $fade.each(function () {
+    let $self = $(this);
+    let offsetTop = $self.offset().top;
+    if ((scrollTop - offsetTop) > -450) {
+      $self.addClass('animate-fade-to-top');
+    }
+  });
+}).scroll();
+}
+bottomUpAnimation();
