@@ -13,6 +13,8 @@
  */
 
 import { getMetadata, decorateIcons } from '../../scripts/aem.js';
+import { getSiteConfig } from '../../scripts/configs.js';
+import { DOMAIN_ENV, getDomainEnvironment } from '../../scripts/environment.js';
 import {
   getDigitalData,
   trackEvent,
@@ -25,10 +27,8 @@ import {
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
-// Use relative URL for same-origin fetch (avoids CORS when on branch previews)
-const CONFIG_URL = '/config.json';
-const DEFAULT_API_BASE = 'https://beta.asianpaints.com';
-const DEFAULT_KEYCLOAK_AUTH = 'https://betaauth.asianpaints.com';
+const DEFAULT_API_BASE = 'https://www.asianpaints.com';
+const DEFAULT_KEYCLOAK_AUTH = 'https://auth.asianpaints.com';
 
 const headerConfig = {
   apiBaseUrl: DEFAULT_API_BASE,
@@ -46,18 +46,25 @@ const AUTH_REDIRECT_URI = `${window.location.origin}/`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
+// Resolve the env-prefixed key (e.g. `api-base-url` -> `beta_api-base-url` /
+// `prod_api-base-url`) so a single DA `site-config` can serve both envs.
+function getEnvKey(name) {
+  const prefix = getDomainEnvironment() === DOMAIN_ENV.BETA ? 'beta' : 'prod';
+  return `${prefix}_${name}`;
+}
+
 async function fetchHeaderConfig() {
   try {
-    const resp = await fetch(CONFIG_URL);
-    if (!resp.ok) return;
-    const json = await resp.json();
+    const json = await getSiteConfig();
     const data = json?.data || [];
-    data.forEach(({ key, value }) => {
-      if (key && value) {
-        if (key === 'api-base-url') headerConfig.apiBaseUrl = value.replace(/\/$/, '');
-        if (key === 'keycloak-auth-url') headerConfig.keycloakAuthUrl = value.replace(/\/$/, '');
-      }
-    });
+    const get = (key) => data.find((entry) => entry?.key === key)?.value;
+
+    // Prefer env-prefixed keys; fall back to legacy unprefixed for safety during rollout.
+    const apiBase = get(getEnvKey('api-base-url')) || get('api-base-url');
+    const keycloak = get(getEnvKey('keycloak-auth-url')) || get('keycloak-auth-url');
+
+    if (apiBase) headerConfig.apiBaseUrl = apiBase.replace(/\/$/, '');
+    if (keycloak) headerConfig.keycloakAuthUrl = keycloak.replace(/\/$/, '');
   } catch (e) {
     // use defaults
   }
