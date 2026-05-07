@@ -13,6 +13,7 @@
  */
 
 import { getMetadata, decorateIcons } from '../../scripts/aem.js';
+import { getSiteConfig } from '../../scripts/configs.js';
 import {
   getDigitalData,
   trackEvent,
@@ -25,8 +26,6 @@ import {
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
-// Use relative URL for same-origin fetch (avoids CORS when on branch previews)
-const CONFIG_URL = '/config.json';
 const DEFAULT_API_BASE = 'https://beta.asianpaints.com';
 const DEFAULT_KEYCLOAK_AUTH = 'https://betaauth.asianpaints.com';
 
@@ -48,9 +47,7 @@ const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
 async function fetchHeaderConfig() {
   try {
-    const resp = await fetch(CONFIG_URL);
-    if (!resp.ok) return;
-    const json = await resp.json();
+    const json = await getSiteConfig();
     const data = json?.data || [];
     data.forEach(({ key, value }) => {
       if (key && value) {
