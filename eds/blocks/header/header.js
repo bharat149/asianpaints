@@ -37,7 +37,7 @@ const headerConfig = {
 
 const HEADER_ICON_PATHS = {
   PROFILE_LOGGED_OUT: '/eds/icons/profile-icon-gray-brown.png',
-  PROFILE_LOGGED_IN: '/eds/icons/profile-icon-logged-in.png',
+  PROFILE_LOGGED_IN: '/eds/icons/profile-icon-logged-in.svg',
   STORE: '/eds/icons/store-icon-gray-brown.png',
 };
 
