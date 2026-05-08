@@ -413,9 +413,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide font icon when logged in, show image instead */
+.header .action-btn.profile-btn.logged-in::before {
+  display: none;
+}
+
 .header .action-btn.store-btn img,
 .header .action-btn.profile-btn img {
   display: none;
+}
+
+.header .action-btn.profile-btn.logged-in img {
+  display: flex;
 }
 
 .header .profile-dropdown-wrapper,
@@ -515,22 +524,6 @@
 .header .profile-dropdown-signout:hover {
   background: var(--header-text-dark);
   color: #fff;
-}
-
-/* Logged-in profile: show PNG icon instead of icon-font glyph */
-.header .profile-dropdown-wrapper.is-logged-in .profile-auth-link::before,
-.header .action-btn.profile-btn.logged-in::before {
-  content: none;
-  display: none;
-}
-
-.header .profile-dropdown-wrapper.is-logged-in .profile-auth-link img,
-.header .action-btn.profile-btn.logged-in img {
-  display: block;
-  width: 24px;
-  height: 24px;
-  max-width: 24px;
-  object-fit: contain;
 }
 
 /* Cart badge */
