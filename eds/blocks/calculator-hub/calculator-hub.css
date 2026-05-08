@@ -476,6 +476,13 @@
             height: 110px;
         }
     }
+/* ✅ Desktop large screens (incl. 1422px width) */
+    @media (min-width: 1400px) and (max-width: 1799px) {
+        .calculator-hub .tool-description .sub-heading {
+            font-size: 64px;
+            line-height: 70.4px;
+        }
+    }
 
     @media (min-width: 1800px) {
         .calculator-hub .mini-pbc.wbc-variant .project-field-inputs .radiobtn {
