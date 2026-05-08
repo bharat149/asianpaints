@@ -567,6 +567,15 @@
   background: #d69515;
 }
 
+.header .cta-btn.trigger-exit-intent-popup-form {
+  background: #fcaf17;
+  letter-spacing: normal;
+  color: #232426;
+}
+.header .cta-btn.trigger-exit-intent-popup-form:hover {
+  background: #fdbf45;
+}
+
 /* Mobile search icon (hidden on desktop) */
 .header .mobile-search-btn {
   display: none;
