@@ -296,13 +296,13 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a::afte
 
 /* stylelint-disable-next-line no-descending-specificity */
 main>.section.cards-textures-container>.default-content-wrapper p strong a:hover {
-   background: #fff7e8;
+  background: #fff7e8;
   border: 1px solid #232426;
   color: #222
 }
 
 main>.section.cards-textures-container>.default-content-wrapper p strong a:hover::after {
- transform: none;
+  transform: none;
 }
 
 @media (width >=768px) {
@@ -326,11 +326,11 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
   margin: 0;
 }
 
-.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2{
+.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2 {
   font-size: 32px;
 }
 
-.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2 strong{
+.section.cards-textures-container:has(.cards-textures.width-alt.block)>.default-content-wrapper h2 strong {
   background: linear-gradient(270deg, #f8a12e, #be2a1d 50.07%, #45216c 98.1%);
   background-clip: text;
   -webkit-background-clip: text;
@@ -370,6 +370,52 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
     border-radius: 0;
   }
 }
-.cards-textures.width-alt.block{
+
+.cards-textures.width-alt.block {
   border-radius: 0;
+}
+
+
+@media (min-width: 320px) and (max-width: 991px) {
+  .cards-textures.width-alt.block .cards-textures-card {
+    width: 100%;
+    height: 90px;
+    transition: height .7s linear .1s, background-image .7s linear;
+    flex: auto
+  }
+
+  .cards-textures.width-alt.block .cards-textures-card .card-name {
+        display: flex;
+        text-align: center;
+        opacity: 1;
+        align-items: center;
+        justify-content: center;
+        bottom: 40px;
+  }
+
+  .cards-textures.width-alt.block .cards-textures-card .card-hover-content {
+    display: none;
+  }
+
+  .cards-textures.width-alt.block .cards-textures-card.child-open {
+    animation: none;
+    height: 362px;
+  }
+
+
+  .cards-textures.width-alt.block .cards-textures-card.child-open .card-name {
+    /* display: none;
+     animation: none; */
+     opacity: 0;
+  }
+
+  .cards-textures.width-alt.block .cards-textures-card.child-open .card-hover-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cards-textures.width-alt.block .cards-textures-card.child-open .card-hover-content .card-bucket {
+    display: block;
+  }
 }
