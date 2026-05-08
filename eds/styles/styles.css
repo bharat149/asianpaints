@@ -862,8 +862,11 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
     zoom: .85;
   }
 }
-
-
+  @media (width <= 600px) {
+  .no-padding-mob{
+    padding: 0;
+  }
+}
 
 /* animation start */
 @keyframes move-from-bottom-to-top {

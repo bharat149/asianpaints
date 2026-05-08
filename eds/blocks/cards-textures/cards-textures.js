@@ -82,19 +82,46 @@ export default function decorate(block) {
 
     card.appendChild(hoverContent);
 
-    // Make entire card clickable
+    // Make entire card clickable / mobile expand-collapse
     if (link) {
       const ctaLink = link.href;
       const btnTitle = link.textContent.trim();
 
       card.style.cursor = 'pointer';
-      btn?.addEventListener('click', () => {
+
+      btn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+
         triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, name);
+        window.location.href = ctaLink;
       });
 
       card.addEventListener('click', (e) => {
-        if (e.target.closest('a')) return;
+        const clickedCard = e.currentTarget;
 
+        // CTA should redirect
+        if (e.target.closest('.card-button')) return;
+
+        // Mobile: card click only expands/collapses
+        if (window.innerWidth < 990) {
+          e.preventDefault();
+
+          const isExpanded = clickedCard.classList.contains('child-open');
+
+          // Close all cards first
+          block.querySelectorAll('.cards-textures-card.child-open').forEach((openCard) => {
+            if (openCard !== clickedCard) {
+              openCard.classList.remove('child-open');
+            }
+          });
+
+          // Toggle only clicked card
+          clickedCard.classList.toggle('child-open', !isExpanded);
+
+          return;
+        }
+
+        // Desktop: full card redirects
         triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, name);
         window.location.href = ctaLink;
       });
