@@ -300,7 +300,7 @@ function createOptimizedPicture(
   src,
   alt = '',
   eager = false,
-  breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '2000' }],
+  breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '750' }],
 ) {
   const url = !src.startsWith('http') ? new URL(src, window.location.href) : new URL(src);
   const picture = document.createElement('picture');

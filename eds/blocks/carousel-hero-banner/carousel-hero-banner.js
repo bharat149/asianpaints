@@ -185,135 +185,133 @@ export default async function decorate(block) {
   paginationEl.className = "swiper-pagination";
   block.appendChild(paginationEl);
 
-  try {
-    const Swiper = await getSwiperClass();
-    if (!Swiper) return;
+  /* Defer Swiper import + init until after initial paint.
+   * The first slide is already visible as static HTML, so deferring
+   * moves swiper.js parse/eval (~600-1300ms) off the critical path,
+   * eliminating TBT caused by the Swiper module on slow devices. */
+  const observer = new IntersectionObserver(async (entries, obs) => {
+    if (entries[0].isIntersecting) {
+      obs.disconnect();
+      try {
+        const Swiper = await getSwiperClass();
+        if (!Swiper) return;
 
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const swiper = new Swiper(block, {
+              slidesPerView: 1,
+              speed: 800,
+              loop: false,
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+              effect: "fade",
+              fadeEffect: { crossFade: true },
 
-        const swiper = new Swiper(block, {
-          slidesPerView: 1,
-          speed: 800,
-          loop: false,
+              autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+                stopOnLastSlide: false,
+                pauseOnMouseEnter: true,
+              },
 
-          effect: "fade",
-          fadeEffect: { crossFade: true },
+              pagination: {
+                el: paginationEl,
+                clickable: true,
 
-          autoplay: {
-            delay: 5000,
-            disableOnInteraction: false,
-            stopOnLastSlide: false,
-            pauseOnMouseEnter: true,
-          },
+                renderBullet(index, className) {
+                  const total = this.snapGrid.length;
 
-          pagination: {
-            el: paginationEl,
-            clickable: true,
+                  if (index === 0) {
+                    return `
+                  <span class="swiper-button-prev custom-arrow"></span>
+                  <span class="${className}" data-index="${index}"></span>
+                `;
+                  }
 
-            renderBullet: function (index, className) {
-              const total = this.snapGrid.length;
+                  if (index === total - 1) {
+                    return `
+                  <span class="${className}" data-index="${index}"></span>
+                  <span class="swiper-button-next custom-arrow"></span>
+                `;
+                  }
 
-              if (index === 0) {
-                return `
-              <span class="swiper-button-prev custom-arrow"></span>
-              <span class="${className}" data-index="${index}"></span>
-            `;
-              }
+                  return `<span class="${className}" data-index="${index}"></span>`;
+                },
+              },
 
-              if (index === total - 1) {
-                return `
-              <span class="${className}" data-index="${index}"></span>
-              <span class="swiper-button-next custom-arrow"></span>
-            `;
-              }
+              on: {
+                init(sw) {
+                  handleVideo(sw);
+                  bindArrowEvents(sw);
+                  toggleArrows(sw);
+                },
+                slideChange(sw) { toggleArrows(sw); },
+                slideChangeTransitionStart(sw) { handleVideo(sw); },
+                slideChangeTransitionEnd(sw) { toggleArrows(sw); },
+              },
+            });
 
-              return `<span class="${className}" data-index="${index}"></span>`;
-            },
-          },
-
-          on: {
-            init(swiper) {
-              handleVideo(swiper);
-              bindArrowEvents(swiper);
-              toggleArrows(swiper);
-            },
-
-            slideChange(swiper) {
-              toggleArrows(swiper);
-            },
-
-            slideChangeTransitionStart(swiper) {
-              handleVideo(swiper);
-            },
-
-            slideChangeTransitionEnd(swiper) {
-              toggleArrows(swiper);
-            },
-          },
+            block.heroSwiper = swiper;
+          });
         });
+      } catch (e) {
+        console.error("Swiper init failed", e);
+      }
+    }
+  }, { threshold: 0 });
+  observer.observe(block);
 
-        block.heroSwiper = swiper;
+  function bindArrowEvents(swiper) {
+    paginationEl.addEventListener("click", (e) => {
+      const prev = e.target.closest(".swiper-button-prev");
+      const next = e.target.closest(".swiper-button-next");
+      const bullet = e.target.closest(".swiper-pagination-bullet");
 
-      });
+      if (prev) {
+        e.preventDefault();
+        swiper.slidePrev();
+      }
+
+      if (next) {
+        e.preventDefault();
+        swiper.slideNext();
+      }
+
+      if (bullet) {
+        const index = parseInt(bullet.dataset.index, 10);
+        if (!Number.isNaN(index)) {
+          e.preventDefault();
+          swiper.slideTo(index, 0);
+        }
+      }
     });
+  }
 
-    function bindArrowEvents(swiper) {
-      paginationEl.addEventListener("click", (e) => {
-        const prev = e.target.closest(".swiper-button-prev");
-        const next = e.target.closest(".swiper-button-next");
-        const bullet = e.target.closest(".swiper-pagination-bullet");
+  function toggleArrows(swiper) {
+    const prevEl = paginationEl.querySelector(".swiper-button-prev");
+    const nextEl = paginationEl.querySelector(".swiper-button-next");
 
-        if (prev) {
-          e.preventDefault();
-          swiper.slidePrev();
-        }
+    if (!prevEl || !nextEl) return;
 
-        if (next) {
-          e.preventDefault();
-          swiper.slideNext();
-        }
+    const current = swiper.activeIndex;
+    const last = swiper.snapGrid.length - 1;
 
-        if (bullet) {
-          const index = parseInt(bullet.dataset.index, 10);
-          if (!Number.isNaN(index)) {
-            e.preventDefault();
-            swiper.slideTo(index, 0);
-          }
-        }
-      });
+    if (current === 0) {
+      prevEl.classList.add("swiper-button-disabled");
+    } else {
+      prevEl.classList.remove("swiper-button-disabled");
     }
 
-    function toggleArrows(swiper) {
-      const prevEl = paginationEl.querySelector(".swiper-button-prev");
-      const nextEl = paginationEl.querySelector(".swiper-button-next");
-
-      if (!prevEl || !nextEl) return;
-
-      const current = swiper.activeIndex;
-      const last = swiper.snapGrid.length - 1;
-
-      if (current === 0) {
-        prevEl.classList.add("swiper-button-disabled");
-      } else {
-        prevEl.classList.remove("swiper-button-disabled");
-      }
-
-      if (current === last) {
-        nextEl.classList.add("swiper-button-disabled");
-      } else {
-        nextEl.classList.remove("swiper-button-disabled");
-      }
+    if (current === last) {
+      nextEl.classList.add("swiper-button-disabled");
+    } else {
+      nextEl.classList.remove("swiper-button-disabled");
     }
+  }
 
-    function handleVideo(swiper) {
-      block.querySelectorAll("video").forEach((v) => v.pause());
+  function handleVideo(swiper) {
+    block.querySelectorAll("video").forEach((v) => v.pause());
 
-      const activeVideo = block.querySelector(".swiper-slide-active video");
-      if (activeVideo) activeVideo.play();
-    }
-  } catch (e) {
-    console.error("Swiper init failed", e);
+    const activeVideo = block.querySelector(".swiper-slide-active video");
+    if (activeVideo) activeVideo.play();
   }
 }
