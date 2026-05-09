@@ -124,7 +124,7 @@ function getApApi() {
     KEYCLOAK_URL: headerConfig.keycloakAuthUrl || DEFAULT_KEYCLOAK_AUTH,
     KEYCLOAK_REALM: 'asianpaintsRealm',
     KEYCLOAK_CLIENT: 'asianpaints',
-    KEYCLOAK_JS: `${window.hlx?.codeBasePath || '/eds'}/scripts/keycloak.min.js`,
+    KEYCLOAK_JS: 'https://cdn.jsdelivr.net/npm/keycloak-js@22.0.3/dist/keycloak.min.js',
     KEYCLOAK_PAGE_URL: `${getApOrigin()}/content/ap/en/home/key-cloak.html`,
     PROFILE_PAGE: apUrl('/content/ap/en/home/my-profile.html'),
     WISHLIST_PAGE: apUrl('/content/ap/en/home/my-wishlist.html'),
