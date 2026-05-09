@@ -130,9 +130,10 @@ window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
         return;
       }
 
+      const codeBase = window.hlx?.codeBasePath || '/eds';
       const bootstrapCss = document.createElement('link');
       bootstrapCss.rel = 'stylesheet';
-      bootstrapCss.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+      bootstrapCss.href = `${codeBase}/styles/bootstrap.min.css`;
       bootstrapCss.setAttribute('data-bootstrap-css', 'true');
       bootstrapCss.onload = () => resolve();
       bootstrapCss.onerror = reject;
@@ -156,8 +157,9 @@ window.loadBootstrap = function loadBootstrap({ withJS = false } = {}) {
         return;
       }
 
+      const codeBase = window.hlx?.codeBasePath || '/eds';
       const bootstrapScript = document.createElement('script');
-      bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
+      bootstrapScript.src = `${codeBase}/scripts/bootstrap.bundle.min.js`;
       bootstrapScript.async = true;
       bootstrapScript.setAttribute('data-bootstrap-js', 'true');
       bootstrapScript.onload = () => resolve(window.bootstrap);
@@ -322,7 +324,7 @@ async function loadLazy(doc) {
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);
 
-  /* Load Bootstrap CSS — fire-and-forget to avoid blocking */
+  /* Self-hosted Bootstrap CSS (see loadBootstrap) — one fetch, no jsDelivr. */
   window.loadBootstrap?.({ withJS: false });
 
   const { hash } = window.location;
@@ -378,8 +380,8 @@ async function loadSplashPopup() {
 
 /**
  * Loads delayed resources that should not compete with the initial render.
- * Splash popup, Sprinklr chat, Swiper, Bootstrap, jQuery, and analytics
- * are all deferred here to keep them out of the critical rendering path.
+ * Splash popup, delayed.js, jQuery at 3 s, Adobe Launch (idle), Sprinklr (idle).
+ * Swiper loads only from carousel blocks; Bootstrap CSS from loadLazy (self-hosted).
  */
 function loadDelayed() {
   /* ── Tier 1 (3 s) — lightweight, needed early ────────────────────── */
@@ -397,86 +399,45 @@ function loadDelayed() {
     }
   }, 3000);
 
-  /* ── Tier 2 (6 s) — CSS-only preloads, low main-thread cost ───── */
-  window.setTimeout(() => {
-    window.loadSwiper?.().catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to preload Swiper', e);
-    });
-  }, 6000);
+  /* Swiper: loaded only when carousel blocks call loadSwiper() — no global preload. */
 
+  /* ── Tier 3 — jQuery at 3 s (same as before); Adobe Launch deferred with idle only ─ */
   window.setTimeout(() => {
-    window.loadBootstrap?.({ withJS: false }).catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to preload Bootstrap', e);
-    });
-  }, 6000);
-
-  /* ── Tier 3 (9 s) — heavy JS: jQuery, analytics, Sprinklr chat ── */
-  window.setTimeout(() => {
-    window.loadJQuery?.().catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to preload jQuery', e);
-    });
+    (async () => {
+      try {
+        await window.loadJQuery?.();
+        const runLaunchAndAnalytics = async () => {
+          try {
+            if (typeof (_satellite) !== 'undefined') {
+              _satellite.track('pageload');
+            }
+            const { initAnalytics } = await import('./analytics.js');
+            await initAnalytics();
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to initialize analytics', e);
+          }
+        };
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(runLaunchAndAnalytics, { timeout: 8000 });
+        } else {
+          await runLaunchAndAnalytics();
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load jQuery', e);
+      }
+    })();
   }, 3000);
 
-  window.setTimeout(async () => {
-    try {
-      await window.loadJQuery?.();
-      if (typeof (_satellite) != "undefined") {
-        _satellite.track("pageload");
-      }
-      const { initAnalytics } = await import('./analytics.js');
-      initAnalytics();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to initialize analytics', e);
+  /* Sprinklr chat — heavy 3rd-party: wall-clock delay then inject during idle */
+  window.setTimeout(() => {
+    const loadChat = () => loadSprinklrChatWidget();
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(loadChat, { timeout: 30000 });
+    } else {
+      window.setTimeout(loadChat, 0);
     }
-  }, 3000);
-
-  /* Sprinklr chat — heaviest 3rd-party, load last */
-  window.setTimeout(() => {
-    window.sprChatSettings = {
-      appId: '65d88620e479600565c07099_app_600025303',
-      skin: 'MODERN',
-    };
-
-    (function initSprinklrChat() {
-      const t = window;
-      const e = t.sprChat;
-      const a = e && !!e.loaded;
-      const n = document;
-      const r = function sprinklrChatProxy() { r.m(arguments); };
-      r.q = [];
-      r.m = (args) => { r.q.push(args); };
-      t.sprChat = a ? e : r;
-
-      const e2 = t.sprTeamChat;
-      const r2 = function sprinklrTeamChatProxy() { r2.m(arguments); };
-      r2.q = [];
-      r2.m = (args) => { r2.q.push(args); };
-      t.sprTeamChat = e2 ? e2 : r2;
-
-      const o = function insertSprinklrScript() {
-        const script = n.createElement('script');
-        script.type = 'text/javascript';
-        script.async = true;
-        script.src = `https://prod4-live-chat.sprinklr.com/api/livechat/handshake/widget/${t.sprChatSettings.appId}`;
-        script.onerror = () => { t.sprChat.loaded = false; };
-        script.onload = () => { t.sprChat.loaded = true; };
-        const firstScript = n.getElementsByTagName('script')[0];
-        firstScript.parentNode.insertBefore(script, firstScript);
-      };
-
-      if (typeof e === 'function') {
-        if (a) e('update', t.sprChatSettings);
-        else o();
-      } else if (n.readyState !== 'loading') {
-        o();
-      } else {
-        n.addEventListener('DOMContentLoaded', o);
-      }
-    }());
   }, 12000);
 }
 
