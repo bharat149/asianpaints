@@ -185,19 +185,18 @@ export default async function decorate(block) {
   paginationEl.className = "swiper-pagination";
   block.appendChild(paginationEl);
 
-  /* Defer Swiper import + init until after initial paint.
-   * The first slide is already visible as static HTML, so deferring
-   * moves swiper.js parse/eval (~600-1300ms) off the critical path,
-   * eliminating TBT caused by the Swiper module on slow devices. */
-  const observer = new IntersectionObserver(async (entries, obs) => {
-    if (entries[0].isIntersecting) {
-      obs.disconnect();
-      try {
-        const Swiper = await getSwiperClass();
-        if (!Swiper) return;
+  /* Defer Swiper import + init until AFTER LCP completes.
+   * The first slide is already visible as static HTML/CSS, so the carousel
+   * doesn't need JS to render. We wait for idle time to avoid blocking
+   * the main thread during the critical rendering window.
+   * On beta, Swiper parse+eval takes ~2000ms on throttled CPU. */
+  const initSwiper = async () => {
+    try {
+      const Swiper = await getSwiperClass();
+      if (!Swiper) return;
 
+      requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
             const swiper = new Swiper(block, {
               slidesPerView: 1,
               speed: 800,
@@ -253,12 +252,18 @@ export default async function decorate(block) {
             block.heroSwiper = swiper;
           });
         });
-      } catch (e) {
-        console.error("Swiper init failed", e);
-      }
+    } catch (e) {
+      console.error("Swiper init failed", e);
     }
-  }, { threshold: 0 });
-  observer.observe(block);
+  };
+
+  // Wait for idle time — pushes Swiper off the critical path completely.
+  // timeout: 5000 ensures it still loads within 5s even on busy pages.
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(initSwiper, { timeout: 5000 });
+  } else {
+    window.setTimeout(initSwiper, 2000);
+  }
 
   function bindArrowEvents(swiper) {
     paginationEl.addEventListener("click", (e) => {
