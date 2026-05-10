@@ -275,6 +275,32 @@ function buildAutoBlocks(main) {
 }
 
 /**
+ * Reserve aspect-ratio for any <img> that has explicit width/height
+ * attributes, so the browser computes the rendered height before the
+ * image bytes arrive.
+ *
+ * Many EDS image styles use `width: 100%; height: auto;` which strips
+ * the intrinsic dimensions — without this helper the browser leaves
+ * the <img> at 0 height until bytes load, then expands it, pushing
+ * everything below it down (= large CLS, especially on slow networks).
+ *
+ * Setting `aspect-ratio` inline (highest specificity) lets the browser
+ * reserve the correct height from the very first layout pass.
+ *
+ * @param {Element|Document} root - the element to scan (default: document)
+ */
+export function reserveImageAspectRatio(root = document) {
+  root.querySelectorAll('img[width][height]:not([data-ar-set])').forEach((img) => {
+    const w = parseInt(img.getAttribute('width'), 10);
+    const h = parseInt(img.getAttribute('height'), 10);
+    if (w > 0 && h > 0) {
+      img.style.aspectRatio = `${w} / ${h}`;
+      img.setAttribute('data-ar-set', '');
+    }
+  });
+}
+
+/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
@@ -289,6 +315,7 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
+  reserveImageAspectRatio(main);
 }
 
 /**
@@ -331,6 +358,10 @@ async function loadLazy(doc) {
 
   await headerLoaded;
   loadFooter(doc.querySelector('footer'));
+
+  /* Catch images added by lazy sections, header, footer, and any
+   * block decoration that built <img> elements after decorateMain ran. */
+  reserveImageAspectRatio(doc);
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
 }
