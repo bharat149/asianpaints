@@ -292,68 +292,47 @@ export default async function decorate(block) {
 
   if (totalSlides <= 1) return;
 
-  /* Lazy-init Swiper only when the block scrolls into the viewport.
-   * color-gallery is below the fold on the homepage, so IntersectionObserver
-   * actually defers it (unlike the hero, which is above-fold).
-   *
-   * Removes the ~211 ms long task that swiper.js parse + init creates at
-   * ~3.3 s in the Lighthouse run, when the user has not yet scrolled.
-   */
-  const initColorGallerySwiper = async () => {
-    try {
-      const Swiper = await getSwiperClass();
-      if (!Swiper) return;
+  try {
+    const Swiper = await getSwiperClass();
+    if (!Swiper) return;
 
-      const swiper = new Swiper(swiperEl, {
-        slidesPerView: 1.3,
-        spaceBetween: 12,
-        speed: 500,
-        loop: false,
-        watchOverflow: true,
-
-        navigation: {
-          prevEl: prevButton,
-          nextEl: nextButton,
+    const swiper = new Swiper(swiperEl, {
+      slidesPerView: 1.3,
+      spaceBetween: 12,
+      speed: 500,
+      loop: false,
+      watchOverflow: true,
+    
+      navigation: {
+        prevEl: prevButton,
+        nextEl: nextButton,
+      },
+    
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+        enabled: false,
+      },
+    
+      breakpoints: {
+        768: {
+          slidesPerView: 1.3,
+          spaceBetween: 10,
         },
-
-        pagination: {
-          el: paginationEl,
-          clickable: true,
-          enabled: false,
+        992: {
+          slidesPerView: 3,
+          spaceBetween: 16,
         },
-
-        breakpoints: {
-          768: {
-            slidesPerView: 1.3,
-            spaceBetween: 10,
-          },
-          992: {
-            slidesPerView: 3,
-            spaceBetween: 16,
-          },
-          1200: {
-            slidesPerView: 3,
-            spaceBetween: 16,
-          },
+        1200: {
+          slidesPerView: 3,
+          spaceBetween: 16,
         },
-      });
+      },
+    });
 
-      block.colorGallerySwiper = swiper;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to initialize color-gallery Swiper', error);
-    }
-  };
-
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries, obs) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        obs.disconnect();
-        initColorGallerySwiper();
-      }
-    }, { rootMargin: '200px 0px' });
-    observer.observe(block);
-  } else {
-    initColorGallerySwiper();
+    block.colorGallerySwiper = swiper;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize color-gallery Swiper', error);
   }
 }
