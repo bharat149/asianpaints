@@ -60,7 +60,7 @@ Important:
 */
 
 import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent, triggerCtaLinkText } from '../../scripts/analytics.js';
 
 let formName = '';
 let campaignId = '';
@@ -560,7 +560,7 @@ function createPopupScreen(block, type = 'success') {
               <a
                 href="${actionLink}"
                 target="_self"
-                class="form-error-popup__button"
+                class="form-error-popup__button trackCTA"
               >
                 ${actionLabel}
               </a>
@@ -577,6 +577,15 @@ function createPopupScreen(block, type = 'success') {
   closeBtn.addEventListener('click', () => {
     closeActivePopup(block, overlay);
   });
+
+  const trackCtaLink = overlay.querySelector('a.trackCTA');
+  if (trackCtaLink) {
+    trackCtaLink.addEventListener('click', () => {
+      const btnTitle = trackCtaLink.textContent.trim();
+      const ctaLink = trackCtaLink.getAttribute('href') || '';
+      triggerCtaLinkText(btnTitle, ctaLink);
+    });
+  }
 
   return overlay;
 }
