@@ -296,6 +296,12 @@ main img {
   height: auto;
 }
 
+/* Reserve space for the arrow icon that carousel-trending.css injects via ::after.
+   Prevents CLS (0.09 shift) when the block CSS loads lazily. */
+.section.carousel-trending-container .default-content-wrapper .button-container a {
+  padding-right: 42px;
+}
+
 .icon {
   display: inline-block;
   height: 24px;
@@ -592,7 +598,11 @@ main>.section>.default-content-wrapper>p>a:only-child {
   width: 100%;
 }
 
-main>.section>.default-content-wrapper>p>a:only-child>picture,
+main>.section>.default-content-wrapper>p>a:only-child>picture {
+  display: block;
+  width: 100%;
+}
+
 main>.section>.default-content-wrapper>p>a:only-child>picture>img {
   display: block;
   width: 100%;
@@ -620,6 +630,12 @@ main>.section>.default-content-wrapper>picture:only-child>img {
   width: 100%;
   max-width: 100%;
   height: auto;
+}
+
+/* Reserve space for standalone images before AEM edge JS sets dimensions */
+main>.section>.default-content-wrapper>p>picture:only-child>img:not([data-ar-set]),
+main>.section>.default-content-wrapper>picture:only-child>img:not([data-ar-set]) {
+  min-height: 46vw;
 }
 
 /* Remove max-width constraint for sections containing only standalone images */
