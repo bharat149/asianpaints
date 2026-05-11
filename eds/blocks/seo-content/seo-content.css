@@ -1,6 +1,5 @@
 .section.seo-content-container {
-    padding-right: 4%;
-    padding-left: 4%;
+    padding: 0 25px;
     margin: 40px auto;
 }
 
@@ -111,6 +110,7 @@
     }
 
     .section.seo-content-container {
+        padding: 0 16px;
         margin: 50px auto 40px;
     }
 
