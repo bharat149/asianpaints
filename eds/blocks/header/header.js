@@ -442,11 +442,20 @@ function loadScript(src) {
   });
 }
 
+const KEYCLOAK_ID_TOKEN_STORAGE = 'keycloak-id-token';
+
 function persistKeycloakTokens() {
   if (!keycloakInstance?.authenticated) return;
   try {
     localStorage.setItem('keycloak-token', keycloakInstance.token);
     localStorage.setItem('keycloak-refresh-token', keycloakInstance.refreshToken ?? '');
+    /* OIDC RP-initiated logout requires id_token_hint to be the ID token
+     * (typ: "ID"), not the access token. Store it separately so sign-out
+     * can use the correct token. Sending the access token here yields
+     * `400 Invalid parameter: id_token_hint` from Keycloak. */
+    if (keycloakInstance.idToken) {
+      localStorage.setItem(KEYCLOAK_ID_TOKEN_STORAGE, keycloakInstance.idToken);
+    }
     if (keycloakInstance.idTokenParsed) {
       localStorage.setItem('userProfile', JSON.stringify(keycloakInstance.idTokenParsed));
     }
@@ -457,10 +466,29 @@ function persistKeycloakTokens() {
 function clearKeycloakTokens() {
   try {
     localStorage.removeItem('keycloak-token');
+    localStorage.removeItem(KEYCLOAK_ID_TOKEN_STORAGE);
     localStorage.removeItem('keycloak-refresh-token');
     localStorage.removeItem('userProfile');
     document.cookie = 'keycloak_authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   } catch (e) { /* ignore */ }
+}
+
+/* Resolve the correct ID token to use as Keycloak's id_token_hint on logout.
+ * Prefers the live Keycloak instance, then the persisted ID token, then the
+ * access token as last resort. Falling back to access token will still fail
+ * (Keycloak rejects it), but we prefer attempting logout over failing silently. */
+function getLogoutIdTokenHint() {
+  if (keycloakInstance?.authenticated && keycloakInstance.idToken) {
+    return keycloakInstance.idToken;
+  }
+  try {
+    return localStorage.getItem(KEYCLOAK_ID_TOKEN_STORAGE)
+      || keycloakInstance?.idToken
+      || keycloakInstance?.token
+      || localStorage.getItem('keycloak-token');
+  } catch {
+    return keycloakInstance?.idToken || keycloakInstance?.token || null;
+  }
 }
 
 function showWelcomeUserPopup(block, username) {
@@ -551,6 +579,9 @@ function refreshToken(block) {
         console.log('Token refreshed:', keycloakInstance.token);
         localStorage.setItem('keycloak-token', keycloakInstance.token);
         localStorage.setItem('keycloak-refresh-token', keycloakInstance.refreshToken ?? '');
+        if (keycloakInstance.idToken) {
+          localStorage.setItem(KEYCLOAK_ID_TOKEN_STORAGE, keycloakInstance.idToken);
+        }
         document.cookie = `keycloak_authToken=${keycloakInstance.token}; path=/`;
       } else {
         console.log('Token still valid, no need to refresh.');
@@ -1737,7 +1768,13 @@ function getUser() {
   if (keycloakInstance?.authenticated && keycloakInstance?.tokenParsed) {
     const p = keycloakInstance.tokenParsed;
     const name = p.given_name || p.name || p.preferred_username || '';
-    return { name, email: p.email || '', id_token: keycloakInstance.token };
+    /* Prefer the real id_token for logout. Fall back to access token only
+     * so callers other than logout still work. */
+    return {
+      name,
+      email: p.email || '',
+      id_token: getLogoutIdTokenHint(),
+    };
   }
   if (!canUsePersistedAuth()) return null;
   try {
@@ -1745,7 +1782,7 @@ function getUser() {
     if (userProfile) {
       const p = JSON.parse(userProfile);
       const name = p.given_name || p.name || p.preferred_username || '';
-      const idToken = localStorage.getItem('keycloak-token');
+      const idToken = getLogoutIdTokenHint();
       return name && idToken ? { name, email: p.email || '', id_token: idToken } : null;
     }
   } catch (e) { /* ignore */ }
@@ -1757,6 +1794,9 @@ function setUser(user) {
     localStorage.removeItem(SIGNED_OUT_KEY);
     if (user?.id_token) {
       localStorage.setItem('keycloak-token', user.id_token);
+      /* The hash-flow id_token IS an actual ID token, so mirror it into
+       * the dedicated id-token storage for logout. */
+      localStorage.setItem(KEYCLOAK_ID_TOKEN_STORAGE, user.id_token);
       const payload = parseJwtPayload(user.id_token);
       if (payload) localStorage.setItem('userProfile', JSON.stringify(payload));
     }
@@ -2075,16 +2115,22 @@ function buildMainHeader(mainDiv) {
         const profileIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21V19a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>';
         const wishlistIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
 
+        /* Build profile/wishlist links against the resolved AP origin (beta
+         * vs prod) so users on beta.asianpaints.com aren't sent to
+         * www.asianpaints.com where their session does not exist. */
+        const profileHref = getApApi().PROFILE_PAGE;
+        const wishlistHref = getApApi().WISHLIST_PAGE;
+
         const dropdown = document.createElement('div');
         dropdown.className = 'profile-dropdown';
         dropdown.setAttribute('aria-hidden', 'true');
         dropdown.innerHTML = `
           <p class="profile-dropdown-greeting"></p>
-          <a href="https://www.asianpaints.com/my-profile.html" class="profile-dropdown-item">
+          <a href="${profileHref}" class="profile-dropdown-item">
             <span class="profile-dropdown-icon">${profileIconSvg}</span>
             My Profile
           </a>
-          <a href="https://www.asianpaints.com/my-wishlist.html" class="profile-dropdown-item">
+          <a href="${wishlistHref}" class="profile-dropdown-item">
             <span class="profile-dropdown-icon">${wishlistIconSvg}</span>
             Wishlist
           </a>
@@ -3033,7 +3079,7 @@ function addInteractions(block) {
 
     signOutBtn?.addEventListener('click', () => {
       const user = getUser();
-      const idToken = user?.id_token || (typeof localStorage !== 'undefined' ? localStorage.getItem('keycloak-token') : null);
+      const idToken = user?.id_token || getLogoutIdTokenHint();
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       clearUser();
       try {
