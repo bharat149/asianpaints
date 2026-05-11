@@ -417,7 +417,6 @@ main .section.text-grey {
   color: rgb(93,79,67);
 }
 
-/* Contractor Finder Tool link styling to match live */
 main .section .default-content-wrapper #how-to-hire-an-asian-paints-contractor + p + ol li:first-child a,
 main .section.rte-section .default-content-wrapper a[href*="contractors/painting-contractors.html"] {
   color: #00e !important;
@@ -514,6 +513,10 @@ main .section.read-tc-cta .button-container>a.button:focus-visible {
 }
 
 /* Match live Read T&C CTA after video embed */
+.embed-container .default-content-wrapper p.button-container:last-of-type {
+  margin-top: 40px;
+}
+
 .embed-container .default-content-wrapper p.button-container:last-of-type a.button {
   display: inline-flex;
   align-items: center;
@@ -710,13 +713,6 @@ main>.section>.default-content-wrapper a:any-link {
   color: #06c;
 }
 
-/* stylelint-disable-next-line no-descending-specificity */
-main>.section>.default-content-wrapper a:hover {
-  text-decoration: underline;
-}
-
-/* Live-aligned long-form contractors RTE section (metadata style: contractors-rte-live) */
-/* stylelint-disable-next-line no-descending-specificity */
 main .section.contractors-rte-live>.default-content-wrapper {
   padding-right: 4%;
   padding-left: 4%;
