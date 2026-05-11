@@ -473,21 +473,42 @@ function clearKeycloakTokens() {
   } catch (e) { /* ignore */ }
 }
 
-/* Resolve the correct ID token to use as Keycloak's id_token_hint on logout.
- * Prefers the live Keycloak instance, then the persisted ID token, then the
- * access token as last resort. Falling back to access token will still fail
- * (Keycloak rejects it), but we prefer attempting logout over failing silently. */
+/* Resolve a REAL ID token (typ: "ID") for Keycloak's id_token_hint on logout.
+ * We deliberately do NOT fall back to the access token (typ: "Bearer") here -
+ * Keycloak rejects access tokens as id_token_hint with `400 Invalid parameter`.
+ * Returning null lets the caller decide to omit the hint (Keycloak will then
+ * show its logout confirmation page) instead of guaranteeing a 400. */
 function getLogoutIdTokenHint() {
   if (keycloakInstance?.authenticated && keycloakInstance.idToken) {
     return keycloakInstance.idToken;
   }
   try {
-    return localStorage.getItem(KEYCLOAK_ID_TOKEN_STORAGE)
-      || keycloakInstance?.idToken
-      || keycloakInstance?.token
-      || localStorage.getItem('keycloak-token');
+    return localStorage.getItem(KEYCLOAK_ID_TOKEN_STORAGE) || null;
   } catch {
-    return keycloakInstance?.idToken || keycloakInstance?.token || null;
+    return null;
+  }
+}
+
+/* keycloak-js doesn't fetch a fresh id_token when restoring an existing
+ * session from stored access+refresh tokens, so keycloakInstance.idToken can
+ * be undefined. A forced refresh hits /token with grant_type=refresh_token,
+ * which returns id_token because `openid` is in scope. */
+async function ensureFreshIdToken() {
+  if (!keycloakInstance?.authenticated) return;
+  if (keycloakInstance.idToken) return;
+  if (!keycloakInstance.refreshToken && !localStorage.getItem('keycloak-refresh-token')) return;
+  try {
+    if (!keycloakInstance.refreshToken) {
+      keycloakInstance.refreshToken = localStorage.getItem('keycloak-refresh-token') || undefined;
+    }
+    await keycloakInstance.updateToken(-1);
+    if (keycloakInstance.idToken) {
+      try {
+        localStorage.setItem(KEYCLOAK_ID_TOKEN_STORAGE, keycloakInstance.idToken);
+      } catch { /* ignore */ }
+    }
+  } catch (e) {
+    /* refresh failed (e.g., refresh token expired). Caller will fall back. */
   }
 }
 
@@ -653,6 +674,9 @@ async function initKeycloak(block) {
     updateProfileUI(block, authenticated);
 
     if (typeof authenticated !== 'undefined' && authenticated) {
+      /* Persist tokens right after init so the id_token (when keycloak-js
+       * provides one) is stored for future page loads. */
+      persistKeycloakTokens();
       window.dispatchEvent(new CustomEvent('keycloakLoginReady', {
         detail: { token: keycloakInstance.token, userId: keycloakInstance.subject },
       }));
@@ -3077,10 +3101,14 @@ function addInteractions(block) {
       }
     });
 
-    signOutBtn?.addEventListener('click', () => {
-      const user = getUser();
-      const idToken = user?.id_token || getLogoutIdTokenHint();
+    signOutBtn?.addEventListener('click', async () => {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      /* Ensure a real id_token is available before building the logout URL.
+       * Without this, users who logged in via a prior page load have only an
+       * access token in storage, and Keycloak rejects access tokens as
+       * id_token_hint (400 Invalid parameter). */
+      await ensureFreshIdToken();
+      const idToken = getLogoutIdTokenHint();
       clearUser();
       try {
         sessionStorage.removeItem(AUTH_REDIRECTED_KEY);
