@@ -428,6 +428,11 @@ main .section .default-content-wrapper a[href*="colour-catalogue.html"] {
     text-decoration: underline !important;
 }
 
+main .section .default-content-wrapper a[href*="services/asian-paints-safe-painting-service.html"] {
+    color: #00e !important;
+    text-decoration: underline !important;
+}
+
 main .section.zero-margin {
   margin: 0;
 }
