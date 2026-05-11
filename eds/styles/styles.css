@@ -825,7 +825,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper {
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a {
   /* Pixel-perfect: black */
   text-decoration: underline;
-  font-weight: 400;
+  font-weight: bolder;
   display: inline;
 }
 
