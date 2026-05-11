@@ -29,6 +29,20 @@ export function trackEvent(eventName, eventData = {}) {
 }
 
 /**
+ * Tracks CTA link text interaction.
+ * @param {string} btnTitle The CTA label
+ * @param {string} ctaLink The CTA URL
+ */
+export function triggerCtaLinkText(btnTitle, ctaLink) {
+  if (typeof window._satellite === 'undefined') return;
+
+  trackEvent('cta_link_text', {
+    cta_: btnTitle,
+    param1: ctaLink,
+  });
+}
+
+/**
  * Tracks no result event for search journeys.
  * @param {string} searchTerm The search term (use 'Image' for image search)
  */
@@ -145,7 +159,7 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   if (!ctaLink) return;
 
   setDigitalDataContext(ctaLink);
-
+  
   if (ctaLink.indexOf('javascript:void') > -1) {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
@@ -228,6 +242,20 @@ export function bindButtonContainerTracking(element) {
 
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });
+  });
+}
+
+export function bindTrackCTALinkTextTracking(element) {
+  if (!element || element.dataset.trackCtaLinkTextBound === 'true') return;
+
+  element.dataset.trackCtaLinkTextBound = 'true';
+  element.addEventListener('click', (event) => {
+    const cta = event.target.closest('a.trackCTA');
+    if (!cta || !element.contains(cta)) return;
+
+    const btnTitle = cta.textContent.trim();
+    const ctaLink = getTrackingLinkValue(cta);
+    triggerCtaLinkText(btnTitle, ctaLink);
   });
 }
 

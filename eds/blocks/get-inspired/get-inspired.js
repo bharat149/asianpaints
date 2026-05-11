@@ -7,6 +7,25 @@ async function getSwiperClass() {
   return null;
 }
 
+function trackNavClick(button, navigationAction, testTitle) {
+  if (!button) return;
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    const resolvedNavigationAction = navigationAction
+      || button.getAttribute('aria-label')
+      || '';
+
+    trackEvent('Navigation', {
+      'Navigation Action': resolvedNavigationAction,
+      navigationAction: resolvedNavigationAction,
+      direction: resolvedNavigationAction,
+      testTitle,
+    });
+  });
+}
+
 export default function decorate(block) {
   const sections = [...block.children];
 
@@ -32,11 +51,18 @@ export default function decorate(block) {
     const panel = document.createElement('div');
     panel.className = 'tab-panel';
 
-    const prevEl = document.createElement('div');
+    const prevEl = document.createElement('button');
     prevEl.className = 'swiper-button-prev';
+    prevEl.type = 'button';
+    prevEl.setAttribute('aria-label', 'Previous');
 
-    const nextEl = document.createElement('div');
+    const nextEl = document.createElement('button');
     nextEl.className = 'swiper-button-next';
+    nextEl.type = 'button';
+    nextEl.setAttribute('aria-label', 'Next');
+
+    trackNavClick(prevEl, 'Previous', title);
+    trackNavClick(nextEl, 'Next', title);
 
     const swiperContainerWrapper = document.createElement('div');
     swiperContainerWrapper.className = 'swiper-container-wrapper';

@@ -689,7 +689,7 @@ function createErrorScreen(block) {
               <a
                 href="${ERROR_CTA_LINK}"
                 target="_self"
-                class="form-error-popup__button"
+                class="form-error-popup__button trackCTA"
               >
                 Get FREE Design Consultation
               </a>

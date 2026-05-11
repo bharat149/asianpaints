@@ -13,7 +13,9 @@ calculatorBlocks.forEach((block) => {
     const ctaLink = cta.getAttribute('href') || '';
     const btnTitle = cta.textContent.trim();
     const parentCard = cta.closest('.image-wrapper, .content-wrapper')?.parentElement;
-    const parentTitle = parentCard?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent?.trim() || '';
+    const parentTitle = parentCard?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent?.trim()
+      || parentCard?.querySelector('.image-wrapper img, img')?.alt?.trim()
+      || '';
 
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
