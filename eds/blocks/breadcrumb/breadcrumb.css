@@ -2,6 +2,9 @@
   background: transparent !important;
   margin-bottom: 0;
   padding: 0.75rem 0;
+  @media (width <= 991px) {
+    display: none;
+  }
 }
 
 main > .section:has(.breadcrumb) .breadcrumb-wrapper {
