@@ -423,6 +423,11 @@ main .section.rte-section .default-content-wrapper a[href*="contractors/painting
   text-decoration: underline !important;
 }
 
+main .section .default-content-wrapper a[href*="colour-catalogue.html"] {
+    color: #00e !important;
+    text-decoration: underline !important;
+}
+
 main .section.zero-margin {
   margin: 0;
 }
@@ -512,7 +517,6 @@ main .section.read-tc-cta .button-container>a.button:focus-visible {
   box-shadow: none !important;
 }
 
-/* Match live Read T&C CTA after video embed */
 .embed-container .default-content-wrapper p.button-container:last-of-type {
   margin-top: 40px;
 }
@@ -737,6 +741,10 @@ main .section.contractors-rte-live>.default-content-wrapper h3 {
   margin: 20px 0 10px;
 }
 
+main .section.contractors-rte-live>.default-content-wrapper :is(b, strong) {
+  font-weight: 700;
+}
+
 /* stylelint-disable-next-line no-descending-specificity */
 main .section.contractors-rte-live>.default-content-wrapper p,
 main .section.contractors-rte-live>.default-content-wrapper li {
@@ -763,6 +771,36 @@ main .section.contractors-rte-live>.default-content-wrapper li {
   margin-bottom: 8px;
 }
 
+main .section.contractors-rte-live>.default-content-wrapper ol>h3 {
+  margin: 0 0 10px;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper ol>h3>li,
+main .section.contractors-rte-live>.default-content-wrapper ol>li>p>:is(b, strong):first-child,
+main .section.contractors-rte-live>.default-content-wrapper ul>li>h3 {
+  font-family: Manrope, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  letter-spacing: normal;
+  color: #222;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper ol>li::marker {
+  font-weight: 700;
+  color: #222;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper ol>h3>li::marker {
+  font-weight: 700;
+  color: #222;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper ol>h3+p,
+main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
+  margin-top: 0;
+}
+
 @media (width <= 991px) {
   main .section.contractors-rte-live>.default-content-wrapper {
     padding-right: 4.5%;
@@ -780,24 +818,27 @@ main .section.contractors-rte-live>.default-content-wrapper li {
     font-size: 20px;
     line-height: 22px;
   }
+
+  main .section.contractors-rte-live>.default-content-wrapper ol>h3>li,
+  main .section.contractors-rte-live>.default-content-wrapper ol>li>p>:is(b, strong):first-child,
+  main .section.contractors-rte-live>.default-content-wrapper ul>li>h3 {
+    font-size: 20px;
+    line-height: 22px;
+  }
 }
 
-/* Video Section (Kaamyabi ke rang) - Pixel perfect matching Asian Paints */
-/* stylelint-disable-next-line no-descending-specificity */
 main>.section:has(.embed-wrapper) {
   padding: 40px 20px 60px;
   max-width: 100%;
   text-align: center;
 }
 
-/* stylelint-disable-next-line no-descending-specificity */
 main>.section:has(.embed-wrapper)>.default-content-wrapper {
   max-width: 900px;
   margin: 0 auto;
   text-align: center;
 }
 
-/* Video section title - Pixel perfect */
 /* main>.section:has(.embed-wrapper)>.default-content-wrapper h2 {
   font-size: 32px;
   font-weight: 800;
@@ -808,8 +849,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper {
   text-align: center;
 } */
 
-/* Video section description - Pixel perfect */
-/* stylelint-disable-next-line no-descending-specificity */
+
 /* main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type p {
   font-size: 16px;
   font-weight: 400;
@@ -821,7 +861,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper {
   text-align: center;
 } */
 
-/* Video section CTA link - Pixel perfect */
+
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a {
   /* Pixel-perfect: black */
   text-decoration: underline;
@@ -838,7 +878,6 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   text-align: center;
 }
 
-/* interior-design-solutions-for-your-home */
 /* .section:has(#interior-design-solutions-for-your-home) {
   max-width: 1400px;
   margin: 0 auto;
