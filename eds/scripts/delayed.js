@@ -120,29 +120,40 @@ modalHandler.closeModal = function (modalOrSelector) {
 };
 
 // common bottomUpAnimation
-function bottomUpAnimation() {
-let $win = $(window);
-let $stat = $('.allow-bottom-up-animation');
-let $fade = $('.allow-fade-up-animation');
+async function bottomUpAnimation() {
+  await window.loadJQuery?.();
 
-$win.on('scroll', function () {
-  let scrollTop = $win.scrollTop();
+  const $ = window.jQuery;
+  if (!$) {
+    console.warn('jQuery not available for bottomUpAnimation');
+    return;
+  }
 
-  $stat.each(function () {
-    let $self = $(this);
-    let offsetTop = $self.offset().top;
-    if ((scrollTop - offsetTop) > -450) {
-      $self.addClass('animate-bottom-to-top');
-    }
-  });
+  const $win = $(window);
+  const $stat = $('.allow-bottom-up-animation');
+  const $fade = $('.allow-fade-up-animation');
 
-  $fade.each(function () {
-    let $self = $(this);
-    let offsetTop = $self.offset().top;
-    if ((scrollTop - offsetTop) > -450) {
-      $self.addClass('animate-fade-to-top');
-    }
-  });
-}).scroll();
+  $win.on('scroll', function () {
+    const scrollTop = $win.scrollTop();
+
+    $stat.each(function () {
+      const $self = $(this);
+      const offsetTop = $self.offset().top;
+
+      if ((scrollTop - offsetTop) > -450) {
+        $self.addClass('animate-bottom-to-top');
+      }
+    });
+
+    $fade.each(function () {
+      const $self = $(this);
+      const offsetTop = $self.offset().top;
+
+      if ((scrollTop - offsetTop) > -450) {
+        $self.addClass('animate-fade-to-top');
+      }
+    });
+  }).scroll();
 }
+
 bottomUpAnimation();
