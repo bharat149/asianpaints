@@ -449,7 +449,7 @@ function loadDelayed() {
     };
   })();
 
-  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach((evt) => {
+  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel', 'mousemove'].forEach((evt) => {
     window.addEventListener(evt, triggerAnalytics, {
       once: true,
       passive: true,
