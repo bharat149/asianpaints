@@ -291,6 +291,19 @@ export function decorateMain(main) {
   decorateBlocks(main);
 }
 
+
+// Adds page-specific classes to the body based on the current path.
+function decorateSpecificPageClasses() {
+  const { pathname } = window.location;
+  // List all paths that should have this class
+  const pathsToHideCTA = [
+    '/paint-products/interior-wall-paints',
+  ];
+  if (pathsToHideCTA.includes(pathname)) {
+    document.body.classList.add('hideBookFreeVisitModalQuestions');
+  }
+}
+
 /**
  * Loads only the assets and logic required for the initial render / LCP.
  * Analytics is intentionally excluded from this phase to avoid blocking
@@ -309,6 +322,7 @@ async function loadEager(doc) {
   }
 
   loadFonts();
+  decorateSpecificPageClasses();
 }
 
 /**
@@ -504,6 +518,8 @@ function loadDelayed() {
     }());
   }, 12000);
 }
+
+
 
 async function loadPage() {
   await loadEager(document);
