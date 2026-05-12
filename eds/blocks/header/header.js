@@ -2455,11 +2455,15 @@ function buildLoginGuestPopup() {
     document.dispatchEvent(new CustomEvent('cart-login-click'));
   });
 
+  // overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
+  //   closePopup();
+  //   // Update this URL if guest should go to checkout instead of shop page.
+  //   window.location.href = getApApi().SHOP_URL;
+  // });
   overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
     closePopup();
-
-    // Update this URL if guest should go to checkout instead of shop page.
-    window.location.href = getApApi().SHOP_URL;
+    // Opens "Provide a delivery address" modal
+    showGuestDeliveryAddressModal();
   });
 
   return overlay;
@@ -2478,6 +2482,547 @@ function showLoginGuestPopup() {
 
   popup.querySelector('.track_login_close')?.focus();
 }
+
+
+// GuestDeliveryAddressModal
+function buildGuestDeliveryAddressModal() {
+  const modal = document.createElement('div');
+  modal.id = 'guestLoginModal';
+  modal.className = 'modal modal__variant-login guest-login-modal-overlay';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'guest-delivery-title');
+  modal.setAttribute('aria-hidden', 'true');
+
+  const field = ({
+    id,
+    label,
+    required = true,
+    wrapperClass = '',
+    inputAttrs = '',
+  }) => `
+    <div class="${['form-item', wrapperClass].filter(Boolean).join(' ')}">
+      <label class="input-label" for="${id}">${label}${required ? '*' : ''}</label>
+      <input
+        class="form-control"
+        type="text"
+        name="${id}"
+        id="${id}"
+        autocomplete="off"
+        ${inputAttrs}
+      >
+      ${id === 'mobileNumber' ? '<div class="default-value d-none">+91</div>' : ''}
+      ${required ? '<div class="error-msg d-none"></div>' : ''}
+    </div>
+  `;
+
+  modal.innerHTML = `
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="heading" id="guest-delivery-title">Provide a delivery address</div>
+
+          <button class="iconLinks iconLinks__close guest-login-close-btn" type="button" aria-label="Close">
+            <span class="spriteIcon-Aprevamp closeIcon guest_login_close" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div
+            class="form-section"
+            data-attr-emptyfielderror="Field is required"
+            data-attr-mobileerror="Please enter a valid number"
+            data-attr-pincodeerror="Please enter a valid pincode"
+            data-attr-emailerror="Please enter a valid emailid"
+          >
+            <div class="step-section customer-info-section track-guest-form">
+              ${field({ id: 'fullName', label: 'Fullname' })}
+
+              ${field({ id: 'emailId', label: 'Email' })}
+
+              ${field({
+                id: 'mobileNumber',
+                label: 'Mobile',
+                wrapperClass: 'mobile-no-field has-default-value',
+                inputAttrs: 'inputmode="numeric" maxlength="10"',
+              })}
+
+              <div class="two-column-row">
+                ${field({
+                  id: 'flat',
+                  label: 'Flat/House No/Floor',
+                  wrapperClass: 'w-50',
+                })}
+
+                ${field({
+                  id: 'locality',
+                  label: 'Colony/Street/Locality',
+                  wrapperClass: 'w-50',
+                })}
+              </div>
+
+              <div class="two-column-row">
+                ${field({
+                  id: 'landmark',
+                  label: 'Landmark',
+                  required: false,
+                  wrapperClass: 'w-50',
+                })}
+
+                ${field({
+                  id: 'city',
+                  label: 'City',
+                  wrapperClass: 'w-50',
+                })}
+              </div>
+
+              ${field({
+                id: 'pincode',
+                label: 'Pincode',
+                inputAttrs: 'inputmode="numeric" maxlength="6"',
+              })}
+
+              <div class="submit-user-info-button">
+                <button class="animated-arrow-button" type="button" disabled>
+                  SUBMIT
+                </button>
+              </div>
+
+              <div class="info-msg guest-exist d-none">
+                User already exist redirecting you for the login page
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return modal;
+}
+
+function showGuestDeliveryAddressModal() {
+  let modal = document.getElementById('guestLoginModal');
+
+  if (!modal) {
+    modal = buildGuestDeliveryAddressModal();
+    document.body.appendChild(modal);
+  }
+
+  initGuestDeliveryAddressModal(modal);
+
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+
+  modal.querySelector('#fullName')?.focus();
+}
+
+function closeGuestDeliveryAddressModal() {
+  const modal = document.getElementById('guestLoginModal');
+
+  if (!modal) return;
+
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+function initGuestDeliveryAddressModal(modal) {
+  if (modal.dataset.initialized === 'true') return;
+
+  modal.dataset.initialized = 'true';
+
+  const qs = (selector) => modal.querySelector(selector);
+
+  const formSection = qs('.form-section');
+  const submitBtn = qs('.submit-user-info-button .animated-arrow-button');
+
+  const requiredIds = [
+    'fullName',
+    'emailId',
+    'mobileNumber',
+    'flat',
+    'locality',
+    'city',
+    'pincode',
+  ];
+
+  const requiredFields = requiredIds
+    .map((id) => qs(`#${id}`))
+    .filter(Boolean);
+
+  const allInputs = Array.from(
+    modal.querySelectorAll('.form-section .form-control:not(.custom-select-control)')
+  );
+
+  const messages = {
+    required:
+      formSection?.getAttribute('data-attr-emptyfielderror') || 'Field is required',
+    mobile:
+      formSection?.getAttribute('data-attr-mobileerror') || 'Please enter a valid number',
+    pincode:
+      formSection?.getAttribute('data-attr-pincodeerror') || 'Please enter a valid pincode',
+    email:
+      formSection?.getAttribute('data-attr-emailerror') || 'Please enter a valid emailid',
+  };
+
+  const isMobileNoValid = (value) => /^[0-9]{10}$/.test(value);
+  const isPincodeValid = (value) => /^[0-9]{6}$/.test(value);
+
+  const isEmailIdValid = (value) => {
+    const regex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]+@([a-zA-Z]|[a-zA-Z0-9]?[a-zA-Z0-9-]+[a-zA-Z0-9])\.[a-zA-Z0-9]{2,10}(?:\.[a-zA-Z]{2,10})?$/;
+    return regex.test(value);
+  };
+
+  const getErrorElement = (input) => input.closest('.form-item')?.querySelector('.error-msg');
+
+  const showError = (input, message) => {
+    const errorEl = getErrorElement(input);
+    const formItem = input.closest('.form-item');
+
+    if (!errorEl) return;
+
+    errorEl.textContent = message;
+    errorEl.classList.remove('d-none');
+    formItem?.classList.add('has-error');
+  };
+
+  const clearError = (input) => {
+    const errorEl = getErrorElement(input);
+    const formItem = input.closest('.form-item');
+
+    if (!errorEl) return;
+
+    errorEl.textContent = '';
+    errorEl.classList.add('d-none');
+    formItem?.classList.remove('has-error');
+  };
+
+  const setFloatingState = (input) => {
+    const formItem = input.closest('.form-item');
+    const label = formItem?.querySelector('.input-label');
+    const defaultValue = formItem?.querySelector('.default-value');
+
+    const shouldFloat = document.activeElement === input || input.value.trim().length > 0;
+
+    label?.classList.toggle('top', shouldFloat);
+    defaultValue?.classList.toggle('d-none', !shouldFloat);
+  };
+
+  const normalizeNumberInput = (input, maxLength) => {
+    const normalizedValue = input.value.replace(/\D/g, '').slice(0, maxLength);
+
+    if (input.value !== normalizedValue) {
+      input.value = normalizedValue;
+    }
+  };
+
+  const validateField = (input, showRequiredError = false) => {
+    const value = input.value.trim();
+    const isRequired = requiredFields.includes(input);
+
+    if (isRequired && !value) {
+      if (showRequiredError) {
+        showError(input, messages.required);
+      } else {
+        clearError(input);
+      }
+
+      return false;
+    }
+
+    if (!value) {
+      clearError(input);
+      return true;
+    }
+
+    if (input.id === 'mobileNumber' && !isMobileNoValid(value)) {
+      showError(input, messages.mobile);
+      return false;
+    }
+
+    if (input.id === 'pincode' && !isPincodeValid(value)) {
+      showError(input, messages.pincode);
+      return false;
+    }
+
+    if (input.id === 'emailId' && !isEmailIdValid(value)) {
+      showError(input, messages.email);
+      return false;
+    }
+
+    clearError(input);
+    return true;
+  };
+
+  const hasVisibleErrors = () =>
+    requiredFields.some((input) => {
+      const errorEl = getErrorElement(input);
+      return errorEl && !errorEl.classList.contains('d-none');
+    });
+
+  const hasEmptyRequiredFields = () =>
+    requiredFields.some((input) => input.value.trim() === '');
+
+  const setSubmitState = () => {
+    const isValid = !hasVisibleErrors() && !hasEmptyRequiredFields();
+
+    submitBtn.disabled = !isValid;
+  };
+
+  allInputs.forEach((input) => {
+    input.addEventListener('focus', () => {
+      setFloatingState(input);
+
+      if (requiredFields.includes(input) && !input.value.trim()) {
+        clearError(input);
+      }
+
+      setSubmitState();
+    });
+
+    input.addEventListener('blur', () => {
+      setFloatingState(input);
+      validateField(input, true);
+      setSubmitState();
+    });
+
+    input.addEventListener('input', () => {
+      if (input.id === 'mobileNumber') {
+        normalizeNumberInput(input, 10);
+      }
+
+      if (input.id === 'pincode') {
+        normalizeNumberInput(input, 6);
+      }
+
+      setFloatingState(input);
+      validateField(input, false);
+      setSubmitState();
+    });
+  });
+
+  // Handles browser autofill state.
+  setTimeout(() => {
+    allInputs.forEach(setFloatingState);
+    setSubmitState();
+  }, 0);
+
+  qs('.guest-login-close-btn')?.addEventListener('click', closeGuestDeliveryAddressModal);
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      closeGuestDeliveryAddressModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('active')) {
+      closeGuestDeliveryAddressModal();
+    }
+  });
+
+  submitBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    hideGuestInfoMessage(modal);
+
+    let isFormValid = true;
+
+    requiredFields.forEach((input) => {
+      if (!validateField(input, true)) {
+        isFormValid = false;
+      }
+    });
+
+    setSubmitState();
+
+    if (!isFormValid || submitBtn.disabled) {
+      return;
+    }
+
+    await submitGuestDeliveryAddress(modal, submitBtn);
+  });
+}
+
+async function submitGuestDeliveryAddress(modal, submitBtn) {
+  const getValue = (id) => modal.querySelector(`#${id}`)?.value.trim() || '';
+
+  const userEmail = getValue('emailId');
+
+  const dataToSend = {
+    userMobileNumber: getValue('mobileNumber'),
+    userEmail,
+    userPincode: getValue('pincode'),
+    userName: getValue('fullName'),
+    flatNumber: getValue('flat'),
+    locality: getValue('locality'),
+    landmark: getValue('landmark'),
+    city: getValue('city'),
+  };
+
+  setGuestDigitalData('not logged in');
+
+  trackGuestAnalytics('guest_login_continue', {
+    checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
+    loginStatus: window.digitalData?.user?.loginStatus || 'not logged in',
+  });
+
+  let resetSubmitButton = true;
+
+  try {
+    submitBtn.disabled = true;
+    submitBtn.classList.add('is-loading');
+    submitBtn.textContent = 'SUBMITTING...';
+
+    const fetchResponse = await fetch('/apcolourcatalogue/keycloak/guestLogin', {
+      method: 'POST',
+
+      // This matches jQuery $.ajax default form-post behavior.
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      },
+
+      body: new URLSearchParams({
+        data: JSON.stringify(dataToSend),
+      }),
+    });
+
+    let response = {};
+
+    try {
+      response = await fetchResponse.json();
+    } catch (error) {
+      response = {};
+    }
+
+    if (response.uuid) {
+      setCookie('guest_UID', response.uuid);
+      setCookie('guest_email', userEmail);
+
+      setGuestDigitalData('logged in');
+
+      trackGuestAnalytics('guest_login_successful', {
+        checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
+        loginStatus: window.digitalData?.user?.loginStatus || 'logged in',
+      });
+
+      closeGuestDeliveryAddressModal();
+
+      /**
+       * Legacy flow.
+       * In EDS, keep this if headerMiniCart is exposed globally.
+       * Otherwise listen to the custom event below and redirect from your cart module.
+       */
+      if (window.headerMiniCart?.checkoutRedirectLogin) {
+        window.headerMiniCart.checkoutRedirectLogin();
+      } else {
+        document.dispatchEvent(
+          new CustomEvent('guest-login-success', {
+            detail: {
+              response,
+              dataToSend,
+            },
+          })
+        );
+      }
+
+      resetSubmitButton = false;
+      return;
+    }
+
+    if (response.status === 409 || fetchResponse.status === 409) {
+      showGuestInfoMessage(
+        modal,
+        'User already exist redirecting you for the login page'
+      );
+
+      setTimeout(() => {
+        closeGuestDeliveryAddressModal();
+
+        if (typeof showLoginGuestPopup === 'function') {
+          showLoginGuestPopup();
+        } else if (typeof window.showLogin === 'function') {
+          window.showLogin();
+        }
+      }, 1000);
+
+      return;
+    }
+
+    showGuestError(modal);
+  } catch (error) {
+    console.error('Error while initiating Guest Login Flow', error);
+    showGuestError(modal);
+  } finally {
+    if (resetSubmitButton) {
+      submitBtn.classList.remove('is-loading');
+      submitBtn.textContent = 'SUBMIT';
+      submitBtn.disabled = false;
+    }
+  }
+}
+
+function showGuestError(modal) {
+  setGuestDigitalData('not logged in', 'Something went wrong');
+
+  trackGuestAnalytics('guest_login_error', {
+    checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
+    loginError: window.digitalData?.user?.loginErrorName || 'Something went wrong',
+  });
+
+  showGuestInfoMessage(
+    modal,
+    'Something went wrong. Please try after sometime'
+  );
+}
+
+function showGuestInfoMessage(modal, message) {
+  const infoMsg = modal.querySelector('.guest-exist');
+
+  if (!infoMsg) return;
+
+  infoMsg.textContent = message;
+  infoMsg.classList.remove('d-none');
+}
+
+function hideGuestInfoMessage(modal) {
+  const infoMsg = modal.querySelector('.guest-exist');
+
+  if (!infoMsg) return;
+
+  infoMsg.classList.add('d-none');
+}
+
+function setGuestDigitalData(loginStatus, loginErrorName) {
+  if (!window.digitalData?.user) return;
+
+  window.digitalData.user.CheckoutUserType = 'guest';
+
+  if (loginStatus) {
+    window.digitalData.user.loginStatus = loginStatus;
+  }
+
+  if (loginErrorName) {
+    window.digitalData.user.loginErrorName = loginErrorName;
+  }
+}
+
+function trackGuestAnalytics(eventName, payload) {
+  if (
+    window.ccAnalytics?.satelliteCheck?.()
+    && window._satellite?.track
+  ) {
+    window._satellite.track(eventName, payload);
+  }
+}
+
+function setCookie(name, value) {
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
+}
+
+
 
 function buildMegamenuPanel(submenuUl, parentLabel = '') {
   const dropdown = document.createElement('div');
