@@ -2097,15 +2097,19 @@ body.nav-open {
 }
 
 .header .cart-items-list {
-  text-align: left;
-  overflow-y: auto;
-  flex: 1;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  /* padding-right: 20px; */
-  padding: 0 16px 16px 30px;
+    text-align: left;
+    overflow-y: auto;
+    flex: 1;
+    padding: 0 16px 16px 25px;
+    max-height: calc(100% - 10px);
+    padding-right: 16px;
+    height: 307px;
+    margin-right: 16px;
   @media (width <=991px) {
     padding: 0px 12px 16px 16px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    margin-right: 0px;
   }
 
 }
@@ -2115,19 +2119,21 @@ body.nav-open {
 }
 
 .header .cart-items-list::-webkit-scrollbar {
-  /* width: 4px;
-  border-radius: 100px; */
-  display: none;
-  width: 0;
+  width: 2px;
+  border-radius: 100px;
 }
 
 .header .cart-items-list::-webkit-scrollbar-track {
   border-radius: 100px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+  -webkit-border-radius: 100px;
+  /* background: transparent !important; */
 }
 
 .header .cart-items-list::-webkit-scrollbar-thumb {
   background-color: #a9a9a9;
   border-radius: 100px;
+  -webkit-border-radius: 100px;
 }
 
 .header .cart-item-row {
@@ -2227,8 +2233,16 @@ body.nav-open {
   font-weight: 700;
   cursor: pointer;
   color: #222;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
 }
-
+.header .cart-item-qty-control button:hover {
+      background: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
+}
 .header .cart-item-row:last-child {
   border-bottom: none;
 }
@@ -2981,5 +2995,410 @@ body.search-dialog-open {
   .header .nav-hamburger,
   .header .nav-right {
     display: none !important;
+  }
+}
+/* ui-styles-for-login-guest-modal */
+.login-guest-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.login-guest-modal-overlay.active {
+  display: flex;
+}
+
+.login-guest-modal-overlay .login-guest-modal {
+  min-width: 440px;
+
+  @media (min-width: 320px) and (max-width: 575px) {
+    width: 90%;
+    min-width: unset;
+  }
+
+  @media (min-width: 576px) and (max-width: 991px) {
+    width: 50%;
+    min-width: 440px;
+  }
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-content {
+  position: relative;
+  background: rgb(255, 255, 255);
+  padding: 24px;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-header .close-icon {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+}
+
+.login-guest-modal .modal-header .close-icon .header-popup-close-icon::after {
+  content: '';
+  background-image: url('/eds/icons/close.svg');
+  width: 22px;
+  height: 13px;
+  background-repeat: no-repeat;
+  width: 30px;
+  height: 30px;
+  display: block;
+  filter: invert(1);
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 15px;
+  line-height: 1.1;
+}
+
+.login-guest-modal-overlay .login-guest-modal .line-break-text {
+  font-size: 18px;
+  font-weight: 400;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp button {
+  border-radius: 99px;
+  background-color: #fcaf17;
+  color: #232426;
+  border: none;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 700;
+  height: 44px;
+  padding: 0;
+  width: 100%;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp button span img {
+  filter: invert(1);
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp button:hover {
+  background-color: #fdbf45;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp.whiteBtn button {
+  background-color: #fff;
+  color: #232426;
+  border: 1px solid #232426;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp.whiteBtn button:hover {
+  background-color: #fff7e8;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+/* GuestDeliveryAddressModal */
+#guestLoginModal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+#guestLoginModal.active {
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#guestLoginModal .modal-dialog {
+  width: min(680px, 100%);
+  max-height: calc(100vh - 32px);
+  /* overflow-y: auto; */
+}
+
+#guestLoginModal .modal-content {
+  background: #fff;
+  border-radius: 0.3rem;
+  overflow: hidden;
+}
+
+#guestLoginModal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fcedd6;
+  min-height: 42px;
+  padding: 0 10px;
+}
+
+#guestLoginModal .modal-header .heading {
+  min-height: 30px;
+  border-top-left-radius: 0.3rem;
+  border-top-right-radius: 0.3rem;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+#guestLoginModal .modal-header .iconLinks__close {
+  transform: translate(0, 5px);
+}
+
+#guestLoginModal .guest-login-close-btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px;
+}
+
+#guestLoginModal .closeIcon::before {
+  content: "×";
+  display: inline-block;
+  font-size: 28px;
+  line-height: 1;
+}
+
+#guestLoginModal .form-section {
+  background: #fff;
+  height: auto;
+}
+
+#guestLoginModal .form-section .step-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 10px;
+}
+
+#guestLoginModal .form-section .step-section .form-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+#guestLoginModal .form-section .step-section .form-item .input-label {
+  position: absolute;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  top: 14px;
+  margin: 0;
+  left: 16px;
+  cursor: text;
+  transition: 0.3s;
+  color: #75787b;
+}
+
+#guestLoginModal .form-section .step-section .form-item .input-label.top {
+  top: -10px;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: default;
+  transition: 0.3s;
+  background-color: #fff;
+  padding: 0 4px;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control {
+  padding: 14px 16px;
+  color: #000;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  border: 1px solid #75787b;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control:focus {
+  border: 1px solid #000;
+  box-shadow: none;
+  outline: none;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control:read-only {
+  background-color: #fff;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control.custom-select-control {
+  cursor: pointer;
+  padding: 14px 28px 14px 16px;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control.custom-select-control:focus {
+  border-color: #8c8e90;
+  border-style: solid;
+  border-width: 1px 1px 0;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control.custom-select-control:not(:read-only) {
+  cursor: text;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control.custom-select-control::placeholder {
+  color: transparent;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control.custom-select-control.active-placeholder::placeholder {
+  color: #4a4a4c;
+}
+
+#guestLoginModal .form-section .step-section .form-item .form-control.active-placeholder+.form-dropdown__custom-variant--icon::before {
+  transform: rotate(180deg);
+}
+
+#guestLoginModal .form-section .step-section .form-item input {
+  height: auto;
+  width: 100%;
+  max-height: 53px;
+}
+
+#guestLoginModal .form-section .step-section .form-item .error-msg {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: -0.006em;
+  text-align: left;
+  color: #ff4d00;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#guestLoginModal .form-section .step-section .form-item.has-error .input-label {
+  color: #ff4d00;
+}
+
+#guestLoginModal .form-section .step-section .form-item.has-error .form-control {
+  border: 1px solid #ff4d00;
+}
+
+#guestLoginModal .form-section .step-section .form-item.has-default-value input {
+  padding-left: 50px;
+}
+
+#guestLoginModal .form-section .step-section .form-item .default-unit {
+  position: absolute;
+  right: 0;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+#guestLoginModal .form-section .step-section .form-item .default-value {
+  position: absolute;
+  top: 14px;
+  margin: 0;
+  left: 16px;
+  cursor: text;
+  transition: 0.3s;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  text-align: left;
+  color: #75787b;
+}
+
+#guestLoginModal .form-section .step-section .two-column-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+#guestLoginModal .form-section .step-section .w-50 {
+  width: 47% !important;
+}
+
+#guestLoginModal .form-section .customer-info-section .submit-user-info-button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button {
+  text-align: right;
+  margin-top: 25px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  padding: 10px 30px;
+  min-height: 34px;
+  color: #1e1e1e !important;
+  border-radius: 20px;
+  cursor: pointer !important;
+  width: fit-content;
+  text-decoration: none;
+  background: #fcaf17 !important;
+  border: 0;
+}
+
+#guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button:disabled,
+#guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+#guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button.is-loading {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+#guestLoginModal .form-section .customer-info-section .info-msg {
+  font-size: 12px;
+  color: red;
+  margin-bottom: -5px;
+}
+
+#guestLoginModal .form-section .d-none,
+#guestLoginModal .d-none {
+  display: none !important;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+@media (min-width: 320px) and (max-width: 991px) {
+  #guestLoginModal .form-section .step-section {
+    gap: 18px;
+  }
+
+  #guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button {
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 767px) {
+  #guestLoginModal .form-section .step-section .two-column-row {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  #guestLoginModal .form-section .step-section .w-50 {
+    width: 100% !important;
   }
 }
