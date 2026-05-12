@@ -2227,8 +2227,16 @@ body.nav-open {
   font-weight: 700;
   cursor: pointer;
   color: #222;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
 }
-
+.header .cart-item-qty-control button:hover {
+      background: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
+}
 .header .cart-item-row:last-child {
   border-bottom: none;
 }
@@ -2982,4 +2990,120 @@ body.search-dialog-open {
   .header .nav-right {
     display: none !important;
   }
+}
+/* ui-styles-for-login-guest-modal */
+.login-guest-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.login-guest-modal-overlay.active {
+  display: flex;
+}
+
+.login-guest-modal-overlay .login-guest-modal {
+  min-width: 440px;
+
+  @media (min-width: 320px) and (max-width: 575px) {
+    width: 90%;
+    min-width: unset;
+  }
+
+  @media (min-width: 576px) and (max-width: 991px) {
+    width: 50%;
+    min-width: 440px;
+  }
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-content {
+  position: relative;
+  background: rgb(255, 255, 255);
+  padding: 24px;
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-header .close-icon {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+}
+
+.login-guest-modal .modal-header .close-icon .header-popup-close-icon::after {
+  content: '';
+  background-image: url('/eds/icons/close.svg');
+  width: 22px;
+  height: 13px;
+  background-repeat: no-repeat;
+  width: 30px;
+  height: 30px;
+  display: block;
+  filter: invert(1);
+}
+
+.login-guest-modal-overlay .login-guest-modal .modal-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 15px;
+  line-height: 1.1;
+}
+
+.login-guest-modal-overlay .login-guest-modal .line-break-text {
+  font-size: 18px;
+  font-weight: 400;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp button {
+  border-radius: 99px;
+  background-color: #fcaf17;
+  color: #232426;
+  border: none;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 700;
+  height: 44px;
+  padding: 0;
+  width: 100%;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp button span img {
+  filter: invert(1);
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp button:hover {
+  background-color: #fdbf45;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp.whiteBtn button {
+  background-color: #fff;
+  color: #232426;
+  border: 1px solid #232426;
+}
+
+.login-guest-modal-overlay .modal-body .ctaComp.whiteBtn button:hover {
+  background-color: #fff7e8;
+}
+
+body.modal-open {
+  overflow: hidden;
 }

@@ -1431,6 +1431,85 @@ async function handleSearchDialogSearchResults(dialog, query) {
   renderSearchProducts(productsContainer, searchProducts, false);
 }
 
+function buildLoginModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'login-modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:1100;';
+
+  const modal = document.createElement('div');
+  modal.className = 'login-modal';
+  modal.style.cssText = 'width:min(420px,calc(100% - 32px));background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25);';
+
+  const header = document.createElement('div');
+  header.className = 'login-modal-header';
+  header.style.cssText = 'padding:24px 24px 0;';
+
+  const title = document.createElement('h2');
+  title.className = 'login-modal-title';
+  title.textContent = 'Welcome User';
+  title.style.margin = '0 0 16px';
+  title.style.fontSize = '1.5rem';
+  title.style.lineHeight = '1.2';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'login-modal-close';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = 'position:absolute;top:18px;right:18px;border:none;background:transparent;font-size:1.75rem;line-height:1;color:#333;cursor:pointer;';
+
+  const body = document.createElement('div');
+  body.className = 'login-modal-body';
+  body.style.cssText = 'padding:0 24px 24px;';
+
+  const loginBtn = document.createElement('button');
+  loginBtn.type = 'button';
+  loginBtn.className = 'login-modal-action login-modal-login';
+  loginBtn.textContent = 'Login';
+  loginBtn.style.cssText = 'width:100%;padding:14px 16px;margin-bottom:12px;border:none;border-radius:8px;background:#111;color:#fff;font-size:1rem;cursor:pointer;';
+
+  const guestBtn = document.createElement('button');
+  guestBtn.type = 'button';
+  guestBtn.className = 'login-modal-action login-modal-guest';
+  guestBtn.textContent = 'Continue as guest';
+  guestBtn.style.cssText = 'width:100%;padding:14px 16px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#111;font-size:1rem;cursor:pointer;';
+
+  body.append(loginBtn, guestBtn);
+  header.append(title, closeBtn);
+  modal.append(header, body);
+  overlay.appendChild(modal);
+
+  const close = () => {
+    overlay.style.display = 'none';
+  };
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  loginBtn.addEventListener('click', () => {
+    close();
+    window.location.href = getApApi().KEYCLOAK_PAGE_URL;
+  });
+
+  guestBtn.addEventListener('click', () => {
+    close();
+  });
+
+  return overlay;
+}
+
+function openLoginModal(block) {
+  const overlay = block.querySelector('.login-modal-overlay');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+}
+
+function openShopFallback(block) {
+  const shopUrl = getApApi().SHOP_URL;
+  window.location.href = shopUrl;
+}
+
 function buildSearchDialog() {
   const overlay = document.createElement('div');
   overlay.className = 'search-dialog-overlay';
@@ -2187,6 +2266,56 @@ function buildMobileSearchPanel(mainDiv) {
   return panel;
 }
 
+// function buildCartModal() {
+//   const overlay = document.createElement('div');
+//   overlay.className = 'cart-modal-overlay';
+
+//   const modal = document.createElement('div');
+//   modal.className = 'cart-modal';
+
+//   const closeBtn = document.createElement('button');
+//   closeBtn.className = 'cart-modal-close';
+//   closeBtn.type = 'button';
+//   closeBtn.setAttribute('aria-label', 'Close cart');
+//   closeBtn.innerHTML = '&times;';
+
+//   const iconWrap = document.createElement('img');
+//   iconWrap.className = 'cart-modal-icon';
+//   iconWrap.src = '/eds/icons/empty-cart-icon.webp';
+//   iconWrap.alt = 'empty-cart-icon';
+//   iconWrap.width = 200;
+//   iconWrap.height = 200;
+//   iconWrap.loading = 'lazy';
+
+//   const cartTitle = document.createElement('h4');
+//   cartTitle.className = 'cart-modal-title';
+//   cartTitle.textContent = 'Your cart is empty';
+
+//   const cartItems = document.createElement('div');
+//   cartItems.className = 'cart-items-list';
+
+//   const totalRow = document.createElement('div');
+//   totalRow.className = 'cart-modal-total';
+
+//   const shopBtn = document.createElement('a');
+//   shopBtn.className = 'cart-modal-shop';
+//   shopBtn.href = getApApi().SHOP_URL;
+//   shopBtn.textContent = 'Shop now';
+
+//   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
+//   overlay.appendChild(modal);
+
+//   const close = () => overlay.classList.remove('active');
+//   closeBtn.addEventListener('click', close);
+//   overlay.addEventListener('click', (e) => {
+//     if (e.target === overlay) close();
+//   });
+
+//   return overlay;
+// }
+
+
+
 function buildCartModal() {
   const overlay = document.createElement('div');
   overlay.className = 'cart-modal-overlay';
@@ -2223,6 +2352,23 @@ function buildCartModal() {
   shopBtn.href = getApApi().SHOP_URL;
   shopBtn.textContent = 'Shop now';
 
+  /**
+   * If cart has items, show login / guest popup.
+   * If cart is empty, allow normal navigation to SHOP_URL.
+   */
+  shopBtn.addEventListener('click', (e) => {
+    if (!modal.classList.contains('has-items')) {
+      return;
+    }
+
+    e.preventDefault();
+
+    // Optional: close the cart modal before opening login popup.
+    overlay.classList.remove('active');
+
+    showLoginGuestPopup();
+  });
+
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
   overlay.appendChild(modal);
 
@@ -2233,6 +2379,104 @@ function buildCartModal() {
   });
 
   return overlay;
+}
+
+function buildLoginGuestPopup() {
+  const overlay = document.createElement('div');
+  overlay.className = 'login-guest-modal-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'login-guest-title');
+
+  overlay.innerHTML = `
+    <div class="modal-dialog login-guest-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button class="close-icon track_login_close" type="button" aria-label="Close login popup">
+            <span class="header-popup-close-icon" role="img" aria-label="close icon" title="close icon"></span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <h2 class="modal-title" id="login-guest-title">Welcome User</h2>
+
+          <form method="POST" id="validate-mobile" action="#" name="loginForm" novalidate autocomplete="off">
+            <div class="ctaComp baseBtn">
+              <button class="ctaText modal__variant-login--submit" type="submit">
+                Login
+                <span>
+                  <img
+                    loading="lazy"
+                    fetchpriority="auto"
+                    src="/eds/icons/arrow-icon-new.svg"
+                    alt=""
+                  >
+                </span>
+              </button>
+            </div>
+          </form>
+
+          <div class="line-break-text">OR</div>
+
+          <div class="ctaComp whiteBtn">
+            <button class="ctaText continue-as-guest" type="button">
+              Continue as guest
+              <span>
+                <img
+                  loading="lazy"
+                  fetchpriority="auto"
+                  src="/eds/icons/arrow-icon.svg"
+                  alt=""
+                >
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const closePopup = () => {
+    overlay.classList.remove('active');
+    document.body.classList.remove('modal-open');
+  };
+
+  overlay.querySelector('.track_login_close')?.addEventListener('click', closePopup);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closePopup();
+  });
+
+  overlay.querySelector('#validate-mobile')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Trigger your existing login flow here.
+    // Example:
+    document.dispatchEvent(new CustomEvent('cart-login-click'));
+  });
+
+  overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
+    closePopup();
+
+    // Update this URL if guest should go to checkout instead of shop page.
+    window.location.href = getApApi().SHOP_URL;
+  });
+
+  return overlay;
+}
+
+function showLoginGuestPopup() {
+  let popup = document.querySelector('.login-guest-modal-overlay');
+
+  if (!popup) {
+    popup = buildLoginGuestPopup();
+    document.body.appendChild(popup);
+  }
+
+  popup.classList.add('active');
+  document.body.classList.add('modal-open');
+
+  popup.querySelector('.track_login_close')?.focus();
 }
 
 function buildMegamenuPanel(submenuUl, parentLabel = '') {
@@ -2971,8 +3215,15 @@ function addInteractions(block) {
       const minR = 12;
       const maxR = window.innerWidth - modalW - 12;
       rightPos = Math.max(minR, Math.min(rightPos, maxR));
-      modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
-      modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+      let isMobile = window.innerWidth <= 991;
+      if (isMobile) {
+        modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
+        modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+      } else {
+      modalEl.style.setProperty('--cart-top', `${rect.bottom + 13}px`);
+      modalEl.style.setProperty('--cart-right', `${rightPos + 15}px`);
+      }
+     
     };
 
     cartBtn.addEventListener('click', (e) => {
@@ -3269,6 +3520,9 @@ export default async function decorate(block) {
 
   // Visual search modal
   block.appendChild(buildVisualSearchModal());
+
+  // Login popup (local auth/test fallback)
+  block.appendChild(buildLoginModal());
 
   // Search dialog (full-screen overlay)
   block.appendChild(buildSearchDialog());
