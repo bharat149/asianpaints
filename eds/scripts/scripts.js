@@ -395,7 +395,7 @@ function loadDelayed() {
     if (!isBot && !localStorage.getItem('splash-popup-shown')) {
       loadSplashPopup();
     }
-  }, 10000);
+  }, 3000);
 
   /* ── Tier 2 (6 s) — CSS-only preloads, low main-thread cost ───── */
   window.setTimeout(() => {
