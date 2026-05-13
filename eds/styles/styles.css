@@ -934,6 +934,6 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
 }
 
 /* common styles to hide exitintent popup questions */
-.hideBookFreeVisitModalQuestions .modal.block .book-free-site-visit-dialog .lead-form-fields .question-panel{
-  display: none; 
-}
+  body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .lead-form-fields .question-panel{
+    display: none;
+  }
