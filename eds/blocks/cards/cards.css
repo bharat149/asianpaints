@@ -1202,11 +1202,7 @@
 .cards.grid>ul>li img {
   width: 100%;
   height: auto;
-  /* Do NOT set aspect-ratio: auto here — it discards the intrinsic ratio
-     the browser computes from the HTML width/height attrs, leaving the
-     box dimensionless until the image loads. PSI flagged this as
-     "Unsized image element" on interior-wall-paints, contributing 0.29
-     CLS as the .cards-wrapper grew when each card image arrived. */
+  aspect-ratio: auto;
   object-fit: cover;
   border-radius: 16px;
   display: block;
