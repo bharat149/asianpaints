@@ -879,7 +879,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   }
 }
   @media (width <= 600px) {
-  .no-padding-mob{
+  main .section.no-padding-mob{
     padding: 0;
   }
 }

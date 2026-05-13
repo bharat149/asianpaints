@@ -172,6 +172,13 @@
   width: 100%;
 }
 
+.form-banner__form .form-input-prefix-wrap .form-input.form-control{
+   padding: 0 45px;
+  @media (width <= 991px) {
+   padding: 0 38px;
+  }
+}
+
 .form-banner__form .form-input-prefix {
   position: absolute;
   top: 50%;

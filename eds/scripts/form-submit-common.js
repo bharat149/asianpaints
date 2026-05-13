@@ -13,6 +13,82 @@ const DEFAULT_SELECTORS = {
   whatsappConsent: '.whatsAppConsentFormFld',
 };
 
+/**
+ * Get cookie value by name
+ */
+export function getCookieValues(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return '';
+}
+
+/**
+ * Check and prefill form fields from cookies
+ */
+export function checkCookieValues(formRow) {
+  const cachedFieldVal = getCookieValues("CCFormFields");
+
+  if (cachedFieldVal && cachedFieldVal !== "") {
+    const cachedValues = cachedFieldVal.split("|");
+
+    const nameInput = formRow.querySelector("#enquire-name");
+    if (nameInput && cachedValues[0] && cachedValues[0] !== "" && cachedValues[0] !== "undefined") {
+      nameInput.value = cachedValues[0];
+      nameInput.parentElement.classList.add('focussed');
+    }
+
+    const emailInput = formRow.querySelector("#enquire-email");
+    if (emailInput && cachedValues[1] && cachedValues[1] !== "" && cachedValues[1] !== "undefined") {
+      emailInput.value = cachedValues[1];
+      emailInput.parentElement.classList.add('focussed');
+    }
+
+    const mobileInput = formRow.querySelector("#enquire-mobile");
+    if (mobileInput && cachedValues[2] && cachedValues[2] !== "" && cachedValues[2] !== "undefined") {
+      mobileInput.value = cachedValues[2];
+      mobileInput.parentElement.classList.add('focussed');
+    }
+
+    const pincodeInput = formRow.querySelector("#enquire-pincode");
+    if (pincodeInput && cachedValues[3] && cachedValues[3] !== "" && cachedValues[3] !== "undefined") {
+      pincodeInput.value = cachedValues[3];
+      pincodeInput.parentElement.classList.add('focussed');
+    }
+  }
+}
+
+/**
+ * Set form fields to cookies
+ */
+export function setFormFieldsToCookie(formRow) {
+  const cookie_fullName = formRow.querySelector("#enquire-name")?.value?.trim() || "";
+  const cookie_email = formRow.querySelector("#enquire-email")?.value?.trim() || "";
+  const cookie_mobileNo = formRow.querySelector("#enquire-mobile")?.value?.trim() || "";
+  const cookie_pinCode = formRow.querySelector("#enquire-pincode")?.value?.trim() || "";
+
+  const now = new Date();
+  const time = now.getTime();
+  const exdays = 30;
+  const expireTime = time + (exdays * 24 * 60 * 60 * 1000);
+  now.setTime(expireTime);
+
+  const existingCookie = getCookieValues("CCFormFields");
+
+  if (existingCookie === "") {
+    if (cookie_fullName !== "" && cookie_email !== "" && cookie_mobileNo !== "") {
+      document.cookie = `CCFormFields=${cookie_fullName}|${cookie_email}|${cookie_mobileNo}|${cookie_pinCode};expires=${now.toUTCString()};path=/`;
+    }
+  } else {
+    const existingValues = existingCookie.split("|");
+    if (cookie_fullName !== "") existingValues[0] = cookie_fullName;
+    if (cookie_email !== "") existingValues[1] = cookie_email;
+    if (cookie_mobileNo !== "") existingValues[2] = cookie_mobileNo;
+    if (cookie_pinCode !== "") existingValues[3] = cookie_pinCode;
+    document.cookie = `CCFormFields=${existingValues[0]}|${existingValues[1]}|${existingValues[2]}|${existingValues[3]};expires=${now.toUTCString()};path=/`;
+  }
+}
+
 export function splitName(fullName) {
   const normalized = (fullName || '').trim().replace(/\s+/g, ' ');
   if (!normalized) {
