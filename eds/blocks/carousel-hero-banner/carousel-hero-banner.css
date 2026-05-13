@@ -159,11 +159,9 @@
         min-height: unset !important;
     }
 
-    .carousel-hero-banner-wrapper .swiper-slide video,
-    .carousel-hero-banner-wrapper .swiper-slide img {
-        min-height: 502px;
-        max-height: 502px;
-    }
+    /* Mobile hero slide height (502px) is now reserved eagerly in
+       eds/styles/styles.css to prevent CLS. Do not re-introduce a
+       min-height/max-height clamp here — it would shift on first paint. */
 
     .carousel-hero-banner-container .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal .custom-arrow {
         display: none;
