@@ -302,29 +302,6 @@ main img {
   padding-right: 42px;
 }
 
-/* Reserve hero-banner slide height eagerly so the lazy-loaded
-   carousel-hero-banner.css cannot grow the box after first paint.
-   Fixes mobile CLS 0.316 (PSI) where the eager <img width=824 height=1004>
-   first lays out at ~439px (intrinsic ratio) and then jumps to 502px when
-   the block CSS arrives with min-height/max-height: 502px.
-   Selectors are specificity-tuned (0,3,2) so they beat the block CSS rule
-   (.carousel-hero-banner-wrapper .swiper-slide .hero-media img — 0,3,1)
-   even though the block CSS loads later in the cascade. */
-@media (max-width: 991px) {
-  main .carousel-hero-banner .swiper-slide,
-  main .carousel-hero-banner .swiper-slide .hero-media {
-    height: 502px;
-  }
-
-  main .carousel-hero-banner .swiper-slide .hero-media img,
-  main .carousel-hero-banner .swiper-slide .hero-media video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-}
-
 .icon {
   display: inline-block;
   height: 24px;
