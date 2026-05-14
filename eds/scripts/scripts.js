@@ -386,7 +386,7 @@ function loadDelayed() {
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
     import('./delayed.js');
-  }, 3000);
+  }, 8000);
 
   // Skip splash popup for Lighthouse / PageSpeed bots — the full-screen
   // modal tanks Speed Index because it covers the entire viewport.
