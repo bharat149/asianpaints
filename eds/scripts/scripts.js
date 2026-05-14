@@ -408,11 +408,15 @@ async function preloadAdobeLaunch() {
 
     if (document.querySelector('link[data-launch-preload]')) return;
 
+    // Match loadScript()'s <script> tag — no crossorigin — so the browser
+    // reuses the preloaded response for the later <script src=launchUrl>
+    // request. A crossorigin mismatch between <link rel="preload"> and the
+    // <script> produces different cache keys: the preload is wasted and
+    // the script does a fresh network fetch (cache miss).
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'script';
     link.href = launchUrl;
-    link.crossOrigin = 'anonymous';
     link.setAttribute('fetchpriority', 'low');
     link.setAttribute('data-launch-preload', 'true');
     document.head.appendChild(link);
