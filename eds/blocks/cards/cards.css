@@ -1562,11 +1562,8 @@
   max-height: 80px;
   object-fit: contain;
 
-  /* Do NOT use aspect-ratio: auto — it discards the intrinsic 53x79 ratio
-     that the browser computes from the HTML width/height attrs, leaving the
-     box dimensionless until the image loads. PSI flagged these as
-     "Unsized image element" on painting-contractors, contributing to CLS.
-     Same root cause as the homepage cards/store-banner fixes. */
+  /* Override base cards image rules */
+  aspect-ratio: auto;
 }
 
 .cards.features .cards-card-body {
