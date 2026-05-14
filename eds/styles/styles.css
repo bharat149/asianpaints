@@ -177,6 +177,19 @@ footer {
   min-height: 200px;
 }
 
+/* Reserve minimum card height on the .cards.grid mobile layout so the
+   .section.video-container does not collapse before card images decode.
+   PSI flagged 0.218 CLS on /paint-products/interior-wall-paints from
+   the unsized card images (1134x522 intrinsic, rendered ~190px on
+   mobile). The card image CSS keeps `aspect-ratio: auto` so it still
+   fills the parent via object-fit: cover — this rule only puts a floor
+   on the parent so the layout reserves height before image load. */
+@media (max-width: 768px) {
+  main .cards.grid > ul > li {
+    min-height: 190px;
+  }
+}
+
 h1,
 h2,
 h3,
