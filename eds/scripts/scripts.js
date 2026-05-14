@@ -394,7 +394,10 @@ async function loadSplashPopup() {
  * HTTP cache and loads in ~200ms instead of waiting for the full 1.5–2 s
  * network fetch. Events arrive ~500 ms after user action instead of ~3 s.
  */
+let launchPreloadFired = false;
 async function preloadAdobeLaunch() {
+  if (launchPreloadFired) return;
+  launchPreloadFired = true;
   try {
     const isBeta = window.location.hostname.includes('beta')
       || window.location.hostname.includes('aem.page')
@@ -421,22 +424,42 @@ async function preloadAdobeLaunch() {
     link.setAttribute('data-launch-preload', 'true');
     document.head.appendChild(link);
   } catch (e) {
+    launchPreloadFired = false;
     // eslint-disable-next-line no-console
     console.warn('Adobe Launch preload skipped', e);
   }
 }
 
-function loadDelayed() {
-  /* Background-preload Adobe Launch as soon as the eager phase is done.
-   * Uses `<link rel="preload" fetchpriority="low">` so the file enters the
-   * browser HTTP cache without blocking LCP. When triggerAnalytics() runs
-   * later (on user interaction or 25 s timeout), the Launch script is
-   * already cached and executes in ~200 ms instead of ~1.5–2 s. */
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(preloadAdobeLaunch, { timeout: 2500 });
-  } else {
-    window.setTimeout(preloadAdobeLaunch, 1500);
+/* Trigger Launch preload as soon as LCP fires. By that point Lighthouse has
+ * already locked in the LCP score, so the preload bandwidth cannot affect it
+ * — but the preload starts ~500 ms earlier than waiting for loadDelayed()
+ * (which has to wait for loadEager AND loadLazy to finish). Real users who
+ * interact between 1.5–3 s now get a cache hit instead of a fresh fetch.
+ * Falls back to loadDelayed if PerformanceObserver isn't supported or LCP
+ * never fires (page with no large content). */
+if ('PerformanceObserver' in window) {
+  try {
+    const lcpObserver = new PerformanceObserver((list, observer) => {
+      if (list.getEntries().length > 0) {
+        observer.disconnect();
+        preloadAdobeLaunch();
+      }
+    });
+    lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+  } catch (e) {
+    // PerformanceObserver does not support LCP in this browser — silently fall
+    // back to the loadDelayed() trigger below.
   }
+}
+
+function loadDelayed() {
+  /* Safety-net trigger for Adobe Launch preload. The PerformanceObserver at
+   * the top of this file normally fires preloadAdobeLaunch() as soon as LCP
+   * is recorded (~1.5–2.5 s). This call ensures the preload still runs on
+   * pages where LCP never fires (no contentful images) or browsers without
+   * PerformanceObserver LCP support. The launchPreloadFired guard inside
+   * preloadAdobeLaunch makes the second call a no-op. */
+  preloadAdobeLaunch();
 
   /* ── Tier 1 (3 s) — lightweight, needed early ────────────────────── */
   window.setTimeout(() => {
