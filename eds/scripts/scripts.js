@@ -291,6 +291,9 @@ export function decorateMain(main) {
   decorateBlocks(main);
 }
 
+
+
+
 /**
  * Loads only the assets and logic required for the initial render / LCP.
  * Analytics is intentionally excluded from this phase to avoid blocking
@@ -504,6 +507,8 @@ function loadDelayed() {
     }());
   }, 12000);
 }
+
+
 
 async function loadPage() {
   await loadEager(document);

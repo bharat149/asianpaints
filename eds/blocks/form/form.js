@@ -1,4 +1,4 @@
-/*
+﻿/*
 ** Authoring format **
 Form block
 Row 1, col 1–3 → used for form-description-cell
@@ -25,7 +25,7 @@ Row 2, col 1-2 → node (to pass as form parameter node path)
 Two variant: White form, Blue form
 */
 
-import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
+import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
 import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
@@ -236,7 +236,19 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const field = document.createElement('div');
   field.className = 'form-field position-relative w-100';
 
-  const inputId = `form-input-${rowIdx}-${cellIdx}`;
+  let inputId = `form-input-${rowIdx}-${cellIdx}`;
+
+  // Map common labels to specific ids
+  const lowerLabel = (labelText || '').toLowerCase();
+  if (lowerLabel.includes('name')) {
+    inputId = 'enquire-name';
+  } else if (lowerLabel.includes('email')) {
+    inputId = 'enquire-email';
+  } else if (lowerLabel.includes('mobile') || lowerLabel.includes('phone')) {
+    inputId = 'enquire-mobile';
+  } else if (lowerLabel.includes('pincode') || lowerLabel.includes('pin')) {
+    inputId = 'enquire-pincode';
+  }
 
   const label = document.createElement('label');
   label.className = 'form-field-label';
@@ -248,7 +260,7 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   if (labelText) {
     const lowerLabel = labelText.toLowerCase();
-    if (lowerLabel.includes('phone')) {
+    if (lowerLabel.includes('phone') || lowerLabel.includes('mobile')) {
       inputType = 'tel';
     } else if (lowerLabel.includes('email')) {
       inputType = 'email';
@@ -809,6 +821,7 @@ function bindSubmitHandler(block, row, buttonCell) {
       },
     })
       .then(() => {
+        setFormFieldsToCookie(row);
         showThankYouScreen(block);
         trackFormSubmission(row);
       })
@@ -908,7 +921,6 @@ function renderForm(block) {
     createDefaultField(inputCell, 2, i, headerText, content);
 
     const input = inputCell.querySelector('.form-input');
-    applyFieldConfig(input, labelCell, content);
 
     inputsGrid.appendChild(inputCell);
   }
@@ -967,6 +979,9 @@ function renderForm(block) {
   if (buttonCell.children.length) {
     bindSubmitHandler(block, formRow, buttonCell);
   }
+
+  // Prefill form fields from cookies
+  checkCookieValues(formRow);
 }
 
 export default function decorate(block) {
