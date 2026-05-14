@@ -3489,6 +3489,9 @@ async function refreshCartModal(block) {
         const product = entry.product || {};
         const row = document.createElement('div');
         row.className = 'cart-item-row';
+        const entryId = entry.entryNumber || entry.entryId || entry.id || product.productCode || product.hybrisProductId || '';
+        row.dataset.entryId = entryId;
+        row.dataset.quantity = String(entry.quantity || 1);
 
         const imgSrc =
           product.productImage ||
@@ -3565,6 +3568,36 @@ async function refreshCartModal(block) {
     }
   } catch {
     setShopState();
+  }
+}
+
+async function deleteCartEntry(entryId) {
+  if (!entryId) return false;
+  const url = `/apcolourcatalogue/commerce/deleteCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
+  try {
+    const resp = await fetchFromAp(url, { method: 'DELETE', credentials: 'include' });
+    return resp?.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+async function updateCartEntryQuantity(entryId, quantity) {
+  if (!entryId || quantity < 1) return false;
+  const url = `/apcolourcatalogue/commerce/updateCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
+  const body = new URLSearchParams({ quantity: String(quantity) });
+  try {
+    const resp = await fetchFromAp(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      },
+      body,
+    });
+    return resp?.ok === true;
+  } catch {
+    return false;
   }
 }
 
@@ -3849,6 +3882,46 @@ function addInteractions(block) {
       positionCartModal();
       cartModal.classList.add('active');
     });
+
+    const cartItemsList = cartModal.querySelector('.cart-items-list');
+    if (cartItemsList) {
+      cartItemsList.addEventListener('click', async (e) => {
+        const button = e.target.closest('button');
+        if (!button) return;
+
+        const row = button.closest('.cart-item-row');
+        if (!row) return;
+
+        const entryId = row.dataset.entryId;
+        const currentQuantity = Number(row.dataset.quantity) || 1;
+        let success = false;
+
+        if (button.classList.contains('cart-item-remove')) {
+          button.disabled = true;
+          success = await deleteCartEntry(entryId);
+          button.disabled = false;
+        } else if (button.classList.contains('cart-qty-minus')) {
+          button.disabled = true;
+          const newQuantity = Math.max(1, currentQuantity - 1);
+          if (newQuantity === 0) {
+            success = await deleteCartEntry(entryId);
+          } else {
+            success = await updateCartEntryQuantity(entryId, newQuantity);
+          }
+          button.disabled = false;
+        } else if (button.classList.contains('cart-qty-plus')) {
+          button.disabled = true;
+          success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
+          button.disabled = false;
+        }
+
+        if (success) {
+          await refreshCartModal(block);
+          const totalCount = await fetchMiniCartCount();
+          updateCartBadge(block, totalCount);
+        }
+      });
+    }
   }
 
   // Profile — dropdown when logged in, auth redirect when not
