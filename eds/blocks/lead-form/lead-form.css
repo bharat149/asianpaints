@@ -386,6 +386,21 @@
   border: 1px solid #ef9a9a;
 }
 
+/* Field-level error styles */
+.lead-form .field-error {
+  min-height: 20px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #c62828;
+  text-align: left;
+}
+
+.lead-form .field-wrapper.has-error input,
+.lead-form input.is-invalid {
+  border-color: #ff2343 !important;
+  box-shadow: none !important;
+}
+
 /* Modal-specific styling */
 .modal .lead-form {
   max-width: none;
