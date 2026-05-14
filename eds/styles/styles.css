@@ -155,6 +155,22 @@ main {
   z-index: 1036 !important;
 }
 
+/* Reserve the mobile floating "Book Free Site Visit" CTA's fixed position
+   eagerly so it doesn't briefly render in static flow before the lazy
+   header CSS arrives. PSI flagged the .header-cta as causing two 0.056
+   layout shifts on painting-contractors when the block CSS loaded and
+   snapped the CTA from static flow to position:fixed.
+   Same pattern as the .fixed-color-partner rule above. */
+@media (max-width: 991px) {
+  .header .header-cta {
+    position: fixed !important;
+    right: 65px !important;
+    bottom: 32px !important;
+    z-index: 1500 !important;
+    margin-left: 0 !important;
+  }
+}
+
 header .header {
   visibility: hidden;
 

@@ -11,6 +11,7 @@
 
 /* ===== BACKGROUND IMAGE – FULL WIDTH ===== */
 .hero-form-background {
+    position: absolute;
     inset: 0;
 }
 
@@ -171,6 +172,8 @@
     .hero-form {
         width: 100%;
         margin: 0;
+        /* Reserve space to prevent CLS when form card loads below hero image */
+        min-height: 960px;
     }
 
     .hero-form-panel-wrapper {
