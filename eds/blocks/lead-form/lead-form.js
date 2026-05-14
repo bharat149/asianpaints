@@ -271,9 +271,21 @@ function updateSubmitState(form) {
 
 function wireValidation(form) {
   getRequiredFields(form).forEach((input) => {
-    ['input', 'change', 'blur'].forEach((evt) => {
-      input.addEventListener(evt, () => updateSubmitState(form));
+    // Show error on blur
+    input.addEventListener('blur', () => {
+      validateInputField(input, true);
     });
+
+    // Clear/update error on input if field already has error
+    input.addEventListener('input', () => {
+      const fieldWrapper = input.closest('.field-wrapper');
+      if (fieldWrapper && fieldWrapper.classList.contains('has-error')) {
+        validateInputField(input, true);
+      }
+    });
+
+    // Update submit button state on change
+    input.addEventListener('input', () => updateSubmitState(form));
   });
   updateSubmitState(form);
 }
@@ -412,13 +424,135 @@ function trackLeadFormSubmission(form) {
   trackEvent('form_submit', formData);
 }
 
+/* ========== Field Validation ========== */
+
+/**
+ * Create error message element
+ */
+function createErrorMessageElement() {
+  const error = document.createElement('div');
+  error.className = 'field-error';
+  error.setAttribute('aria-live', 'polite');
+  return error;
+}
+
+/**
+ * Show field error
+ */
+function showFieldError(fieldWrapper, input, message) {
+  if (!fieldWrapper || !input) return;
+
+  let errorEl = fieldWrapper.querySelector('.field-error');
+  if (!errorEl) {
+    errorEl = createErrorMessageElement();
+    fieldWrapper.appendChild(errorEl);
+  }
+
+  errorEl.textContent = message;
+  fieldWrapper.classList.add('has-error');
+  input.classList.add('is-invalid');
+  input.setAttribute('aria-invalid', 'true');
+}
+
+/**
+ * Clear field error
+ */
+function clearFieldError(fieldWrapper, input) {
+  if (!fieldWrapper || !input) return;
+
+  const errorEl = fieldWrapper.querySelector('.field-error');
+  if (errorEl) {
+    errorEl.textContent = '';
+  }
+
+  fieldWrapper.classList.remove('has-error');
+  input.classList.remove('is-invalid');
+  input.removeAttribute('aria-invalid');
+}
+
+/**
+ * Get custom validation message for input
+ */
+function getValidationMessage(input) {
+  if (!input) return '';
+
+  const value = input.value.trim();
+  const fieldName = `${input.name || ''} ${input.id || ''}`.toLowerCase();
+
+  const isEmail = fieldName.includes('email');
+  const isPincode = fieldName.includes('pincode') || fieldName.includes('pin') || fieldName.includes('zip');
+  const isMobile = fieldName.includes('mobile') || fieldName.includes('phone');
+
+  if (!value) {
+    return 'Field is required';
+  }
+
+  if (isEmail) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return 'Email is invalid';
+    }
+  }
+
+  if (isPincode) {
+    if (!/^\d{6}$/.test(value)) {
+      return 'Enter a valid 6 digit Zip Code';
+    }
+  }
+
+  if (isMobile) {
+    if (!/^\d{10}$/.test(value)) {
+      return 'Phone number is invalid';
+    }
+  }
+
+  return '';
+}
+
+/**
+ * Validate single input field and optionally show error
+ */
+function validateInputField(input, showError = true) {
+  if (!input) return true;
+
+  const fieldWrapper = input.closest('.field-wrapper');
+  if (!fieldWrapper) return true;
+
+  const message = getValidationMessage(input);
+
+  if (message) {
+    input.setCustomValidity(message);
+
+    if (showError) {
+      showFieldError(fieldWrapper, input, message);
+    }
+
+    return false;
+  }
+
+  // Clear custom validity when field is valid
+  input.setCustomValidity('');
+  clearFieldError(fieldWrapper, input);
+  return true;
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
 
   const form = event.currentTarget;
   const submitBtn = form.querySelector('button[type="submit"]');
 
-  if (!form.reportValidity()) return;
+  // Validate all required fields and show errors
+  const requiredFields = getRequiredFields(form);
+  let isValid = true;
+
+  requiredFields.forEach((input) => {
+    if (!validateInputField(input, true)) {
+      isValid = false;
+    }
+  });
+
+  if (!isValid) return;
   if (form.dataset.submitting === 'true') return;
 
   form.dataset.submitting = 'true';

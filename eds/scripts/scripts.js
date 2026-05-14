@@ -291,6 +291,9 @@ export function decorateMain(main) {
   decorateBlocks(main);
 }
 
+
+
+
 /**
  * Loads only the assets and logic required for the initial render / LCP.
  * Analytics is intentionally excluded from this phase to avoid blocking
@@ -386,7 +389,7 @@ function loadDelayed() {
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
     import('./delayed.js');
-  }, 3000);
+  }, 8000);
 
   // Skip splash popup for Lighthouse / PageSpeed bots — the full-screen
   // modal tanks Speed Index because it covers the entire viewport.
@@ -504,6 +507,8 @@ function loadDelayed() {
     }());
   }, 12000);
 }
+
+
 
 async function loadPage() {
   await loadEager(document);

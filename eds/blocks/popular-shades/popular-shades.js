@@ -82,6 +82,13 @@ function buildPicture(desktopItem, mobileItem, altText) {
   img.alt = altText || desktopImg?.alt || mobileImg?.alt || 'Popular shade';
   img.loading = 'lazy';
 
+  // Carry over intrinsic dimensions so the browser reserves space before
+  // load and avoids CLS / "image without explicit width and height" diagnostic.
+  const widthAttr = desktopImg?.getAttribute('width') || mobileImg?.getAttribute('width');
+  const heightAttr = desktopImg?.getAttribute('height') || mobileImg?.getAttribute('height');
+  if (widthAttr) img.setAttribute('width', widthAttr);
+  if (heightAttr) img.setAttribute('height', heightAttr);
+
   picture.appendChild(img);
   return picture;
 }

@@ -1,4 +1,4 @@
-/*
+﻿/*
 ** Authoring format **
 
 Row 1 (Images)
@@ -59,8 +59,8 @@ Important:
 - Do NOT include validation messages in authoring
 */
 
-import { submitLeadFromForm } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent, triggerCtaLinkText } from '../../scripts/analytics.js';
+import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
 let formName = '';
 let campaignId = '';
@@ -333,7 +333,24 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const field = document.createElement('div');
   field.className = 'form-field position-relative w-100';
 
-  const inputId = `form-banner-input-${rowIdx}-${cellIdx}`;
+  let inputId = `form-banner-input-${rowIdx}-${cellIdx}`;
+  let inputName = labelText || placeholderText;
+
+  // Map common labels to specific ids and names
+  const lowerLabel = (labelText || '').toLowerCase();
+  if (lowerLabel.includes('name')) {
+    inputId = 'enquire-name';
+    inputName = 'ENQUIRE_NAME';
+  } else if (lowerLabel.includes('email')) {
+    inputId = 'enquire-email';
+    inputName = 'ENQUIRE_EMAIL';
+  } else if (lowerLabel.includes('mobile') || lowerLabel.includes('phone')) {
+    inputId = 'enquire-mobile';
+    inputName = 'ENQUIRE_MOBILE';
+  } else if (lowerLabel.includes('pincode') || lowerLabel.includes('pin')) {
+    inputId = 'enquire-pincode';
+    inputName = 'ENQUIRE_PINCODE';
+  }
 
   const label = document.createElement('label');
   label.className = 'form-field-label';
@@ -347,14 +364,28 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
     const lowerLabel = labelText.toLowerCase();
     if (lowerLabel.includes('phone') || lowerLabel.includes('mobile')) {
       inputType = 'tel';
+      input.inputMode = 'numeric';
+      input.pattern = '[0-9]{10}';
+      input.maxLength = 10;
+      bindNumericInputFilter(input);
+      input.classList.add('form-input--with-prefix');
     } else if (lowerLabel.includes('email')) {
       inputType = 'email';
+    } else if (lowerLabel.includes('pincode') || lowerLabel.includes('pin')) {
+      inputType = 'text';
+      input.inputMode = 'numeric';
+      input.pattern = '[0-9]{6}';
+      input.maxLength = 6;
+      bindNumericInputFilter(input);
+    } else if (lowerLabel.includes('name')) {
+      inputType = 'text';
+      input.pattern = '[A-Za-z ]{2,}';
     }
   }
 
   input.type = inputType;
   input.id = inputId;
-  input.name = labelText || placeholderText;
+  input.name = inputName;
   input.placeholder = placeholderText;
   input.className = 'form-input form-control';
   input.required = true;
@@ -387,6 +418,11 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   });
 
   field.append(label, input, errorEl);
+
+  // Apply phone prefix if mobile
+  if (lowerLabel.includes('phone') || lowerLabel.includes('mobile')) {
+    applyPhonePrefix(field, input);
+  }
 
   cell.textContent = '';
   cell.appendChild(field);
@@ -667,6 +703,7 @@ function bindSubmitHandler(block, row, buttonCell) {
       },
     })
       .then(() => {
+        setFormFieldsToCookie(row);
         trackFormSubmission(row);
         showSuccessScreen(block);
       })
@@ -716,7 +753,6 @@ function buildFormCard(block, labelsRow, inputsRow) {
     createDefaultField(inputCell, 2, i, headerText, content);
 
     const input = inputCell.querySelector('.form-input');
-    applyFieldConfig(input, labelCell, content);
 
     inputsGrid.appendChild(inputCell);
   }
@@ -772,6 +808,9 @@ function buildFormCard(block, labelsRow, inputsRow) {
   if (buttonCell.children.length) {
     bindSubmitHandler(block, formRow, buttonCell);
   }
+
+  // Prefill form fields from cookies
+  checkCookieValues(formRow);
 
   return formCard;
 }

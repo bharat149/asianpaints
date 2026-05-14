@@ -87,8 +87,14 @@ function createResponsivePicture(desktopPicture, mobilePicture, altText = '') {
   img.loading = 'lazy';
   img.decoding = 'async';
 
-  if (desktopImg?.width) img.width = desktopImg.width;
-  if (desktopImg?.height) img.height = desktopImg.height;
+  // Set explicit width/height so the browser reserves space before the image
+  // loads (prevents CLS on color swatch images flagged by PSI). Prefer the
+  // value that's actually present — `getAttribute('width')` reads the HTML
+  // attribute even before the image decodes; `.width` is 0 until decoded.
+  const widthAttr = desktopImg?.getAttribute('width') || mobileImg?.getAttribute('width');
+  const heightAttr = desktopImg?.getAttribute('height') || mobileImg?.getAttribute('height');
+  if (widthAttr) img.setAttribute('width', widthAttr);
+  if (heightAttr) img.setAttribute('height', heightAttr);
 
   picture.appendChild(img);
 

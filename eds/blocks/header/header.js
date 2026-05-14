@@ -1486,6 +1486,85 @@ async function handleSearchDialogSearchResults(dialog, query) {
   renderSearchProducts(productsContainer, searchProducts, false);
 }
 
+function buildLoginModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'login-modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:1100;';
+
+  const modal = document.createElement('div');
+  modal.className = 'login-modal';
+  modal.style.cssText = 'width:min(420px,calc(100% - 32px));background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25);';
+
+  const header = document.createElement('div');
+  header.className = 'login-modal-header';
+  header.style.cssText = 'padding:24px 24px 0;';
+
+  const title = document.createElement('h2');
+  title.className = 'login-modal-title';
+  title.textContent = 'Welcome User';
+  title.style.margin = '0 0 16px';
+  title.style.fontSize = '1.5rem';
+  title.style.lineHeight = '1.2';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'login-modal-close';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = 'position:absolute;top:18px;right:18px;border:none;background:transparent;font-size:1.75rem;line-height:1;color:#333;cursor:pointer;';
+
+  const body = document.createElement('div');
+  body.className = 'login-modal-body';
+  body.style.cssText = 'padding:0 24px 24px;';
+
+  const loginBtn = document.createElement('button');
+  loginBtn.type = 'button';
+  loginBtn.className = 'login-modal-action login-modal-login';
+  loginBtn.textContent = 'Login';
+  loginBtn.style.cssText = 'width:100%;padding:14px 16px;margin-bottom:12px;border:none;border-radius:8px;background:#111;color:#fff;font-size:1rem;cursor:pointer;';
+
+  const guestBtn = document.createElement('button');
+  guestBtn.type = 'button';
+  guestBtn.className = 'login-modal-action login-modal-guest';
+  guestBtn.textContent = 'Continue as guest';
+  guestBtn.style.cssText = 'width:100%;padding:14px 16px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#111;font-size:1rem;cursor:pointer;';
+
+  body.append(loginBtn, guestBtn);
+  header.append(title, closeBtn);
+  modal.append(header, body);
+  overlay.appendChild(modal);
+
+  const close = () => {
+    overlay.style.display = 'none';
+  };
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  loginBtn.addEventListener('click', () => {
+    close();
+    window.location.href = getApApi().KEYCLOAK_PAGE_URL;
+  });
+
+  guestBtn.addEventListener('click', () => {
+    close();
+  });
+
+  return overlay;
+}
+
+function openLoginModal(block) {
+  const overlay = block.querySelector('.login-modal-overlay');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+}
+
+function openShopFallback(block) {
+  const shopUrl = getApApi().SHOP_URL;
+  window.location.href = shopUrl;
+}
+
 function buildSearchDialog() {
   const overlay = document.createElement('div');
   overlay.className = 'search-dialog-overlay';
@@ -2259,6 +2338,56 @@ function buildMobileSearchPanel(mainDiv) {
   return panel;
 }
 
+// function buildCartModal() {
+//   const overlay = document.createElement('div');
+//   overlay.className = 'cart-modal-overlay';
+
+//   const modal = document.createElement('div');
+//   modal.className = 'cart-modal';
+
+//   const closeBtn = document.createElement('button');
+//   closeBtn.className = 'cart-modal-close';
+//   closeBtn.type = 'button';
+//   closeBtn.setAttribute('aria-label', 'Close cart');
+//   closeBtn.innerHTML = '&times;';
+
+//   const iconWrap = document.createElement('img');
+//   iconWrap.className = 'cart-modal-icon';
+//   iconWrap.src = '/eds/icons/empty-cart-icon.webp';
+//   iconWrap.alt = 'empty-cart-icon';
+//   iconWrap.width = 200;
+//   iconWrap.height = 200;
+//   iconWrap.loading = 'lazy';
+
+//   const cartTitle = document.createElement('h4');
+//   cartTitle.className = 'cart-modal-title';
+//   cartTitle.textContent = 'Your cart is empty';
+
+//   const cartItems = document.createElement('div');
+//   cartItems.className = 'cart-items-list';
+
+//   const totalRow = document.createElement('div');
+//   totalRow.className = 'cart-modal-total';
+
+//   const shopBtn = document.createElement('a');
+//   shopBtn.className = 'cart-modal-shop';
+//   shopBtn.href = getApApi().SHOP_URL;
+//   shopBtn.textContent = 'Shop now';
+
+//   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
+//   overlay.appendChild(modal);
+
+//   const close = () => overlay.classList.remove('active');
+//   closeBtn.addEventListener('click', close);
+//   overlay.addEventListener('click', (e) => {
+//     if (e.target === overlay) close();
+//   });
+
+//   return overlay;
+// }
+
+
+
 function buildCartModal() {
   const overlay = document.createElement('div');
   overlay.className = 'cart-modal-overlay';
@@ -2295,6 +2424,23 @@ function buildCartModal() {
   shopBtn.href = getApApi().SHOP_URL;
   shopBtn.textContent = 'Shop now';
 
+  /**
+   * If cart has items, show login / guest popup.
+   * If cart is empty, allow normal navigation to SHOP_URL.
+   */
+  shopBtn.addEventListener('click', (e) => {
+    if (!modal.classList.contains('has-items')) {
+      return;
+    }
+
+    e.preventDefault();
+
+    // Optional: close the cart modal before opening login popup.
+    overlay.classList.remove('active');
+
+    showLoginGuestPopup();
+  });
+
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
   overlay.appendChild(modal);
 
@@ -2306,6 +2452,649 @@ function buildCartModal() {
 
   return overlay;
 }
+
+function buildLoginGuestPopup() {
+  const overlay = document.createElement('div');
+  overlay.className = 'login-guest-modal-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'login-guest-title');
+
+  overlay.innerHTML = `
+    <div class="modal-dialog login-guest-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button class="close-icon track_login_close" type="button" aria-label="Close login popup">
+            <span class="header-popup-close-icon" role="img" aria-label="close icon" title="close icon"></span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <h2 class="modal-title" id="login-guest-title">Welcome User</h2>
+
+          <form method="POST" id="validate-mobile" action="#" name="loginForm" novalidate autocomplete="off">
+            <div class="ctaComp baseBtn">
+              <button class="ctaText modal__variant-login--submit" type="submit">
+                Login
+                <span>
+                  <img
+                    loading="lazy"
+                    fetchpriority="auto"
+                    src="/eds/icons/arrow-icon-new.svg"
+                    alt=""
+                  >
+                </span>
+              </button>
+            </div>
+          </form>
+
+          <div class="line-break-text">OR</div>
+
+          <div class="ctaComp whiteBtn">
+            <button class="ctaText continue-as-guest" type="button">
+              Continue as guest
+              <span>
+                <img
+                  loading="lazy"
+                  fetchpriority="auto"
+                  src="/eds/icons/arrow-icon.svg"
+                  alt=""
+                >
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const closePopup = () => {
+    overlay.classList.remove('active');
+    document.body.classList.remove('modal-open');
+  };
+
+  overlay.querySelector('.track_login_close')?.addEventListener('click', closePopup);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closePopup();
+  });
+
+  overlay.querySelector('#validate-mobile')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Trigger your existing login flow here.
+    // Example:
+    document.dispatchEvent(new CustomEvent('cart-login-click'));
+  });
+
+  // overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
+  //   closePopup();
+  //   // Update this URL if guest should go to checkout instead of shop page.
+  //   window.location.href = getApApi().SHOP_URL;
+  // });
+  overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
+    closePopup();
+    // Opens "Provide a delivery address" modal
+    showGuestDeliveryAddressModal();
+  });
+
+  return overlay;
+}
+
+function showLoginGuestPopup() {
+  let popup = document.querySelector('.login-guest-modal-overlay');
+
+  if (!popup) {
+    popup = buildLoginGuestPopup();
+    document.body.appendChild(popup);
+  }
+
+  popup.classList.add('active');
+  document.body.classList.add('modal-open');
+
+  popup.querySelector('.track_login_close')?.focus();
+}
+
+
+// GuestDeliveryAddressModal
+function buildGuestDeliveryAddressModal() {
+  const modal = document.createElement('div');
+  modal.id = 'guestLoginModal';
+  modal.className = 'modal modal__variant-login guest-login-modal-overlay';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'guest-delivery-title');
+  modal.setAttribute('aria-hidden', 'true');
+
+  const field = ({
+    id,
+    label,
+    required = true,
+    wrapperClass = '',
+    inputAttrs = '',
+  }) => `
+    <div class="${['form-item', wrapperClass].filter(Boolean).join(' ')}">
+      <label class="input-label" for="${id}">${label}${required ? '*' : ''}</label>
+      <input
+        class="form-control"
+        type="text"
+        name="${id}"
+        id="${id}"
+        autocomplete="off"
+        ${inputAttrs}
+      >
+      ${id === 'mobileNumber' ? '<div class="default-value d-none">+91</div>' : ''}
+      ${required ? '<div class="error-msg d-none"></div>' : ''}
+    </div>
+  `;
+
+  modal.innerHTML = `
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="heading" id="guest-delivery-title">Provide a delivery address</div>
+
+          <button class="iconLinks iconLinks__close guest-login-close-btn" type="button" aria-label="Close">
+            <span class="spriteIcon-Aprevamp closeIcon guest_login_close" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div
+            class="form-section"
+            data-attr-emptyfielderror="Field is required"
+            data-attr-mobileerror="Please enter a valid number"
+            data-attr-pincodeerror="Please enter a valid pincode"
+            data-attr-emailerror="Please enter a valid emailid"
+          >
+            <div class="step-section customer-info-section track-guest-form">
+              ${field({ id: 'fullName', label: 'Fullname' })}
+
+              ${field({ id: 'emailId', label: 'Email' })}
+
+              ${field({
+                id: 'mobileNumber',
+                label: 'Mobile',
+                wrapperClass: 'mobile-no-field has-default-value',
+                inputAttrs: 'inputmode="numeric" maxlength="10"',
+              })}
+
+              <div class="two-column-row">
+                ${field({
+                  id: 'flat',
+                  label: 'Flat/House No/Floor',
+                  wrapperClass: 'w-50',
+                })}
+
+                ${field({
+                  id: 'locality',
+                  label: 'Colony/Street/Locality',
+                  wrapperClass: 'w-50',
+                })}
+              </div>
+
+              <div class="two-column-row">
+                ${field({
+                  id: 'landmark',
+                  label: 'Landmark',
+                  required: false,
+                  wrapperClass: 'w-50',
+                })}
+
+                ${field({
+                  id: 'city',
+                  label: 'City',
+                  wrapperClass: 'w-50',
+                })}
+              </div>
+
+              ${field({
+                id: 'pincode',
+                label: 'Pincode',
+                inputAttrs: 'inputmode="numeric" maxlength="6"',
+              })}
+
+              <div class="submit-user-info-button">
+                <button class="animated-arrow-button" type="button" disabled>
+                  SUBMIT
+                </button>
+              </div>
+
+              <div class="info-msg guest-exist d-none">
+                User already exist redirecting you for the login page
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return modal;
+}
+
+function showGuestDeliveryAddressModal() {
+  let modal = document.getElementById('guestLoginModal');
+
+  if (!modal) {
+    modal = buildGuestDeliveryAddressModal();
+    document.body.appendChild(modal);
+  }
+
+  initGuestDeliveryAddressModal(modal);
+
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+
+  modal.querySelector('#fullName')?.focus();
+}
+
+function closeGuestDeliveryAddressModal() {
+  const modal = document.getElementById('guestLoginModal');
+
+  if (!modal) return;
+
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+function initGuestDeliveryAddressModal(modal) {
+  if (modal.dataset.initialized === 'true') return;
+
+  modal.dataset.initialized = 'true';
+
+  const qs = (selector) => modal.querySelector(selector);
+
+  const formSection = qs('.form-section');
+  const submitBtn = qs('.submit-user-info-button .animated-arrow-button');
+
+  const requiredIds = [
+    'fullName',
+    'emailId',
+    'mobileNumber',
+    'flat',
+    'locality',
+    'city',
+    'pincode',
+  ];
+
+  const requiredFields = requiredIds
+    .map((id) => qs(`#${id}`))
+    .filter(Boolean);
+
+  const allInputs = Array.from(
+    modal.querySelectorAll('.form-section .form-control:not(.custom-select-control)')
+  );
+
+  const messages = {
+    required:
+      formSection?.getAttribute('data-attr-emptyfielderror') || 'Field is required',
+    mobile:
+      formSection?.getAttribute('data-attr-mobileerror') || 'Please enter a valid number',
+    pincode:
+      formSection?.getAttribute('data-attr-pincodeerror') || 'Please enter a valid pincode',
+    email:
+      formSection?.getAttribute('data-attr-emailerror') || 'Please enter a valid emailid',
+  };
+
+  const isMobileNoValid = (value) => /^[0-9]{10}$/.test(value);
+  const isPincodeValid = (value) => /^[0-9]{6}$/.test(value);
+
+  const isEmailIdValid = (value) => {
+    const regex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]+@([a-zA-Z]|[a-zA-Z0-9]?[a-zA-Z0-9-]+[a-zA-Z0-9])\.[a-zA-Z0-9]{2,10}(?:\.[a-zA-Z]{2,10})?$/;
+    return regex.test(value);
+  };
+
+  const getErrorElement = (input) => input.closest('.form-item')?.querySelector('.error-msg');
+
+  const showError = (input, message) => {
+    const errorEl = getErrorElement(input);
+    const formItem = input.closest('.form-item');
+
+    if (!errorEl) return;
+
+    errorEl.textContent = message;
+    errorEl.classList.remove('d-none');
+    formItem?.classList.add('has-error');
+  };
+
+  const clearError = (input) => {
+    const errorEl = getErrorElement(input);
+    const formItem = input.closest('.form-item');
+
+    if (!errorEl) return;
+
+    errorEl.textContent = '';
+    errorEl.classList.add('d-none');
+    formItem?.classList.remove('has-error');
+  };
+
+  const setFloatingState = (input) => {
+    const formItem = input.closest('.form-item');
+    const label = formItem?.querySelector('.input-label');
+    const defaultValue = formItem?.querySelector('.default-value');
+
+    const shouldFloat = document.activeElement === input || input.value.trim().length > 0;
+
+    label?.classList.toggle('top', shouldFloat);
+    defaultValue?.classList.toggle('d-none', !shouldFloat);
+  };
+
+  const normalizeNumberInput = (input, maxLength) => {
+    const normalizedValue = input.value.replace(/\D/g, '').slice(0, maxLength);
+
+    if (input.value !== normalizedValue) {
+      input.value = normalizedValue;
+    }
+  };
+
+  const validateField = (input, showRequiredError = false) => {
+    const value = input.value.trim();
+    const isRequired = requiredFields.includes(input);
+
+    if (isRequired && !value) {
+      if (showRequiredError) {
+        showError(input, messages.required);
+      } else {
+        clearError(input);
+      }
+
+      return false;
+    }
+
+    if (!value) {
+      clearError(input);
+      return true;
+    }
+
+    if (input.id === 'mobileNumber' && !isMobileNoValid(value)) {
+      showError(input, messages.mobile);
+      return false;
+    }
+
+    if (input.id === 'pincode' && !isPincodeValid(value)) {
+      showError(input, messages.pincode);
+      return false;
+    }
+
+    if (input.id === 'emailId' && !isEmailIdValid(value)) {
+      showError(input, messages.email);
+      return false;
+    }
+
+    clearError(input);
+    return true;
+  };
+
+  const hasVisibleErrors = () =>
+    requiredFields.some((input) => {
+      const errorEl = getErrorElement(input);
+      return errorEl && !errorEl.classList.contains('d-none');
+    });
+
+  const hasEmptyRequiredFields = () =>
+    requiredFields.some((input) => input.value.trim() === '');
+
+  const setSubmitState = () => {
+    const isValid = !hasVisibleErrors() && !hasEmptyRequiredFields();
+
+    submitBtn.disabled = !isValid;
+  };
+
+  allInputs.forEach((input) => {
+    input.addEventListener('focus', () => {
+      setFloatingState(input);
+
+      if (requiredFields.includes(input) && !input.value.trim()) {
+        clearError(input);
+      }
+
+      setSubmitState();
+    });
+
+    input.addEventListener('blur', () => {
+      setFloatingState(input);
+      validateField(input, true);
+      setSubmitState();
+    });
+
+    input.addEventListener('input', () => {
+      if (input.id === 'mobileNumber') {
+        normalizeNumberInput(input, 10);
+      }
+
+      if (input.id === 'pincode') {
+        normalizeNumberInput(input, 6);
+      }
+
+      setFloatingState(input);
+      validateField(input, false);
+      setSubmitState();
+    });
+  });
+
+  // Handles browser autofill state.
+  setTimeout(() => {
+    allInputs.forEach(setFloatingState);
+    setSubmitState();
+  }, 0);
+
+  qs('.guest-login-close-btn')?.addEventListener('click', closeGuestDeliveryAddressModal);
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      closeGuestDeliveryAddressModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('active')) {
+      closeGuestDeliveryAddressModal();
+    }
+  });
+
+  submitBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    hideGuestInfoMessage(modal);
+
+    let isFormValid = true;
+
+    requiredFields.forEach((input) => {
+      if (!validateField(input, true)) {
+        isFormValid = false;
+      }
+    });
+
+    setSubmitState();
+
+    if (!isFormValid || submitBtn.disabled) {
+      return;
+    }
+
+    await submitGuestDeliveryAddress(modal, submitBtn);
+  });
+}
+
+async function submitGuestDeliveryAddress(modal, submitBtn) {
+  const getValue = (id) => modal.querySelector(`#${id}`)?.value.trim() || '';
+
+  const userEmail = getValue('emailId');
+
+  const dataToSend = {
+    userMobileNumber: getValue('mobileNumber'),
+    userEmail,
+    userPincode: getValue('pincode'),
+    userName: getValue('fullName'),
+    flatNumber: getValue('flat'),
+    locality: getValue('locality'),
+    landmark: getValue('landmark'),
+    city: getValue('city'),
+  };
+
+  setGuestDigitalData('not logged in');
+
+  trackGuestAnalytics('guest_login_continue', {
+    checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
+    loginStatus: window.digitalData?.user?.loginStatus || 'not logged in',
+  });
+
+  let resetSubmitButton = true;
+
+  try {
+    submitBtn.disabled = true;
+    submitBtn.classList.add('is-loading');
+    submitBtn.textContent = 'SUBMITTING...';
+
+    const fetchResponse = await fetch('/apcolourcatalogue/keycloak/guestLogin', {
+      method: 'POST',
+
+      // This matches jQuery $.ajax default form-post behavior.
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      },
+
+      body: new URLSearchParams({
+        data: JSON.stringify(dataToSend),
+      }),
+    });
+
+    let response = {};
+
+    try {
+      response = await fetchResponse.json();
+    } catch (error) {
+      response = {};
+    }
+
+    if (response.uuid) {
+      setCookie('guest_UID', response.uuid);
+      setCookie('guest_email', userEmail);
+
+      setGuestDigitalData('logged in');
+
+      trackGuestAnalytics('guest_login_successful', {
+        checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
+        loginStatus: window.digitalData?.user?.loginStatus || 'logged in',
+      });
+
+      closeGuestDeliveryAddressModal();
+
+      /**
+       * Legacy flow.
+       * In EDS, keep this if headerMiniCart is exposed globally.
+       * Otherwise listen to the custom event below and redirect from your cart module.
+       */
+      if (window.headerMiniCart?.checkoutRedirectLogin) {
+        window.headerMiniCart.checkoutRedirectLogin();
+      } else {
+        document.dispatchEvent(
+          new CustomEvent('guest-login-success', {
+            detail: {
+              response,
+              dataToSend,
+            },
+          })
+        );
+      }
+
+      resetSubmitButton = false;
+      return;
+    }
+
+    if (response.status === 409 || fetchResponse.status === 409) {
+      showGuestInfoMessage(
+        modal,
+        'User already exist redirecting you for the login page'
+      );
+
+      setTimeout(() => {
+        closeGuestDeliveryAddressModal();
+
+        if (typeof showLoginGuestPopup === 'function') {
+          showLoginGuestPopup();
+        } else if (typeof window.showLogin === 'function') {
+          window.showLogin();
+        }
+      }, 1000);
+
+      return;
+    }
+
+    showGuestError(modal);
+  } catch (error) {
+    console.error('Error while initiating Guest Login Flow', error);
+    showGuestError(modal);
+  } finally {
+    if (resetSubmitButton) {
+      submitBtn.classList.remove('is-loading');
+      submitBtn.textContent = 'SUBMIT';
+      submitBtn.disabled = false;
+    }
+  }
+}
+
+function showGuestError(modal) {
+  setGuestDigitalData('not logged in', 'Something went wrong');
+
+  trackGuestAnalytics('guest_login_error', {
+    checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
+    loginError: window.digitalData?.user?.loginErrorName || 'Something went wrong',
+  });
+
+  showGuestInfoMessage(
+    modal,
+    'Something went wrong. Please try after sometime'
+  );
+}
+
+function showGuestInfoMessage(modal, message) {
+  const infoMsg = modal.querySelector('.guest-exist');
+
+  if (!infoMsg) return;
+
+  infoMsg.textContent = message;
+  infoMsg.classList.remove('d-none');
+}
+
+function hideGuestInfoMessage(modal) {
+  const infoMsg = modal.querySelector('.guest-exist');
+
+  if (!infoMsg) return;
+
+  infoMsg.classList.add('d-none');
+}
+
+function setGuestDigitalData(loginStatus, loginErrorName) {
+  if (!window.digitalData?.user) return;
+
+  window.digitalData.user.CheckoutUserType = 'guest';
+
+  if (loginStatus) {
+    window.digitalData.user.loginStatus = loginStatus;
+  }
+
+  if (loginErrorName) {
+    window.digitalData.user.loginErrorName = loginErrorName;
+  }
+}
+
+function trackGuestAnalytics(eventName, payload) {
+  if (
+    window.ccAnalytics?.satelliteCheck?.()
+    && window._satellite?.track
+  ) {
+    window._satellite.track(eventName, payload);
+  }
+}
+
+function setCookie(name, value) {
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
+}
+
+
 
 function buildMegamenuPanel(submenuUl, parentLabel = '') {
   const dropdown = document.createElement('div');
@@ -3043,8 +3832,15 @@ function addInteractions(block) {
       const minR = 12;
       const maxR = window.innerWidth - modalW - 12;
       rightPos = Math.max(minR, Math.min(rightPos, maxR));
-      modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
-      modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+      let isMobile = window.innerWidth <= 991;
+      if (isMobile) {
+        modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
+        modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+      } else {
+      modalEl.style.setProperty('--cart-top', `${rect.bottom + 13}px`);
+      modalEl.style.setProperty('--cart-right', `${rightPos + 15}px`);
+      }
+     
     };
 
     cartBtn.addEventListener('click', (e) => {
@@ -3345,6 +4141,9 @@ export default async function decorate(block) {
 
   // Visual search modal
   block.appendChild(buildVisualSearchModal());
+
+  // Login popup (local auth/test fallback)
+  block.appendChild(buildLoginModal());
 
   // Search dialog (full-screen overlay)
   block.appendChild(buildSearchDialog());

@@ -177,6 +177,19 @@ footer {
   min-height: 200px;
 }
 
+/* Reserve minimum card height on the .cards.grid mobile layout so the
+   .section.video-container does not collapse before card images decode.
+   PSI flagged 0.218 CLS on /paint-products/interior-wall-paints from
+   the unsized card images (1134x522 intrinsic, rendered ~190px on
+   mobile). The card image CSS keeps `aspect-ratio: auto` so it still
+   fills the parent via object-fit: cover — this rule only puts a floor
+   on the parent so the layout reserves height before image load. */
+@media (max-width: 768px) {
+  main .cards.grid > ul > li {
+    min-height: 190px;
+  }
+}
+
 h1,
 h2,
 h3,
@@ -919,7 +932,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   }
 }
   @media (width <= 600px) {
-  .no-padding-mob{
+  main .section.no-padding-mob{
     padding: 0;
   }
 }
@@ -972,3 +985,8 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
       line-height: 24px;
     }
 }
+
+/* common styles to hide exitintent popup questions */
+  body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .lead-form-fields .question-panel{
+    display: none;
+  }
