@@ -389,7 +389,7 @@ function loadDelayed() {
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
     import('./delayed.js');
-  }, 3000);
+  }, 8000);
 
   // Skip splash popup for Lighthouse / PageSpeed bots — the full-screen
   // modal tanks Speed Index because it covers the entire viewport.
@@ -452,7 +452,7 @@ function loadDelayed() {
     };
   })();
 
-  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach((evt) => {
+  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel', 'mousemove'].forEach((evt) => {
     window.addEventListener(evt, triggerAnalytics, {
       once: true,
       passive: true,

@@ -215,7 +215,7 @@ export default function decorate(block) {
       if (isRoomBlock && btnTitle.toLowerCase() === 'explore now') {
         const roomTitle = body?.querySelector('.cards-card-title')?.textContent.trim() || parentTitle;
 
-        trackEvent('custom_cta_click', {
+        trackEvent('custom_link_text', {
           cta_: btnTitle,
           redirectionLink: ctaLink,
           parentTitle: roomTitle,

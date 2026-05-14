@@ -1,3 +1,5 @@
+/* stylelint-disable selector-class-pattern */
+
 /* ============================================
 Variant: search (default) — Pincode (search)
 ============================================ */
@@ -202,7 +204,7 @@ Variant: cta — Pincode (cta)
     align-items: center;
     background-color: #e6f3fa;
     overflow: hidden;
-    border-radius: 0 !important;
+    border-radius: 10px;
     margin-top: 7%;
 }
 
@@ -212,11 +214,24 @@ Variant: cta — Pincode (cta)
     }
 }
 
-.pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper {
-    width: 100%;
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .swap-img-wraper {
     display: flex;
-    border-radius: 0 !important;
-    overflow: visible;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    background-color: #e6f3fa;
+}
+
+@media (width <= 991px) {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .swap-img-wraper {
+        flex-direction: column;
+    }
+}
+
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper {
+    height: auto;
+    width: auto;
+    display: flex;
 }
 
 @media (width >= 768px) and (width <= 991px) {
@@ -228,133 +243,130 @@ Variant: cta — Pincode (cta)
 @media (width >= 991px) and (width <= 1200px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper {
         max-height: 237px;
-        width: 37%;
     }
 }
 
-@media (width >= 992px) {
+@media (width >= 1201px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper {
-        width: 53%;
-        height:stretch;
+        height: 365px;
     }
 }
 
-@media (width >= 1251px) and (width <= 1300px){
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper{
-        width: 75%;
+@media (width <= 991px) {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper {
+        height: 100%;
+        width: 100%;
     }
-}
-
-.pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper.img-left picture {
-    float: left;
-    width: 100%;
-    height: 100%;
-    border-radius: 0 !important;
-    overflow: visible;
 }
 
 .pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
     display: block;
-    border-radius: 0 !important;
-    clip-path: none !important;
+}
+
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper.img-left img {
+    float: left;
+    margin: 1px;
 }
 
 .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
     padding: 50px;
     background-color: transparent;
-    width: 63%;
+    width: 40%;
     box-sizing: border-box;
 }
 
 @media (width <= 991px) {
     .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
-        padding: 30px 20px;
+        padding: 22px 20px 30px;
         margin: 0;
         width: 100%;
     }
 }
 
-@media (width >= 1251px) and (width <= 1300px){
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
-        width: 70%;
-    }
-}
-
 @media (width >= 992px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading {
-        //width: 65% !important;
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
+        width: 50%;
     }
 }
 
-@media (width >= 1251px) and (width <= 1300px){
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading {
-        width: 100% !important;
+@media (width >= 1400px) and (width <= 1559px) {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
+        width: 56%;
     }
 }
 
-.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h2 {
+    margin: 0 0 25px;
+}
+
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .mob-weight-800,
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-weight-800 {
+    font-weight: 800;
+}
+
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .mob-extra-bold-32,
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
     font-family: Manrope, sans-serif;
-    font-weight: 600;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    color: #222;
+}
+
+.pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
+    display: inline-block;
     font-size: 40px;
     line-height: 44.4px;
-    color: #222;
-    margin-bottom: 25px;
-    margin-top: 0;
 }
 
 @media (width >= 992px) and (width <= 1100px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1,
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right .rte h2 .desk-extra-bold-54 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 30px;
         line-height: 32.4px;
     }
 }
 
 @media (width >= 1101px) and (width <= 1250px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1,
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right .rte h2 .desk-extra-bold-54 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 37px;
         line-height: 36.4px;
     }
 }
 
 @media (width >= 1251px) and (width <= 1300px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1,
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right .rte h2 .desk-extra-bold-54 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 40px;
         line-height: 44.4px;
     }
 }
 
 @media (width >= 1301px) and (width <= 1400px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1,
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right .rte h2 .desk-extra-bold-54 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 45px;
         line-height: 45.4px;
     }
 }
 
 @media (width >= 1401px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1,
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right .rte h2 .desk-extra-bold-54 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 54px;
         line-height: 64px;
     }
 }
 
 @media (width <= 767px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 32px;
         line-height: 1.15;
     }
 }
 
 @media (width >= 768px) and (width <= 991px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading h1 {
+    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper .righttext-heading .desk-extra-bold-54 {
         font-size: 40px;
+        line-height: 44.4px;
     }
 }
 

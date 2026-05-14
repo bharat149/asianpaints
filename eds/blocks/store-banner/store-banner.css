@@ -32,7 +32,13 @@
   }
 
   .store-banner-link img {
-    aspect-ratio: auto;
+    /* Respect intrinsic aspect-ratio from HTML width/height attrs so the
+       browser reserves space before the image loads. Previously this rule
+       set aspect-ratio: auto, which discarded the intrinsic ratio and
+       caused CLS 0.193 on interior-wall-paints (PSI flagged it as
+       "Unsized image element"). The mobile <img> has width=2160 height=600
+       (ratio 3.6:1); keeping the intrinsic ratio lets the box reserve
+       roughly viewport_width / 3.6 of height before paint. */
     object-fit: cover;
   }
 }

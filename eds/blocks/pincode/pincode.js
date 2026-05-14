@@ -76,6 +76,7 @@ function trackContractorSearch(searchKeyWord) {
   }
 
   if (window.ccAnalytics?.satelliteCheck?.()) {
+    // eslint-disable-next-line no-underscore-dangle
     window._satellite?.track('contractor_search', {
       cityPincode: searchKeyWord,
     });
@@ -181,11 +182,13 @@ function decorateCta(block) {
   const ctaTarget = getCellText(cfg['cta target']) || '_self';
 
   const wrapper = document.createElement('div');
-  wrapper.className = 'swapimagewithcta imageWithRightTextComp';
+  wrapper.className = 'swapimagewithcta baseCTSpace imageWithRightTextComp imageLeftAligned';
 
-  const imgWrap = document.createElement('div');
+  const swapImgWraper = document.createElement('div');
+  swapImgWraper.className = 'swap-img-wraper';
+
+  const imgWrap = picture || document.createElement('div');
   imgWrap.className = 'img-wrapper img-left';
-  if (picture) imgWrap.appendChild(picture);
 
   const rightWrap = document.createElement('div');
   rightWrap.className = 'righttext-wrapper text-align-right';
@@ -193,9 +196,26 @@ function decorateCta(block) {
   const headingWrap = document.createElement('div');
   headingWrap.className = 'righttext-heading';
   if (titleText) {
-    const h1 = document.createElement('h1');
-    h1.textContent = titleText;
-    headingWrap.appendChild(h1);
+    const rte = document.createElement('div');
+    rte.className = 'rte text section';
+
+    const h2 = document.createElement('h2');
+    const mobileWeight = document.createElement('span');
+    mobileWeight.className = 'mob-weight-800';
+    const desktopWeight = document.createElement('span');
+    desktopWeight.className = 'desk-weight-800';
+    const mobileSize = document.createElement('span');
+    mobileSize.className = 'mob-extra-bold-32';
+    const desktopSize = document.createElement('span');
+    desktopSize.className = 'desk-extra-bold-54';
+    desktopSize.textContent = titleText;
+
+    mobileSize.appendChild(desktopSize);
+    desktopWeight.appendChild(mobileSize);
+    mobileWeight.appendChild(desktopWeight);
+    h2.appendChild(mobileWeight);
+    rte.appendChild(h2);
+    headingWrap.appendChild(rte);
   }
   rightWrap.appendChild(headingWrap);
 
@@ -230,8 +250,9 @@ function decorateCta(block) {
   pinWrap.appendChild(inputWithCta);
   findWrap.appendChild(pinWrap);
   rightWrap.appendChild(findWrap);
-  wrapper.appendChild(imgWrap);
-  wrapper.appendChild(rightWrap);
+  swapImgWraper.appendChild(imgWrap);
+  swapImgWraper.appendChild(rightWrap);
+  wrapper.appendChild(swapImgWraper);
 
   const onGo = () => handleRedirection(input.value.trim(), {
     baseUrl: ctaLink || undefined,
