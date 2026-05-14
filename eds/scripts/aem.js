@@ -523,6 +523,10 @@ function decorateSections(main) {
           section.dataset[toCamelCase(key)] = meta[key];
         }
       });
+      // Hide exit intent questions section
+      if (String(meta['exit-intent-form-questions-hide']).toLowerCase() === 'true') {
+        document.body.classList.add('hide-exit-intent-form-questions');
+      }
       sectionMeta.parentNode.remove();
     }
   });
