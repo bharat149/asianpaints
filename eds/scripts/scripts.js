@@ -384,7 +384,56 @@ async function loadSplashPopup() {
  * Splash popup, Sprinklr chat, Swiper, Bootstrap, jQuery, and analytics
  * are all deferred here to keep them out of the critical rendering path.
  */
+/**
+ * Preload the Adobe Launch container in the background at low priority.
+ * The file downloads while LCP is paint-priority but does NOT execute until
+ * triggerAnalytics() loads it later — keeping main thread free during the
+ * Lighthouse measurement window.
+ *
+ * Net effect: when the user hovers/scrolls/clicks, Launch is already in the
+ * HTTP cache and loads in ~200ms instead of waiting for the full 1.5–2 s
+ * network fetch. Events arrive ~500 ms after user action instead of ~3 s.
+ */
+async function preloadAdobeLaunch() {
+  try {
+    const isBeta = window.location.hostname.includes('beta')
+      || window.location.hostname.includes('aem.page')
+      || window.location.hostname.includes('aem.live');
+    const launchUrlKey = isBeta ? 'beta_launchUrl' : 'prod_launchUrl';
+    const { getSiteConfig } = await import('./configs.js');
+    const siteConfig = await getSiteConfig();
+    const launchUrl = siteConfig?.data?.find((entry) => entry?.key === launchUrlKey)?.value
+      || siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
+    if (!launchUrl) return;
+
+    if (document.querySelector('link[data-launch-preload]')) return;
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'script';
+    link.href = launchUrl;
+    link.crossOrigin = 'anonymous';
+    link.setAttribute('fetchpriority', 'low');
+    link.setAttribute('data-launch-preload', 'true');
+    document.head.appendChild(link);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('Adobe Launch preload skipped', e);
+  }
+}
+
 function loadDelayed() {
+  /* Background-preload Adobe Launch as soon as the eager phase is done.
+   * Uses `<link rel="preload" fetchpriority="low">` so the file enters the
+   * browser HTTP cache without blocking LCP. When triggerAnalytics() runs
+   * later (on user interaction or 25 s timeout), the Launch script is
+   * already cached and executes in ~200 ms instead of ~1.5–2 s. */
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(preloadAdobeLaunch, { timeout: 2500 });
+  } else {
+    window.setTimeout(preloadAdobeLaunch, 1500);
+  }
+
   /* ── Tier 1 (3 s) — lightweight, needed early ────────────────────── */
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
@@ -439,7 +488,11 @@ function loadDelayed() {
       if (triggered) return;
       triggered = true;
       try {
-        await window.loadJQuery?.();
+        // Kick jQuery off in parallel — don't block analytics on it. Nothing
+        // in the analytics init path actually needs jQuery synchronously;
+        // older blocks that consume jQuery already await the same promise.
+        window.loadJQuery?.();
+
         if (typeof (_satellite) !== 'undefined') {
           _satellite.track('pageload');
         }
