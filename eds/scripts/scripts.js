@@ -423,19 +423,16 @@ async function preloadAdobeLaunch() {
 }
 
 function loadDelayed() {
-  /* Background-preload Adobe Launch immediately. Uses
-   * `<link rel="preload" fetchpriority="low">` so the file enters the
-   * browser HTTP cache without blocking LCP — the preload tag itself is
-   * cheap to inject (single DOM node), and `fetchpriority="low"` lets
-   * the browser queue it behind LCP-critical resources.
-   *
-   * Previously this was scheduled via requestIdleCallback / 1.5s timeout,
-   * but on heavy pages the main thread stays busy long enough that the
-   * preload didn't beat the user's mousemove trigger. Now we inject the
-   * preload tag immediately so by the time triggerAnalytics() actually
-   * loads the script, it hits the browser cache (~50 ms) instead of a
-   * fresh network fetch (~1500-2000 ms). */
-  preloadAdobeLaunch();
+  /* Background-preload Adobe Launch as soon as the eager phase is done.
+   * Uses `<link rel="preload" fetchpriority="low">` so the file enters the
+   * browser HTTP cache without blocking LCP. When triggerAnalytics() runs
+   * later (on user interaction or 25 s timeout), the Launch script is
+   * already cached and executes in ~200 ms instead of ~1.5–2 s. */
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(preloadAdobeLaunch, { timeout: 2500 });
+  } else {
+    window.setTimeout(preloadAdobeLaunch, 1500);
+  }
 
   /* ── Tier 1 (3 s) — lightweight, needed early ────────────────────── */
   window.setTimeout(() => {
