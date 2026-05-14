@@ -5,6 +5,9 @@
  * mobile prefix, and radio pill questions.
  */
 
+import { submitLeadFromForm, getCampaignIdFromUrl } from '../../scripts/form-submit-common.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+
 const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
 const DEFAULT_SUCCESS_MESSAGE = 'Thank you! We will contact you soon.';
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.';
@@ -144,12 +147,13 @@ function syncWhatsAppToggle(wrapper) {
   if (!input || !toggle || !state) return;
 
   toggle.classList.toggle('is-checked', input.checked);
+  wrapper.classList.toggle('whatsAppCheckbox-checked', input.checked);
   state.textContent = input.checked ? 'ON' : 'OFF';
 }
 
 function createWhatsAppField(field) {
   const wrapper = document.createElement('div');
-  wrapper.className = `field-wrapper field-${field.name} whatsapp-field`;
+  wrapper.className = `field-wrapper field-${field.name} whatsapp-field whatsAppConsentFormFld whatsAppCheckbox-checked`;
 
   const input = document.createElement('input');
   input.type = 'checkbox';
@@ -179,6 +183,7 @@ function createWhatsAppField(field) {
   wrapper.append(input, label);
 
   input.addEventListener('change', () => syncWhatsAppToggle(wrapper));
+  syncWhatsAppToggle(wrapper);
 
   return wrapper;
 }
@@ -338,6 +343,75 @@ function showMessage(form, type, message) {
   }
 }
 
+function toAttrSelector(name = '') {
+  const escaped = `${name}`.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return `[name="${escaped}"]`;
+}
+
+function getLeadInputSelectors(form) {
+  const controls = [...form.querySelectorAll('input, textarea')].filter((el) => el.name && !el.disabled);
+  const selectorByMatcher = (matcher) => {
+    const match = controls.find((control) => matcher(control));
+    return match ? toAttrSelector(match.name) : undefined;
+  };
+
+  return {
+    name: selectorByMatcher((el) => /name/i.test(el.name)),
+    email: selectorByMatcher((el) => el.type === 'email' || /email/i.test(el.name)),
+    mobile: selectorByMatcher((el) => el.type === 'tel' || /mobile|phone|contact/i.test(el.name)),
+    pincode: selectorByMatcher((el) => /pin|zip|postal/i.test(el.name)),
+    whatsappConsent: '.whatsAppConsentFormFld',
+  };
+}
+
+function getCampaignId() {
+  return getCampaignIdFromUrl();
+}
+
+function getRadioOrCheckboxValue(form, name) {
+  const checked = form.querySelector(`input[name="${name}"]:checked`);
+  if (checked) return checked.value;
+
+  const toggle = form.querySelector(`input[name="${name}"]`);
+  if (!toggle) return '';
+  return toggle.checked ? 'Yes' : 'No';
+}
+
+function normalizeYesNo(value) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (!normalized) return '';
+  if (['yes', 'y', 'true', '1'].includes(normalized)) return 'Yes';
+  if (['no', 'n', 'false', '0'].includes(normalized)) return 'No';
+  return value;
+}
+
+function trackLeadFormStart(form) {
+  if (form.dataset.formStarted === 'true') return;
+
+  form.dataset.formStarted = 'true';
+  trackEvent('form_start', {
+    formName: form.dataset.formName || 'lead-form',
+    campaignId: getCampaignId(),
+  });
+}
+
+function trackLeadFormSubmission(form) {
+  const pincodeInput = form.querySelector('input[name*="pin" i], input[name*="zip" i], input[name*="postal" i]');
+  const whatsappConsent = form.querySelector('.whatsAppConsentFormFld')?.classList.contains('whatsAppCheckbox-checked') ? 'Y' : 'N';
+
+  const formData = {
+    formName: form.dataset.formName || 'lead-form',
+    campaignId: getCampaignId(),
+    pincode: pincodeInput?.value?.trim() || '',
+    whatsappOptIn: whatsappConsent,
+    contruction: normalizeYesNo(getRadioOrCheckboxValue(form, 'renovating_home')),
+    localpainter: normalizeYesNo(getRadioOrCheckboxValue(form, 'hired_painter')),
+  };
+
+  getDigitalData().form = formData;
+  trackEvent('form_submit', formData);
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
 
@@ -351,28 +425,14 @@ async function handleSubmit(event) {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Submitting...';
 
-  const payload = { __id__: `${Date.now()}-${Math.round(Math.random() * 100000)}` };
-
-  [...form.elements].forEach((el) => {
-    if (!el.name || el.disabled || el.type === 'submit') return;
-
-    if (el.type === 'radio' && !el.checked) return;
-    if (el.type === 'checkbox') {
-      payload[el.name] = el.checked ? el.value : '';
-      return;
-    }
-    payload[el.name] = el.value;
-  });
-
   try {
-    const response = await fetch(form.dataset.action || window.location.pathname, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: payload }),
+    await submitLeadFromForm(form, {
+      resourcePath: form.dataset.action || window.location.pathname || '',
+      campaignId: getCampaignId(),
+      selectors: getLeadInputSelectors(form),
     });
 
-    if (!response.ok) throw new Error(`Failed: ${response.status}`);
-
+    trackLeadFormSubmission(form);
     showMessage(form, 'success', DEFAULT_SUCCESS_MESSAGE);
     form.reset();
     form.querySelectorAll('.whatsapp-field').forEach(syncWhatsAppToggle);
@@ -517,7 +577,15 @@ export default async function decorate(block) {
         form.append(createTextField(field));
       }
     });
+
+    wireValidation(form);
   }
+
+  form.addEventListener('focusin', (e) => {
+    if (e.target.matches('input, textarea, select')) {
+      trackLeadFormStart(form);
+    }
+  });
 
   form.addEventListener('submit', handleSubmit);
 
