@@ -250,21 +250,6 @@
 .get-inspired .swiper-slide {
     overflow: hidden;
     border-radius: 8px;
-    /* Reserve the slide box ratio matching the intrinsic image (324:470)
-       so the swiper carousel does not shift when the lazy-loaded gallery
-       images decode. PSI flagged 0.553 + 0.170 CLS on /inspiration.html
-       as "Unsized image element" because the parent slide had no fixed
-       height — image rendered at 0 height initially, then jumped to the
-       intrinsic ratio when each picture arrived. */
-    aspect-ratio: 324 / 470;
-}
-
-.get-inspired .swiper-slide picture,
-.get-inspired .swiper-slide picture img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
 }
 
 /* Desktop fixed card width */
