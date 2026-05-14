@@ -54,7 +54,7 @@ setupGlobalClickListener();
 
 
 /* CHECK TARGET*/
-
+<div class="modal-backdrop fade" style="display: none;"></div>
 window.modalHandler = window.modalHandler || {};
 const modalHandler = window.modalHandler;
 
