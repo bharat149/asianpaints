@@ -1941,6 +1941,10 @@ body.nav-open {
   .header.mobile-scrolled .cart-modal-overlay .cart-modal{
     top: 50px !important;
   }
+
+  .header.block.mobile-scrolled .nav-item>.nav-dropdown {
+      margin-top: -40px;
+  }
 }
 .header.desktop-scrolled .cart-modal-overlay .cart-modal{
     top: 55px !important;
