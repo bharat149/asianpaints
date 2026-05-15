@@ -93,7 +93,7 @@ function resolveModal(modalOrSelector) {
   return null;
 }
 
-/*
+
 modalHandler.showModal = function (modalOrSelector) {
   const modal = resolveModal(modalOrSelector);
 
@@ -113,7 +113,7 @@ modalHandler.showModal = function (modalOrSelector) {
 
   document.body.classList.add('modal-open');
 };
-*/
+
 
 modalHandler.closeModal = function (modalOrSelector) {
   const modal = resolveModal(modalOrSelector);
