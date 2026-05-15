@@ -46,7 +46,7 @@ export async function createModal(contentNodes) {
   });
 
   dialog.addEventListener('close', () => {
-    document.body.classList.remove('modal-open');
+    document.body.classList.remove('eds-modal-open');
     window.activeModalElement = null; // Clear reference on close
     block.remove();
   });
@@ -59,7 +59,7 @@ export async function createModal(contentNodes) {
     showModal: () => {
       dialog.showModal();
       setTimeout(() => { dialogContent.scrollTop = 0; }, 0);
-      document.body.classList.add('modal-open');
+      document.body.classList.add('eds-modal-open');
     },
   };
 }
