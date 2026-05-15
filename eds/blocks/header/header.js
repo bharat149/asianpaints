@@ -2442,6 +2442,17 @@ function buildCartModal() {
   });
 
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
+
+  const shade = document.createElement('div');
+  shade.className = 'mini-cart-shade';
+  shade.innerHTML = `
+    <p class="mini-cart-shade--textArea">
+      <span class="rotating">↻</span>
+      <span>Processing...</span>
+    </p>
+  `;
+
+  modal.append(shade);
   overlay.appendChild(modal);
 
   const close = () => overlay.classList.remove('active');
@@ -3588,7 +3599,11 @@ async function refreshCartModal(block) {
 
 async function attachCartItemListeners(block, cartModal) {
   if (!cartModal) return;
-  
+  const shadeClass = 'mini-cart-shade--show';
+
+  const showShade = () => cartModal.classList.add(shadeClass);
+  const hideShade = () => cartModal.classList.remove(shadeClass);
+
   cartModal.addEventListener('click', async (e) => {
     const button = e.target.closest('button');
     if (!button) return;
@@ -3600,29 +3615,34 @@ async function attachCartItemListeners(block, cartModal) {
     const currentQuantity = Number(row.dataset.quantity) || 1;
     let success = false;
 
-    if (button.classList.contains('cart-item-remove')) {
-      button.disabled = true;
-      success = await deleteCartEntry(entryId);
-      button.disabled = false;
-    } else if (button.classList.contains('cart-qty-minus')) {
-      button.disabled = true;
-      const newQuantity = Math.max(1, currentQuantity - 1);
-      if (newQuantity === 0) {
+    showShade();
+    try {
+      if (button.classList.contains('cart-item-remove')) {
+        button.disabled = true;
         success = await deleteCartEntry(entryId);
-      } else {
-        success = await updateCartEntryQuantity(entryId, newQuantity);
+        button.disabled = false;
+      } else if (button.classList.contains('cart-qty-minus')) {
+        button.disabled = true;
+        const newQuantity = Math.max(1, currentQuantity - 1);
+        if (newQuantity === 0) {
+          success = await deleteCartEntry(entryId);
+        } else {
+          success = await updateCartEntryQuantity(entryId, newQuantity);
+        }
+        button.disabled = false;
+      } else if (button.classList.contains('cart-qty-plus')) {
+        button.disabled = true;
+        success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
+        button.disabled = false;
       }
-      button.disabled = false;
-    } else if (button.classList.contains('cart-qty-plus')) {
-      button.disabled = true;
-      success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
-      button.disabled = false;
-    }
 
-    if (success) {
-      await refreshCartModal(block);
-      const totalCount = await fetchMiniCartCount();
-      updateCartBadge(block, totalCount);
+      if (success) {
+        await refreshCartModal(block);
+        const totalCount = await fetchMiniCartCount();
+        updateCartBadge(block, totalCount);
+      }
+    } finally {
+      hideShade();
     }
   }, { once: false });
 }
@@ -3910,11 +3930,10 @@ function addInteractions(block) {
 
   // Cart modal + live cart data fetch
   const cartBtn = block.querySelector('.cart-btn');
-  const cartModal = block.querySelector('.cart-modal-overlay');
-  if (cartBtn && cartModal) {
+  const cartModalOverlay = block.querySelector('.cart-modal-overlay');
+  const cartModal = cartModalOverlay?.querySelector('.cart-modal');
+  if (cartBtn && cartModal && cartModalOverlay) {
     const positionCartModal = () => {
-      const modalEl = cartModal.querySelector('.cart-modal');
-      if (!modalEl) return;
       const rect = cartBtn.getBoundingClientRect();
       const modalW = 440;
       let rightPos = window.innerWidth - rect.right - 10;
@@ -3923,20 +3942,19 @@ function addInteractions(block) {
       rightPos = Math.max(minR, Math.min(rightPos, maxR));
       let isMobile = window.innerWidth <= 991;
       if (isMobile) {
-        modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
-        modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+        cartModal.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
+        cartModal.style.setProperty('--cart-right', `${rightPos}px`);
       } else {
-      modalEl.style.setProperty('--cart-top', `${rect.bottom + 13}px`);
-      modalEl.style.setProperty('--cart-right', `${rightPos + 15}px`);
+        cartModal.style.setProperty('--cart-top', `${rect.bottom + 13}px`);
+        cartModal.style.setProperty('--cart-right', `${rightPos + 15}px`);
       }
-     
     };
 
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
       refreshCartModal(block);
       positionCartModal();
-      cartModal.classList.add('active');
+      cartModalOverlay.classList.add('active');
     });
 
     attachCartItemListeners(block, cartModal);

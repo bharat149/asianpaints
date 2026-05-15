@@ -1831,6 +1831,47 @@ body.nav-open {
   display: block;
 }
 
+.header .cart-modal .mini-cart-shade {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease, visibility 150ms ease;
+  z-index: 1998;
+  border-radius: 10px;
+}
+
+.header .cart-modal.mini-cart-shade--show .mini-cart-shade {
+  opacity: 1;
+  visibility: visible;
+}
+
+.header .mini-cart-shade--textArea {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+}
+
+.header .mini-cart-shade--textArea .rotating {
+  display: inline-block;
+  animation: mini-cart-rotate 1s linear infinite;
+}
+
+@keyframes mini-cart-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .header .cart-modal {
   position: fixed;
   top: var(--cart-top, 100px);
