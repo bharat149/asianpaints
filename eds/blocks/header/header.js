@@ -3473,23 +3473,35 @@ async function refreshCartModal(block) {
     }
     const data = await resp.json();
 
-    if (data.status === 'failure' || !data.entries || data.entries.length === 0) {
+
+    // Check for entries in various possible properties
+    const entries = data.entries || data.cartEntries || data.items || [];
+    // console.log('Found entries:', entries.length, entries); // Debug log
+    
+    if (data.status === 'failure' || !entries || entries.length === 0) {
+      // console.log('Setting shop state - no entries found'); // Debug log
       setShopState();
       return;
     }
 
-    const count = data.entries.length;
+    const count = entries.length;
     modal.classList.add('has-items');
+    // console.log('Added has-items class to modal, count:', count); // Debug log
     if (titleEl) {
       titleEl.textContent = `You have ${count} item${count !== 1 ? 's' : ''}`;
+      // console.log('Set title to:', titleEl.textContent); // Debug log
     }
     if (itemsList) {
       itemsList.innerHTML = '';
-      data.entries.forEach((entry) => {
+      entries.forEach((entry, index) => {
+        // console.log(`Entry ${index}:`, entry); // Debug log
         const product = entry.product || {};
+        console.log(`Entry ${index} product:`, product); // Debug log
+        console.log('Product properties:', { name: product.name, code: product.code, productUrl: product.productUrl, productImage: product.productImage }); // Debug log
         const row = document.createElement('div');
         row.className = 'cart-item-row';
-        const entryId = entry.entryNumber || entry.entryId || entry.id || product.productCode || product.hybrisProductId || '';
+        const entryId = (entry.entryNumber !== undefined && entry.entryNumber !== null) ? entry.entryNumber : (entry.entryId || entry.id || '');
+        // console.log('Entry ID:', entryId); // Debug log
         row.dataset.entryId = entryId;
         row.dataset.quantity = String(entry.quantity || 1);
 
@@ -3501,6 +3513,8 @@ async function refreshCartModal(block) {
 
         const productUrl = product.productUrl || product.url || '#';
 
+        // console.log('Creating row HTML for entryId:', entryId, 'quantity:', entry.quantity); // Debug log
+        
         row.innerHTML = `
     <a class="cart-item-image" href="${productUrl}">
       <img src="${imgSrc}" alt="${product.name || 'Product'}" loading="lazy">
@@ -3530,7 +3544,8 @@ async function refreshCartModal(block) {
     }
     if (totalRow) {
 
-      const rawTotal = data.totalprice || data.totalPrice || data.total || '';
+      const rawTotal = data.totalPriceWithTax?.value || data.totalPrice?.value || data.totalprice || data.totalPrice || data.total || '';
+      // console.log('Total price data:', { totalPriceWithTax: data.totalPriceWithTax, totalPrice: data.totalPrice, totalprice: data.totalprice, total: data.total, rawTotal }); // Debug log
 
       const totalPrice =
         typeof rawTotal === 'object'
@@ -3550,7 +3565,7 @@ async function refreshCartModal(block) {
     }
 
     if (shopBtn) {
-      const hasItems = data.entries && data.entries.length > 0;
+      const hasItems = entries && entries.length > 0;
 
       if (hasItems) {
         const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
@@ -3571,9 +3586,50 @@ async function refreshCartModal(block) {
   }
 }
 
+async function attachCartItemListeners(block, cartModal) {
+  if (!cartModal) return;
+  
+  cartModal.addEventListener('click', async (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+
+    const row = button.closest('.cart-item-row');
+    if (!row) return;
+
+    const entryId = row.dataset.entryId;
+    const currentQuantity = Number(row.dataset.quantity) || 1;
+    let success = false;
+
+    if (button.classList.contains('cart-item-remove')) {
+      button.disabled = true;
+      success = await deleteCartEntry(entryId);
+      button.disabled = false;
+    } else if (button.classList.contains('cart-qty-minus')) {
+      button.disabled = true;
+      const newQuantity = Math.max(1, currentQuantity - 1);
+      if (newQuantity === 0) {
+        success = await deleteCartEntry(entryId);
+      } else {
+        success = await updateCartEntryQuantity(entryId, newQuantity);
+      }
+      button.disabled = false;
+    } else if (button.classList.contains('cart-qty-plus')) {
+      button.disabled = true;
+      success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
+      button.disabled = false;
+    }
+
+    if (success) {
+      await refreshCartModal(block);
+      const totalCount = await fetchMiniCartCount();
+      updateCartBadge(block, totalCount);
+    }
+  }, { once: false });
+}
+
 async function deleteCartEntry(entryId) {
   if (!entryId) return false;
-  const url = `/apcolourcatalogue/commerce/deleteCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
+  const url = `apcolourcatalogue/commerce/deleteCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
   try {
     const resp = await fetchFromAp(url, { method: 'DELETE', credentials: 'include' });
     return resp?.ok === true;
@@ -3584,7 +3640,7 @@ async function deleteCartEntry(entryId) {
 
 async function updateCartEntryQuantity(entryId, quantity) {
   if (!entryId || quantity < 1) return false;
-  const url = `/apcolourcatalogue/commerce/updateCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
+  const url = `apcolourcatalogue/commerce/updateCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
   const body = new URLSearchParams({ quantity: String(quantity) });
   try {
     const resp = await fetchFromAp(url, {
@@ -3883,45 +3939,7 @@ function addInteractions(block) {
       cartModal.classList.add('active');
     });
 
-    const cartItemsList = cartModal.querySelector('.cart-items-list');
-    if (cartItemsList) {
-      cartItemsList.addEventListener('click', async (e) => {
-        const button = e.target.closest('button');
-        if (!button) return;
-
-        const row = button.closest('.cart-item-row');
-        if (!row) return;
-
-        const entryId = row.dataset.entryId;
-        const currentQuantity = Number(row.dataset.quantity) || 1;
-        let success = false;
-
-        if (button.classList.contains('cart-item-remove')) {
-          button.disabled = true;
-          success = await deleteCartEntry(entryId);
-          button.disabled = false;
-        } else if (button.classList.contains('cart-qty-minus')) {
-          button.disabled = true;
-          const newQuantity = Math.max(1, currentQuantity - 1);
-          if (newQuantity === 0) {
-            success = await deleteCartEntry(entryId);
-          } else {
-            success = await updateCartEntryQuantity(entryId, newQuantity);
-          }
-          button.disabled = false;
-        } else if (button.classList.contains('cart-qty-plus')) {
-          button.disabled = true;
-          success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
-          button.disabled = false;
-        }
-
-        if (success) {
-          await refreshCartModal(block);
-          const totalCount = await fetchMiniCartCount();
-          updateCartBadge(block, totalCount);
-        }
-      });
-    }
+    attachCartItemListeners(block, cartModal);
   }
 
   // Profile — dropdown when logged in, auth redirect when not
