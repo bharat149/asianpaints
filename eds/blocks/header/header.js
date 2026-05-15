@@ -2442,6 +2442,17 @@ function buildCartModal() {
   });
 
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
+
+  const shade = document.createElement('div');
+  shade.className = 'mini-cart-shade';
+  shade.innerHTML = `
+    <p class="mini-cart-shade--textArea">
+      <span class="rotating">↻</span>
+      <span>Processing...</span>
+    </p>
+  `;
+
+  modal.append(shade);
   overlay.appendChild(modal);
 
   const close = () => overlay.classList.remove('active');
@@ -3473,22 +3484,37 @@ async function refreshCartModal(block) {
     }
     const data = await resp.json();
 
-    if (data.status === 'failure' || !data.entries || data.entries.length === 0) {
+
+    // Check for entries in various possible properties
+    const entries = data.entries || data.cartEntries || data.items || [];
+    // console.log('Found entries:', entries.length, entries); // Debug log
+    
+    if (data.status === 'failure' || !entries || entries.length === 0) {
+      // console.log('Setting shop state - no entries found'); // Debug log
       setShopState();
       return;
     }
 
-    const count = data.entries.length;
+    const count = entries.length;
     modal.classList.add('has-items');
+    // console.log('Added has-items class to modal, count:', count); // Debug log
     if (titleEl) {
       titleEl.textContent = `You have ${count} item${count !== 1 ? 's' : ''}`;
+      // console.log('Set title to:', titleEl.textContent); // Debug log
     }
     if (itemsList) {
       itemsList.innerHTML = '';
-      data.entries.forEach((entry) => {
+      entries.forEach((entry, index) => {
+        // console.log(`Entry ${index}:`, entry); // Debug log
         const product = entry.product || {};
+        console.log(`Entry ${index} product:`, product); // Debug log
+        console.log('Product properties:', { name: product.name, code: product.code, productUrl: product.productUrl, productImage: product.productImage }); // Debug log
         const row = document.createElement('div');
         row.className = 'cart-item-row';
+        const entryId = (entry.entryNumber !== undefined && entry.entryNumber !== null) ? entry.entryNumber : (entry.entryId || entry.id || '');
+        // console.log('Entry ID:', entryId); // Debug log
+        row.dataset.entryId = entryId;
+        row.dataset.quantity = String(entry.quantity || 1);
 
         const imgSrc =
           product.productImage ||
@@ -3498,6 +3524,8 @@ async function refreshCartModal(block) {
 
         const productUrl = product.productUrl || product.url || '#';
 
+        // console.log('Creating row HTML for entryId:', entryId, 'quantity:', entry.quantity); // Debug log
+        
         row.innerHTML = `
     <a class="cart-item-image" href="${productUrl}">
       <img src="${imgSrc}" alt="${product.name || 'Product'}" loading="lazy">
@@ -3527,7 +3555,8 @@ async function refreshCartModal(block) {
     }
     if (totalRow) {
 
-      const rawTotal = data.totalprice || data.totalPrice || data.total || '';
+      const rawTotal = data.totalPriceWithTax?.value || data.totalPrice?.value || data.totalprice || data.totalPrice || data.total || '';
+      // console.log('Total price data:', { totalPriceWithTax: data.totalPriceWithTax, totalPrice: data.totalPrice, totalprice: data.totalprice, total: data.total, rawTotal }); // Debug log
 
       const totalPrice =
         typeof rawTotal === 'object'
@@ -3547,7 +3576,7 @@ async function refreshCartModal(block) {
     }
 
     if (shopBtn) {
-      const hasItems = data.entries && data.entries.length > 0;
+      const hasItems = entries && entries.length > 0;
 
       if (hasItems) {
         const cartPathOrUrl = data.cartUrl || data.redirectUrl || data.cartPageUrl || data.url;
@@ -3565,6 +3594,86 @@ async function refreshCartModal(block) {
     }
   } catch {
     setShopState();
+  }
+}
+
+async function attachCartItemListeners(block, cartModal) {
+  if (!cartModal) return;
+  const shadeClass = 'mini-cart-shade--show';
+
+  const showShade = () => cartModal.classList.add(shadeClass);
+  const hideShade = () => cartModal.classList.remove(shadeClass);
+
+  cartModal.addEventListener('click', async (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+
+    const row = button.closest('.cart-item-row');
+    if (!row) return;
+
+    const entryId = row.dataset.entryId;
+    const currentQuantity = Number(row.dataset.quantity) || 1;
+    let success = false;
+
+    showShade();
+    try {
+      if (button.classList.contains('cart-item-remove')) {
+        button.disabled = true;
+        success = await deleteCartEntry(entryId);
+        button.disabled = false;
+      } else if (button.classList.contains('cart-qty-minus')) {
+        button.disabled = true;
+        const newQuantity = Math.max(1, currentQuantity - 1);
+        if (newQuantity === 0) {
+          success = await deleteCartEntry(entryId);
+        } else {
+          success = await updateCartEntryQuantity(entryId, newQuantity);
+        }
+        button.disabled = false;
+      } else if (button.classList.contains('cart-qty-plus')) {
+        button.disabled = true;
+        success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
+        button.disabled = false;
+      }
+
+      if (success) {
+        await refreshCartModal(block);
+        const totalCount = await fetchMiniCartCount();
+        updateCartBadge(block, totalCount);
+      }
+    } finally {
+      hideShade();
+    }
+  }, { once: false });
+}
+
+async function deleteCartEntry(entryId) {
+  if (!entryId) return false;
+  const url = `apcolourcatalogue/commerce/deleteCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
+  try {
+    const resp = await fetchFromAp(url, { method: 'DELETE', credentials: 'include' });
+    return resp?.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+async function updateCartEntryQuantity(entryId, quantity) {
+  if (!entryId || quantity < 1) return false;
+  const url = `apcolourcatalogue/commerce/updateCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
+  const body = new URLSearchParams({ quantity: String(quantity) });
+  try {
+    const resp = await fetchFromAp(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      },
+      body,
+    });
+    return resp?.ok === true;
+  } catch {
+    return false;
   }
 }
 
@@ -3821,11 +3930,10 @@ function addInteractions(block) {
 
   // Cart modal + live cart data fetch
   const cartBtn = block.querySelector('.cart-btn');
-  const cartModal = block.querySelector('.cart-modal-overlay');
-  if (cartBtn && cartModal) {
+  const cartModalOverlay = block.querySelector('.cart-modal-overlay');
+  const cartModal = cartModalOverlay?.querySelector('.cart-modal');
+  if (cartBtn && cartModal && cartModalOverlay) {
     const positionCartModal = () => {
-      const modalEl = cartModal.querySelector('.cart-modal');
-      if (!modalEl) return;
       const rect = cartBtn.getBoundingClientRect();
       const modalW = 440;
       let rightPos = window.innerWidth - rect.right - 10;
@@ -3834,21 +3942,22 @@ function addInteractions(block) {
       rightPos = Math.max(minR, Math.min(rightPos, maxR));
       let isMobile = window.innerWidth <= 991;
       if (isMobile) {
-        modalEl.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
-        modalEl.style.setProperty('--cart-right', `${rightPos}px`);
+        cartModal.style.setProperty('--cart-top', `${rect.bottom + 2}px`);
+        cartModal.style.setProperty('--cart-right', `${rightPos}px`);
       } else {
-      modalEl.style.setProperty('--cart-top', `${rect.bottom + 13}px`);
-      modalEl.style.setProperty('--cart-right', `${rightPos + 15}px`);
+        cartModal.style.setProperty('--cart-top', `${rect.bottom + 13}px`);
+        cartModal.style.setProperty('--cart-right', `${rightPos + 15}px`);
       }
-     
     };
 
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
       refreshCartModal(block);
       positionCartModal();
-      cartModal.classList.add('active');
+      cartModalOverlay.classList.add('active');
     });
+
+    attachCartItemListeners(block, cartModal);
   }
 
   // Profile — dropdown when logged in, auth redirect when not
