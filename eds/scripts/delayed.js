@@ -52,6 +52,18 @@ setupGlobalClickListener();
 //   }
 // };
 
+/* CHECK TARGET*/
+function appendModalBackdrop() {
+  let backdrop = document.querySelector('.modal-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade';
+    backdrop.style.display = 'none';
+    document.body.append(backdrop);
+  }
+  return backdrop;
+}
+appendModalBackdrop();
 
 window.modalHandler = window.modalHandler || {};
 const modalHandler = window.modalHandler;
