@@ -25,12 +25,16 @@ window.triggerExitIntentPopupForm = function triggerExitIntentPopupForm() {
 // Global click listener for all trigger buttons
 function setupGlobalClickListener() {
   document.addEventListener('click', (e) => {
-    const trigger = e.target.closest('.trigger-exit-intent-popup-form');
+    const trigger = e.target.closest('.trigger-book-free-site-visit-modal');
     if (!trigger) return;
 
     e.preventDefault();
-    window.triggerExitIntentPopupForm();
-  });
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const modalPath = trigger.dataset.modalPath || trigger.getAttribute('href') || EXIT_INTENT_PATH;
+    window.triggerExitIntentModal(modalPath);
+  }, true);
 }
 
 setupGlobalClickListener();

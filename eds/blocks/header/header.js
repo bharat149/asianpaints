@@ -2283,7 +2283,7 @@ function buildMainHeader(mainDiv) {
       ctaContainer.className = 'header-cta';
 
       const ctaLink = document.createElement('a');
-      ctaLink.className = 'cta-btn trigger-exit-intent-popup-form';
+      ctaLink.className = 'cta-btn trigger-book-free-site-visit-modal';
       ctaLink.href = ctaHref;
       ctaLink.dataset.modalPath = ctaHref;
       ctaLink.textContent = ctaAnchor.textContent.trim();
@@ -4003,7 +4003,7 @@ function addInteractions(block) {
     });
   }
 
-  block.querySelectorAll('.header-cta .cta-btn.trigger-exit-intent-popup-form[data-modal-path]').forEach((ctaBtn) => {
+  block.querySelectorAll('.header-cta .cta-btn.trigger-book-free-site-visit-modal[data-modal-path]').forEach((ctaBtn) => {
     ctaBtn.addEventListener('click', async (e) => {
       const { modalPath } = ctaBtn.dataset;
       if (!modalPath || ctaBtn.dataset.loading === 'true') return;
