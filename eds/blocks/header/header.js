@@ -3623,16 +3623,16 @@ async function attachCartItemListeners(block, cartModal) {
         button.disabled = false;
       } else if (button.classList.contains('cart-qty-minus')) {
         button.disabled = true;
-        const newQuantity = Math.max(1, currentQuantity - 1);
-        if (newQuantity === 0) {
+        const newQuantity = currentQuantity - 1;
+        if (newQuantity < 1) {
           success = await deleteCartEntry(entryId);
         } else {
-          success = await updateCartEntryQuantity(entryId, newQuantity);
+          success = await setCartEntryQuantity(entryId, newQuantity);
         }
         button.disabled = false;
       } else if (button.classList.contains('cart-qty-plus')) {
         button.disabled = true;
-        success = await updateCartEntryQuantity(entryId, currentQuantity + 1);
+        success = await setCartEntryQuantity(entryId, currentQuantity + 1);
         button.disabled = false;
       }
 
@@ -3658,18 +3658,13 @@ async function deleteCartEntry(entryId) {
   }
 }
 
-async function updateCartEntryQuantity(entryId, quantity) {
+async function setCartEntryQuantity(entryId, quantity) {
   if (!entryId || quantity < 1) return false;
-  const url = `apcolourcatalogue/commerce/updateCartEntry.${encodeURIComponent(entryId)}.json?_=${Date.now()}`;
-  const body = new URLSearchParams({ quantity: String(quantity) });
+  const url = `apcolourcatalogue/commerce/deleteCartEntry.${encodeURIComponent(entryId)}.${encodeURIComponent(quantity)}.json?_=${Date.now()}`;
   try {
     const resp = await fetchFromAp(url, {
-      method: 'POST',
+      method: 'PUT',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-      },
-      body,
     });
     return resp?.ok === true;
   } catch {
