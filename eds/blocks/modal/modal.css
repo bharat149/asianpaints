@@ -2,7 +2,7 @@ body.modal-open {
   overflow: hidden;
 }
 
-.modal {
+.modal.block {
   display: block !important;
 }
 
@@ -48,6 +48,8 @@ body.modal-open {
     left: 0;
     z-index: 1040;
     background-color: #000;
+    height: 100%;
+    width: 100%;
 }
 
 .fade {
