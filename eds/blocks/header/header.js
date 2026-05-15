@@ -4003,14 +4003,20 @@ function addInteractions(block) {
     });
   }
 
-  block.querySelectorAll('.cta-btn[data-modal-path]').forEach((ctaBtn) => {
+  block.querySelectorAll('.header-cta .cta-btn.trigger-exit-intent-popup-form[data-modal-path]').forEach((ctaBtn) => {
     ctaBtn.addEventListener('click', async (e) => {
       const { modalPath } = ctaBtn.dataset;
       if (!modalPath || ctaBtn.dataset.loading === 'true') return;
 
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
+
       ctaBtn.dataset.loading = 'true';
+
+      document.querySelector('.cart-modal-overlay')?.classList.remove('active');
+      document.querySelector('.login-guest-modal-overlay')?.classList.remove('active');
+      document.querySelector('#guestLoginModal')?.classList.remove('active');
 
       try {
         const { openModal } = await import('../modal/modal.js');
