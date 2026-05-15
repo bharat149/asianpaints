@@ -6,6 +6,15 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
  * Four Image Row - Mobile Only Swiper (Robust)
  */
 
+function extractHref(row) {
+  const anchor = row.querySelector('a[href]');
+  if (anchor) return anchor.getAttribute('href') || '';
+
+  const rawText = row.textContent || '';
+  const match = rawText.match(/https?:\/\/\S+|\/\S+\.html(?:#[^\s"'<>]*)?/i);
+  return match ? match[0].trim() : '';
+}
+
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
 
@@ -45,7 +54,8 @@ export default async function decorate(block) {
     wrapper.className = 'fourimageinrow-wraper';
 
     const pic = row.querySelector('picture');
-    const link = row.querySelector('a');
+    const link = row.querySelector('a[href]');
+    const href = extractHref(row);
 
     let title = '';
     const headings = row.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -60,12 +70,18 @@ export default async function decorate(block) {
 
     const a = document.createElement('a');
     a.className = 'fourimageinrow-imagewithtext fourimageinrow-track';
-    a.href = link ? link.href : '#';
+    a.href = href || '#';
 
     if (link && link.target) a.target = link.target;
-    else if (link) a.target = '_blank';
 
     a.setAttribute('aria-label', title);
+    a.addEventListener('click', (event) => {
+      const destination = a.getAttribute('href') || '';
+      if (!destination || destination === '#') return;
+
+      event.preventDefault();
+      window.location.href = destination;
+    });
 
     if (pic) {
       const img = pic.querySelector('img');
@@ -174,11 +190,10 @@ export default async function decorate(block) {
       slidesPerView: 1,
       spaceBetween: 20,
       loop: false,
-
-        resistanceRatio: 0.85,
-  touchRatio: 1,
-  threshold: 5,
-  longSwipesRatio: 0.2,
+      resistanceRatio: 0.85,
+      touchRatio: 1,
+      threshold: 5,
+      longSwipesRatio: 0.2,
       pagination: {
         el: paginationEl,
         clickable: true,
