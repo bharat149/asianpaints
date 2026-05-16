@@ -1044,7 +1044,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 20px;
+  padding: 8px 20px;
   border: 1px solid #232426;
   border-radius: 45px;
   color: #1a1a1a;
@@ -1054,7 +1054,6 @@
   font-size: 14px;
   transition: all 0.2s ease;
   white-space: nowrap;
-  height: 38px;
   width: fit-content;
 
 }
@@ -1231,7 +1230,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 20px;
+  padding: 8px 20px;
   background-color: transparent;
   color: #fff;
   border: 0.5px solid #fff;
@@ -1241,7 +1240,6 @@
   text-decoration: none;
   transition: all 0.2s ease;
   white-space: nowrap;
-  height: 38px;
   transform: translateY(-25px);
 }
 
