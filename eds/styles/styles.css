@@ -990,3 +990,9 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .lead-form-fields .question-panel{
     display: none;
   }
+
+  /* modal backdrop height and width fixes */
+  .modal-backdrop{
+    height: 100% !important;
+    width: 100% !important;
+  }
