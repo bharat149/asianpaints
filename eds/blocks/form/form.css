@@ -945,8 +945,10 @@
 
   .form.block .form-consent-options {
     justify-content: space-between;
-    flex-direction: column;
   }
+   .form.block.blue-form .form-consent-options {
+       flex-direction: column;
+   }
   .form.block.blue-form .form-title-small , .form.block.blue-form .form-title-small p {
     margin: 0;
   }
