@@ -185,6 +185,25 @@
     /* filter: invert(1); */
 }
 
+@media (min-width: 902px) {
+    .royal-play-banner__cta .link-icon {
+        filter: invert(1);
+    }
+}
+@media (max-width: 901px) {
+    .royal-play-banner__slide:nth-of-type(2) .royal-play-banner__cta {
+        min-width: fit-content;
+        min-height: auto;
+        height: 100%;
+        padding: 0;
+        padding: 6px 10px;
+        font-size: 14px;
+        line-height: 21px;
+    }
+    .royal-play-banner__slide:nth-of-type(2) .royal-play-banner__cta .link-icon {
+        filter: invert(1);
+    }
+}
 /* Mobile hero */
 .royal-play-banner__mobile-logo {
     position: absolute;

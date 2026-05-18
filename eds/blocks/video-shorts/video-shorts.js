@@ -108,7 +108,7 @@ export default function decorate(block) {
           saleassistVideoTiles.mountWidget({
             // Pass only the UUID to the SaleAssist widget API
             id: saleassistWidgetId,
-            width: isMobile.matches ? "200px" : "240px",
+            width: isMobile.matches ? "200px" : "225px",
             height: isMobile.matches ? "360px" : "400px",
             borderRadius: "rounded",
             type: "tile",
