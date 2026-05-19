@@ -123,15 +123,29 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
     };
   };
 
-  const toggle = () => {
-    if (prefersReducedMotion()) {
-      // No animation, keep native behavior
-      detailsEl.open = !detailsEl.open;
-      return;
-    }
-    if (detailsEl.open) closeWithAnimation();
-    else openWithAnimation();
-  };
+function toggle() {
+  const parent = detailsEl.parentElement;
+
+  // If opening, close other open accordions first
+  if (!detailsEl.open && parent) {
+    parent.querySelectorAll('.accordion-item[open]').forEach((item) => {
+      if (item !== detailsEl) {
+        item.open = false;
+      }
+    });
+  }
+
+  if (prefersReducedMotion()) {
+    detailsEl.open = !detailsEl.open;
+    return;
+  }
+
+  if (detailsEl.open) {
+    closeWithAnimation();
+  } else {
+    openWithAnimation();
+  }
+}
 
   // Intercept clicks so native toggle doesn't instantly open/close (we animate instead)
   summaryEl.addEventListener('click', (e) => {
