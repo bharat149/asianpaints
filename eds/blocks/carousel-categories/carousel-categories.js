@@ -132,9 +132,16 @@ function updateActiveCarouselHeight(carouselWrappers, activeIndex) {
   if (!activeCarousel || !carouselsContainer) return;
 
   requestAnimationFrame(() => {
-    const activeHeight = activeCarousel.offsetHeight;
-    if (activeHeight) {
-      carouselsContainer.style.height = `${activeHeight}px`;
+    if (window.innerWidth >= 768) {
+      carouselsContainer.style.height = '560px';
+      activeCarousel.style.height = '560px';
+    } else {
+      activeCarousel.style.height = '';
+
+      const activeHeight = activeCarousel.offsetHeight;
+      if (activeHeight) {
+        carouselsContainer.style.height = `${activeHeight}px`;
+      }
     }
   });
 }

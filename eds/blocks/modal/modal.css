@@ -132,6 +132,13 @@ body.modal-open {
   background: #fff;
   box-shadow: none;
   overflow: hidden auto;
+
+  @media (min-width: 1200px) and (max-width: 1281px) {
+    left: 50%;
+    transform: translateX(-50%) scale(0.83);
+    transform-origin: top center;
+    top: 10%;
+  }
 }
 
 .modal dialog.book-free-site-visit-dialog .modal-content {
@@ -245,7 +252,7 @@ body.modal-open {
 
 .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields {
   box-sizing: border-box;
-  padding: 9px 55px 20px;
+  padding: 9px 45px 20px;
   max-width: 100%;
 }
 
@@ -258,6 +265,55 @@ body.modal-open {
   .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields {
     padding: 9px 20px 20px;
   }
+}
+
+/* Full-width styles when form success/error overlays are active */
+.modal dialog.book-free-site-visit-dialog.modal-success-active,
+.modal dialog.book-free-site-visit-dialog.modal-error-active {
+  overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    padding: 30px;
+    min-height: 432px;
+    transform: translateX(-50%) scale(0.9);
+    max-height: 432px;
+
+    @media (min-width: 320px) and (max-width: 991px) {
+        height: auto;
+        padding: 12px;
+        min-height: 100%;
+        transform: translateX(-50%) scale(0.95);
+        max-height: unset;
+        border: none;
+        top: 0;
+    }
+}
+
+.modal dialog.book-free-site-visit-dialog.modal-success-active .modal-content,
+.modal dialog.book-free-site-visit-dialog.modal-error-active .modal-content {
+  padding: 0;
+  margin-top: 0;
+  width: 100%;
+  height: 100%;
+  /* max-height: 100dvh; */
+  overflow: hidden;
+  border: none;
+}
+
+/* Hide close button and lead form container when modal is in active success/error state */
+.modal dialog.book-free-site-visit-dialog.modal-success-active .close-button,
+.modal dialog.book-free-site-visit-dialog.modal-error-active .close-button {
+  display: none !important;
+}
+
+.modal dialog.book-free-site-visit-dialog.modal-success-active .section.lead-form-container,
+.modal dialog.book-free-site-visit-dialog.modal-error-active .section.lead-form-container {
+  display: none !important;
+}
+
+.form.block.position-relative.overflow-hidden.w-100.thank-you-active.popup-active {
+    min-height: 432px;
 }
 
 /* ============================================

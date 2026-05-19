@@ -347,7 +347,7 @@ function createConsentArea(consentConfig) {
       <label class="form-consent-item form-consent-item--toggle" data-consent="whatsapp">
         <input
           type="checkbox"
-          class="form-consent-input"
+          class="form-consent-input whatsAppConsentFormFld"
           name="updateMeOnWhatsapp"
           value="true"
         />
@@ -955,6 +955,7 @@ function renderForm(block) {
   const whatsappWrapper = whatsappCheckbox?.closest('.form-consent-item');
   if (whatsappCheckbox && whatsappWrapper && !whatsappWrapper.classList.contains('d-none')) {
     whatsappCheckbox.checked = true;
+    whatsappCheckbox.classList.toggle('whatsAppCheckbox-checked');
   }
 
   if (buttonCell.children.length) {
