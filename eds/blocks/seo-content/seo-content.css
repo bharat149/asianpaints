@@ -172,3 +172,23 @@
         font-size: 13px;
     }
 }
+
+
+@media screen and (min-width: 992px) {
+    .royale-seo-content-container .seo-content-wrapper , .royale-seo-content-container .default-content-wrapper {
+        max-width: 1440px;
+        margin: auto !important;
+    }
+    #types-of-wall-texture-designs-for-interior-walls {
+        line-height: 42px;
+        margin: 40px 0 70px 0;
+    }
+
+     .royale-seo-content-container .seo-content-wrapper h3 , .royale-seo-content-container .seo-content-wrapper h2 {
+        margin-top: 55px;
+        line-height: 22px;
+    }
+    .royale-seo-content-container .seo-content-wrapper .table-style.block {
+        margin-top: 30px;
+    }
+}
