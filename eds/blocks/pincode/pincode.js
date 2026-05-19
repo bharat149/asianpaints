@@ -1,7 +1,65 @@
 import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 
+const PINCODE_STORAGE_KEY = 'pincode';
+const PINCODE_COOKIE_NAME = 'cpPincode';
+const PINCODE_COOKIE_EXPIRY_DAYS = 30;
+
+/**
+ * Saves pincode to both localStorage (primary, matches AEM live site
+ * ccGlobal.setLocalStoragePincode) and a cookie (secondary fallback).
+ */
+function savePincode(pincode) {
+  if (!pincode || pincode.length < 6) return;
+
+  try {
+    localStorage.setItem(PINCODE_STORAGE_KEY, pincode);
+  } catch {
+    // localStorage unavailable — cookie fallback is set below
+  }
+
+  const now = new Date();
+  now.setTime(now.getTime() + (PINCODE_COOKIE_EXPIRY_DAYS * 24 * 60 * 60 * 1000));
+  document.cookie = `${PINCODE_COOKIE_NAME}=${encodeURIComponent(pincode)};expires=${now.toUTCString()};path=/`;
+}
+
+/**
+ * Retrieves saved pincode. Priority: URL param > localStorage > cookie.
+ */
+function getSavedPincode() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const cpListing = params.get('cpListing') || '';
+    if (cpListing.startsWith('pinCode:')) {
+      const pin = cpListing.split(':')[1];
+      if (pin && pin.length === 6 && /^[0-9]{6}$/.test(pin)) return pin;
+    }
+  } catch {
+    // URL parsing failed — fall through
+  }
+
+  // 2. localStorage (matches AEM live site ccGlobal.getLocalStoragePincode)
+  try {
+    const stored = localStorage.getItem(PINCODE_STORAGE_KEY);
+    if (stored && stored.length === 6 && /^[0-9]{6}$/.test(stored)) return stored;
+  } catch {
+    // localStorage unavailable
+  }
+
+  const cookieVal = `; ${document.cookie}`;
+  const parts = cookieVal.split(`; ${PINCODE_COOKIE_NAME}=`);
+  if (parts.length === 2) {
+    const raw = parts.pop().split(';').shift();
+    const decoded = raw ? decodeURIComponent(raw) : '';
+    if (decoded && decoded.length === 6 && /^[0-9]{6}$/.test(decoded)) return decoded;
+  }
+
+  return '';
+}
+
 function handleRedirection(pincode, options = {}) {
   if (!pincode || pincode.length < 6) return;
+
+  savePincode(pincode);
 
   const {
     baseUrl = '/contractor-listing-page.html',
@@ -38,7 +96,24 @@ function getCellText(cell) {
 function getCellLink(cell) {
   if (!cell) return '';
   const a = cell.querySelector('a');
-  return a ? a.href : cell.textContent.trim();
+  if (a) {
+    // Use URL to extract pathname, ensuring relative paths for cross-env compat
+    try {
+      const parsed = new URL(a.href, window.location.origin);
+      return parsed.pathname;
+    } catch {
+      return a.getAttribute('href') || '';
+    }
+  }
+  const raw = cell.textContent.trim();
+  // If authored text is already a relative path or full URL, extract pathname
+  try {
+    if (raw.startsWith('/')) return raw;
+    const parsed = new URL(raw);
+    return parsed.pathname;
+  } catch {
+    return raw;
+  }
 }
 
 function readKeyValueRows(block) {
@@ -76,7 +151,6 @@ function trackContractorSearch(searchKeyWord) {
   }
 
   if (window.ccAnalytics?.satelliteCheck?.()) {
-    // eslint-disable-next-line no-underscore-dangle
     window._satellite?.track('contractor_search', {
       cityPincode: searchKeyWord,
     });
@@ -110,7 +184,9 @@ function decorateSearch(block) {
     if (cols.length >= 2) placeholder = cols[1].textContent.trim();
   }
   if (rows.length >= 4) {
-    redirectUrl = getCellLink(rows[3]);
+    const cols = [...rows[3].children];
+    const linkCell = cols.length >= 2 ? cols[1] : rows[3];
+    redirectUrl = getCellLink(linkCell);
   }
 
   block.textContent = '';
@@ -170,6 +246,12 @@ function decorateSearch(block) {
   input.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
   });
+
+  // Pre-populate pincode from URL param / localStorage / cookie
+  const savedPincode = getSavedPincode();
+  if (savedPincode) {
+    input.value = savedPincode;
+  }
 }
 
 function decorateCta(block) {
@@ -270,6 +352,11 @@ function decorateCta(block) {
   input.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
   });
+  
+  const savedPincode = getSavedPincode();
+  if (savedPincode) {
+    input.value = savedPincode;
+  }
 
   block.textContent = '';
   block.appendChild(wrapper);
