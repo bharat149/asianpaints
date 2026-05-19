@@ -453,3 +453,7 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
     padding: 12px 20px;
     font-size: 12px;
 }
+.cards-textures.width-alt .cards-textures-card .card-hover-content .card-bucket{
+    position: absolute;
+    top: 30%;
+}

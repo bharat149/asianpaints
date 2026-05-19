@@ -12,6 +12,18 @@ const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
 const DEFAULT_SUCCESS_MESSAGE = 'Thank you! We will contact you soon.';
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.';
 
+// Thank you and error overlay constants
+const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
+const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
+const THANK_YOU_CTA_LINK = '/content/ap/en/home/services/interior-design-solutions.html';
+const ERROR_CTA_LINK = 'https://www.asianpaints.com/services.html';
+const ERROR_DOWNLOAD_LINK = '/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+const THANK_YOU_TWO_DESKTOP = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-desktop.webp';
+const THANK_YOU_TWO_MOB = 'https://www.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-success-image-mobile.webp';
+
+let ERROR_DESKTOP_IMAGE = '';
+let ERROR_MOBILE_IMAGE = '';
+
 function normalizeText(value = '') {
   return `${value}`.replace(/\s+/g, ' ').trim();
 }
@@ -355,6 +367,306 @@ function showMessage(form, type, message) {
   }
 }
 
+/**
+ * Cleanup video element
+ */
+function cleanupVideo(video) {
+  if (!video) return;
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+}
+
+/**
+ * Close active popup
+ */
+function closeActivePopup(form, overlay, video = null) {
+  cleanupVideo(video);
+
+  const dialog = overlay?.closest('dialog')
+    || form?.closest('dialog')
+    || overlay?.closest('[role="dialog"]')
+    || form?.closest('[role="dialog"]');
+
+  overlay?.remove();
+
+  form.classList.remove('thank-you-active', 'error-active', 'popup-active');
+
+  if (form.parentElement) {
+    form.parentElement.classList.remove('form-popup-active');
+  }
+
+  delete form.dataset.thankYouShown;
+  delete form.dataset.errorShown;
+
+  // Close actual modal/dialog
+  if (dialog) {
+    dialog.close?.();
+    dialog.removeAttribute('open');
+  }
+
+  document.body.classList.remove('eds-modal-open');
+  window.activeModalElement = null;
+}   
+
+/**
+ * Create close button
+ */
+function createCloseButton(labelText) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'form-popup-close';
+  button.setAttribute('aria-label', labelText);
+  button.innerHTML = '&times;';
+  return button;
+}
+
+/**
+ * Track thank you popup CTA
+ */
+function trackInterestCTA(currentCampaignId, currentFormName) {
+  trackEvent('Form_thank_you_pop_up', {
+    cid: currentCampaignId,
+    formName: currentFormName,
+  });
+}
+
+/**
+ * Track explore now CTA
+ */
+function trackExploreNowCTA(ctaLink) {
+  if (!ctaLink) return;
+
+  trackEvent('cta_link_text', {
+    cta_: 'Explore now',
+    parentTitle: 'Form Thank you pop-up',
+    param1: ctaLink,
+    redirectionLink: ctaLink,
+  });
+}
+
+/**
+ * Create thank you overlay
+ */
+function createThankYouScreen(form) {
+  const overlay = document.createElement('div');
+  overlay.className = 'form-popup-overlay form-popup-overlay--success';
+
+  const isMobile = window.matchMedia('(max-width: 991px)').matches;
+  const videoSrc = isMobile ? THANK_YOU_MOBILE_VIDEO : THANK_YOU_DESKTOP_VIDEO;
+
+  const closeBtn = createCloseButton('Close thank you popup');
+
+  const video = document.createElement('video');
+  video.className = 'form-popup-success-video';
+  video.setAttribute('playsinline', '');
+  video.setAttribute('autoplay', '');
+  video.setAttribute('muted', '');
+  video.setAttribute('preload', 'auto');
+  video.setAttribute('aria-label', 'thank-you');
+  video.src = videoSrc;
+  video.loop = false;
+
+  const cta = document.createElement('a');
+  cta.className = 'form-popup-success-cta';
+  cta.href = THANK_YOU_CTA_LINK;
+  cta.target = '_blank';
+  cta.rel = 'noopener noreferrer';
+  cta.setAttribute('aria-label', 'Explore now');
+  cta.addEventListener('click', () => {
+    trackExploreNowCTA(THANK_YOU_CTA_LINK);
+  });
+
+  const ins = document.createElement('a');
+  ins.className = 'intereseted-cta';
+  ins.href = 'javascript:void(0)';
+  ins.setAttribute('aria-label', 'Yes I am Interseted');
+  ins.addEventListener('click', () => {
+    trackInterestCTA(getCampaignId(), form.dataset.formName || 'lead-form');
+
+    const parent = ins.closest('.form-popup-overlay');
+    if (!parent) return;
+
+    const videoEl = parent.querySelector('video');
+    const ctaEl = parent.querySelector('.form-popup-success-cta');
+    const insEl = parent.querySelector('.intereseted-cta');
+
+    if (videoEl) videoEl.style.display = 'none';
+    if (ctaEl) ctaEl.style.display = 'none';
+    if (insEl) insEl.style.display = 'none';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'thank-you-pop-two';
+
+    wrapper.innerHTML = `
+      <img class="thank-img-desk" src="${THANK_YOU_TWO_DESKTOP}" alt="thank you" />
+      <img class="thank-img-mob" src="${THANK_YOU_TWO_MOB}" alt="thank you" />
+      <a class="explore-now-rewamp" href="${THANK_YOU_CTA_LINK}" target="_blank">
+        Explore Now
+      </a>
+    `;
+
+    const rewampCta = wrapper.querySelector('.explore-now-rewamp');
+    rewampCta?.addEventListener('click', () => {
+      trackExploreNowCTA(THANK_YOU_CTA_LINK);
+    });
+
+    parent.appendChild(wrapper);
+  });
+
+  video.addEventListener('ended', () => {
+    video.pause();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    closeActivePopup(form, overlay, video);
+    
+  });
+
+  overlay.append(closeBtn, video, cta, ins);
+
+  return overlay;
+}
+
+/**
+ * Create error overlay
+ */
+function createErrorScreen(form) {
+  const overlay = document.createElement('div');
+  overlay.className = 'form-popup-overlay form-popup-overlay--error';
+
+  const closeBtn = createCloseButton('Close error popup');
+
+  overlay.innerHTML = `
+    <div class="form-error-popup">
+      <div class="form-error-popup__left">
+        <div class="form-error-popup__copy">
+          <h2 class="form-error-popup__title">Try again!</h2>
+          <p class="form-error-popup__text">
+            Oops! Something went wrong. We couldn't process your request. Please try again?
+          </p>
+        </div>
+      </div>
+
+      <div class="form-error-popup__right">
+        <div
+          class="form-error-popup__media"
+          style="
+            --form-error-image-desktop: url('${ERROR_DESKTOP_IMAGE}');
+            --form-error-image-mobile: url('${ERROR_MOBILE_IMAGE}');
+          "
+        >
+          <div class="form-error-popup__content">
+            <p class="form-error-popup__content-title">
+              Are you looking for home interiors?
+            </p>
+            <p class="form-error-popup__content-subtitle">
+              Get expert execution for your dream home from Beautiful Homes Interior Design service by asian paints.
+            </p>
+            <div class="form-error-popup__actions">
+              <a
+                href="${ERROR_CTA_LINK}"
+                target="_self"
+                class="form-error-popup__button trackCTA"
+              >
+                Get FREE Design Consultation
+              </a>
+            </div>
+            <a
+              class="form-error-popup__download"
+              href="${ERROR_DOWNLOAD_LINK}"
+              download
+            >
+              Download the asianpaints colour books
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  overlay.prepend(closeBtn);
+
+  closeBtn.addEventListener('click', () => {
+    closeActivePopup(form, overlay);
+  });
+
+  return overlay;
+}
+
+/**
+ * Show thank you overlay
+ */
+/**
+ * Show thank you overlay
+ */
+function showThankYouScreen(form) {
+  if (!form || form.dataset.thankYouShown === 'true') return;
+
+  const dialog = form.closest('[role="dialog"]') || form.closest('dialog');
+  const existingOverlay = form.querySelector('.form-popup-overlay--success')
+    || dialog?.querySelector('.modal-content .form-popup-overlay--success');
+  if (existingOverlay) {
+    form.dataset.thankYouShown = 'true';
+    form.classList.add('thank-you-active', 'popup-active');
+    return;
+  }
+
+  const overlay = createThankYouScreen(form);
+  const container = dialog?.querySelector('.modal-content') || form;
+  container.appendChild(overlay);
+  form.dataset.thankYouShown = 'true';
+  form.classList.add('thank-you-active', 'popup-active');
+
+  // Hide close button and form container in modal
+  if (dialog) {
+    dialog.classList.add('modal-success-active');
+    const closeBtn = dialog.querySelector('.close-button');
+    if (closeBtn) closeBtn.style.display = 'none';
+
+    const formContainer = dialog.querySelector('.section.lead-form-container');
+    if (formContainer) formContainer.style.display = 'none';
+  }
+  if (form.parentElement) {
+    form.parentElement.classList.add('form-popup-active');
+  }
+}
+
+/**
+ * Show error overlay
+ */
+function showErrorScreen(form) {
+  if (!form || form.dataset.errorShown === 'true') return;
+
+  const dialog = form.closest('[role="dialog"]') || form.closest('dialog');
+  const existingOverlay = form.querySelector('.form-popup-overlay--error')
+    || dialog?.querySelector('.modal-content .form-popup-overlay--error');
+  if (existingOverlay) {
+    form.dataset.errorShown = 'true';
+    form.classList.add('error-active', 'popup-active');
+    return;
+  }
+
+  const overlay = createErrorScreen(form);
+  const container = dialog?.querySelector('.modal-content') || form;
+  container.appendChild(overlay);
+  form.dataset.errorShown = 'true';
+  form.classList.add('error-active', 'popup-active');
+
+  // Hide close button and form container in modal
+  if (dialog) {
+    dialog.classList.add('modal-error-active');
+    const closeBtn = dialog.querySelector('.close-button');
+    if (closeBtn) closeBtn.style.display = 'none';
+
+    const formContainer = dialog.querySelector('.section.lead-form-container');
+    if (formContainer) formContainer.style.display = 'none';
+  }
+  if (form.parentElement) {
+    form.parentElement.classList.add('form-popup-active');
+  }
+}
+
 function toAttrSelector(name = '') {
   const escaped = `${name}`.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   return `[name="${escaped}"]`;
@@ -567,14 +879,26 @@ async function handleSubmit(event) {
     });
 
     trackLeadFormSubmission(form);
-    showMessage(form, 'success', DEFAULT_SUCCESS_MESSAGE);
-    form.reset();
-    form.querySelectorAll('.whatsapp-field').forEach(syncWhatsAppToggle);
-    updateSubmitState(form);
+
+    // Use overlay screens for book-free-site-visit form, simple message for others
+    if (form.dataset.formName === BOOK_FREE_SITE_VISIT_FORM) {
+      showThankYouScreen(form);
+    } else {
+      showMessage(form, 'success', DEFAULT_SUCCESS_MESSAGE);
+      form.reset();
+      form.querySelectorAll('.whatsapp-field').forEach(syncWhatsAppToggle);
+      updateSubmitState(form);
+    }
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Form submission error:', error);
-    showMessage(form, 'error', DEFAULT_ERROR_MESSAGE);
+
+    // Use overlay screens for book-free-site-visit form, simple message for others
+    if (form.dataset.formName === BOOK_FREE_SITE_VISIT_FORM) {
+      showErrorScreen(form);
+    } else {
+      showMessage(form, 'error', DEFAULT_ERROR_MESSAGE);
+    }
   } finally {
     form.dataset.submitting = 'false';
     submitBtn.disabled = false;
