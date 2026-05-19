@@ -253,7 +253,12 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const label = document.createElement('label');
   label.className = 'form-field-label';
   label.setAttribute('for', inputId);
-  label.innerHTML = `${labelText || placeholderText}<span class="form-field-required">*</span>`;
+  const displayLabel =
+    lowerLabel.includes('phone') || lowerLabel.includes('mobile')
+      ? 'Mobile Number'
+      : (labelText || placeholderText);
+
+  label.innerHTML = `${displayLabel}<span class="form-field-required">*</span>`;
 
   const input = document.createElement('input');
   let inputType = 'text';
@@ -455,7 +460,7 @@ function applyPhonePrefix(field, input) {
  * - The phone field gets a visual +91 prefix, but input value remains
  *   only the 10-digit number expected by validation/submission logic.
  */
-function applyFieldConfig(input, headerCell, content) {
+function applyFieldConfig(input, headerCell, content , block) {
   if (!input || !headerCell) return;
 
   const headerLabel = headerCell.textContent.toLowerCase();
@@ -473,8 +478,11 @@ function applyFieldConfig(input, headerCell, content) {
     bindNumericInputFilter(input);
 
     const field = input.closest('.form-field');
-    applyPhonePrefix(field, input);
-    input.classList.add('form-input--with-prefix');
+    const isBlueForm = block.classList.contains('blue-form');
+    if (isBlueForm) {
+      applyPhonePrefix(field, input);
+      input.classList.add('form-input--with-prefix');
+    }
   } else if (headerLabel.includes('email')) {
     input.type = 'email';
     input.id = 'enquire-email';
@@ -921,6 +929,10 @@ function renderForm(block) {
     createDefaultField(inputCell, 2, i, headerText, content);
 
     const input = inputCell.querySelector('.form-input');
+
+    if (input && labelCell) {
+      applyFieldConfig(input, labelCell, content , block);
+    }
 
     inputsGrid.appendChild(inputCell);
   }
