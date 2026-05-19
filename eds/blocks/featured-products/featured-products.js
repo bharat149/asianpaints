@@ -164,7 +164,7 @@ export default async function decorate(block) {
     const swiper = new Swiper(swiperEl, {
       slidesPerView: 1,
       speed: 600,
-      loop: false,
+      loop: true,
       watchOverflow: true,
       autoplay: {
         delay: 4000,
@@ -180,25 +180,11 @@ export default async function decorate(block) {
         clickable: false,
       },
       on: {
-        init(instance) {
+        init() {
           removeInjectedSwiperIcons(prevBtn, nextBtn);
-          updateNavState(instance, prevBtn, nextBtn);
         },
-        slideChange(instance) {
-          updateNavState(instance, prevBtn, nextBtn);
-        },
-        resize(instance) {
+        resize() {
           removeInjectedSwiperIcons(prevBtn, nextBtn);
-          updateNavState(instance, prevBtn, nextBtn);
-        },
-        reachBeginning(instance) {
-          updateNavState(instance, prevBtn, nextBtn);
-        },
-        reachEnd(instance) {
-          updateNavState(instance, prevBtn, nextBtn);
-        },
-        fromEdge(instance) {
-          updateNavState(instance, prevBtn, nextBtn);
         },
       },
     });
