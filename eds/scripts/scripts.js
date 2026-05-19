@@ -518,7 +518,7 @@ function loadDelayed() {
         // Kick jQuery off in parallel — don't block analytics on it. Nothing
         // in the analytics init path actually needs jQuery synchronously;
         // older blocks that consume jQuery already await the same promise.
-        window.loadJQuery?.();
+        //window.loadJQuery?.();
 
         if (typeof (_satellite) !== 'undefined') {
           _satellite.track('pageload');
@@ -540,7 +540,7 @@ function loadDelayed() {
     });
   });
 
-  window.setTimeout(triggerAnalytics, 25000);
+  window.setTimeout(triggerAnalytics, 3000);
 
   /* Sprinklr chat — heaviest 3rd-party, load last */
   window.setTimeout(() => {
