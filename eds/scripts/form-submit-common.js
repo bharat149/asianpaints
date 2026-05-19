@@ -167,7 +167,7 @@ export function buildLeadPayload(form, options = {}) {
   const email = form.querySelector(selectors.email)?.value?.trim() || '';
   const mobileNo = form.querySelector(selectors.mobile)?.value?.trim() || '';
   const pinCode = form.querySelector(selectors.pincode)?.value?.trim() || '';
-  const whatsAppConsent = form.querySelector(selectors.whatsappConsent)?.classList.contains('whatsAppCheckbox-checked') ? 'Y' : 'N';
+  const whatsAppConsent = form.querySelector(selectors.whatsappConsent)?.checked ? 'Y' : 'N';
 
   return {
     pageUrl: options.pageUrl || window.location.href,

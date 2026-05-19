@@ -250,11 +250,17 @@
   transition: all 0.2s ease;
 }
 
-.form.block .form-consent-input:checked+.form-consent-box {
+.form.block.blue-form .form-consent-input:checked+.form-consent-box {
   /* background: #fff;
   border-color: #53565a; */
   background-color: transparent;
   border: 1px solid #fff;
+}
+.form.block .form-consent-input:checked+.form-consent-box {
+  /* background: #fff;
+  border-color: #53565a; */
+  background-color: transparent;
+  border: 1px solid #b0b1b3;
 }
 
 .form.block .form-consent-input:checked+.form-consent-box::after {
@@ -264,9 +270,15 @@
   left: 7px;
   width: 5px;
   height: 10px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
   transform: rotate(45deg);
+}
+.form.block .form-consent-input:checked+.form-consent-box::after {
+     border-right: 2px solid #b0b1b3;
+  border-bottom: 2px solid #b0b1b3;
+}
+.form.block.blue-form .form-consent-input:checked+.form-consent-box::after {
+    border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
 }
 
 .form.block .form-consent-item--toggle .form-consent-toggle {
@@ -945,8 +957,10 @@
 
   .form.block .form-consent-options {
     justify-content: space-between;
-    flex-direction: column;
   }
+   .form.block.blue-form .form-consent-options {
+       flex-direction: column;
+   }
   .form.block.blue-form .form-title-small , .form.block.blue-form .form-title-small p {
     margin: 0;
   }
