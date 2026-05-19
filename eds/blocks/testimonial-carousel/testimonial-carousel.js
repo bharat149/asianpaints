@@ -251,12 +251,9 @@ function bindModalEvents(block) {
   });
 }
 
-export default async function decorate(block) {
+export default function decorate(block) {
   const rows = [...block.querySelectorAll(':scope > div')];
   if (!rows.length) return;
-
-  const Swiper = await getSwiperClass();
-  if (!Swiper) return;
 
   const { headingText, siblingHeading, testimonialRows } = buildHeading(rows, block);
   if (!testimonialRows.length) return;
@@ -340,51 +337,79 @@ export default async function decorate(block) {
     prevButton.disabled = swiper.isBeginning;
     nextButton.disabled = swiper.isEnd;
   }
-  const swiper = new Swiper(swiperEl, {
-    slidesPerView: 1,
-    spaceBetween: 20,
-    speed: 500,
-    slidesPerGroup: 1,
-    centeredSlides: false,
-    slideToClickedSlide: false,
-    touchRatio: 1,
-    resistanceRatio: 0.85,
-    threshold: 5,
-    watchOverflow: false,
-    navigation: {
-      prevEl: prevButton,
-      nextEl: nextButton,
-    },
-    pagination: {
-      el: paginationEl,
-      clickable: true,
-    },
-    breakpoints: {
-      600: {
-        slidesPerView: 1.1,
-        spaceBetween: 20,
-      },
-      900: {
-        slidesPerView: 2,
-        spaceBetween: 20,
-      },
-      1200: {
-        slidesPerView: 3,
-        spaceBetween: 20,
-      },
-    },
-    on: {
-      init(s) {
-        handleNav(s);
-      },
-      slideChange(s) {
-        handleNav(s);
-      },
-      resize(s) {
-        handleNav(s);
-      },
-    },
-  });
+  /* Defer Swiper init until the carousel is about to enter the viewport.
+   * Until then, the static slides render as a vertical stack (CSS shows just
+   * the first one — see .testimonial-carousel:not(.swiper-ready) rules).
+   * This keeps the ~150 ms of Swiper parse/init out of the LCP critical path
+   * for users who land on the page; users who scroll get Swiper ready by the
+   * time they reach this block (300 px rootMargin).
+   */
+  const initSwiper = async () => {
+    if (block.dataset.swiperInitialized === 'true') return;
+    block.dataset.swiperInitialized = 'true';
 
-  block._testimonialSwiper = swiper;
+    const Swiper = await getSwiperClass();
+    if (!Swiper) return;
+
+    const swiper = new Swiper(swiperEl, {
+      slidesPerView: 1,
+      spaceBetween: 20,
+      speed: 500,
+      slidesPerGroup: 1,
+      centeredSlides: false,
+      slideToClickedSlide: false,
+      touchRatio: 1,
+      resistanceRatio: 0.85,
+      threshold: 5,
+      watchOverflow: false,
+      navigation: {
+        prevEl: prevButton,
+        nextEl: nextButton,
+      },
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+      },
+      breakpoints: {
+        600: {
+          slidesPerView: 1.1,
+          spaceBetween: 20,
+        },
+        900: {
+          slidesPerView: 2,
+          spaceBetween: 20,
+        },
+        1200: {
+          slidesPerView: 3,
+          spaceBetween: 20,
+        },
+      },
+      on: {
+        init(s) {
+          block.classList.add('swiper-ready');
+          handleNav(s);
+        },
+        slideChange(s) {
+          handleNav(s);
+        },
+        resize(s) {
+          handleNav(s);
+        },
+      },
+    });
+
+    block._testimonialSwiper = swiper;
+  };
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      initSwiper();
+    }, { rootMargin: '300px 0px' });
+    observer.observe(block);
+  } else {
+    /* No IntersectionObserver — init immediately to keep functionality. */
+    initSwiper();
+  }
 }

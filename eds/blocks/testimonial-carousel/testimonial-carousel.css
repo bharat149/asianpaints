@@ -524,3 +524,21 @@ body.testimonial-video-open {
         zoom: 1;
     }
 }
+
+/* Pre-Swiper placeholder — Swiper is initialized lazily via IntersectionObserver
+ * (see testimonial-carousel.js). Until block.classList contains 'swiper-ready',
+ * show only the first slide so the carousel renders as a single static card
+ * instead of a vertical stack of all testimonials. :where() keeps specificity
+ * flat so Swiper's runtime classes can override cleanly. */
+.testimonial-carousel:where(:not(.swiper-ready)) .swiper-wrapper {
+    display: block;
+}
+
+.testimonial-carousel:where(:not(.swiper-ready)) .testimonial-slide ~ .testimonial-slide {
+    display: none;
+}
+
+.testimonial-carousel:where(:not(.swiper-ready)) .testimonial-nav-buttons,
+.testimonial-carousel:where(:not(.swiper-ready)) .testimonial-pagination {
+    visibility: hidden;
+}
