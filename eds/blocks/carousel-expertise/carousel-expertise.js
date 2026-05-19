@@ -2,6 +2,28 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
 import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+const PINCODE_STORAGE_KEY = 'pincode';
+const PINCODE_COOKIE_NAME = 'cpPincode';
+
+function getSavedPincodeValue() {
+  try {
+    const stored = localStorage.getItem(PINCODE_STORAGE_KEY);
+    if (stored && stored.length === 6 && /^[0-9]{6}$/.test(stored)) return stored;
+  } catch {
+    // localStorage unavailable
+  }
+
+  const cookieVal = `; ${document.cookie}`;
+  const parts = cookieVal.split(`; ${PINCODE_COOKIE_NAME}=`);
+  if (parts.length === 2) {
+    const raw = parts.pop().split(';').shift();
+    const decoded = raw ? decodeURIComponent(raw) : '';
+    if (decoded && decoded.length === 6 && /^[0-9]{6}$/.test(decoded)) return decoded;
+  }
+
+  return '';
+}
+
 /**
  * Four Image Row - Mobile Only Swiper (Robust)
  */
@@ -80,7 +102,15 @@ export default async function decorate(block) {
       if (!destination || destination === '#') return;
 
       event.preventDefault();
-      window.location.href = destination;
+
+      // Append pincode from cookie to contractor listing redirects
+      let finalUrl = destination;
+      const pincodeVal = getSavedPincodeValue();
+      if (pincodeVal && !destination.includes('cpListing=')) {
+        const separator = destination.includes('?') ? '&' : '?';
+        finalUrl = `${destination}${separator}cpListing=pinCode:${encodeURIComponent(pincodeVal)}`;
+      }
+      window.location.href = finalUrl;
     });
 
     if (pic) {
