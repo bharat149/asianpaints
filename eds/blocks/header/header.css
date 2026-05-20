@@ -2150,6 +2150,14 @@ body.nav-open {
     padding-right: 16px;
     height: 307px;
     margin-right: 16px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #a9a9a9 #f5f5f5;
+
   @media (width <=991px) {
     padding: 0px 12px 16px 16px;
     scrollbar-width: none; /* Firefox */
@@ -2159,26 +2167,70 @@ body.nav-open {
 
 }
 
+
+.header .cart-items-list {
+    /* important: do not keep scrollbar-color here */
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+}
+
+/* Chrome / Edge / Safari */
+.header .cart-items-list::-webkit-scrollbar {
+    width: 4px !important;
+    background-color: white;
+        @media (width <= 991px) {
+          display: none !important;
+        }
+}
+
+/* Remove top and bottom arrow/button edges */
+.header .cart-items-list::-webkit-scrollbar-button,
+.header .cart-items-list::-webkit-scrollbar-button:single-button,
+.header .cart-items-list::-webkit-scrollbar-button:vertical:decrement,
+.header .cart-items-list::-webkit-scrollbar-button:vertical:increment {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+    background: transparent !important;
+}
+
+/* Full scrollbar placeholder / track bg */
+.header .cart-items-list::-webkit-scrollbar-track {
+    background-color: #a9a9a95c !important;
+    border-radius: 100px !important;
+    box-shadow: none !important;
+}
+
+.header .cart-items-list::-webkit-scrollbar-track-piece {
+    background-color: #a9a9a95c !important;
+
+}
+
+/* Scroll thumb */
+.header .cart-items-list::-webkit-scrollbar-thumb {
+    background-color: #a9a9a9 !important;
+    border-radius: 100px !important;
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+}
+
+/* Firefox only */
+@supports (-moz-appearance: none) {
+    .header .cart-items-list {
+        scrollbar-width: thin;
+        scrollbar-color: #a9a9a9 #a9a9a95c;
+    }
+}
+
+
+
+@media (min-width: 320px) and (max-width:991px) {
+    .header .cart-items-list::-webkit-scrollbar {
+        width:0
+    }
+}
+
 .header .cart-items-list:empty {
   display: none;
-}
-
-.header .cart-items-list::-webkit-scrollbar {
-  width: 2px;
-  border-radius: 100px;
-}
-
-.header .cart-items-list::-webkit-scrollbar-track {
-  border-radius: 100px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
-  -webkit-border-radius: 100px;
-  /* background: transparent !important; */
-}
-
-.header .cart-items-list::-webkit-scrollbar-thumb {
-  background-color: #a9a9a9;
-  border-radius: 100px;
-  -webkit-border-radius: 100px;
 }
 
 .header .cart-item-row {
@@ -3189,12 +3241,15 @@ body.modal-open {
 }
 
 #guestLoginModal .modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fcedd6;
-  min-height: 42px;
-  padding: 0 10px;
+    display: flex;
+    align-items: center;
+    background: #fcedd6;
+    min-height: 42px;
+    padding: 5px 14px;
+    justify-content: space-between;
+    border-bottom: 1px solid #e9ecef;
+    border-top-left-radius: .3rem;
+    border-top-right-radius: .3rem;
 }
 
 #guestLoginModal .modal-header .heading {
@@ -3209,7 +3264,7 @@ body.modal-open {
 }
 
 #guestLoginModal .modal-header .iconLinks__close {
-  transform: translate(0, 5px);
+  /* transform: translate(0, 5px); */
 }
 
 #guestLoginModal .guest-login-close-btn {
@@ -3381,7 +3436,7 @@ body.modal-open {
 
 #guestLoginModal .form-section .customer-info-section .submit-user-info-button {
   display: flex;
-  justify-content: flex-end;
+  justify-content: start;
 }
 
 #guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button {

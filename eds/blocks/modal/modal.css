@@ -255,6 +255,21 @@ body.modal-open {
   padding: 9px 45px 20px;
   max-width: 100%;
 }
+@media (min-width: 320px) and (max-width: 991px) {
+  .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields {
+    grid-template-columns: repeat(2, 2fr);
+  }
+  .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields .field-mobile,
+  .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields .field-pincode{
+    grid-column: 1 / -1;
+   }
+   .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields .question-panel .question-field legend{
+     transform: translate(0px, 6px);
+   }
+   .modal dialog.book-free-site-visit-dialog .lead-form-wrapper .lead-form-fields .question-panel .question-field:first-child{
+     border-bottom: 1px solid #bedbff;
+   }
+}
 
 @media (width <= 640px) {
   .modal dialog.book-free-site-visit-dialog .default-content-wrapper h2 {

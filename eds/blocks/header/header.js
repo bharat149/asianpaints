@@ -2508,7 +2508,7 @@ function buildLoginGuestPopup() {
                 <img
                   loading="lazy"
                   fetchpriority="auto"
-                  src="/eds/icons/arrow-icon.svg"
+                  src="/eds/icons/arrow-icon-new.svg"
                   alt=""
                 >
               </span>
