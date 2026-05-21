@@ -3283,8 +3283,10 @@ body.modal-open {
 #guestLoginModal .closeIcon::before {
   content: "×";
   display: inline-block;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
+  font-weight: 400;
+  color: #000000a3;
 }
 
 #guestLoginModal .form-section {
@@ -3296,7 +3298,7 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 20px 10px;
+  padding: 18px 10px;
 }
 
 #guestLoginModal .form-section .step-section .form-item {
@@ -3460,6 +3462,7 @@ body.modal-open {
   text-decoration: none;
   background: #fcaf17 !important;
   border: 0;
+  margin-top: 12px;
 }
 
 #guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button:disabled,
@@ -3494,7 +3497,7 @@ body.modal-open {
   }
 
   #guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button {
-    margin-top: 6px;
+    margin-top: -6px;
   }
 }
 
