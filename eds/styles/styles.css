@@ -845,6 +845,11 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
     font-size: 20px;
     line-height: 22px;
   }
+
+   main .section.royale-seo-content-container {
+      padding-left: 0;
+      padding-right: 0;
+    }
 }
 
 main>.section:has(.embed-wrapper) {
