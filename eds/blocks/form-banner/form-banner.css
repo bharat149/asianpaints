@@ -108,8 +108,9 @@
   gap: 2px;
   padding: 0 8px;
   background: #fff;
-  color: #6a6a6a;
-  font-size: 14px;
+  color: #53565a;
+  font-size: 10px;
+  line-height: 18px;
   font-weight: 500;
   line-height: 1;
   pointer-events: none;
@@ -783,15 +784,8 @@
   }
 
   /* Services Blue Form */
-  .services-blue-form .blue-form.block .form-description-cell .form-title-small {
-      padding-top: 18px;
-      padding-right: 30px;
-      max-width: 90%;
-  }
   .services-blue-form .blue-form.block .form-description-cell .form-title-large {
     margin: 15px 0;
-    max-width: 86%;
-    padding-right: 30px;
   }
   .services-blue-form .blue-form.block .form-description-cell .form-title-large p {
         font-size: 20px;
@@ -800,4 +794,14 @@
     word-wrap: break-word;
     margin: 0;
   } 
+  .form-banner-container .form-field-label {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 500;
+  }
+}
+@media (min-width:1366px) {
+.services-blue-form .blue-form.block .form-description-cell .form-title-large ,  .services-blue-form .blue-form.block .form-description-cell .form-title-small{
+  max-width: 90%;
+}
 }

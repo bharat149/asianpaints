@@ -137,7 +137,7 @@
 .form.block .form-input,
 .form.block .form-control.form-input {
   width: 100%;
-  height: 54px;
+  height: 52px;
   padding: 0 20px;
   border: 1px solid #53565a;
   border-radius: 8px;
@@ -629,6 +629,7 @@
 .form-input.is-invalid {
   border-color: #ff2343 !important;
   box-shadow: none !important;
+  background-image: unset;
 }
 
 .form-field.has-error .form-field-label {
@@ -1020,7 +1021,52 @@
 /* ============================================
    Variant: Form — Blue Form
    ============================================ */
-
+  @media  screen and (min-width: 992px) {
+    .royale-play-form .form.block.blue-form .form-title-large {
+        font-size: 14px;
+        line-height: 22px;
+        margin: 0;
+        letter-spacing: unset;
+      }
+      .royale-play-form .form.block.blue-form .form-title-large p {
+        letter-spacing: unset;
+      }
+    
+      .royale-play-form .form.block.blue-form .form-title-small {
+        max-width: 90%;
+      }
+        .form.block.blue-form .form-row .form-fields-area .form-button-cell .form-submit .form-submit__label {
+          font-size: 14px !important;
+          line-height: 21px;
+          font-weight: 700;
+        }
+    .form.block.blue-form .form-row .form-description-cell {
+      padding-top: 18px;
+      padding-right: 30px;
+    }
+    .form.block.blue-form .form-title-large p {
+      font-size: inherit;
+      line-height: inherit;
+      font-weight: inherit;
+      word-wrap: break-word;
+      letter-spacing: 0.5px;
+    }
+    .form.block.blue-form .form-inputs-grid {
+      row-gap: 25px;
+      column-gap: 6%;
+    }
+    .form.block.blue-form .form-input, .form.block .form-control.form-input {
+      padding: 0 0 0 15px;
+    }
+  }
+  @media (min-width: 1201px) and (max-width: 1440px) {
+    .form.block.blue-form .form-row .form-description-cell {
+      flex: 0 48%;
+    }
+    .form.block.blue-form .form-row .form-fields-area {
+      flex: 0 70%
+    }
+  }
 .form.block.blue-form {
   background-color: #425E8E;
 }
@@ -1042,7 +1088,7 @@
 
 .form.block.blue-form .form-input::placeholder,
 .form.block.blue-form .form-control.form-input::placeholder {
-  color: rgb(255 255 255 / 75%);
+  color: rgb(255 255 255 / 1000%);
   opacity: 1;
 }
 
@@ -1077,20 +1123,25 @@
 .form.block.blue-form .form-title-small {
   color: #fff;
   font-size: 40px;
-  font-weight: 600;
+  font-weight: 800;
   text-transform: capitalize;
   line-height: 48px;
 }
 
 .form.block.blue-form .form-title-large {
   color: #fff;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 400;
-  line-height: 22px;
+  line-height: 30px;
   word-wrap: break-word;
   max-width: 90%;
+  margin: 15px 0;
 }
-
+ @media (min-width: 1201px) and (max-width: 1440px) { 
+  .form.block.blue-form .form-title-large {
+    max-width: 100%;
+  }
+ }
 .form.block.blue-form .form-submit:hover .form-submit__arrow,
 .form.block.blue-form .btn.form-submit:hover .form-submit__arrow {
   transform: translateX(2px);
@@ -1120,4 +1171,69 @@
     margin-bottom: 0;
     letter-spacing: .5px;
   }
+}
+
+/********WHite Form Styling Changes***********/
+
+@media screen and (min-width: 992px) {
+  .form.block.white-form .form-inputs-grid {
+    row-gap: 40px;
+    column-gap: 6%;
+  }
+  .form.block.white-form .form-consent-area {
+    margin-top: 10px;
+  }
+  .white-form .form-title-small {
+
+    color: #2e2f32 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 28px !important;
+    margin: 0 0 0 0 !important;
+  }
+
+  .white-form .form-title-small p {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    margin: 0;
+  }
+
+  .white-form .form-title-large {
+    margin: 0 0 13px 0 !important;
+    font-weight: 700 !important;
+    max-width: 90%;
+  }
+
+  .white-form .form-title-large p {
+    margin: 0 !important;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: -2px;
+  }
+
+  .white-form .form-subtitle {
+    font-size: 20px !important;
+    font-weight: 400 !important;
+    line-height: 28px !important;
+    color: #2e2f32 !important;
+    letter-spacing: normal !important;
+    margin: 0 !important;
+  }
+
+  .white-form .form-subtitle p {
+    margin: 0 !important;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+
+  .form.block.white-form .form-row .form-description-cell {
+    align-self: flex-start;
+  }
+
 }

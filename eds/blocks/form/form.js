@@ -240,6 +240,7 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   // Map common labels to specific ids
   const lowerLabel = (labelText || '').toLowerCase();
+  const isPincode = lowerLabel.includes('pincode') || lowerLabel.includes('pin');
   if (lowerLabel.includes('name')) {
     inputId = 'enquire-name';
   } else if (lowerLabel.includes('email')) {
@@ -256,7 +257,9 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const displayLabel =
     lowerLabel.includes('phone') || lowerLabel.includes('mobile')
       ? 'Mobile Number'
-      : (labelText || placeholderText);
+      : lowerLabel.includes('pincode') || lowerLabel.includes('pin')
+        ? 'PIN Code'
+        : (labelText || placeholderText);
 
   label.innerHTML = `${displayLabel}<span class="form-field-required">*</span>`;
 
@@ -282,16 +285,22 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   const errorEl = createErrorMessageElement();
 
+  if (isPincode) {
+  field.classList.add('show-label');
+}
+
   const updateFieldState = () => {
     const isFocused = document.activeElement === input;
     const hasValue = !!input.value.trim();
 
     field.classList.toggle('is-focused', isFocused);
     field.classList.toggle('has-value', hasValue);
-    field.classList.toggle('show-label', isFocused || hasValue);
   };
 
-  input.addEventListener('focus', updateFieldState);
+  input.addEventListener('focus', () => {
+    field.classList.add('show-label');
+    updateFieldState();
+  });
 
   input.addEventListener('blur', () => {
     updateFieldState();
