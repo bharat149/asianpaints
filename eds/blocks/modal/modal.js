@@ -15,9 +15,47 @@ export async function createModal(contentNodes) {
   const dialogContent = document.createElement('div');
   dialogContent.classList.add('modal-content');
   dialogContent.append(...contentNodes);
-  if (dialogContent.querySelector('.book-free-site-visit-modal, .book-free-site-visit-form')) {
+
+  const isBookFreeSiteVisitModal = dialogContent.querySelector(
+    '.book-free-site-visit-modal, .book-free-site-visit-form'
+  );
+
+  const configSection = document.querySelector(
+    'main [data-exit-intent-form-button-text]'
+  );
+  const exitIntentButtonText = configSection?.dataset.exitIntentFormButtonText?.trim();
+  const updateExitIntentSubmitText = () => {
+    if (!isBookFreeSiteVisitModal || !exitIntentButtonText) return false;
+    const submitButton = dialogContent.querySelector(
+      '.book-free-site-visit-modal button[type="submit"], .book-free-site-visit-form button[type="submit"], .lead-form-fields.submit-wrapper button[type="submit"]'
+    );
+    if (!submitButton) return false;
+    submitButton.textContent = exitIntentButtonText;
+    submitButton.setAttribute('data-original-text', exitIntentButtonText);
+    return true;
+  };
+
+  let submitButtonObserver;
+
+  if (isBookFreeSiteVisitModal) {
     dialog.classList.add('book-free-site-visit-dialog');
+
+    // Try immediately
+    if (!updateExitIntentSubmitText()) {
+      // If form/button is added later, observe modal content
+      submitButtonObserver = new MutationObserver(() => {
+        if (updateExitIntentSubmitText()) {
+          submitButtonObserver.disconnect();
+        }
+      });
+
+      submitButtonObserver.observe(dialogContent, {
+        childList: true,
+        subtree: true,
+      });
+    }
   }
+
   dialog.append(dialogContent);
   window.activeModalElement = dialog;
 
@@ -34,7 +72,6 @@ export async function createModal(contentNodes) {
   decorateBlock(block);
   await loadBlock(block);
 
-  // close on click outside the dialog
   dialog.addEventListener('click', (e) => {
     const {
       left, right, top, bottom,
@@ -47,7 +84,12 @@ export async function createModal(contentNodes) {
 
   dialog.addEventListener('close', () => {
     document.body.classList.remove('eds-modal-open');
-    window.activeModalElement = null; // Clear reference on close
+    window.activeModalElement = null;
+
+    if (submitButtonObserver) {
+      submitButtonObserver.disconnect();
+    }
+
     block.remove();
   });
 
@@ -57,8 +99,13 @@ export async function createModal(contentNodes) {
   return {
     block,
     showModal: () => {
+      // Apply again when modal opens, in case button text got reset
+      updateExitIntentSubmitText();
+
       dialog.showModal();
-      setTimeout(() => { dialogContent.scrollTop = 0; }, 0);
+      setTimeout(() => {
+        dialogContent.scrollTop = 0;
+      }, 0);
       document.body.classList.add('eds-modal-open');
     },
   };

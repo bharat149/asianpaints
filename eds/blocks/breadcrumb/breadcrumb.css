@@ -108,3 +108,7 @@ main > .section:has(.breadcrumb):has(.hero-form) .breadcrumb-wrapper {
     line-height: 18px;
   }
 }
+/* breadcumb for interior-wall-paints */
+.breadcrumb-container.cards-container .breadcrumb-wrapper{
+  padding-left: 0 !important;
+}

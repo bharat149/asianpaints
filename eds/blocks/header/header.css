@@ -3216,7 +3216,7 @@ body.modal-open {
   inset: 0;
   z-index: 10000;
   display: none;
-  align-items: center;
+  /* align-items: center; */
   justify-content: center;
   padding: 16px;
   background: rgba(0, 0, 0, 0.55);
@@ -3229,9 +3229,15 @@ body.modal-open {
 }
 
 #guestLoginModal .modal-dialog {
-  width: min(680px, 100%);
-  max-height: calc(100vh - 32px);
+  /* width: min(680px, 100%);
+  max-height: calc(100vh - 32px); */
   /* overflow-y: auto; */
+    max-width: 500px;
+    margin: 1.75rem auto;
+    @media (max-width: 991px) {
+      width: 100%;
+      margin: .5rem;
+    }
 }
 
 #guestLoginModal .modal-content {
@@ -3441,7 +3447,7 @@ body.modal-open {
 
 #guestLoginModal .form-section .customer-info-section .submit-user-info-button .animated-arrow-button {
   text-align: right;
-  margin-top: 25px;
+  /* margin-top: 25px; */
   font-weight: 700;
   font-size: 16px;
   line-height: 1;
