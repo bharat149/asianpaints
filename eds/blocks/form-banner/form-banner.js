@@ -338,6 +338,7 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   // Map common labels to specific ids and names
   const lowerLabel = (labelText || '').toLowerCase();
+  const isPincode = lowerLabel.includes('pincode') || lowerLabel.includes('pin');
   if (lowerLabel.includes('name')) {
     inputId = 'enquire-name';
     inputName = 'ENQUIRE_NAME';
@@ -355,7 +356,15 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   const label = document.createElement('label');
   label.className = 'form-field-label';
   label.setAttribute('for', inputId);
-  label.innerHTML = `${labelText || placeholderText}<span class="form-field-required">*</span>`;
+  const displayLabel =
+    lowerLabel.includes('phone') || lowerLabel.includes('mobile')
+      ? 'Mobile Number'
+      : lowerLabel.includes('pincode') || lowerLabel.includes('pin')
+        ? 'PIN Code'
+        : (labelText || placeholderText);
+
+  label.innerHTML = `${displayLabel}`;
+
 
   const input = document.createElement('input');
   let inputType = 'text';
@@ -393,6 +402,10 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   const errorEl = createErrorMessageElement();
 
+    if (isPincode) {
+  field.classList.add('show-label');
+}
+
   const updateFieldState = () => {
     const isFocused = document.activeElement === input;
     const hasValue = !!input.value.trim();
@@ -402,7 +415,10 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
     field.classList.toggle('show-label', isFocused || hasValue);
   };
 
-  input.addEventListener('focus', updateFieldState);
+   input.addEventListener('focus', () => {
+    field.classList.add('show-label');
+    updateFieldState();
+  });
 
   input.addEventListener('blur', () => {
     updateFieldState();
