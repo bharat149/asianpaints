@@ -109,6 +109,40 @@ main > .section:has(.breadcrumb):has(.hero-form) .breadcrumb-wrapper {
   }
 }
 /* breadcumb for interior-wall-paints */
-.breadcrumb-container.cards-container .breadcrumb-wrapper{
+.breadcrumb-container.cards-container .breadcrumb-wrapper {
   padding-left: 0 !important;
+}
+
+.breadcrumb-container.cards-container {
+  position: relative;
+}
+
+.breadcrumb-container.cards-container .breadcrumb-wrapper {
+  transform: translate(0px, -52px);
+}
+
+.breadcrumb-container.cards-container .breadcrumb-wrapper .breadcrumb.block nav ul li a {
+  color: #5d4f43 !important;
+}
+
+.breadcrumb-container.cards-container .breadcrumb-wrapper .breadcrumb.block nav ul li:last-child span[aria-current="page"] {
+  color: #97836a !important;
+}
+
+/* inspiration */
+.section.breadcrumb-container .breadcrumb-wrapper:has(.breadcrumb.inspiration) {
+  padding-left: 2% !important;
+  padding-top: 10px;
+}
+
+.section.breadcrumb-container .breadcrumb-wrapper:has(.breadcrumb.inspiration) nav ul li a {
+  color: #5d4f43 !important;
+}
+.section.breadcrumb-container .breadcrumb-wrapper:has(.breadcrumb.inspiration) nav ul li:last-child span[aria-current="page"] {
+  color: #5d4f43 !important;
+}
+.section.breadcrumb-container .breadcrumb-wrapper:has(.breadcrumb.inspiration) nav ul li:not(:last-child):after{
+    font-weight: 400;
+    line-height: 16px;
+    color: #cfc4ab;
 }
