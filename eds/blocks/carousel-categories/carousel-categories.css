@@ -243,6 +243,6 @@
     height: inherit;
   }
   .categories-offer__sidebar .default-content-wrapper h2 {
-    max-width: 50%;
+    max-width: 65%;
   }
 }

@@ -192,11 +192,11 @@ export default function decorate(block) {
       const label = row.children[0];
       const summary = document.createElement('summary');
       summary.className = 'accordion-item-label';
-      const questionPrefix = `${index + 1}. `;
+      // const questionPrefix = `${index + 1}. `;
       const questionText = label.textContent.trim();
       if (questionText && !/^\d+\./.test(questionText)) {
         const numbered = document.createElement('span');
-        numbered.textContent = `${questionPrefix}${questionText}`;
+        numbered.textContent = `${questionText}`;
         summary.append(numbered);
       } else {
         summary.append(...label.childNodes);
