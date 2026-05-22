@@ -35,21 +35,84 @@ export async function createModal(contentNodes) {
     return true;
   };
 
-  let submitButtonObserver;
+  // exitintent title change
+  const updateExitIntentCallUsContent = () => {
+    if (!isBookFreeSiteVisitModal) return false;
+
+    const callUsText = dialogContent.querySelector(
+      '.lead-form-container .default-content-wrapper p'
+    );
+
+    if (!callUsText) return false;
+
+    // Avoid updating same paragraph again
+    if (callUsText.dataset.exitPopupCallUsUpdated === 'true') return true;
+
+    const existingText = callUsText.textContent.trim();
+
+    const phoneMatch = existingText.match(/\b\d{4}[-\s]?\d{3}[-\s]?\d{4}\b/);
+    const displayPhone = phoneMatch?.[0] || '1800-209-5678';
+    const telPhone = displayPhone.replace(/[^\d+]/g, '');
+
+    const titleText = phoneMatch
+      ? existingText.replace(phoneMatch[0], '').trim()
+      : 'Call us for Painting Services';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.classList.add('title');
+    titleSpan.textContent = titleText;
+
+    const iconWrapper = document.createElement('span');
+    iconWrapper.classList.add('exit-popup-call-us--title--icon');
+
+    const phoneLink = document.createElement('a');
+    phoneLink.setAttribute('tabindex', '0');
+    phoneLink.href = `tel:${telPhone}`;
+
+    const phoneIcon = document.createElement('img');
+    phoneIcon.classList.add('call-img');
+    phoneIcon.loading = 'lazy';
+    phoneIcon.src = '//static.asianpaints.com/content/dam/whatsapp/whatsapp-animated-icon.gif';
+    phoneIcon.width = 38;
+    phoneIcon.height = 38;
+    phoneIcon.alt = 'To paint your home, please give us a call at';
+    phoneIcon.title = 'phone-call-desktop';
+
+    const phoneNumber = document.createElement('span');
+    phoneNumber.classList.add('mob-num');
+    phoneNumber.textContent = displayPhone;
+
+    phoneLink.append(phoneIcon, phoneNumber);
+    iconWrapper.append(phoneLink);
+
+    callUsText.replaceChildren(titleSpan, iconWrapper);
+    callUsText.dataset.exitPopupCallUsUpdated = 'true';
+
+    return true;
+  };
+
+  let modalContentObserver;
 
   if (isBookFreeSiteVisitModal) {
     dialog.classList.add('book-free-site-visit-dialog');
 
+    const applyBookFreeSiteVisitUpdates = () => {
+      const buttonUpdated = !exitIntentButtonText || updateExitIntentSubmitText();
+      const callUsUpdated = updateExitIntentCallUsContent();
+
+      return buttonUpdated && callUsUpdated;
+    };
+
     // Try immediately
-    if (!updateExitIntentSubmitText()) {
-      // If form/button is added later, observe modal content
-      submitButtonObserver = new MutationObserver(() => {
-        if (updateExitIntentSubmitText()) {
-          submitButtonObserver.disconnect();
+    if (!applyBookFreeSiteVisitUpdates()) {
+      // If form/content loads later, observe modal content
+      modalContentObserver = new MutationObserver(() => {
+        if (applyBookFreeSiteVisitUpdates()) {
+          modalContentObserver.disconnect();
         }
       });
 
-      submitButtonObserver.observe(dialogContent, {
+      modalContentObserver.observe(dialogContent, {
         childList: true,
         subtree: true,
       });
@@ -84,10 +147,11 @@ export async function createModal(contentNodes) {
 
   dialog.addEventListener('close', () => {
     document.body.classList.remove('eds-modal-open');
+    block.classList.remove('modal-open');
     window.activeModalElement = null;
 
-    if (submitButtonObserver) {
-      submitButtonObserver.disconnect();
+    if (modalContentObserver) {
+      modalContentObserver.disconnect();
     }
 
     block.remove();
@@ -95,16 +159,25 @@ export async function createModal(contentNodes) {
 
   block.innerHTML = '';
   block.append(dialog);
+  block.addEventListener('click', (e) => {
+  if (e.target === block) {
+    dialog.close();
+  }
+});
 
   return {
     block,
     showModal: () => {
       // Apply again when modal opens, in case button text got reset
-      updateExitIntentSubmitText();
+      if (isBookFreeSiteVisitModal) {
+        updateExitIntentSubmitText();
+        updateExitIntentCallUsContent();
+      }
 
-      dialog.showModal();
+      dialog.show();
+      block.classList.add('modal-open');
       setTimeout(() => {
-        dialogContent.scrollTop = 0;
+        block.scrollTop = 0;
       }, 0);
       document.body.classList.add('eds-modal-open');
     },
