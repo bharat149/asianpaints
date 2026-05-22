@@ -11,7 +11,7 @@
 
 .section.accordion-container:has(.accordion.faq)>.default-content-wrapper h2 {
     font-size: 32px;
-    font-weight: 600;
+    font-weight: 800;
     line-height: 38px;
     margin: 0 0 20px;
     text-align: center;
@@ -37,6 +37,9 @@ main .section.sectionpadding.accordion-container {
 }
 
 /* Each FAQ item = AEM each-container */
+.accordion.faq details:not([open]) {
+    padding: 23px 0 5px 0;
+}
 .accordion.faq details {
     border: none;
     border-bottom: 1px solid #CACBCC;
@@ -61,17 +64,15 @@ main .section.sectionpadding.accordion-container {
 /* SUMMARY = AEM accord row */
 .accordion.faq details summary {
     display: flex;
-    align-items: anchor-center;
     justify-content: space-between;
     position: relative;
     padding: 0;
     cursor: pointer;
     list-style: none;
-    overflow: hidden;
     background: transparent;
     transition: none;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 800;
     line-height: 23.4px;
     color: var(--faq-heading-color, #373737);
     margin: 0;
@@ -123,6 +124,8 @@ main .section.sectionpadding.accordion-container {
     background-position: center;
     background-size: 16px 16px;
 
+    transform: translateX(20px);
+
     /* PLUS icon */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23373737' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='12' y1='5' x2='12' y2='19'/%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3C/svg%3E");
 }
@@ -165,6 +168,10 @@ main .section.sectionpadding.accordion-container {
     line-height: 21px;
     color: #53565A;
     padding-bottom: 13px;
+}
+
+.ids-faq .accordion.faq details .accordion-item-body p:not(:first-child):not(:last-child) {
+    padding-bottom: 0;
 }
 
 /* Links inside answer */
@@ -219,7 +226,15 @@ main .section.sectionpadding.accordion-container {
 
 /* Mobile parity */
 @media (width <=600px) {
-
+    .accordion.faq details summary::after {
+        transform: unset;
+    }
+    .accordion.faq details {
+        padding: 40px 0 23px 0;
+    }
+    .accordion.faq details:not([open]) {
+    padding: 40px 0 30px 0;
+}
     main .section.sectionpadding-large.accordion-container {
         padding-left: 16px;
         padding-right: 16px;
@@ -267,3 +282,12 @@ main .section.sectionpadding.accordion-container {
         padding-top: 10px;
     }
 }
+
+
+/* .section.ids-faq #faqs {
+    font-weight: 800;
+}
+
+ .section.ids-faq .accordion.faq details summary {
+    font-weight: 800;
+} */
