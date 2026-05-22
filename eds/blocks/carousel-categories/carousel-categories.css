@@ -19,7 +19,7 @@
   color: #000;
   font-size: 32px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 800;
   line-height: normal;
   margin-bottom: 25px;
 }
@@ -47,11 +47,11 @@
   padding: 0;
   border-radius: 8px;
   font-size: 20px;
-  line-height: 1.4;
+  line-height: 24px;
   font-weight: 300;
   cursor: pointer;
   transition: linear 0.25s ease;
-  width: 170px;
+  width: max-content;
   color: #000;
 }
 
@@ -65,16 +65,16 @@
   border-color: #55d88b;
   background: #eaf4ef;
   color: #000;
-  font-weight: 600;
+  font-weight: 700;
   padding: 19px;
   height: 52px;
   pointer-events: none;
-  color: #2d2d2d;
+  width: 170px;
 }
 
 .categories-offer__content {
   min-width: 0;
-  width: 77%;
+  width: 79%;
   margin-left: auto;
 }
 
@@ -135,6 +135,7 @@
   overflow: hidden;
   background: #ddd;
   aspect-ratio: 16 / 9;
+  height: inherit;
 }
 
 .categories-offer-slide-picture,
@@ -154,10 +155,11 @@
 }
 
 .categories-offer-pagination .swiper-pagination-bullet {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   opacity: 1;
   background: rgb(255 255 255 / 55%);
+  margin: 0 6px !important;
 }
 
 .categories-offer-pagination .swiper-pagination-bullet-active {
@@ -239,5 +241,8 @@
 @media (width > 992px) {
   .carousel-categories.block.categories-offer .categories-offer-swiper {
     height: inherit;
+  }
+  .categories-offer__sidebar .default-content-wrapper h2 {
+    max-width: 50%;
   }
 }

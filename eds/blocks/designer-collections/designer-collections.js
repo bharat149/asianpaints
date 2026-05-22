@@ -408,7 +408,7 @@ export default async function decorate(block) {
           spaceBetween: 10,
         },
         900: {
-          slidesPerView: 3.4,
+          slidesPerView: 3.9,
           spaceBetween: 50,
         },
       },

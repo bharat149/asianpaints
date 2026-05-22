@@ -220,8 +220,8 @@ export default function decorate(block) {
 
       // ✅ ADD: JS slide open/close animation (only for FAQ)
       addDetailsAnimation(details, summary, body, {
-        durationOpen: 180,
-        durationClose: 160,
+        durationOpen: 400,
+        durationClose: 400,
       });
 
       if (index >= initialVisibleCount) {

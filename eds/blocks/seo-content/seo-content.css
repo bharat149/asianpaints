@@ -175,20 +175,58 @@
 
 
 @media screen and (min-width: 992px) {
-    .royale-seo-content-container .seo-content-wrapper , .royale-seo-content-container .default-content-wrapper {
-        max-width: 1440px;
-        margin: auto !important;
-    }
-    #types-of-wall-texture-designs-for-interior-walls {
-        line-height: 42px;
-        margin: 40px 0 70px 0;
+    .royale-seo-content-container {
+        padding-left: 0;
+        padding-right: 0;
     }
 
-     .royale-seo-content-container .seo-content-wrapper h3 , .royale-seo-content-container .seo-content-wrapper h2 {
+    .royale-seo-content-container .seo-content-wrapper,
+    .royale-seo-content-container .default-content-wrapper {
+        max-width: 1440px;
+        margin: auto !important;
+        padding-left: 4% !important;
+        padding-right: 4% !important;
+    }
+
+    #types-of-wall-texture-designs-for-interior-walls {
+        line-height: 42px;
+        margin: 60px 0 30px 0;
+    }
+
+    #difference-between-normal-paint-and-texture-paint {
+        margin: 50px 0 40px 0;
+    }
+
+   .royale-seo-content-container .seo-content.block.table-style {
+    padding: 0;
+   }
+
+    .royale-seo-content-container .seo-content-wrapper h2 {
+        margin-top: 20px;
+        line-height: 34px;
+        font-size: 30px;
+        font-weight: 700;
+    } 
+        #textured-paint-designs,
+        #how-to-maintain-textured-walls {
+            line-height: 34px;
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+    .royale-seo-content-container .seo-content-wrapper h2#why-choose-royale-play-texture-paint {
         margin-top: 55px;
+    }
+
+    .royale-seo-content-container .seo-content-wrapper h3 {
+        font-size: 20px;
         line-height: 22px;
     }
+
     .royale-seo-content-container .seo-content-wrapper .table-style.block {
         margin-top: 30px;
+    }
+    .royale-seo-content-container .default-content-wrapper p {
+        letter-spacing: 0.5px;
     }
 }
