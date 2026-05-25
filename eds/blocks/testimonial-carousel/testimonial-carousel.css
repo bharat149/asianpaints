@@ -25,6 +25,10 @@
     line-height: 60px;
     text-align: left;
 }
+.testimonial-carousel .testimonial-heading h2{
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
 
 .testimonial-carousel-wrapper {
     position: relative;
@@ -41,6 +45,10 @@
 .multi-video-column-container .carousel-section.waterproofing-section .slick-list .slick-track,
 .testimonial-carousel .testimonial-swiper .swiper-wrapper {
     left: 20px !important;
+
+    @media (min-width: 320px) and (max-width: 991px) {
+        left: 2px !important;
+    }
 }
 
 .testimonial-carousel .swiper-wrapper {
@@ -215,6 +223,9 @@
     justify-content: center;
     padding: 32px 20px 20px;
     background: rgba(0 0 0 / 75%);
+    @media (min-width: 320px) and (max-width: 991px) {
+        padding: 32px 14px 20px;
+    }
 }
 
 .testimonial-carousel .testimonial-video-modal.active {
@@ -228,7 +239,7 @@
 
 .testimonial-carousel .testimonial-video-close {
     position: absolute;
-    top: -22px;
+    /* top: -22px; */
     right: 0;
     z-index: 2;
     width: 32px;
@@ -237,6 +248,7 @@
     background: transparent;
     border: 0;
     cursor: pointer;
+    top: 6px;
 }
 
 .testimonial-carousel .testimonial-video-close span {
@@ -263,6 +275,9 @@
     overflow: hidden;
     background: #000;
     border-radius: 8px;
+    @media (min-width: 320px) and (max-width: 991px) {
+        aspect-ratio: 5 / 4;
+    }
 }
 
 @media (min-widht:992px) {
@@ -410,7 +425,7 @@ body.testimonial-video-open {
     }
 
     .testimonial-carousel .testimonial-video-close {
-        top: -38px;
+        top: 8px;
         width: 28px;
         height: 28px;
     }
@@ -450,7 +465,7 @@ body.testimonial-video-open {
     }
 
     .testimonial-carousel .testimonial-slide {
-        width: 325px !important;
+        width: 390px !important;
     }
 
     .testimonial-prev,
@@ -481,7 +496,7 @@ body.testimonial-video-open {
 
 @media (min-width: 1201px) and (max-width: 1400px) {
     .testimonial-carousel .testimonial-heading {
-        width: 30%;
+        width: 27%;
     }
 
     .testimonial-carousel .testimonial-carousel-inner-wrapper {
