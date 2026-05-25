@@ -3298,6 +3298,7 @@ body.modal-open {
   flex-direction: column;
   gap: 24px;
   padding: 18px 10px;
+  padding-bottom: 5px;
 }
 
 #guestLoginModal .form-section .step-section .form-item {
