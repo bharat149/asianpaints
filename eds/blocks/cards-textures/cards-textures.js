@@ -49,7 +49,9 @@ export default function decorate(block) {
     const hoverContent = document.createElement('div');
     hoverContent.className = 'card-hover-content';
 
-    // Paint bucket/packshot image (shown on hover)
+    const isDesktop = window.matchMedia('(min-width: 992px)').matches;
+
+    // 1. Paint bucket/packshot image should come first
     if (packshotPicture) {
       const bucketContainer = document.createElement('div');
       bucketContainer.className = 'card-bucket';
@@ -57,18 +59,29 @@ export default function decorate(block) {
       hoverContent.appendChild(bucketContainer);
     }
 
+    // 2. Wrapper should come after card-bucket, only for desktop
+    let hoverAppendTarget = hoverContent;
+
+    if (isDesktop) {
+      const hoverWrapper = document.createElement('div');
+      hoverWrapper.className = 'wrapper'; // keeping your class name
+      hoverContent.appendChild(hoverWrapper);
+
+      hoverAppendTarget = hoverWrapper;
+    }
+
     // Title in hover state
     const hoverTitle = document.createElement('h4');
     hoverTitle.className = 'card-hover-title';
     hoverTitle.textContent = name;
-    hoverContent.appendChild(hoverTitle);
+    hoverAppendTarget.appendChild(hoverTitle);
 
     // Description
     if (description) {
       const desc = document.createElement('p');
       desc.className = 'card-description';
       desc.textContent = description;
-      hoverContent.appendChild(desc);
+      hoverAppendTarget.appendChild(desc);
     }
 
     // View Details button
@@ -77,7 +90,7 @@ export default function decorate(block) {
       btn.className = 'card-button';
       btn.href = link.href;
       btn.innerHTML = `${link.textContent} <span class="arrow">→</span>`;
-      hoverContent.appendChild(btn);
+      hoverAppendTarget.appendChild(btn);
     }
 
     card.appendChild(hoverContent);
