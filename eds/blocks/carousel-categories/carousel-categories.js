@@ -133,8 +133,8 @@ function updateActiveCarouselHeight(carouselWrappers, activeIndex) {
 
   requestAnimationFrame(() => {
     if (window.innerWidth >= 768) {
-      carouselsContainer.style.height = '560px';
-      activeCarousel.style.height = '560px';
+      carouselsContainer.style.height = '500px';
+      activeCarousel.style.height = '500px';
     } else {
       activeCarousel.style.height = '';
 

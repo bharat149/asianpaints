@@ -458,13 +458,12 @@ body.appear.eds-modal-open {
   position: relative;
   z-index: 1;
   display: block;
-  width: min(100%, 500px);
+  width: min(100%, 539px);
   max-height: none;
   overflow: visible;
   margin: 0;
   padding: 0;
   border: 0;
-  /* background: transparent; */
 }
 
 /* Content should also not scroll */

@@ -280,8 +280,9 @@ function buildFormUI(config) {
   miniToolsForm.className = 'mini-tools-form';
 
   const form = document.createElement('form');
-  const formId = uniqueId('toolsMiniForm');
-  form.id = formId;
+  // const formId = uniqueId('toolsMiniForm');
+  // form.id = formId;
+  form.id = `toolsMiniForm`;
   form.className = isWbc ? 'wbc-mini-form' : 'pbc-mini-form';
   form.setAttribute('data-attr-tool-link', toolLink);
 
@@ -359,7 +360,8 @@ function buildFormUI(config) {
   const areaLabel = document.createElement('label');
   areaLabel.className = isWbc ? 'area-field-heading focus-visible-auto-imp' : 'focus-visible-auto-imp';
   areaLabel.setAttribute('tabindex', '0');
-  areaLabel.setAttribute('for', `${formId}-area`);
+  // areaLabel.setAttribute('for', `${formId}-area`);
+  areaLabel.setAttribute('for', `area`);
   areaLabel.textContent = q3Label;
 
   const reqArea = document.createElement('span');
@@ -369,7 +371,8 @@ function buildFormUI(config) {
   const areaInput = document.createElement('input');
   areaInput.type = 'number';
   areaInput.inputMode = 'numeric';
-  areaInput.id = `${formId}-area`;
+  // areaInput.id = `${formId}-area`;
+  areaInput.id = `area`;
   areaInput.name = 'area';
   areaInput.placeholder = areaPlaceholder;
 
@@ -387,7 +390,8 @@ function buildFormUI(config) {
 
   const cta = document.createElement('a');
   cta.href = 'javascript:void(0);';
-  cta.id = `${formId}-calculate-now`;
+  // cta.id = `${formId}-calculate-now`;
+  cta.id = `calculate-now`;
   cta.className = 'animated-arrow-button ctaText';
   cta.setAttribute('aria-disabled', 'true');
   cta.setAttribute('disabled', 'disabled');

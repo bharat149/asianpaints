@@ -84,8 +84,9 @@
 }
 
 .form-banner__form .form-field-error {
-  min-height: 20px;
+  min-height: 10px;
   margin-top: 4px;
+  margin-bottom: 4px;
   font-size: 12px;
   line-height: 1.2;
   color: #ff2343;
@@ -96,6 +97,10 @@
 .form-banner__form .form-input.is-invalid {
   border-color: #ff2343 !important;
   box-shadow: none !important;
+}
+.form-banner__form .form-field.has-error .form-input + .form-field-error,
+.form-banner__form .form-input.is-invalid + .form-field-error {
+  margin-bottom: 8px;
 }
 
 .form-banner__form .form-field-label {
@@ -269,15 +274,16 @@
 .form-banner__form .form-consent-note {
   color: #6a6a6a;
   font-size: 10px;
-  line-height: 1.6;
+  line-height: 16px;
   font-weight: 400;
+  letter-spacing: 0.5px;
 }
 
 .form-banner__form .form-button-cell {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-top: 18px;
+  margin-top: 12px;
   margin-bottom: 25px;
 }
 
@@ -292,12 +298,13 @@
   border-radius: 999px;
   background: linear-gradient(180deg, #fec940, #f90);;
   color: #111;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
+  letter-spacing: 0.86px;
   box-shadow: none;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -556,7 +563,7 @@
   .form-banner__card {
     position: relative;
     z-index: 4;
-    max-width: calc(100% - 24px);
+    max-width: 90%;
     margin: -42px auto 16px;
     padding: 20px 18px 24px;
     border-radius: 12px;
@@ -684,6 +691,10 @@
   .form-banner__form .form-field-error {
     margin-top: 0;
   }
+  .form-banner__form .form-field.has-error .form-input + .form-field-error,
+.form-banner__form .form-input.is-invalid + .form-field-error {
+  margin-top: 4px;
+}
 
   .form-banner__form .form-consent-area {
     margin-top: 8px;
@@ -711,7 +722,7 @@
   }
 
   .form-banner__card {
-    max-width: calc(100% - 16px);
+    max-width: 90%;
     padding: 16px 14px 20px;
   }
 
@@ -762,7 +773,7 @@
   .form-banner__form .btn.form-submit {
     min-width: 120px;
     padding: 9px 22px;
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .form-banner.block .form-popup-overlay {

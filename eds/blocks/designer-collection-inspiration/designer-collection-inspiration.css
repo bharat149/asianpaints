@@ -2,12 +2,13 @@
 .section.designer-collection-inspiration-container:has(.designer-collection-inspiration)>.default-content-wrapper {
   text-align: center;
 }
-
+.section.get-inspired-container:has(.get-inspired)>.default-content-wrapper h2#get-inspired {
+    font-weight: 800;
+}
 .section.designer-collection-inspiration-container:has(.designer-collection-inspiration)>.default-content-wrapper h2 {
     font-size: 40px;
-    font-weight: 600;
-    line-height: 80px;
-    margin: 0 0 20px;
+    font-weight: 800;
+    margin: 0 0 40px;
     text-align: center;
     color: #222;
 
