@@ -441,6 +441,10 @@
   /* overflow: hidden; */
 }
 
+ .blue-form.form.block .form-popup-overlay {
+  border-radius: unset
+}
+
 .form.block .form-popup-close {
   position: absolute;
   top: 3px;
