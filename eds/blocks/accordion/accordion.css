@@ -164,10 +164,11 @@ main .section.sectionpadding.accordion-container {
     margin: 0;
     font-family: Manrope, sans-serif;
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 21px;
     color: #53565A;
     padding-bottom: 13px;
+    letter-spacing: 0.5px;
 }
 
 .ids-faq .accordion.faq details .accordion-item-body p:not(:first-child):not(:last-child) {
