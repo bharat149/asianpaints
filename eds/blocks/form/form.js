@@ -285,21 +285,23 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   const errorEl = createErrorMessageElement();
 
-  if (isPincode) {
-  field.classList.add('show-label');
-}
 
-  const updateFieldState = () => {
-    const isFocused = document.activeElement === input;
-    const hasValue = !!input.value.trim();
+const updateFieldState = () => {
+  const isFocused = document.activeElement === input;
+  const hasValue = !!input.value.trim();
 
-    field.classList.toggle('is-focused', isFocused);
-    field.classList.toggle('has-value', hasValue);
-  };
+  field.classList.toggle('is-focused', isFocused);
+  field.classList.toggle('has-value', hasValue);
+
+  if (hasValue) {
+    field.classList.add('show-label');
+  }
+};
+
+  updateFieldState();
 
   input.addEventListener('focus', () => {
     field.classList.add('show-label');
-    updateFieldState();
   });
 
   input.addEventListener('blur', () => {
@@ -1004,6 +1006,12 @@ function renderForm(block) {
 
   // Prefill form fields from cookies
   checkCookieValues(formRow);
+  formRow.querySelectorAll('.form-input').forEach((input) => {
+  if (input.value.trim()) {
+    input.closest('.form-field')?.classList.add('show-label');
+    input.closest('.form-field')?.classList.add('has-value');
+  }
+});
 }
 
 export default function decorate(block) {
