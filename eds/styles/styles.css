@@ -1003,3 +1003,7 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
     height: 100% !important;
     width: 100% !important;
   }
+/* hideExitIntentCTA for inspiration page adde */
+body.hideExitIntentCTA .header-main .header-main-inner .header-cta{
+  display: none;
+}

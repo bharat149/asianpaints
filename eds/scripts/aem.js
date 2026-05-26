@@ -527,6 +527,10 @@ function decorateSections(main) {
       if (String(meta['exit-intent-form-questions-hide']).toLowerCase() === 'true') {
         document.body.classList.add('hide-exit-intent-form-questions');
       }
+
+      if (String(meta['exit-intent-form-cta-hide']).toLowerCase() === 'true') {
+        document.body.classList.add('hideExitIntentCTA');
+      }
       sectionMeta.parentNode.remove();
     }
   });
