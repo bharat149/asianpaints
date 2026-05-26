@@ -421,7 +421,7 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
   });
 
   input.addEventListener('blur', () => {
-    updateFieldState();
+    // updateFieldState();
     validateInputField(input, true);
   });
 

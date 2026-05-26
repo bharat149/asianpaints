@@ -108,17 +108,17 @@
 .form.block .form-field-label {
   position: absolute;
   top: -7px;
-  left: 18px;
+  left: 12px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 0 8px;
+  padding: 0 3px;
   background: #fff;
   color: #53565a;
   font-size: 12px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 18px;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -181,7 +181,7 @@
 .form.block .form-input-prefix {
   position: absolute;
   top: 50%;
-  left: 18px;
+  left: 15px;
   transform: translateY(-50%);
   z-index: 2;
   color: #53565a;
@@ -193,7 +193,7 @@
 
 .form.block .form-input.form-input--with-prefix,
 .form.block .form-control.form-input.form-input--with-prefix {
-  padding-left: 62px;
+  padding-left:55px;
 }
 
 .form.block .form-consent-area {
@@ -828,7 +828,7 @@
 
   .form.block .form-field-label {
     top: -6px;
-    left: 16px;
+    left: 15px;
     font-size: 13px;
   }
 
@@ -847,7 +847,7 @@
 
   .form.block .form-input.form-input--with-prefix,
   .form.block .form-control.form-input.form-input--with-prefix {
-    padding-left: 62px;
+    padding-left: 55px;
   }
 
   .form.block .form-consent-area {

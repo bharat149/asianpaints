@@ -20,10 +20,18 @@ export async function createModal(contentNodes) {
     '.book-free-site-visit-modal, .book-free-site-visit-form'
   );
 
-  const configSection = document.querySelector(
-    'main [data-exit-intent-form-button-text]'
-  );
-  const exitIntentButtonText = configSection?.dataset.exitIntentFormButtonText?.trim();
+  const exitIntentButtonText = document
+    .querySelector('main [data-exit-intent-form-button-text]')
+    ?.dataset
+    .exitIntentFormButtonText
+    ?.trim();
+
+  const exitIntentCallUsTitle = document
+    .querySelector('main [data-exit-intent-form-callus-title]')
+    ?.dataset
+    .exitIntentFormCallusTitle
+    ?.trim();
+
   const updateExitIntentSubmitText = () => {
     if (!isBookFreeSiteVisitModal || !exitIntentButtonText) return false;
     const submitButton = dialogContent.querySelector(
@@ -54,10 +62,11 @@ export async function createModal(contentNodes) {
     const displayPhone = phoneMatch?.[0] || '1800-209-5678';
     const telPhone = displayPhone.replace(/[^\d+]/g, '');
 
-    const titleText = phoneMatch
-      ? existingText.replace(phoneMatch[0], '').trim()
-      : 'Call us for Painting Services';
+    const defaultCallUsTitle = phoneMatch
+    ? existingText.replace(phoneMatch[0], '').trim()
+    : 'Call us for Painting Services';
 
+    const titleText = exitIntentCallUsTitle || defaultCallUsTitle;
     const titleSpan = document.createElement('span');
     titleSpan.classList.add('title');
     titleSpan.textContent = titleText;
