@@ -683,7 +683,7 @@ main>.section:has(> .default-content-wrapper:only-child > picture:only-child)>.d
 /* SEO/Default content typography - match Asian Paints original */
 main>.section>.default-content-wrapper h2 {
   font-size: 30px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: normal;
   color: #222;
   margin-top: 1.5em;
