@@ -23,6 +23,29 @@ function csvToArray(str) {
   return str.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
+function parseOptionLabelValue(option) {
+  //Example from DA - Renovation / Repair(Repair or Renovation) --> label: Renovation / Repair, value: Repair or Renovation
+  const raw = String(option || '').trim();
+
+  // Format: Label(Value)
+  const match = raw.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+
+  if (!match) {
+    return {
+      label: raw,
+      value: raw,
+    };
+  }
+
+  const label = match[1].trim();
+  const value = match[2].trim();
+
+  return {
+    label: label || value,
+    value: value || label,
+  };
+}
+
 function uniqueId(prefix = 'ch') {
   return `${prefix}-${Math.random().toString(16).slice(2)}-${Date.now()}`;
 }
@@ -195,6 +218,7 @@ function renderRadioOptions({ name, options, idPrefix }) {
   wrapper.className = 'radio-wraper';
 
   options.forEach((opt, i) => {
+    const option = parseOptionLabelValue(opt);
     const inputId = `${groupId}-${i}`;
 
     const label = document.createElement('label');
@@ -203,14 +227,14 @@ function renderRadioOptions({ name, options, idPrefix }) {
     label.setAttribute('role', 'radio');
     label.setAttribute('aria-checked', 'false');
     label.setAttribute('for', inputId);
-    label.append(document.createTextNode(opt));
+    label.append(document.createTextNode(option.label));
 
     const input = document.createElement('input');
     input.tabIndex = -1;
     input.id = inputId;
     input.name = name;
     input.type = 'radio';
-    input.value = opt; // stored raw; we normalize on submit
+    input.value = option.value; // stored raw; we normalize on submit
 
     label.appendChild(input);
     wrapper.appendChild(label);
