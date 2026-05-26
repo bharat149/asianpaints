@@ -325,16 +325,6 @@
   border-bottom: 3px solid #b0b1b3;
 }
 
-@media (width >=992px) and (width <=1280px) {
-  .footer .clickable-title {
-    font-size: 12px;
-  }
-
-  .footer .group-link {
-    margin-bottom: 6px;
-  }
-}
-
 @media (width >=1281px) and (width <=1440px) {
   .footer .group-link {
     margin-bottom: 8px;
