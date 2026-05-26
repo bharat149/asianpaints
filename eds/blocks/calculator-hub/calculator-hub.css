@@ -90,7 +90,7 @@
 
     .calculator-hub .tool-description .sub-heading {
         font-size: 48px;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 55.4px;
         letter-spacing: -0.02em;
         text-align: left;
@@ -155,7 +155,7 @@
     .calculator-hub .project-field-heading,
     .calculator-hub .space-field-heading {
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 21px;
         margin-bottom: 10px;
     }
@@ -262,7 +262,7 @@
 
     .calculator-hub .form-group.area-field label {
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 21px;
         margin-bottom: 10px;
         display: inline-block;
@@ -312,7 +312,7 @@
         background: linear-gradient(180deg, #ffc63c, #ffa20c);
         color: #222;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     @media (min-width: 991px) and (max-width: 1200px) {
@@ -543,7 +543,7 @@
     }
 
     .calculator-hub .mini-pbc.wbc-variant .project-field-inputs input:checked + .radiobtn .option-title {
-        font-weight: 600;
+        font-weight: 700;
     }
 
     /* WBC focus-visible rounding */
@@ -569,7 +569,7 @@
     .calculator-hub .mini-pbc.wbc-variant .space-field-inputs .area-field .area-field-heading {
         font-size: 14px;
         line-height: 21px;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     /* radio wrapper and radio styles */
