@@ -402,18 +402,22 @@ function createDefaultField(cell, rowIdx, cellIdx, labelText, placeholderText) {
 
   const errorEl = createErrorMessageElement();
 
-    if (isPincode) {
+
+const updateFieldState = () => {
+  const isFocused = document.activeElement === input;
+  const hasValue = !!input.value.trim();
+
+  field.classList.toggle('is-focused', isFocused);
+  field.classList.toggle('has-value', hasValue);
+
+  if (hasValue) {
+    field.classList.add('show-label');
+  }
+};
+
+input.addEventListener('focus', () => {
   field.classList.add('show-label');
-}
-
-  const updateFieldState = () => {
-    const isFocused = document.activeElement === input;
-    const hasValue = !!input.value.trim();
-
-    field.classList.toggle('is-focused', isFocused);
-    field.classList.toggle('has-value', hasValue);
-    field.classList.toggle('show-label', isFocused || hasValue);
-  };
+});
 
    input.addEventListener('focus', () => {
     field.classList.add('show-label');
@@ -835,6 +839,12 @@ function buildFormCard(block, labelsRow, inputsRow) {
 
   // Prefill form fields from cookies
   checkCookieValues(formRow);
+  formRow.querySelectorAll('.form-input').forEach((input) => {
+  if (input.value.trim()) {
+    input.closest('.form-field')?.classList.add('show-label');
+    input.closest('.form-field')?.classList.add('has-value');
+  }
+});
 
   return formCard;
 }
