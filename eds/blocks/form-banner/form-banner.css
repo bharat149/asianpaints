@@ -187,6 +187,13 @@
   }
 }
 
+.form-banner__form .form-input-prefix-wrap .form-input.form-control#enquire-mobile {
+  padding: 0 0 0 38px;
+   @media (width >= 991px) {
+   padding: 0 0 0 45px;
+  }
+}
+
 .form-banner__form .form-input-prefix {
   position: absolute;
   top: 50%;
