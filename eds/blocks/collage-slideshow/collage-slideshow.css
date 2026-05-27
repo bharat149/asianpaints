@@ -261,12 +261,11 @@
   background: linear-gradient(180deg, #fec940, #f90);
   color: #111;
   text-decoration: none;
-  /* font-size: 18px; */
   line-height: 1;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   padding: 14px 20px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   min-height: 38px;
 }
 
@@ -726,8 +725,9 @@
 
   .collage-slideshow-container .collage-slideshow-wrapper .collage-slideshow .collage-slideshow__wrapper .collage-slideshow__right .collage-slideshow__content .collage-slideshow__description {
     font-weight: 400;
-    font-size: 14px;
+    font-size: 11px;
     line-height: 15px;
+    letter-spacing: .5px;
   }
 
   .collage-slideshow-container .collage-slideshow-wrapper .collage-slideshow .collage-slideshow__wrapper .collage-slideshow__left .collage-slideshow__pagination {
