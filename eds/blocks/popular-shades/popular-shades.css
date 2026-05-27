@@ -364,6 +364,9 @@
 }
 
 @media (min-width:992px) {
+  .popular-shades-container {
+    padding-top: 60px !important;
+  }
   .popular-shades__media {
     width: 69%;
     flex: unset;
