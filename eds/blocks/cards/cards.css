@@ -1051,7 +1051,7 @@
   color: #1a1a1a;
   background-color: transparent;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 700;
   font-size: 14px;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -1083,7 +1083,7 @@
     max-width: calc(100% - 200px);
     font-size: 40px;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 800;
     color: #000;
     line-height: 35.2px;
   }

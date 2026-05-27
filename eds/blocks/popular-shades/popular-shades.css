@@ -276,9 +276,10 @@
 
   .popular-shades__title {
     margin: 0 0 8px;
-    font-size: 24px;
+    font-size: 32px;
+    font-weight: 800;
     line-height: 1.05;
-    letter-spacing: -0.02em;
+    letter-spacing: .62px;
   }
 
   .popular-shades__description {
@@ -287,6 +288,7 @@
     margin: 0 0 14px;
     font-size: 11px;
     color: #222;
+    letter-spacing: .62px;
   }
 
   .popular-shades__image-wrap {
