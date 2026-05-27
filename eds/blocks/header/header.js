@@ -738,9 +738,14 @@ function validateVisualSearchFile(file) {
   return { valid: true, error: null };
 }
 
-function readFileAsDataUrl(file) {
+function readFileAsDataUrl(file, onProgress = () => { }) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      const readPercent = Math.round((event.loaded / event.total) * 30);
+      onProgress(readPercent);
+    };
     reader.onload = () => resolve(String(reader.result || ''));
     reader.onerror = reject;
     reader.readAsDataURL(file);
@@ -753,28 +758,163 @@ function getCookieValue(name) {
   return match ? decodeURIComponent(match[1]) : '';
 }
 
-async function uploadVisualSearchImage(file, modal) {
+function setVisualUploadProgress(modal, value) {
+  const progressBar = modal.querySelector('.upload-progress-section .progress-bar');
+  if (!progressBar) return;
+  const progressValue = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+  progressBar.style.width = `${progressValue}%`;
+  progressBar.setAttribute('aria-valuenow', String(progressValue));
+}
+
+function showVisualUploadProgress(modal, file) {
   const statusEl = modal.querySelector('.vs-status');
   const errorEl = modal.querySelector('.vs-error');
-  if (errorEl) errorEl.textContent = '';
+  const mobileErrorEl = modal.querySelector('.vs-mobile-error');
+  const uploadProgressSection = modal.querySelector('.upload-progress-section');
+  const selectedImageName = modal.querySelector('.selected-image-name');
 
+  modal.classList.add('is-uploading');
+
+  if (statusEl) {
+    statusEl.textContent = '';
+    statusEl.style.display = 'none';
+  }
+
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+
+  if (mobileErrorEl) {
+    mobileErrorEl.textContent = '';
+    mobileErrorEl.style.display = 'none';
+  }
+
+  if (selectedImageName) {
+    selectedImageName.textContent = file?.name || '';
+  }
+
+  if (uploadProgressSection) {
+    uploadProgressSection.style.display = 'flex';
+  }
+
+  setVisualUploadProgress(modal, 0);
+}
+
+function hideVisualUploadProgress(modal) {
+  const uploadProgressSection = modal.querySelector('.upload-progress-section');
+
+  modal.classList.remove('is-uploading');
+
+  if (uploadProgressSection) {
+    uploadProgressSection.style.display = 'none';
+  }
+
+  setVisualUploadProgress(modal, 0);
+}
+
+
+// function showVisualSearchError(modal, message) {
+//   const statusEl = modal.querySelector('.vs-status');
+//   const errorEl = modal.querySelector('.vs-error');
+
+//   hideVisualUploadProgress(modal);
+
+//   if (statusEl) {
+//     statusEl.textContent = '';
+//     statusEl.style.display = 'none';
+//   }
+
+//   if (errorEl) {
+//     errorEl.textContent = message;
+//     errorEl.style.display = 'block';
+//   }
+// }
+function showVisualSearchError(modal, message) {
+  const statusEl = modal.querySelector('.vs-status');
+  const errorEl = modal.querySelector('.vs-error');
+  const mobileErrorEl = modal.querySelector('.vs-mobile-error');
+
+  hideVisualUploadProgress(modal);
+
+  if (statusEl) {
+    statusEl.textContent = '';
+    statusEl.style.display = 'none';
+  }
+
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+
+  if (mobileErrorEl) {
+    mobileErrorEl.textContent = message;
+    mobileErrorEl.style.display = 'block';
+  }
+}
+
+
+function postVisualSearchUpload(formBody, onProgress = () => { }) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open('POST', apUrl(AP_PATHS.VISUAL_SEARCH_UPLOAD), true);
+    xhr.withCredentials = true;
+
+    xhr.setRequestHeader(
+      'Content-Type',
+      'application/x-www-form-urlencoded; charset=UTF-8'
+    );
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+
+      const uploadPercent = event.loaded / event.total;
+
+      // File read covers 0-35, upload covers 35-90
+      const mappedProgress = 35 + (uploadPercent * 55);
+
+      onProgress(mappedProgress);
+    };
+
+    xhr.onload = () => {
+      resolve({
+        ok: xhr.status >= 200 && xhr.status < 300,
+        status: xhr.status,
+        text: () => Promise.resolve(xhr.responseText || ''),
+      });
+    };
+
+    xhr.onerror = () => reject(new Error('Visual search upload failed'));
+    xhr.onabort = () => reject(new Error('Visual search upload aborted'));
+
+    xhr.send(formBody.toString());
+  });
+}
+
+async function uploadVisualSearchImage(file, modal) {
   const validation = validateVisualSearchFile(file);
+
   if (!validation.valid) {
-    if (errorEl) {
-      errorEl.textContent = validation.error;
-      errorEl.style.display = 'block';
-    }
+    showVisualSearchError(modal, validation.error);
     return;
   }
 
-  if (statusEl) {
-    statusEl.textContent = 'Uploading...';
-    statusEl.style.display = 'block';
-  }
+  showVisualUploadProgress(modal, file);
 
   try {
-    const imageDetails = await readFileAsDataUrl(file);
-    if (!imageDetails) throw new Error('Unable to read image');
+    setVisualUploadProgress(modal, 5);
+
+    const imageDetails = await readFileAsDataUrl(file, (progress) => {
+      setVisualUploadProgress(modal, progress);
+    });
+
+    if (!imageDetails) {
+      throw new Error('Unable to read image');
+    }
+
+    setVisualUploadProgress(modal, 35);
+
     const fileName = file.name || 'uploaded-image';
 
     const formBody = new URLSearchParams({
@@ -786,17 +926,17 @@ async function uploadVisualSearchImage(file, modal) {
       visitId: getCookieValue('unbxd.visitId'),
     });
 
-    const resp = await fetchFromAp(AP_PATHS.VISUAL_SEARCH_UPLOAD, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      },
-      body: formBody.toString(),
-      credentials: 'include',
+    const resp = await postVisualSearchUpload(formBody, (progress) => {
+      setVisualUploadProgress(modal, progress);
     });
+
     if (resp?.ok) {
+      setVisualUploadProgress(modal, 95);
+
       const responseText = await resp.text();
+
       let data = null;
+
       try {
         data = responseText ? JSON.parse(responseText) : null;
       } catch {
@@ -804,41 +944,47 @@ async function uploadVisualSearchImage(file, modal) {
       }
 
       const redirectUrl = data?.redirectUrl || data?.redirectURL || data?.url;
+
       if (redirectUrl && /^https?:\/\//i.test(String(redirectUrl))) {
+        setVisualUploadProgress(modal, 100);
         window.location.href = redirectUrl;
         return;
       }
 
       if (typeof data?.totalCount !== 'undefined') {
         const totalCount = Number(data.totalCount) || 0;
+
         trackImageSearchComplete(totalCount);
+
         if (totalCount === 0) {
           trackNoResultFound('Image');
         }
-        localStorage.setItem('uploaded-image-search-name', fileName.replace(/\.[^.]+$/, ''));
+
+        localStorage.setItem(
+          'uploaded-image-search-name',
+          fileName.replace(/\.[^.]+$/, '')
+        );
+
+        setVisualUploadProgress(modal, 100);
+
         window.location.href = `${getApApi().SEARCH_RESULTS}?variantType=visualsearch&ts=${Date.now()}`;
         return;
       }
 
-      if (statusEl) statusEl.textContent = 'Image processed successfully';
-    } else if (errorEl) {
-      errorEl.textContent = 'Oops file upload failed, please try again!';
-      errorEl.style.display = 'block';
+      setVisualUploadProgress(modal, 100);
+
+      setTimeout(() => {
+        hideVisualUploadProgress(modal);
+      }, 800);
+
+      return;
     }
+
+    showVisualSearchError(modal, 'Oops file upload failed, please try again!');
   } catch {
-    if (errorEl) {
-      errorEl.textContent = 'Oops file upload failed, please try again!';
-      errorEl.style.display = 'block';
-    }
-  } finally {
-    if (statusEl) statusEl.style.display = 'none';
+    showVisualSearchError(modal, 'Oops file upload failed, please try again!');
   }
 }
-
-// ──────────────────────────────────────────────
-//  Search: Suggestions Dropdown + Redirect
-// ──────────────────────────────────────────────
-
 function navigateToSearchResults(query) {
   if (!query || !query.trim()) return;
   window.location.href = `${getApApi().SEARCH_RESULTS}?q=${encodeURIComponent(query.trim())}`;
@@ -3325,6 +3471,10 @@ function getDragDropGifUrl() {
 const BROWSE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 /* eslint-enable max-len */
 
+// ──────────────────────────────────────────────
+//  Cart Modal: Refresh with live data
+// ──────────────────────────────────────────────
+
 function buildVisualSearchModal() {
   const overlay = document.createElement('div');
   overlay.className = 'vs-modal-overlay';
@@ -3362,18 +3512,32 @@ function buildVisualSearchModal() {
   orText.textContent = 'or';
 
   const fileInput = document.createElement('input');
+  fileInput.id = 'browseImageInput';
   fileInput.type = 'file';
   fileInput.accept = 'image/jpeg,image/png,image/tiff';
   fileInput.className = 'vs-file-input';
+  fileInput.style.display = 'none';
   fileInput.setAttribute('aria-label', 'Browse an image');
+
+  // Mobile camera input
+  const captureInput = document.createElement('input');
+  captureInput.id = 'captureImageInput';
+  captureInput.type = 'file';
+  captureInput.accept = 'image/*';
+  captureInput.capture = 'camera';
+  captureInput.className = 'vs-capture-input';
+  captureInput.style.display = 'none';
+  captureInput.setAttribute('aria-label', 'Capture an image');
 
   const browseBtn = document.createElement('button');
   browseBtn.className = 'vs-browse-btn';
   browseBtn.type = 'button';
+
   const browseLabel = document.createElement('span');
   browseLabel.className = 'vs-browse-label';
   browseLabel.textContent = 'Browse an image';
   browseBtn.appendChild(browseLabel);
+
   const browseIcon = document.createElement('span');
   browseIcon.className = 'vs-browse-icon';
   browseIcon.innerHTML = BROWSE_ICON_SVG;
@@ -3391,25 +3555,150 @@ function buildVisualSearchModal() {
   errorMsg.className = 'vs-error';
   errorMsg.style.display = 'none';
 
-  dropZone.append(title, uploadIcon, dragText, orText, browseBtn, hint, statusMsg, errorMsg);
-  modal.append(header, dropZone);
+  // Shared upload progress section for desktop + mobile
+  const uploadProgressSection = document.createElement('div');
+  uploadProgressSection.className = 'upload-progress-section';
+  uploadProgressSection.style.display = 'none';
+
+  const uploadProgressImageSection = document.createElement('div');
+  uploadProgressImageSection.className = 'upload-progress-image-section';
+
+  const uploadProgressImage = document.createElement('div');
+  uploadProgressImage.className = 'upload-progress-image';
+  uploadProgressImage.style.setProperty(
+    '--upload-progress-image-url',
+    "url('https://www.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/upload-progress-gif-common.gif')"
+  );
+
+  const uploadProgressTitle = document.createElement('div');
+  uploadProgressTitle.className = 'upload-progress-title';
+  uploadProgressTitle.textContent = 'Uploading...';
+
+  uploadProgressImageSection.append(uploadProgressImage, uploadProgressTitle);
+
+  const uploadProgressBarSection = document.createElement('div');
+  uploadProgressBarSection.className = 'upload-progress-bar-section';
+
+  const selectedImageName = document.createElement('div');
+  selectedImageName.className = 'selected-image-name';
+
+  const progress = document.createElement('div');
+  progress.className = 'progress';
+
+  const progressBar = document.createElement('div');
+  progressBar.className = 'progress-bar';
+  progressBar.style.width = '0%';
+  progressBar.setAttribute('role', 'progressbar');
+  progressBar.setAttribute('aria-valuemin', '0');
+  progressBar.setAttribute('aria-valuemax', '100');
+  progressBar.setAttribute('aria-valuenow', '0');
+
+  progress.appendChild(progressBar);
+  uploadProgressBarSection.append(selectedImageName, progress);
+  uploadProgressSection.append(uploadProgressImageSection, uploadProgressBarSection);
+
+  // Desktop content stays exactly inside vs-dropzone
+  dropZone.append(
+    title,
+    uploadIcon,
+    dragText,
+    orText,
+    browseBtn,
+    fileInput,
+    hint,
+    statusMsg,
+    errorMsg,
+    uploadProgressSection
+  );
+
+  // Mobile-only bottom sheet content
+  const mobileContainer = document.createElement('div');
+  mobileContainer.className = 'mobile-container';
+
+  mobileContainer.innerHTML = `
+    <div class="search-title">Search with a photo</div>
+
+    <div class="recm-title">
+      Get recommendations for Colour inspiration, Textures, Wallpapers, Interior Design ideas, etc...
+    </div>
+
+    <div class="choose-photo-section">
+      <div class="choose-photo-heading">
+        <p><b>Gallery </b>- Choose an existing photo</p>
+      </div>
+      <div class="image-icon">
+        <picture>
+          <img
+            loading="lazy"
+            fetchpriority="auto"
+            src="//static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/gallery-photo-icon-mob.png"
+            alt="gallery-photo-icon-mob"
+            title="gallery-photo-icon-mob"
+          >
+        </picture>
+      </div>
+    </div>
+
+    <div class="click-photo-section">
+      <div class="click-photo-heading">
+        <p><b>Camera </b>- Click a photo</p>
+      </div>
+      <div class="camera-icon">
+        <picture>
+          <img
+            loading="lazy"
+            fetchpriority="auto"
+            src="//static.asianpaints.com/content/dam/apcolourcatalogue/asset/ap-revamp/visual-search/click-photo-icon-mob.png"
+            alt="click-photo-icon-mob"
+            title="click-photo-icon-mob"
+          >
+        </picture>
+      </div>
+    </div>
+
+    <div class="image-format">JPG or PNG. 5MB Maximum</div>
+    <div class="vs-mobile-error" style="display: none;"></div>
+  `;
+
+  // Do not add modal-dialog/modal-content wrappers here
+  modal.append(header, dropZone, mobileContainer, captureInput);
   overlay.appendChild(modal);
 
   const resetState = () => {
+    modal.classList.remove('is-uploading');
+
     statusMsg.style.display = 'none';
     errorMsg.style.display = 'none';
+    uploadProgressSection.style.display = 'none';
+
     errorMsg.textContent = '';
     statusMsg.textContent = '';
+
+    const mobileError = mobileContainer.querySelector('.vs-mobile-error');
+    if (mobileError) {
+      mobileError.textContent = '';
+      mobileError.style.display = 'none';
+    }
+
+    selectedImageName.textContent = '';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
   };
 
   const close = () => {
-    overlay.classList.remove('active');
+    overlay.classList.remove('active', 'vs-mobile-open');
     resetState();
     trackImageSearchClose();
   };
+
   closeBtn.addEventListener('click', close);
+
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
+  });
+
+  overlay.addEventListener('vs:open', () => {
+    resetState();
   });
 
   browseBtn.addEventListener('click', () => {
@@ -3417,30 +3706,79 @@ function buildVisualSearchModal() {
     fileInput.click();
   });
 
+  const bindMobileAction = (element, callback) => {
+    if (!element) return;
+
+    element.setAttribute('role', 'button');
+    element.setAttribute('tabindex', '0');
+
+    element.addEventListener('click', callback);
+
+    element.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        callback();
+      }
+    });
+  };
+
+  // Mobile Gallery CTA
+  bindMobileAction(
+    mobileContainer.querySelector('.choose-photo-section'),
+    () => {
+      resetState();
+      fileInput.click();
+    }
+  );
+
+  // Mobile Camera CTA
+  bindMobileAction(
+    mobileContainer.querySelector('.click-photo-section'),
+    () => {
+      resetState();
+      captureInput.click();
+    }
+  );
+
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
       uploadVisualSearchImage(fileInput.files[0], modal);
     }
+
+    fileInput.value = '';
   });
 
-  // Drag & drop with actual file handling
+  captureInput.addEventListener('change', () => {
+    if (captureInput.files.length > 0) {
+      uploadVisualSearchImage(captureInput.files[0], modal);
+    }
+
+    captureInput.value = '';
+  });
+
+  // Drag & drop stays desktop-only naturally because dropzone is hidden on mobile initial view
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropZone.classList.add('dragover');
   });
+
   dropZone.addEventListener('dragleave', () => {
     dropZone.classList.remove('dragover');
   });
+
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
     resetState();
+
     const { files } = e.dataTransfer;
+
     if (files.length > 1) {
       errorMsg.textContent = 'Please upload only 1 file';
       errorMsg.style.display = 'block';
       return;
     }
+
     if (files.length === 1) {
       uploadVisualSearchImage(files[0], modal);
     }
@@ -3449,9 +3787,6 @@ function buildVisualSearchModal() {
   return overlay;
 }
 
-// ──────────────────────────────────────────────
-//  Cart Modal: Refresh with live data
-// ──────────────────────────────────────────────
 
 async function refreshCartModal(block) {
   const modal = block.querySelector('.cart-modal');
@@ -4050,6 +4385,9 @@ function addInteractions(block) {
           document.body.classList.remove('search-dialog-open');
         }
         trackImageSearchStart();
+
+        vsModal.classList.toggle('vs-mobile-open', !isDesktopViewport());
+        vsModal.dispatchEvent(new CustomEvent('vs:open'));
         vsModal.classList.add('active');
       });
     });
