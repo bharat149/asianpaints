@@ -3511,3 +3511,299 @@ body.modal-open {
     width: 100% !important;
   }
 }
+.vs-modal-overlay .mobile-container .file-format-validation {
+  width: 100%;
+  padding-top: 10px;
+  text-align: center;
+  color: #a7a7a7
+}
+
+.vs-modal-overlay .upload-progress-section {
+  width: 100%;
+  min-height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: var(--dotted-border-url);
+  border: none;
+  background-color: #e2f9eb;
+  padding: 75px 25px 25px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+}
+
+@media (min-width: 992px) {
+  .vs-modal-overlay .upload-progress-section {
+    justify-content: space-between
+  }
+}
+
+@media (min-width: 320px) and (max-width:991px) {
+  .vs-modal-overlay .upload-progress-section {
+    /* padding:25px 20px 36px;
+        background: #fff;
+        border-radius: 8px 8px 0 0!important;
+        border: none;
+        top: -18px */
+  }
+}
+
+.vs-modal-overlay.upload-progress-section .upload-progress-image-section {
+  width: 100%;
+  border-radius: 10px;
+}
+
+@media (min-width: 320px) and (max-width:991px) {
+  .vs-modal-overlay.upload-progress-section .upload-progress-image-section {
+    padding-bottom: 45px
+  }
+}
+
+.vs-modal-overlay .upload-progress-section .upload-progress-image-section .upload-progress-image {
+  width: 100px;
+  height: 100px;
+  background-position: top;
+  background-image: var(--upload-progress-image-url);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  margin: 0 auto;
+  padding-bottom: 20px;
+
+}
+
+.vs-modal-overlay.upload-progress-section .upload-progress-image-section .upload-progress-title {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+  color: #1d1d1f;
+  text-align: center
+}
+
+.vs-modal-overlay .upload-progress-section .upload-progress-bar-section {
+  text-align: left
+}
+
+.vs-modal-overlay .upload-progress-section .upload-progress-bar-section .selected-image-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+  color: #000;
+  padding-bottom: 12px
+}
+
+@media (min-width: 320px) and (max-width:991px) {
+  .vs-modal-overlay .upload-progress-section .upload-progress-bar-section .selected-image-name {
+    font-size: 14px
+  }
+}
+
+.vs-modal-overlay .upload-progress-section .upload-progress-bar-section .progress {
+  height: 6px;
+  background: #fff;
+  border-radius: 40px
+}
+
+@media (min-width: 320px) and (max-width:991px) {
+  .vs-modal-overlay .upload-progress-section .upload-progress-bar-section .progress {
+    background: #efefef
+  }
+}
+
+.vs-modal-overlay .upload-progress-section .upload-progress-bar-section .progress .progress-bar {
+  background: #00c853;
+  transition: width .25s
+}
+
+.header .vs-dropzone {
+  position: relative;
+}
+
+/* MOBILE>................................ */
+/* Keep mobile content hidden by default */
+.vs-modal .mobile-container,
+.vs-modal .vs-capture-input {
+  display: none;
+}
+
+/* Mobile visual search bottom sheet */
+@media (max-width: 991px) {
+  .vs-modal-overlay.active.vs-mobile-open {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal {
+    width: 100%;
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    padding: 40px 20px 28px;
+    position: relative;
+    max-width: 100vw;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal-header {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    z-index: 2;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal-close {
+    border: 0;
+    background: transparent;
+    font-size: 32px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* Initial mobile state: hide desktop dropzone, show mobile options */
+  .vs-modal-overlay.vs-mobile-open .vs-modal:not(.is-uploading) .vs-dropzone {
+    display: none !important;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal:not(.is-uploading) .mobile-container {
+    display: block;
+  }
+
+  /* Uploading state: reuse same progress bar section from desktop */
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .mobile-container {
+    display: none !important;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-dropzone {
+    display: block !important;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-title,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-upload-icon,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-drag-text,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-or,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-browse-btn,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-file-input,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-hint,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-status,
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .vs-error {
+    display: none !important;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal.is-uploading .upload-progress-section {
+    display: flex !important;
+    flex-direction: column;
+    /* gap: 24px; */
+    min-height: auto;
+    padding: 28px 6px 20px;
+    justify-content: center;
+    background: transparent;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .upload-progress-image-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 52px;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .upload-progress-image {
+    width: 72px;
+    height: 56px;
+    background-image: var(--upload-progress-image-url);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .upload-progress-title {
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .selected-image-name {
+    margin-bottom: 12px;
+    font-size: 16px;
+    word-break: break-word;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .progress {
+    width: 100%;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #eee;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #00c853;
+    transition: width 0.25s ease;
+  }
+
+  .mobile-container .search-title {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .mobile-container .recm-title {
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .choose-photo-section,
+  .click-photo-section {
+    min-height: 64px;
+    margin-bottom: 20px;
+    padding: 0 20px;
+    border: 1px solid #222;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .choose-photo-heading p,
+  .click-photo-heading p {
+    margin: 0;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .image-icon img,
+  .camera-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+
+  .mobile-container .image-format {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+  }
+
+  .vs-mobile-error {
+    margin-top: 12px;
+    color: #d00;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal {
+    height: calc(50dvh - 48px);
+  }
+
+  .vs-modal-overlay.vs-mobile-open .vs-modal .vs-dropzone {
+    border: none;
+  }
+}
