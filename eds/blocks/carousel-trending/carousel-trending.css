@@ -191,7 +191,7 @@
 /* Tablet + Mobile */
 @media screen and (max-width: 992px) {
     .section.carousel-trending-container {
-        padding: 5rem 1rem;
+        padding: 5rem 1rem 3rem  1rem
     }
 
     .section.carousel-trending-container .default-content-wrapper {
@@ -233,7 +233,7 @@
         overflow: inherit;
         flex: 0;
         color: #4d4d4d;
-        opacity: 1;
+        opacity: 0.25;
     }
 
     .carousel-trending.block .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
