@@ -1,4 +1,4 @@
-import { getDigitalData, trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 /*
 ** Authoring format **

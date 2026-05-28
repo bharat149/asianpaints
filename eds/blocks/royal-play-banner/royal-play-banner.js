@@ -19,7 +19,7 @@ Col 6 - CTA label and Redirection link
 Col 7 - Button type
 */
 
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 async function getSwiper() {
   if (window.Swiper) return window.Swiper;
@@ -492,17 +492,10 @@ mobileSwiper.init();
         }
 
         if (destinationUrl) {
-          if (window.ccAnalytics?.satelliteCheck?.()) {
-            window._satellite?.track('carousel_banner_click', {
-              bannerDestinationUrl: destinationUrl,
-              bannerTitle,
-            });
-          } else {
-            trackEvent('carousel_banner_click', {
-              bannerDestinationUrl: destinationUrl,
-              bannerTitle,
-            });
-          }
+          trackEvent('carousel_banner_click', {
+            bannerDestinationUrl: destinationUrl,
+            bannerTitle,
+          });
         }
       }
 

@@ -1,5 +1,7 @@
 /* /blocks/calculator-hub/quick-links.js */
 
+import { trackEvent } from '../../scripts/analytics_1.js';
+
 function parseTableToConfig(block) {
   const config = {};
   const rows = [...block.querySelectorAll(':scope > div')];
@@ -113,23 +115,15 @@ function resolveFlowType(form, values) {
 }
 
 function calculatorStart(form, storageKey) {
-  const satellite = window._satellite;
-  if (!satellite || typeof satellite.track !== 'function') return;
-
   const miniFormValues = getStoredMiniFormValues(storageKey);
   const flowType = resolveFlowType(form, miniFormValues);
-
-  satellite.track('calc_start', { flowType });
+  trackEvent('calc_start', { flowType });
 }
 
 function calculatorContinue(form, userInput, storageKey) {
-  const satellite = window._satellite;
-  if (!satellite || typeof satellite.track !== 'function') return;
-
   const miniFormValues = getStoredMiniFormValues(storageKey);
   const flowType = resolveFlowType(form, miniFormValues);
-
-  satellite.track('calc_continue', {
+  trackEvent('calc_continue', {
     filter: userInput,
     calcType: 'Basic',
     flowType,

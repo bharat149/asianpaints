@@ -5,7 +5,7 @@
  * @param {Element} block The footer block element
  */
 
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 /* ---------- IMAGE FALLBACKS (local PNG images) ---------- */
 const IMG = 'https://content.da.live/aemysites/asian-paints-demo/.footer';

@@ -8,7 +8,7 @@ Col 5 contains multiple mobile bottom images
 Col 6 contains multiple URLs
 */
 
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 function getPicturesFromColumn(col) {
   if (!col) return [];

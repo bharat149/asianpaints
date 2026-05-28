@@ -4,7 +4,7 @@ Col 1 contains multiple desktop top images
 Col 2 contains multiple mobile top images
 Col 3 contains multiple URLs
 */
-import { trackEvent } from "../../scripts/analytics.js";
+import { trackEvent } from "../../scripts/analytics_1.js";
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;

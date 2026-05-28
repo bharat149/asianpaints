@@ -1,5 +1,5 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const PINCODE_STORAGE_KEY = 'pincode';

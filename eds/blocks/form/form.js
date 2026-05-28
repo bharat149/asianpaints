@@ -26,7 +26,7 @@ Two variant: White form, Blue form
 */
 
 import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';

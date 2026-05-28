@@ -1,3 +1,5 @@
+import { trackEvent } from '../../scripts/analytics_1.js';
+
 export default async function decorate(block) {
     // Wait for jQuery because it is no longer loaded eagerly in the page head
     await window.loadJQuery?.();
@@ -198,43 +200,37 @@ export default async function decorate(block) {
 }
 
 let calculateStart = function () {
-    if (typeof (_satellite) != "undefined") {
-        let miniFormValues = window.localStorage.miniFormValues;
-        let flowType;
-        if (miniFormValues && miniFormValues.Area != 'Val3') {
-            if ($(".calculatorhub .pbc-mini-form").length > 0 || $(".budgetcalculator .pbcCalculator").length > 0) {
-                flowType = "SPS_PBC_miniform";
-            } else if ($(".calculatorhub .wbc-mini-form").length > 0 || $(".budgetcalculator .wbcCalculator").length > 0) {
-                flowType = "SPS_WPC_miniform";
-            }
+    let miniFormValues = window.localStorage.miniFormValues;
+    let flowType;
+    if (miniFormValues && miniFormValues.Area != 'Val3') {
+        if ($(".calculatorhub .pbc-mini-form").length > 0 || $(".budgetcalculator .pbcCalculator").length > 0) {
+            flowType = "SPS_PBC_miniform";
+        } else if ($(".calculatorhub .wbc-mini-form").length > 0 || $(".budgetcalculator .wbcCalculator").length > 0) {
+            flowType = "SPS_WPC_miniform";
         }
-        else {
-            flowType = "";
-        }
-        _satellite.track("calc_start", {
-            flowType: flowType
-        });
     }
+    else {
+        flowType = "";
+    }
+    trackEvent("calc_start", { flowType: flowType });
 }
 
 let calculateContinue = function (userInput) {
-    if (typeof (_satellite) != "undefined") {
-        let miniFormValues = window.localStorage.miniFormValues;
-        let flowType = '';
-        if (miniFormValues && miniFormValues.Area != 'Val3') {
-            if ($(".calculatorhub .pbc-mini-form").length > 0 || $(".budgetcalculator .pbcCalculator").length > 0) {
-                flowType = "SPS_PBC_miniform";
-            } else if ($(".calculatorhub .wbc-mini-form").length > 0 || $(".budgetcalculator .wbcCalculator").length > 0) {
-                flowType = "SPS_WPC_miniform";
-            }
+    let miniFormValues = window.localStorage.miniFormValues;
+    let flowType = '';
+    if (miniFormValues && miniFormValues.Area != 'Val3') {
+        if ($(".calculatorhub .pbc-mini-form").length > 0 || $(".budgetcalculator .pbcCalculator").length > 0) {
+            flowType = "SPS_PBC_miniform";
+        } else if ($(".calculatorhub .wbc-mini-form").length > 0 || $(".budgetcalculator .wbcCalculator").length > 0) {
+            flowType = "SPS_WPC_miniform";
         }
-        else {
-            flowType = "";
-        }
-        _satellite.track("calc_continue", {
-            filter: userInput, //Pass all selected filters separated by ""|""
-            calcType: "Basic", // Hard Coded
-            flowType: flowType
-        });
     }
+    else {
+        flowType = "";
+    }
+    trackEvent("calc_continue", {
+        filter: userInput, //Pass all selected filters separated by ""|""
+        calcType: "Basic", // Hard Coded
+        flowType: flowType
+    });
 }

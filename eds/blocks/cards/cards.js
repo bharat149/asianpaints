@@ -1,6 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');

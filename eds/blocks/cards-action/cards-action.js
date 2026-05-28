@@ -7,7 +7,7 @@ Col 4 contains multiple cta label
 Col 5 contains multiple cta redirection link
 */
 
-import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 function getPicturesFromColumn(column) {
   if (!column) return [];

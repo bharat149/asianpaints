@@ -6,7 +6,7 @@ col 3 = multiple titles
 col 4 = multiple URLs
 */
 
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;

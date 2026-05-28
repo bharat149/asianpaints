@@ -60,7 +60,7 @@ Important:
 */
 
 import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 
 let formName = '';
 let campaignId = '';

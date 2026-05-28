@@ -23,7 +23,7 @@ import {
   trackImageSearchClose,
   trackImageSearchComplete,
   triggerCTAClickWithLinkAndTitle,
-} from '../../scripts/analytics.js';
+} from '../../scripts/analytics_1.js';
 
 const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
@@ -2122,11 +2122,7 @@ function buildBrandBar(brandDiv) {
     if (!normalizedDestination || normalizedDestination.startsWith('javascript:void')) {
       return;
     }
-    if (window._satellite) {
-      window._satellite.track('domain_swicth', {
-        destinationUrl: normalizedDestination,
-      });
-    }
+    trackEvent('domain_swicth', { destinationUrl: normalizedDestination });
   };
 
   const brandBar = document.createElement('div');
@@ -3247,12 +3243,7 @@ function setGuestDigitalData(loginStatus, loginErrorName) {
 }
 
 function trackGuestAnalytics(eventName, payload) {
-  if (
-    window.ccAnalytics?.satelliteCheck?.()
-    && window._satellite?.track
-  ) {
-    window._satellite.track(eventName, payload);
-  }
+  trackEvent(eventName, payload);
 }
 
 function setCookie(name, value) {
@@ -4405,9 +4396,7 @@ function addInteractions(block) {
   const searchBarEl = block.querySelector('.header-search');
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
-      if (window._satellite) {
-        window._satellite.track('search_icon');
-      }
+      trackEvent('search_icon');
       openSearchDialog(block);
     });
     searchBarEl.style.cursor = 'pointer';
@@ -4428,8 +4417,6 @@ function addInteractions(block) {
 
   block.querySelectorAll('.action-btn').forEach((actionBtn) => {
     actionBtn.addEventListener('click', () => {
-      if (!window._satellite) return;
-
       const rawTitle = actionBtn.getAttribute('aria-label')
         || actionBtn.querySelector('.icon-tooltip-text')?.textContent
         || actionBtn.textContent
@@ -4438,10 +4425,7 @@ function addInteractions(block) {
       const rawHref = actionBtn.getAttribute('href') || '';
       const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : rawHref;
 
-      window._satellite.track('header_icons', {
-        title,
-        param1,
-      });
+      trackEvent('header_icons', { title, param1 });
     });
   });
 
