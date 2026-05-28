@@ -13,7 +13,13 @@
       "mcp__plugin_excat_playwright__browser_click",
       "mcp__plugin_excat_playwright__browser_snapshot",
       "Bash(git add:*)",
-      "Bash(npx stylelint:*)"
+      "Bash(npx stylelint:*)",
+      "Bash(curl -o /Users/sausaxen/Documents/Codebase/edspoc/eds/scripts/vendor/alloy.min.js https://cdn1.adoberesources.net/alloy/2.33.1/alloy.min.js)",
+      "Bash(git -C /Users/sausaxen/Documents/Codebase/edspoc status)",
+      "Bash(git -C /Users/sausaxen/Documents/Codebase/edspoc log --oneline -3)",
+      "Bash(git -C /Users/sausaxen/Documents/Codebase/edspoc checkout -b alloyanalytics)",
+      "Bash(git -C /Users/sausaxen/Documents/Codebase/edspoc add eds/scripts/scripts.js eds/scripts/analytics_1.js eds/scripts/vendor/alloy.min.js)",
+      "Bash(git -C /Users/sausaxen/Documents/Codebase/edspoc commit -m ' *)"
     ]
   }
 }
