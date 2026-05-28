@@ -317,7 +317,7 @@ export default async function decorate(block) {
       pagination: {
         el: paginationEl,
         clickable: true,
-        enabled: false,
+        enabled: true,
       },
     
       breakpoints: {
