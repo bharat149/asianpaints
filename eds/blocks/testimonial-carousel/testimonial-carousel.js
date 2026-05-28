@@ -1,4 +1,4 @@
-import { trackEvent } from "../../scripts/analytics.js";
+import { trackEvent } from "../../scripts/analytics_1.js";
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();

@@ -54,7 +54,7 @@ Variants:
 
 */
 
-import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const row = block.querySelector(':scope > div');

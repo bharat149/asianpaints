@@ -16,7 +16,7 @@ import {
   bindButtonContainerTracking,
   bindReadTermsPdfTracking,
   royalePlayAnimatedImageTracking,
-} from './analytics.js';
+} from './analytics_1.js';
 import { DOMAIN_ENV, getDomainEnvironment } from './environment.js';
 
 const SPRINKLR_APP_IDS = Object.freeze({

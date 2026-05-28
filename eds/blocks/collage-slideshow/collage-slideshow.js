@@ -1,4 +1,4 @@
-import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 function getSwiperClass() {
   if (window.Swiper) return Promise.resolve(window.Swiper);

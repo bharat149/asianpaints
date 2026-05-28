@@ -4,7 +4,7 @@ import {
   toClassName,
 } from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 
 function getAmsBase() {
   if (typeof window === 'undefined') return 'https://beta.asianpaints.com';
@@ -40,16 +40,10 @@ function getUtmParams() {
 }
 
 export function getVisitorId() {
-  try {
-    // eslint-disable-next-line no-underscore-dangle
-    if (window._satellite && window._satellite.getVisitorId) {
-      // eslint-disable-next-line no-underscore-dangle
-      return window._satellite.getVisitorId().getMarketingCloudVisitorID() || ' ';
-    }
-  } catch (e) {
-    return '';
-  }
-  return '';
+  // Read MCMID directly from the AMCV cookie set by Alloy (was:
+  // _satellite.getVisitorId() — no longer available after Launch removal).
+  const m = document.cookie.match(/MCMID(?:%7C|\|)(\d+)/);
+  return m ? m[1] : '';
 }
 
 export function getCampaignIdFromUrl() {

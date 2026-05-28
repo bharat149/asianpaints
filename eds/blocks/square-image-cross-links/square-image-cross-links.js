@@ -1,5 +1,5 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 const buildArrowSVG = () => `
   <svg class="sicls-arrow-icon" width="24" height="18" viewBox="0 0 32 24" aria-hidden="true" focusable="false">

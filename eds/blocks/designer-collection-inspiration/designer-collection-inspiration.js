@@ -1,4 +1,4 @@
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const items = [...block.children];

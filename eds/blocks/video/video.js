@@ -4,7 +4,7 @@
   * https://www.hlx.live/developer/block-collection/video
   */
 
-    import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+    import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 

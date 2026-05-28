@@ -107,14 +107,10 @@ export function splitName(fullName) {
 }
 
 export function getVisitorId() {
-  try {
-    if (window._satellite && window._satellite.getVisitorId) {
-      return window._satellite.getVisitorId().getMarketingCloudVisitorID() || '';
-    }
-  } catch (e) {
-    return '';
-  }
-  return '';
+  // Read MCMID directly from the AMCV cookie set by Alloy (was:
+  // _satellite.getVisitorId() — no longer available after Launch removal).
+  const m = document.cookie.match(/MCMID(?:%7C|\|)(\d+)/);
+  return m ? m[1] : '';
 }
 
 export function getCampaignIdFromUrl() {
