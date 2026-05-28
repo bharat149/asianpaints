@@ -9,6 +9,13 @@
 }
 
 @media (max-width: 990px) {
+    .section.get-inspired-container {
+        margin-top: 0;
+    }
+    .section.get-inspired-container:has(.get-inspired)>.default-content-wrapper h2#get-inspired {
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
     .section.get-inspired-container:has(.get-inspired)>.default-content-wrapper {
         padding-left: 15px;
     }

@@ -138,10 +138,10 @@ function updateActiveCarouselHeight(carouselWrappers, activeIndex) {
     } else {
       activeCarousel.style.height = '';
 
-      const activeHeight = activeCarousel.offsetHeight;
-      if (activeHeight) {
-        carouselsContainer.style.height = `${activeHeight}px`;
-      }
+      // const activeHeight = activeCarousel.offsetHeight;
+      // if (activeHeight) {
+      //   carouselsContainer.style.height = `${activeHeight}px`;
+      // }
     }
   });
 }
