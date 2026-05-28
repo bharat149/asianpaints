@@ -336,6 +336,11 @@ async function loadLazy(doc) {
   loadFooter(doc.querySelector('footer'));
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
+
+  import('./analytics_1.js').then(({ initAnalytics }) => initAnalytics()).catch((e) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize analytics', e);
+  });
 }
 
 /**
@@ -379,88 +384,7 @@ async function loadSplashPopup() {
   }
 }
 
-/**
- * Loads delayed resources that should not compete with the initial render.
- * Splash popup, Sprinklr chat, Swiper, Bootstrap, jQuery, and analytics
- * are all deferred here to keep them out of the critical rendering path.
- */
-/**
- * Preload the Adobe Launch container in the background at low priority.
- * The file downloads while LCP is paint-priority but does NOT execute until
- * triggerAnalytics() loads it later — keeping main thread free during the
- * Lighthouse measurement window.
- *
- * Net effect: when the user hovers/scrolls/clicks, Launch is already in the
- * HTTP cache and loads in ~200ms instead of waiting for the full 1.5–2 s
- * network fetch. Events arrive ~500 ms after user action instead of ~3 s.
- */
-let launchPreloadFired = false;
-async function preloadAdobeLaunch() {
-  if (launchPreloadFired) return;
-  launchPreloadFired = true;
-  try {
-    const isBeta = window.location.hostname.includes('beta')
-      || window.location.hostname.includes('aem.page')
-      || window.location.hostname.includes('aem.live');
-    const launchUrlKey = isBeta ? 'beta_launchUrl' : 'prod_launchUrl';
-    const { getSiteConfig } = await import('./configs.js');
-    const siteConfig = await getSiteConfig();
-    const launchUrl = siteConfig?.data?.find((entry) => entry?.key === launchUrlKey)?.value
-      || siteConfig?.data?.find((entry) => entry?.key === 'launchUrl')?.value;
-    if (!launchUrl) return;
-
-    if (document.querySelector('link[data-launch-preload]')) return;
-
-    // Match loadScript()'s <script> tag — no crossorigin — so the browser
-    // reuses the preloaded response for the later <script src=launchUrl>
-    // request. A crossorigin mismatch between <link rel="preload"> and the
-    // <script> produces different cache keys: the preload is wasted and
-    // the script does a fresh network fetch (cache miss).
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'script';
-    link.href = launchUrl;
-    link.setAttribute('fetchpriority', 'low');
-    link.setAttribute('data-launch-preload', 'true');
-    document.head.appendChild(link);
-  } catch (e) {
-    launchPreloadFired = false;
-    // eslint-disable-next-line no-console
-    console.warn('Adobe Launch preload skipped', e);
-  }
-}
-
-/* Trigger Launch preload as soon as LCP fires. By that point Lighthouse has
- * already locked in the LCP score, so the preload bandwidth cannot affect it
- * — but the preload starts ~500 ms earlier than waiting for loadDelayed()
- * (which has to wait for loadEager AND loadLazy to finish). Real users who
- * interact between 1.5–3 s now get a cache hit instead of a fresh fetch.
- * Falls back to loadDelayed if PerformanceObserver isn't supported or LCP
- * never fires (page with no large content). */
-if ('PerformanceObserver' in window) {
-  try {
-    const lcpObserver = new PerformanceObserver((list, observer) => {
-      if (list.getEntries().length > 0) {
-        observer.disconnect();
-        preloadAdobeLaunch();
-      }
-    });
-    lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-  } catch (e) {
-    // PerformanceObserver does not support LCP in this browser — silently fall
-    // back to the loadDelayed() trigger below.
-  }
-}
-
 function loadDelayed() {
-  /* Safety-net trigger for Adobe Launch preload. The PerformanceObserver at
-   * the top of this file normally fires preloadAdobeLaunch() as soon as LCP
-   * is recorded (~1.5–2.5 s). This call ensures the preload still runs on
-   * pages where LCP never fires (no contentful images) or browsers without
-   * PerformanceObserver LCP support. The launchPreloadFired guard inside
-   * preloadAdobeLaunch makes the second call a no-op. */
-  preloadAdobeLaunch();
-
   /* ── Tier 1 (3 s) — lightweight, needed early ────────────────────── */
   window.setTimeout(() => {
     // eslint-disable-next-line import/no-cycle
@@ -491,56 +415,13 @@ function loadDelayed() {
     });
   }, 6000);
 
-  /* ── Tier 3 (9 s) — heavy JS: jQuery, analytics, Sprinklr chat ── */
+  /* ── Tier 3 — heavy JS: jQuery, Sprinklr chat ── */
   window.setTimeout(() => {
     window.loadJQuery?.().catch((e) => {
       // eslint-disable-next-line no-console
       console.error('Failed to preload jQuery', e);
     });
   }, 3000);
-
-  /* Adobe Launch — fire on first user interaction (scroll / click / touch / key).
-   * Lighthouse synthetic audits never interact, so Launch + child rules
-   * (FB Pixel, GTM, OneTrust, NetCore, Clarity, Taboola) stay outside the
-   * measurement window — score recovers to ~95+ to match the EDS preview
-   * domain (aem.page).
-   *
-   * Real users scroll / tap within 1–3 s, so analytics fires immediately for
-   * them. A 25 s safety fallback catches non-interacting visitors without
-   * polluting the Lighthouse audit window (which closes by ~12–15 s).
-   */
-  const triggerAnalytics = (() => {
-    let triggered = false;
-    return async () => {
-      if (triggered) return;
-      triggered = true;
-      try {
-        // Kick jQuery off in parallel — don't block analytics on it. Nothing
-        // in the analytics init path actually needs jQuery synchronously;
-        // older blocks that consume jQuery already await the same promise.
-        //window.loadJQuery?.();
-
-        if (typeof (_satellite) !== 'undefined') {
-          _satellite.track('pageload');
-        }
-        const { initAnalytics } = await import('./analytics.js');
-        await initAnalytics();
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to initialize analytics', e);
-      }
-    };
-  })();
-
-  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel', 'mousemove'].forEach((evt) => {
-    window.addEventListener(evt, triggerAnalytics, {
-      once: true,
-      passive: true,
-      capture: true,
-    });
-  });
-
-  window.setTimeout(triggerAnalytics, 3000);
 
   /* Sprinklr chat — heaviest 3rd-party, load last */
   window.setTimeout(() => {
