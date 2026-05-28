@@ -187,6 +187,13 @@
   }
 }
 
+.form-banner__form .form-input-prefix-wrap .form-input.form-control#enquire-mobile {
+  padding: 0 0 0 38px;
+   @media (width >= 991px) {
+   padding: 0 0 0 45px;
+  }
+}
+
 .form-banner__form .form-input-prefix {
   position: absolute;
   top: 50%;
@@ -723,7 +730,7 @@
 
   .form-banner__card {
     max-width: 90%;
-    padding: 16px 14px 20px;
+    padding: 16px 14px 28px;
   }
 
   .form-banner__form .form-inputs-grid {
@@ -772,7 +779,7 @@
   .form-banner__form .form-submit,
   .form-banner__form .btn.form-submit {
     min-width: 120px;
-    padding: 9px 22px;
+    padding: 7px 22px;
     font-size: 12px;
   }
 

@@ -140,4 +140,12 @@ export default function decorate(block) {
       });
     }
   });
+  // Open first card by default on mobile
+  if (window.innerWidth < 990) {
+    const firstCard = block.querySelector('.cards-textures-card');
+
+    if (firstCard) {
+      firstCard.classList.add('child-open');
+    }
+  }
 }

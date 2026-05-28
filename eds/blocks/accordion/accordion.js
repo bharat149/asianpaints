@@ -127,13 +127,52 @@ function toggle() {
   const parent = detailsEl.parentElement;
 
   // If opening, close other open accordions first
-  if (!detailsEl.open && parent) {
-    parent.querySelectorAll('.accordion-item[open]').forEach((item) => {
-      if (item !== detailsEl) {
+if (!detailsEl.open && parent) {
+  parent.querySelectorAll('.accordion-item[open]').forEach((item) => {
+    if (item !== detailsEl) {
+      const otherBody = item.querySelector('.accordion-item-body');
+
+      if (otherBody) {
+        otherBody.style.overflow = 'hidden';
+        otherBody.style.willChange = 'height, opacity';
+
+        const startHeight = otherBody.getBoundingClientRect().height;
+        otherBody.style.height = `${startHeight}px`;
+        otherBody.style.opacity = '1';
+
+        // force reflow
+        // eslint-disable-next-line no-unused-expressions
+        otherBody.offsetHeight;
+
+        const anim = otherBody.animate([
+          { height: `${startHeight}px`, opacity: 1 },
+          { height: '0px', opacity: 0 },
+        ], {
+          duration: durationClose,
+          easing: 'ease',
+        });
+
+        anim.onfinish = () => {
+          item.open = false;
+          otherBody.style.height = '';
+          otherBody.style.opacity = '';
+          otherBody.style.overflow = '';
+          otherBody.style.willChange = '';
+        };
+
+        anim.oncancel = () => {
+          item.open = false;
+          otherBody.style.height = '';
+          otherBody.style.opacity = '';
+          otherBody.style.overflow = '';
+          otherBody.style.willChange = '';
+        };
+      } else {
         item.open = false;
       }
-    });
-  }
+    }
+  });
+}
 
   if (prefersReducedMotion()) {
     detailsEl.open = !detailsEl.open;

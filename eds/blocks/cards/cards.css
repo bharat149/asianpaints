@@ -1268,7 +1268,7 @@
 @media screen and (max-width: 992px) {
   .cards.grid>ul {
     grid-template-columns: auto;
-    max-height: 595px;
+    max-height: 560px;
   }
 
   .cards.grid .cards-card-image {
@@ -1294,19 +1294,19 @@
   .cards.grid>ul>li:nth-child(2),
   .cards.grid>ul>li:nth-child(2):hover,
   .cards.grid>ul>li:nth-child(2):active {
-    transform: translateY(-56px) !important;
+    transform: translateY(-45%) !important;
   }
 
   .cards.grid>ul>li:nth-child(3),
   .cards.grid>ul>li:nth-child(3):hover,
   .cards.grid>ul>li:nth-child(3):active {
-    transform: translateY(-110px) !important;
+    transform: translateY(-90%) !important;
   }
 
   .cards.grid>ul>li:nth-child(4),
   .cards.grid>ul>li:nth-child(4):hover,
   .cards.grid>ul>li:nth-child(4):active {
-    transform: translateY(-161px) !important;
+    transform: translateY(-135%) !important;
   }
 
   .section.cards-container:has(.cards.grid)>.default-content-wrapper p:last-of-type {

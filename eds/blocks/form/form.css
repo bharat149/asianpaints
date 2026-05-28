@@ -639,9 +639,48 @@
 .form-field.has-error .form-field-label {
   color: inherit;
 }
-
+        .form.block.white-form .btn.form-submit .form-submit__label {
+          font-weight: 700;
+        }
 /* Tablet */
 @media (width <=991px) {
+  .form.block.white-form .form-title-small {
+      font-weight: 700;
+      color: #2e2f32;
+    }
+  
+    .form.block.white-form .form-title-large {
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+  
+    .form.block.white-form .form-title-large p {
+      margin-bottom: 0;
+    }
+  
+    .form.block.white-form .form-subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 21px;
+      color: #3b3d40;
+      margin-bottom: 0;
+      letter-spacing: normal;
+      width: 305px;
+    }
+    .form.block.white-form .form-button-cell {
+      margin-top: 14px;
+    }
+    .form.block.white-form  .btn.form-submit {
+      width: 100%;
+      background: #fcaf17 !important;
+    }
+     .form.block.white-form .form-subtitle p {
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+      color: inherit;
+      letter-spacing: inherit;
+     }
   .intereseted-cta {
     top: 37%;
     left: 50%;
@@ -1170,11 +1209,11 @@
 
   .form.block.blue-form .form-title-large {
     font-size: 14px;
-    line-height: 21px;
+    line-height: 22px;
     margin-top: 8px;
     font-weight: 500;
     margin-bottom: 0;
-    letter-spacing: .5px;
+    max-width: 100%;
   }
 }
 

@@ -227,6 +227,9 @@ main .section.sectionpadding.accordion-container {
 
 /* Mobile parity */
 @media (width <=600px) {
+    .accordion.faq {
+        padding-bottom: 0;
+    }
     .accordion.faq details summary::after {
         transform: unset;
     }

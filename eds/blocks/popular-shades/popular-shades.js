@@ -246,7 +246,15 @@ export default async function decorate(block) {
   media.appendChild(swatches);
 
   wrapper.appendChild(media);
-  wrapper.appendChild(contentPanel);
+wrapper.appendChild(contentPanel);
+
+if (window.innerWidth < 768) {
+  const buttonContainer = contentPanel.querySelector('.button-container');
+
+  if (buttonContainer) {
+    media.insertAdjacentElement('afterend', buttonContainer);
+  }
+}
   block.appendChild(wrapper);
 
   if (slides.length <= 1) {

@@ -168,7 +168,14 @@
 
 @media (width <= 991px) {
   .categories-offer.block {
-    padding: 32px 20px;
+    padding: 32px 4.5% 32px 4.5%;
+    
+  }
+  .categories-offer-pagination .swiper-pagination-bullet {
+    margin: 0 5px !important;
+  }
+  .categories-offer-carousel-wrap  .swiper-pagination-bullets.swiper-pagination-horizontal {
+    bottom: 13px;
   }
 
   .categories-offer__wrapper {
@@ -206,7 +213,7 @@
   }
 
   .categories-offer__tab {
-    flex: 0 0 auto;
+    /* flex: 0 0 auto; */
     white-space: nowrap;
     padding: 0;
     font-size: 14px;
@@ -221,7 +228,8 @@
   }
 
   .categories-offer-slide-image {
-    aspect-ratio: 1.5 / 1;
+    /* aspect-ratio: 1.5 / 1; */
+    aspect-ratio: unset;
   }
 
   .categories-offer-pagination {
@@ -229,8 +237,8 @@
   }
 
   .categories-offer-pagination .swiper-pagination-bullet {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   .categories-offer-carousel-wrap {

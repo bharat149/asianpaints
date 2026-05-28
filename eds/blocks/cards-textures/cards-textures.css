@@ -177,7 +177,8 @@
 
   .cards-textures-card .card-hover-content {
     opacity: 1;
-    background: rgb(0 0 0 / 60%);
+    /* background: rgb(0 0 0 / 60%); */
+    background: unset;
     justify-content: flex-end;
     padding-bottom: 24px;
   }
@@ -434,6 +435,7 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
+    text-align: center;
 }
 .cards-textures.width-alt .cards-textures-card .card-button{
       padding: 12px 22px;

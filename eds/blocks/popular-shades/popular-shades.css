@@ -253,7 +253,9 @@
 
 @media (max-width: 991px) {
 
-
+  .popular-shades-container .popular-shades-wrapper .popular-shades.block .button-container {
+    order: 3;
+  }
   .popular-shades__wrapper {
     flex-direction: column;
     min-height: auto;
@@ -364,6 +366,9 @@
 }
 
 @media (min-width:992px) {
+  .popular-shades-container {
+    padding-top: 60px !important;
+  }
   .popular-shades__media {
     width: 69%;
     flex: unset;

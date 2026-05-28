@@ -1,4 +1,4 @@
-.calculatorhub-container {
+.calculatorhub-container .calculatorhub-wrapper {
     background: #f7f2e7;
     border-radius: 10px;
 }
@@ -10,7 +10,7 @@
 }
 
 .tool-description {
-    flex: 0 0 43%;
+    flex: 0 0 40%;
 }
 
 .tool-fields {
@@ -214,7 +214,7 @@
 
 /* Disable CTA */
 #calculate-now[aria-disabled="true"] {
-    opacity: 0.4;
+    opacity: 0.6;
     cursor: not-allowed;
     pointer-events: none;
 }
