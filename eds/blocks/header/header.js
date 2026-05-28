@@ -655,9 +655,17 @@ async function initKeycloak(block) {
       enablePersistent: true,
     });
 
-    const ssoRedirect = isOnAsianPaintsDomain()
-      ? getApApi().KEYCLOAK_PAGE_URL
-      : `${window.location.origin}/content/ap/en/home/key-cloak.html`;
+    /* Silent-check-sso target. Must be same-origin with the EDS page so the
+     * iframe can postMessage back to the parent. Previously pointed at
+     * `/content/ap/en/home/key-cloak.html` — a full AEM Sites page that
+     * pulled ~290 KB of AMS clientlibs (including clientlib-analytics) into
+     * the iframe and, because of same-origin event-loop sharing, billed
+     * their parse cost to the parent's main thread (TBT ~7.1 s on PSI).
+     *
+     * Pointing at the minimal /eds/silent-check-sso.html keeps the keycloak-js
+     * silent SSO check working (it only needs `parent.postMessage`) while
+     * loading 0 clientlibs and ~0 KB of JS in the iframe. */
+    const ssoRedirect = `${window.location.origin}/eds/silent-check-sso.html`;
 
     const authenticated = await keycloakInstance.init({
       onLoad: 'check-sso',
