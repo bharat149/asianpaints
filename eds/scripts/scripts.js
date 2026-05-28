@@ -304,17 +304,6 @@ async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
 
-  /* Adobe Web SDK (alloy) analytics — fire in the eager phase so the
-   * pageview beacon goes out as early as possible. Fire-and-forget; the
-   * import + alloy fetch run in parallel with LCP image and do not block
-   * rendering. */
-  import('./analytics_1.js')
-    .then(({ initAnalytics }) => initAnalytics())
-    .catch((e) => {
-      // eslint-disable-next-line no-console
-      console.error('Failed to initialize analytics', e);
-    });
-
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
@@ -347,6 +336,11 @@ async function loadLazy(doc) {
   loadFooter(doc.querySelector('footer'));
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
+
+  import('./analytics_1.js').then(({ initAnalytics }) => initAnalytics()).catch((e) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize analytics', e);
+  });
 }
 
 /**
