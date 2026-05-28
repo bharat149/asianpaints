@@ -109,10 +109,28 @@ function getVisitorType() {
   return cachedVisitorType;
 }
 
+/**
+ * Returns 'logged in' / 'not logged in' for eVar9.
+ *
+ * Reads Keycloak-persisted state synchronously — does NOT wait for
+ * keycloak-js to finish its silent SSO check (that would defeat the
+ * lazy-phase beacon timing). Reflects the last known auth state from
+ * the previous page load, which is accurate for ~all real navigations.
+ *
+ * Sources, in priority order:
+ *   1. localStorage (`keycloak-token` + `userProfile`) — set by
+ *      persistKeycloakTokens() in header.js after successful auth.
+ *   2. `keycloak_authToken` cookie — fallback when localStorage is
+ *      blocked (incognito / privacy mode).
+ */
 function getLoginStatus() {
-  // TODO[P1]: replace with actual asianpaints auth signal.
-  // AMS implementation source unknown — likely cookie or global.
-  return window.userLoggedIn ? 'logged in' : 'not logged in';
+  try {
+    const hasToken = !!localStorage.getItem('keycloak-token');
+    const hasProfile = !!localStorage.getItem('userProfile');
+    if (hasToken && hasProfile) return 'logged in';
+  } catch { /* localStorage blocked — fall through to cookie check */ }
+  if (/(^|;\s*)keycloak_authToken=[^;]+/.test(document.cookie)) return 'logged in';
+  return 'not logged in';
 }
 
 // ============================================================
@@ -181,6 +199,25 @@ function getScrollDepthString() {
 }
 
 // ============================================================
+// HELPERS — page load time (eVar51 in AMS)
+// ============================================================
+
+/**
+ * Returns time from navigation start to beacon-send moment, in
+ * milliseconds. Since analytics fires in loadLazy (post-LCP), this
+ * value represents the user-perceived "page is interactive" time —
+ * the meaningful page-load metric for an EDS site (no traditional
+ * load event milestone like AMS pages had).
+ *
+ * AMS historically sent banded 0–99 values here via a Launch rule;
+ * we send real ms so the reports finally make sense.
+ */
+function getPageLoadTime() {
+  // performance.now() is monotonic and starts at navigation start.
+  return Math.round(performance.now());
+}
+
+// ============================================================
 // PAYLOAD CONSTRUCTION
 // ============================================================
 
@@ -204,12 +241,9 @@ function buildAnalyticsPayload() {
     eVar12: getECID(),                        // ECID as a reportable dimension
     prop12: previousPageName,                 // PREVIOUS page name (AMS pattern)
     prop13: getScrollDepthString(),
+    eVar51: getPageLoadTime(),                // page load time in ms (since navigation start)
     eVar54: pageName,                         // mirrors pageName
     prop54: 'D=v54',                          // literal
-
-    // TODO[P1]: eVar51 logic unknown. Observed values 8, 14, 18, 31
-    // — appears 0–99, varies per hit. Leaving unset for pilot;
-    // reports will show '(Unspecified)' for EDS pages.
   };
 
   // prop1 = section, only when not homepage (matches AMS)
