@@ -322,6 +322,15 @@ async function loadEager(doc) {
 async function loadLazy(doc) {
   const main = doc.querySelector('main');
 
+  /* Fire analytics init as early as possible in the lazy phase so the
+   * Alloy beacon doesn't wait for header/sections/footer to finish.
+   * Runs in parallel with the awaits below — typically fires within
+   * 1–2 s of LCP instead of 10–15 s. */
+  import('./analytics_1.js').then(({ initAnalytics }) => initAnalytics()).catch((e) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to initialize analytics', e);
+  });
+
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);
 
@@ -336,11 +345,6 @@ async function loadLazy(doc) {
   loadFooter(doc.querySelector('footer'));
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
-
-  import('./analytics_1.js').then(({ initAnalytics }) => initAnalytics()).catch((e) => {
-    // eslint-disable-next-line no-console
-    console.error('Failed to initialize analytics', e);
-  });
 }
 
 /**

@@ -240,6 +240,10 @@ function bootstrapAlloy() {
   const script = document.createElement('script');
   script.src = ALLOY_SRC;
   script.async = true;
+  // Bump priority so the 151 KB alloy bundle isn't deprioritized behind
+  // header/footer/lazy CSS — needed to keep beacon firing within ~1–2 s
+  // of LCP instead of 10–15 s.
+  script.setAttribute('fetchpriority', 'high');
   document.head.appendChild(script);
 }
 
