@@ -1697,6 +1697,8 @@ function buildLoginModal() {
   });
 
   loginBtn.addEventListener('click', () => {
+    // e7 - Login Icon Click (fires on the "Login" button inside the profile modal)
+    trackEvent('login_icon_click');
     close();
     window.location.href = getApApi().KEYCLOAK_PAGE_URL;
   });
@@ -4281,6 +4283,8 @@ function addInteractions(block) {
 
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      // e67 - Mini Cart Icon Click
+      trackEvent('mini_cart_click');
       refreshCartModal(block);
       positionCartModal();
       cartModalOverlay.classList.add('active');

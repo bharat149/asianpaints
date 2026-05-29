@@ -1,5 +1,7 @@
 // add delayed functionality here
 
+import { trackEvent } from './analytics_1.js';
+
 /**
  * Global function to trigger the exit-intent modal from any CTA with class 'trigger-exit-intent-popup-form'
  * Can be called from JavaScript, Target, or data attributes
@@ -31,6 +33,13 @@ function setupGlobalClickListener() {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
+
+    // e278 - Sticky Form CTA Clicks (.trigger-book-free-site-visit-modal isn't
+    // a .button-container child, so bindButtonContainerTracking misses it).
+    trackEvent('sticky_form_cta_click', {
+      cta_: trigger.textContent.trim(),
+      param1: trigger.getAttribute('href') || '',
+    });
 
     const modalPath = trigger.dataset.modalPath || trigger.getAttribute('href') || EXIT_INTENT_PATH;
     window.triggerExitIntentModal(modalPath);

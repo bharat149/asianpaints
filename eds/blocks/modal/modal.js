@@ -3,6 +3,7 @@ import {
   buildBlock, decorateBlock, loadBlock, loadCSS,
 } from '../../scripts/aem.js';
 import { getCookieValues } from '../../scripts/form-submit-common.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 /*
   This is not a traditional block, so there is no decorate function.
   Instead, links to a /modals/ path are automatically transformed into a modal.
@@ -284,6 +285,8 @@ const setLeadFieldValue = (container, selector, value) => {
         updateExitIntentSubmitText();
         updateExitIntentCallUsContent();
         prefillLeadFormFromCookies();
+        // e359 - Exit Intent pop-up impression
+        trackEvent('exit_intent_impression');
       }
 
       dialog.show();

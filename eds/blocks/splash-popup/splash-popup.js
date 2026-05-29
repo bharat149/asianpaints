@@ -17,6 +17,7 @@
  */
 
 import { loadCSS } from '../../scripts/aem.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 const STORAGE_KEY = 'splash-popup-shown';
 
@@ -133,6 +134,14 @@ function buildPanel(side, content, mobileBgUrl) {
     target: '_self',
   }, content.ctaText, arrow);
 
+  // e132 - Custom CTA Click (Splash "Visit Beautiful Homes" / "Visit Asian Paints")
+  cta.addEventListener('click', () => {
+    trackEvent('custom_cta_click', {
+      cta_: content.ctaText,
+      param1: content.ctaHref,
+    });
+  });
+
   const textDiv = createElement('div', { className: 'splash-text' });
   textDiv.append(
     createElement('div', { className: 'splash-heading-one' }, content.heading),
@@ -209,6 +218,9 @@ async function showSplashDialog(leftContent, rightContent, mobileBgUrl) {
 
   document.body.classList.add('splash-open');
   dialog.showModal();
+
+  // e6 - Splash Impressions
+  trackEvent('splash_impression');
 }
 
 /**
