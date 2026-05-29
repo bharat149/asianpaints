@@ -378,11 +378,17 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
 
 
 @media (min-width: 320px) and (max-width: 991px) {
+  .cards-textures.width-alt .cards-textures-card .card-description {
+    text-align: center;
+    font-size: 14px;
+    line-height: 23px;
+    margin-bottom: 24px;
+  }
   .cards-textures.width-alt.block .cards-textures-card {
     width: 100%;
     height: 90px;
-    transition: height .7s linear .1s, background-image .7s linear;
-    flex: auto
+    transition: height 1s ease;
+    flex:  0 0 auto;
   }
 
   .cards-textures.width-alt.block .cards-textures-card .card-name {
@@ -394,12 +400,8 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
         bottom: 40px;
   }
 
-  .cards-textures.width-alt.block .cards-textures-card .card-hover-content {
-    display: none;
-  }
 
   .cards-textures.width-alt.block .cards-textures-card.child-open {
-    animation: none;
     height: 362px;
   }
 
@@ -410,11 +412,21 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
      opacity: 0;
   }
 
-  .cards-textures.width-alt.block .cards-textures-card.child-open .card-hover-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+
+   .cards-textures.width-alt.block .cards-textures-card .card-hover-content {
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .4s ease;
+}
+
+.cards-textures.width-alt.block .cards-textures-card.child-open .card-hover-content {
+  opacity: 1;
+  visibility: visible;
+
+  align-items: center;
+  justify-content: center;
+}
 
   .cards-textures.width-alt.block .cards-textures-card.child-open .card-hover-content .card-bucket {
     display: block;
@@ -435,16 +447,12 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
-    text-align: center;
 }
 .cards-textures.width-alt .cards-textures-card .card-button{
       padding: 12px 22px;
 }
 .cards-textures.width-alt .cards-textures-card .card-hover-content{
   justify-content: end;
-}
-.cards-textures.width-alt.block .cards-textures-card {
-  transition: flex .7s ease-in-out, background-image .7s ease-in-out;
 }
 .cards-textures-card:hover .card-hover-content .card-button{
     font-size: 14px;
@@ -465,6 +473,9 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
     width: 100%;
     padding: 0 5% 20%;
     height: 50%;
+}
+.cards-textures.width-alt.block .cards-textures-card {
+  transition: flex .7s ease-in-out, background-image .7s ease-in-out;
 }
 
 .cards-textures.width-alt .cards-textures-card .card-hover-content .card-bucket {

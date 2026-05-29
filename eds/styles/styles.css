@@ -826,8 +826,13 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
     padding-right: 4.5%;
     padding-left: 4.5%;
   }
+  .section-padding-desk-mob {
+    padding-top: 30px;
+  }
 }
-
+ .section-padding-desk-mob {
+    padding-top: 60xpx;
+  }
 @media (width >= 992px) {
   main .section.contractors-rte-live>.default-content-wrapper h2 {
     font-size: 30px;
