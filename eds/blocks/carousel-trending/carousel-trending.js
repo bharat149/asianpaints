@@ -1,4 +1,4 @@
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 // Get Swiper instance
 async function getSwiper() {

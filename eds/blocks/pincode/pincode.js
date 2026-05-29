@@ -1,4 +1,4 @@
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 
 const PINCODE_STORAGE_KEY = 'pincode';
 const PINCODE_COOKIE_NAME = 'cpPincode';
@@ -139,27 +139,8 @@ function getPicture(cell) {
 function trackContractorSearch(searchKeyWord) {
   if (!searchKeyWord) return;
 
-  const digitalData = getDigitalData();
-  if (window.ccAnalytics?.digitalData?.()) {
-    digitalData.contractor = {
-      cityPincode: searchKeyWord,
-    };
-  } else {
-    digitalData.contractor = {
-      cityPincode: searchKeyWord,
-    };
-  }
-
-  if (window.ccAnalytics?.satelliteCheck?.()) {
-    window._satellite?.track('contractor_search', {
-      cityPincode: searchKeyWord,
-    });
-    return;
-  }
-
-  trackEvent('contractor_search', {
-    cityPincode: searchKeyWord,
-  });
+  getDigitalData().contractor = { cityPincode: searchKeyWord };
+  trackEvent('contractor_search', { cityPincode: searchKeyWord });
 }
 
 function decorateSearch(block) {

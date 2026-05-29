@@ -1,4 +1,4 @@
-import { trackEvent, getDigitalData } from "../../scripts/analytics.js";
+import { trackEvent, getDigitalData } from "../../scripts/analytics_1.js";
 /*
 ** Authoring format **
 Column 1 → logo desktop

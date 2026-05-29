@@ -1,4 +1,4 @@
-import { trackEvent } from "../../scripts/analytics.js";
+import { trackEvent } from "../../scripts/analytics_1.js";
 
 const SHORTS_WRAPPER_SEL = ".sa_shorts_video-wrapper";
 const VIDEO_SHORTS_PREFIX = "video-shorts-";

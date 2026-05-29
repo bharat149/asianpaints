@@ -1,4 +1,4 @@
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 
 /*
  * Embed Block
@@ -75,17 +75,7 @@ function getVideoTitleFromUrl(url) {
 
 function trackVideoPlayButtonClick(wrapper) {
   const videoTitle = wrapper?.getAttribute('aria-label') || '';
-
-  if (window.ccAnalytics?.satelliteCheck?.()) {
-    window._satellite?.track('video_playbotton_click', {
-      videoTitle,
-    });
-    return;
-  }
-
-  trackEvent('video_playbotton_click', {
-    videoTitle,
-  });
+  trackEvent('video_playbotton_click', { videoTitle });
 }
 
 const embedVideo = (url, options = {}) => {
@@ -126,16 +116,7 @@ function trackYoutubePlay(block, link) {
     url: videoPlayUrl,
   };
 
-  if (window.ccAnalytics?.satelliteCheck?.()) {
-    window._satellite?.track('youtube_play', {
-      url: videoPlayUrl,
-    });
-    return;
-  }
-
-  trackEvent('youtube_play', {
-    url: videoPlayUrl,
-  });
+  trackEvent('youtube_play', { url: videoPlayUrl });
 }
 
 const loadEmbed = (block, link, autoplay, options = {}) => {

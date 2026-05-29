@@ -1,4 +1,4 @@
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const ul = document.createElement('ul');

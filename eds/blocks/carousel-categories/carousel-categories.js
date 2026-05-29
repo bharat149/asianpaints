@@ -7,7 +7,7 @@ Each slide cell contains desktop + mobile image
 Selected category shows its own Swiper on the right
 */
 
-import { trackEvent } from '../../scripts/analytics.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 function getTextContent(el) {
   return el ? el.textContent.trim() : '';

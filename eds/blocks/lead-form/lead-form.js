@@ -6,7 +6,7 @@
  */
 
 import { submitLeadFromForm, getCampaignIdFromUrl } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics.js';
+import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
 
 const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
 const DEFAULT_SUCCESS_MESSAGE = 'Thank you! We will contact you soon.';
