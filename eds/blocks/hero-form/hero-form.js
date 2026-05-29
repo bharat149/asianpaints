@@ -271,11 +271,8 @@ function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn) {
   };
 
   getDigitalData().form = formData;
-  trackEvent('Form Submit', {
-    formName: currentFormName,
-    campaignId: currentCampaignId,
-    ...formData,
-  });
+  // formData already includes formName + campaignId from the function args.
+  trackEvent('Form Submit', formData);
 }
 
 export default function decorate(block) {

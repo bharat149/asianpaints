@@ -357,36 +357,41 @@ const EVENT_REGISTRY = {
 
   // Search
   'Header Search Icon Click': { events: 'event330' },
-  'Search Start':              { events: 'event54' },
-  'Search Bar Close':          { events: 'event336' },
-  ub_imagesearch_start:        { events: 'event312' },
-  ub_imagesearch_close:        { events: 'event313' },
-  ub_imagesearch_complete:     { events: 'event174', eVars: { totalResults: 'eVar28' } },
+  'Search Start': { events: 'event54' },
+  'Search Bar Close': { events: 'event336' },
+  ub_imagesearch_start: { events: 'event312' },
+  ub_imagesearch_close: { events: 'event313' },
+  ub_imagesearch_complete: { events: 'event174', eVars: { totalResults: 'eVar28' } },
 
   // Auth
-  'Login Icon Click':          { events: 'event7' },
+  'Login Icon Click': { events: 'event7' },
 
   // Cart
-  mini_cart_click:             { events: 'event67' },
+  mini_cart_click: { events: 'event67' },
 
   // CTAs / navigation
-  custom_cta_click:            {
+  custom_cta_click: {
     events: 'event132',
-    eVars: { cta_: 'eVar45', parentTitle: 'eVar67', redirectionLink: 'eVar86', param1: 'eVar46' },
+    eVars: {
+      cta_: 'eVar45',
+      parentTitle: 'eVar67',
+      redirectionLink: 'eVar86',
+      param1: 'eVar46',
+    },
   },
-  'Header icons':              {
+  'Header icons': {
     events: 'event335',
     eVars: { title: 'eVar67', param1: 'eVar86' },
   },
-  sitesection_click:           {
+  sitesection_click: {
     events: 'event46',
     eVars: { siteSection: 'eVar22', redirectionLink: 'eVar86' },
   },
-  subsection_one_click:        {
+  subsection_one_click: {
     events: 'event113',
     eVars: { siteSection: 'eVar22', subSection: 'eVar65' },
   },
-  subsection_two_click:        {
+  subsection_two_click: {
     events: 'event114',
     eVars: {
       siteSection: 'eVar22',
@@ -397,11 +402,11 @@ const EVENT_REGISTRY = {
   },
 
   // Contractors / store
-  'Contractor Search Click':   {
+  'Contractor Search Click': {
     events: 'event220',
     eVars: { cityPincode: 'eVar32' },
   },
-  store_locator:               {
+  store_locator: {
     events: 'event17',
     eVars: { cityPincode: 'eVar32', cta_: 'eVar45' },
   },
@@ -411,12 +416,12 @@ const EVENT_REGISTRY = {
     events: 'event298',
     eVars: { ctaText: 'eVar45' },
   },
-  short_video_play:            { events: 'event296', eVars: { viewsCount: 'eVar35' } },
-  download_form_pdf:           { events: 'event137', eVars: { pdfName: 'eVar96' } },
+  short_video_play: { events: 'event296', eVars: { viewsCount: 'eVar35' } },
+  download_form_pdf: { events: 'event137', eVars: { pdfName: 'eVar96' } },
 
   // Exit-intent modal
   'Exit Intent Pop-up Impression': { events: 'event359' },
-  'Exit Intent Popup Close':       { events: 'event277' },
+  'Exit Intent Popup Close': { events: 'event277' },
 
   // — TBD (not confirmed via debugger captures yet) — fire as link-tracking
   // hits without `events` until confirmed:
