@@ -435,39 +435,39 @@ const EVENT_REGISTRY = {
   // ============================================================
 
   // Splash popup
-  splash_view: { events: 'event6' },  // best-guess (matches test.csv "Splash Impressions [e6]")
+  splash_view: { events: 'event6' }, // best-guess (matches test.csv "Splash Impressions [e6]")
 
   // Header domain switch
   domain_swicth: {
-    events: 'event331',  // best-guess (matches test.csv "Domain Switch Tab Click [e331]")
+    events: 'event331', // best-guess (matches test.csv "Domain Switch Tab Click [e331]")
     eVars: { destinationUrl: 'eVar86' },
   },
 
   // Sticky form CTA
   sticky_cta_click: {
-    events: 'event278',  // best-guess (matches test.csv "Sticky Form CTA Clicks [e278]")
+    events: 'event278', // best-guess (matches test.csv "Sticky Form CTA Clicks [e278]")
     eVars: { cta_: 'eVar45', param1: 'eVar46' },
   },
 
   // Carousel banner
   carousel_banner_click: {
-    events: 'event96',  // best-guess (matches test.csv "Carousel Banner Click [e96]")
+    events: 'event96', // best-guess (matches test.csv "Carousel Banner Click [e96]")
     eVars: { bannerTitle: 'eVar81', bannerDestinationUrl: 'eVar86' },
   },
 
   // Inspiration category filter
   waterproofing_categories: {
-    events: 'event324',  // best-guess (matches test.csv "Waterproofing Categories [e324]")
+    events: 'event324', // best-guess (matches test.csv "Waterproofing Categories [e324]")
     eVars: { title: 'eVar67' },
   },
 
   // Generic CTA-link tracking
   cta_link_text: {
-    events: 'event143',  // best-guess (Custom Link Click [e143])
+    events: 'event143', // best-guess (Custom Link Click [e143])
     eVars: { cta_: 'eVar45', param1: 'eVar46' },
   },
   custom_link_text: {
-    events: 'event143',  // best-guess (same as cta_link_text)
+    events: 'event143', // best-guess (same as cta_link_text)
     eVars: { cta_: 'eVar45' },
   },
 
@@ -475,67 +475,67 @@ const EVENT_REGISTRY = {
   // Fires for ALL forms today — defaulting to event38 (All Services TYP)
   // until each form block passes a formType field that we can switch on.
   Form_thank_you_pop_up: {
-    events: 'event38',  // best-guess — refine to formType-conditional later
+    events: 'event38', // best-guess — refine to formType-conditional later
     eVars: { formName: 'eVar17' },
   },
 
   // PDF / download
   download_multiple_pdf: {
-    events: 'event134',  // best-guess (Download Click [e134])
+    events: 'event134', // best-guess (Download Click [e134])
     eVars: { pdfName: 'eVar96' },
   },
 
   // Search no-result
   no_result: {
-    events: 'event87',  // best-guess (Null Searches [e87])
+    events: 'event87', // best-guess (Null Searches [e87])
     eVars: { search_term: 'eVar11' },
   },
 
   // Video
   video_playbotton_click: {
-    events: 'event20',  // best-guess (Video Played [e20])
+    events: 'event20', // best-guess (Video Played [e20])
     eVars: { videoTitle: 'eVar35' },
   },
   youtube_play: {
-    events: 'event20',  // best-guess (same as video_playbotton_click)
+    events: 'event20', // best-guess (same as video_playbotton_click)
     eVars: { url: 'eVar35' },
   },
-  short_video_shop: { events: 'event132' },  // best-guess (Custom CTA Click)
+  short_video_shop: { events: 'event132' }, // best-guess (Custom CTA Click)
 
   // Product / gallery interactions
-  product_tile_click: { events: 'event122' },  // best-guess (Product click on plp page)
-  filter_click: { events: 'event121' },  // best-guess (Product Filter Click)
-  natural_wood_shade_click: { events: 'event158' },  // best-guess (Natural wood shade click)
-  squarecross_click: { events: 'event144' },  // best-guess (Square cross Image click)
+  product_tile_click: { events: 'event122' }, // best-guess (Product click on plp page)
+  filter_click: { events: 'event121' }, // best-guess (Product Filter Click)
+  natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
+  squarecross_click: { events: 'event144' }, // best-guess (Square cross Image click)
 
   // Calculator
   calc_start: {
-    events: 'event42',  // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
+    events: 'event42', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
     eVars: { flowType: 'eVar36' },
   },
   calc_continue: {
-    events: 'event43',  // best-guess (Rolls Calculator Submit)
+    events: 'event43', // best-guess (Rolls Calculator Submit)
     eVars: { flowType: 'eVar36', filter: 'eVar34' },
   },
 
   // Footer
-  footer_phone_number_click: { events: 'event105' },  // best-guess (Footer contact us)
+  footer_phone_number_click: { events: 'event105' }, // best-guess (Footer contact us)
   footer_tab: {
-    events: 'event107',  // best-guess (Footer tab click)
+    events: 'event107', // best-guess (Footer tab click)
     eVars: { cta_: 'eVar45' },
   },
   footer_country: {
-    events: 'event109',  // best-guess (Country selection)
+    events: 'event109', // best-guess (Country selection)
     eVars: { cta_: 'eVar45' },
   },
   footer_socialicons: {
-    events: 'event108',  // best-guess (Social media icon Click)
+    events: 'event108', // best-guess (Social media icon Click)
     eVars: { cta_: 'eVar45' },
   },
 
   // Contact CTAs
-  SPSContactClick: { events: 'event105' },  // best-guess (Footer contact us — tel: links)
-  contact_us_click_whatsapp: { events: 'event105' },  // best-guess (same)
+  SPSContactClick: { events: 'event105' }, // best-guess (Footer contact us — tel: links)
+  contact_us_click_whatsapp: { events: 'event105' }, // best-guess (same)
 };
 
 /**
