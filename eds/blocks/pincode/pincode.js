@@ -140,7 +140,7 @@ function trackContractorSearch(searchKeyWord) {
   if (!searchKeyWord) return;
 
   getDigitalData().contractor = { cityPincode: searchKeyWord };
-  trackEvent('contractor_search', { cityPincode: searchKeyWord });
+  trackEvent('Contractor Search Click', { cityPincode: searchKeyWord });
 }
 
 function decorateSearch(block) {

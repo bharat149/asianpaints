@@ -713,7 +713,7 @@ function trackLeadFormStart(form) {
   if (form.dataset.formStarted === 'true') return;
 
   form.dataset.formStarted = 'true';
-  trackEvent('form_start', {
+  trackEvent('Form start', {
     formName: form.dataset.formName || 'lead-form',
     campaignId: getCampaignId(),
   });
@@ -733,7 +733,11 @@ function trackLeadFormSubmission(form) {
   };
 
   getDigitalData().form = formData;
-  trackEvent('form_submit', formData);
+  trackEvent('Form Submit', {
+    formName: form.dataset.formName || 'lead-form',
+    campaignId: getCampaignId(),
+    ...formData,
+  });
 }
 
 /* ========== Field Validation ========== */
