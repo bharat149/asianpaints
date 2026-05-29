@@ -1698,7 +1698,7 @@ function buildLoginModal() {
 
   loginBtn.addEventListener('click', () => {
     // e7 - Login Icon Click (fires on the "Login" button inside the profile modal)
-    trackEvent('login_icon_click');
+    trackEvent('Login Icon Click');
     close();
     window.location.href = getApApi().KEYCLOAK_PAGE_URL;
   });
@@ -4400,7 +4400,7 @@ function addInteractions(block) {
   const searchBarEl = block.querySelector('.header-search');
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
-      trackEvent('search_icon');
+      trackEvent('Header Search Icon Click');
       openSearchDialog(block);
     });
     searchBarEl.style.cursor = 'pointer';
@@ -4429,7 +4429,7 @@ function addInteractions(block) {
       const rawHref = actionBtn.getAttribute('href') || '';
       const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : rawHref;
 
-      trackEvent('header_icons', { title, param1 });
+      trackEvent('Header icons', { title, param1 });
     });
   });
 

@@ -271,7 +271,11 @@ function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn) {
   };
 
   getDigitalData().form = formData;
-  trackEvent('form_submit', formData);
+  trackEvent('Form Submit', {
+    formName: currentFormName,
+    campaignId: currentCampaignId,
+    ...formData,
+  });
 }
 
 export default function decorate(block) {
@@ -447,7 +451,7 @@ export default function decorate(block) {
   form?.addEventListener('focusin', (evt) => {
     if (formStarted || evt.target.tagName !== 'INPUT') return;
     formStarted = true;
-    trackEvent('form_start', {
+    trackEvent('Form start', {
       formName: currentFormName,
       campaignId: currentCampaignId,
     });

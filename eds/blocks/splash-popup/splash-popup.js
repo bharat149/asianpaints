@@ -220,7 +220,7 @@ async function showSplashDialog(leftContent, rightContent, mobileBgUrl) {
   dialog.showModal();
 
   // e6 - Splash Impressions
-  trackEvent('splash_impression');
+  trackEvent('splash_view');
 }
 
 /**

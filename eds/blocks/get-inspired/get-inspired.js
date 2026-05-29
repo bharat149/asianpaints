@@ -17,7 +17,7 @@ function trackNavClick(button, navigationAction, testTitle) {
       || button.getAttribute('aria-label')
       || '';
 
-    trackEvent('Navigation', {
+    trackEvent('sitesection_click', {
       'Navigation Action': resolvedNavigationAction,
       navigationAction: resolvedNavigationAction,
       direction: resolvedNavigationAction,
