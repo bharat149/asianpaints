@@ -258,6 +258,11 @@ const setLeadFieldValue = (container, selector, value) => {
   });
 
   dialog.addEventListener('close', () => {
+    // e277 - Exit Intent Popup Close (only when this is the exit-intent modal)
+    if (isBookFreeSiteVisitModal) {
+      trackEvent('Exit Intent Popup Close');
+    }
+
     document.body.classList.remove('eds-modal-open');
     block.classList.remove('modal-open');
     window.activeModalElement = null;
@@ -286,7 +291,7 @@ const setLeadFieldValue = (container, selector, value) => {
         updateExitIntentCallUsContent();
         prefillLeadFormFromCookies();
         // e359 - Exit Intent pop-up impression
-        trackEvent('exit_intent_impression');
+        trackEvent('Exit Intent Pop-up Impression');
       }
 
       dialog.show();

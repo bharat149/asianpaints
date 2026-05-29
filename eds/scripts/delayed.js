@@ -36,7 +36,7 @@ function setupGlobalClickListener() {
 
     // e278 - Sticky Form CTA Clicks (.trigger-book-free-site-visit-modal isn't
     // a .button-container child, so bindButtonContainerTracking misses it).
-    trackEvent('sticky_form_cta_click', {
+    trackEvent('sticky_cta_click', {
       cta_: trigger.textContent.trim(),
       param1: trigger.getAttribute('href') || '',
     });

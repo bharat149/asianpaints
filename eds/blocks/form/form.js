@@ -776,7 +776,11 @@ function trackFormSubmission(form) {
     "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No'
   };
   getDigitalData().form = formData;
-  trackEvent("form_submit", formData);
+  trackEvent("Form Submit", {
+    formName,
+    campaignId,
+    ...formData,
+  });
 }
 
 /**
@@ -991,7 +995,7 @@ function renderForm(block) {
   formRow.addEventListener('focusin', function (e) {
     if (!formStarted && e.target.tagName === 'INPUT') {
       formStarted = true;
-      trackEvent("form_start", {
+      trackEvent("Form start", {
         "formName": formName,
         "campaignId": campaignId
       });

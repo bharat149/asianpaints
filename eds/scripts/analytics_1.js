@@ -203,18 +203,19 @@ function getScrollDepthString() {
 // ============================================================
 
 /**
- * Returns time from navigation start to beacon-send moment, in
- * milliseconds. Since analytics fires in loadLazy (post-LCP), this
- * value represents the user-perceived "page is interactive" time —
- * the meaningful page-load metric for an EDS site (no traditional
- * load event milestone like AMS pages had).
+ * Returns time from navigation start to beacon-send moment, in seconds.
  *
- * AMS historically sent banded 0–99 values here via a Launch rule;
- * we send real ms so the reports finally make sense.
+ * AMS beacons (confirmed via Adobe Debugger captures) send eVar51 as a
+ * small integer like 7, 10, 14, 17 — i.e. SECONDS of page-load time.
+ * Sending seconds (not ms) preserves the existing report distribution
+ * so dashboards keyed on this dimension keep working unchanged.
+ *
+ * Previously we sent Math.round(performance.now()) (ms) — flipped to
+ * seconds after observing the AMS shape on www.asianpaints.com.
  */
 function getPageLoadTime() {
-  // performance.now() is monotonic and starts at navigation start.
-  return Math.round(performance.now());
+  // performance.now() is monotonic and starts at navigation start (ms).
+  return Math.round(performance.now() / 1000);
 }
 
 // ============================================================
@@ -329,6 +330,104 @@ export function trackVirtualPageview() {
 // ============================================================
 
 /**
+ * EVENT_REGISTRY — maps EDS-side event names to:
+ *   - `events`: the AMS success-event ID (e.g. 'event8')
+ *   - `eVars`:  per-field eventData → eVarN map
+ *
+ * Built from real AMS beacons captured via Adobe Experience Platform
+ * Debugger on www.asianpaints.com (3 sessions, May 29 2026). Without
+ * Adobe Launch in between, the code populates the AMS payload directly
+ * — no server-side Processing Rules needed.
+ *
+ * Entries with `events: undefined` arrive at the report suite as
+ * link-tracking hits with contextData populated, but don't increment
+ * a specific success-event counter (gracefully degraded for
+ * unconfirmed mappings).
+ */
+const EVENT_REGISTRY = {
+  // Forms
+  'Form start': {
+    events: 'event8',
+    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
+  },
+  'Form Submit': {
+    events: 'event9',
+    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
+  },
+
+  // Search
+  'Header Search Icon Click': { events: 'event330' },
+  'Search Start':              { events: 'event54' },
+  'Search Bar Close':          { events: 'event336' },
+  ub_imagesearch_start:        { events: 'event312' },
+  ub_imagesearch_close:        { events: 'event313' },
+  ub_imagesearch_complete:     { events: 'event174', eVars: { totalResults: 'eVar28' } },
+
+  // Auth
+  'Login Icon Click':          { events: 'event7' },
+
+  // Cart
+  mini_cart_click:             { events: 'event67' },
+
+  // CTAs / navigation
+  custom_cta_click:            {
+    events: 'event132',
+    eVars: { cta_: 'eVar45', parentTitle: 'eVar67', redirectionLink: 'eVar86', param1: 'eVar46' },
+  },
+  'Header icons':              {
+    events: 'event335',
+    eVars: { title: 'eVar67', param1: 'eVar86' },
+  },
+  sitesection_click:           {
+    events: 'event46',
+    eVars: { siteSection: 'eVar22', redirectionLink: 'eVar86' },
+  },
+  subsection_one_click:        {
+    events: 'event113',
+    eVars: { siteSection: 'eVar22', subSection: 'eVar65' },
+  },
+  subsection_two_click:        {
+    events: 'event114',
+    eVars: {
+      siteSection: 'eVar22',
+      subSection: 'eVar65',
+      subSectionTwo: 'eVar66',
+      redirectionLink: 'eVar86',
+    },
+  },
+
+  // Contractors / store
+  'Contractor Search Click':   {
+    events: 'event220',
+    eVars: { cityPincode: 'eVar32' },
+  },
+  store_locator:               {
+    events: 'event17',
+    eVars: { cityPincode: 'eVar32', cta_: 'eVar45' },
+  },
+
+  // Testimonial / video / downloads
+  'Testimonial - Click to expand (Open)': {
+    events: 'event298',
+    eVars: { ctaText: 'eVar45' },
+  },
+  short_video_play:            { events: 'event296', eVars: { viewsCount: 'eVar35' } },
+  download_form_pdf:           { events: 'event137', eVars: { pdfName: 'eVar96' } },
+
+  // Exit-intent modal
+  'Exit Intent Pop-up Impression': { events: 'event359' },
+  'Exit Intent Popup Close':       { events: 'event277' },
+
+  // — TBD (not confirmed via debugger captures yet) — fire as link-tracking
+  // hits without `events` until confirmed:
+  //   splash_view, popup_exit, carousel_banner_click, waterproofing_categories,
+  //   domain_swicth, video_playbotton_click, youtube_play, footer_*,
+  //   calc_start, calc_continue, guest_login_*, product_tile_click,
+  //   filter_click, natural_wood_shade_click, squarecross_click,
+  //   download_multiple_pdf, find_a_store, share_store_location, etc.
+};
+
+/**
  * Returns the digitalData object or creates an empty one if it doesn't
  * exist. Kept as a no-op stub for backwards compatibility — many legacy
  * blocks still read from / mutate `window.digitalData.user.*` etc.
@@ -345,17 +444,15 @@ export function getDigitalData() {
 /**
  * Tracks a custom event by sending an Alloy beacon.
  *
- * Replaces the legacy `_satellite.track(eventName, eventData)` pattern.
- * Builds an equivalent Alloy `sendEvent` payload:
- *   linkName    = eventName       (reports group/filter on this)
- *   linkType    = 'o' (other)     (matches AMS s.tl(true,'o',name))
- *   contextData = stringified data (Processing Rules in the datastream
- *                                   config map keys → eVars/props)
+ * Looks up `eventName` in EVENT_REGISTRY:
+ *   - sets `events` (eventN) directly on the analytics payload
+ *   - maps known `eventData` keys to specific eVarN fields
+ *   - any unmapped keys land in `contextData`
  *
  * Fails silently if Alloy hasn't been bootstrapped yet (a click in the
  * first ~few hundred ms before loadLazy fires `initAnalytics`).
  *
- * @param {string} eventName
+ * @param {string} eventName  AMS linkName (preserve exact case + spaces)
  * @param {Object} [eventData]
  */
 export function trackEvent(eventName, eventData = {}) {
@@ -366,20 +463,26 @@ export function trackEvent(eventName, eventData = {}) {
   // Mutate legacy digitalData.event for any block still reading it.
   getDigitalData().event = name;
 
+  const def = EVENT_REGISTRY[name] || {};
   const analytics = {
     linkName: name,
     linkType: 'o',
   };
+  if (def.events) analytics.events = def.events;
 
-  const entries = Object.entries(eventData).filter(
-    ([, v]) => v !== undefined && v !== null && v !== '',
-  );
-  if (entries.length) {
-    analytics.contextData = {};
-    entries.forEach(([k, v]) => {
-      analytics.contextData[k] = String(v);
-    });
-  }
+  // Split eventData keys: known → eVarN; unknown → contextData
+  const eVarMap = def.eVars || {};
+  const contextData = {};
+  Object.entries(eventData).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return;
+    const target = eVarMap[k];
+    if (target) {
+      analytics[target] = String(v);
+    } else {
+      contextData[k] = String(v);
+    }
+  });
+  if (Object.keys(contextData).length) analytics.contextData = contextData;
 
   try {
     window.alloy('sendEvent', { data: { __adobe: { analytics } } });

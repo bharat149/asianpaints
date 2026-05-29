@@ -135,7 +135,7 @@ function trackNavClick(button, sectionTitle) {
       direction = 'Previous';
     }
 
-    trackEvent('Navigation', {
+    trackEvent('sitesection_click', {
       direction,
       testTitle: sectionTitle,
     });
