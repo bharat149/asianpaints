@@ -423,13 +423,119 @@ const EVENT_REGISTRY = {
   'Exit Intent Pop-up Impression': { events: 'event359' },
   'Exit Intent Popup Close': { events: 'event277' },
 
-  // — TBD (not confirmed via debugger captures yet) — fire as link-tracking
-  // hits without `events` until confirmed:
-  //   splash_view, popup_exit, carousel_banner_click, waterproofing_categories,
-  //   domain_swicth, video_playbotton_click, youtube_play, footer_*,
-  //   calc_start, calc_continue, guest_login_*, product_tile_click,
-  //   filter_click, natural_wood_shade_click, squarecross_click,
-  //   download_multiple_pdf, find_a_store, share_store_location, etc.
+  // ============================================================
+  // BEST-GUESS MAPPINGS (not yet confirmed via debugger capture).
+  // Derived from:
+  //   - The May 2026 AMS report (test.csv) — confirms event ID and
+  //     dimension shape for events listed in that report.
+  //   - The `asianpaintsbeta` report-suite event definitions — used to
+  //     pick the semantically closest eventN for each linkName.
+  // Reviewers: please verify each entry with a debugger capture on
+  // www.asianpaints.com before relying on these IDs for reporting.
+  // ============================================================
+
+  // Splash popup
+  splash_view: { events: 'event6' },  // best-guess (matches test.csv "Splash Impressions [e6]")
+
+  // Header domain switch
+  domain_swicth: {
+    events: 'event331',  // best-guess (matches test.csv "Domain Switch Tab Click [e331]")
+    eVars: { destinationUrl: 'eVar86' },
+  },
+
+  // Sticky form CTA
+  sticky_cta_click: {
+    events: 'event278',  // best-guess (matches test.csv "Sticky Form CTA Clicks [e278]")
+    eVars: { cta_: 'eVar45', param1: 'eVar46' },
+  },
+
+  // Carousel banner
+  carousel_banner_click: {
+    events: 'event96',  // best-guess (matches test.csv "Carousel Banner Click [e96]")
+    eVars: { bannerTitle: 'eVar81', bannerDestinationUrl: 'eVar86' },
+  },
+
+  // Inspiration category filter
+  waterproofing_categories: {
+    events: 'event324',  // best-guess (matches test.csv "Waterproofing Categories [e324]")
+    eVars: { title: 'eVar67' },
+  },
+
+  // Generic CTA-link tracking
+  cta_link_text: {
+    events: 'event143',  // best-guess (Custom Link Click [e143])
+    eVars: { cta_: 'eVar45', param1: 'eVar46' },
+  },
+  custom_link_text: {
+    events: 'event143',  // best-guess (same as cta_link_text)
+    eVars: { cta_: 'eVar45' },
+  },
+
+  // Form thank-you popup (AMS has 4 per-form variants: e38–41 by form).
+  // Fires for ALL forms today — defaulting to event38 (All Services TYP)
+  // until each form block passes a formType field that we can switch on.
+  Form_thank_you_pop_up: {
+    events: 'event38',  // best-guess — refine to formType-conditional later
+    eVars: { formName: 'eVar17' },
+  },
+
+  // PDF / download
+  download_multiple_pdf: {
+    events: 'event134',  // best-guess (Download Click [e134])
+    eVars: { pdfName: 'eVar96' },
+  },
+
+  // Search no-result
+  no_result: {
+    events: 'event87',  // best-guess (Null Searches [e87])
+    eVars: { search_term: 'eVar11' },
+  },
+
+  // Video
+  video_playbotton_click: {
+    events: 'event20',  // best-guess (Video Played [e20])
+    eVars: { videoTitle: 'eVar35' },
+  },
+  youtube_play: {
+    events: 'event20',  // best-guess (same as video_playbotton_click)
+    eVars: { url: 'eVar35' },
+  },
+  short_video_shop: { events: 'event132' },  // best-guess (Custom CTA Click)
+
+  // Product / gallery interactions
+  product_tile_click: { events: 'event122' },  // best-guess (Product click on plp page)
+  filter_click: { events: 'event121' },  // best-guess (Product Filter Click)
+  natural_wood_shade_click: { events: 'event158' },  // best-guess (Natural wood shade click)
+  squarecross_click: { events: 'event144' },  // best-guess (Square cross Image click)
+
+  // Calculator
+  calc_start: {
+    events: 'event42',  // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
+    eVars: { flowType: 'eVar36' },
+  },
+  calc_continue: {
+    events: 'event43',  // best-guess (Rolls Calculator Submit)
+    eVars: { flowType: 'eVar36', filter: 'eVar34' },
+  },
+
+  // Footer
+  footer_phone_number_click: { events: 'event105' },  // best-guess (Footer contact us)
+  footer_tab: {
+    events: 'event107',  // best-guess (Footer tab click)
+    eVars: { cta_: 'eVar45' },
+  },
+  footer_country: {
+    events: 'event109',  // best-guess (Country selection)
+    eVars: { cta_: 'eVar45' },
+  },
+  footer_socialicons: {
+    events: 'event108',  // best-guess (Social media icon Click)
+    eVars: { cta_: 'eVar45' },
+  },
+
+  // Contact CTAs
+  SPSContactClick: { events: 'event105' },  // best-guess (Footer contact us — tel: links)
+  contact_us_click_whatsapp: { events: 'event105' },  // best-guess (same)
 };
 
 /**
