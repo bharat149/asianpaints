@@ -536,6 +536,74 @@ const EVENT_REGISTRY = {
   // Contact CTAs
   SPSContactClick: { events: 'event105' }, // best-guess (Footer contact us — tel: links)
   contact_us_click_whatsapp: { events: 'event105' }, // best-guess (same)
+
+  // ============================================================
+  // AMS-fired linkNames our EDS code doesn't yet fire (or fires
+  // partially). Adding registry entries so that, once the
+  // corresponding trackEvent calls are added in block code (or as
+  // EDS authors blocks that need them), the AMS event ID flows
+  // automatically.
+  //
+  // Event IDs mapped from the asianpaintsbeta report-suite config
+  // by semantic name match. All are best-guess — verify via
+  // Adobe Experience Platform Debugger.
+  // ============================================================
+
+  // Footer
+  footer_email_click: { events: 'event103' }, // best-guess (Footer email Subscribe)
+  footer_links: {
+    events: 'event143', // best-guess (Custom Link Click — generic footer-link tracking)
+    eVars: { cta_: 'eVar45', parentTitle: 'eVar67', redirectionLink: 'eVar86' },
+  },
+
+  // App downloads (footer / banner)
+  appstore_click: {
+    events: 'event58', // best-guess (App Download Click [e58])
+    eVars: { location_Id: 'eVar70' }, // eVar70 = App downloads
+  },
+  googleplay_click: {
+    events: 'event58', // best-guess (same as appstore_click)
+    eVars: { location_Id: 'eVar70' },
+  },
+
+  // Store locator
+  'find a store': {
+    events: 'event164', // best-guess (Store locator click [e164])
+    eVars: { cta_: 'eVar45', pinCode: 'eVar32' },
+  },
+  share_store_location: {
+    events: 'event157', // best-guess (Store Locator share click [e157])
+    eVars: { shareMode: 'eVar45', storeName: 'eVar97', pinCode: 'eVar32' },
+  },
+
+  // Search
+  ub_search_enter: {
+    events: 'event56', // best-guess (Search Button Click [e56])
+    eVars: {
+      searchTerm: 'eVar11',
+      parentTitle: 'eVar67',
+      totalResults: 'eVar28',
+      flowType: 'eVar36',
+      successStatus: 'eVar55',
+    },
+  },
+
+  // Popups
+  popup_exit: { events: 'event18' }, // best-guess (Splash Popup Close [e18]) — verify per modal type
+
+  // Guest checkout / login flow (we already have guest_login_continue/successful/error
+  // mapped to event49/50/11 — adding guest_login_start as the "start" CTA click).
+  guest_login_start: {
+    events: 'event48', // best-guess (Login/Register CTA Click [e48])
+    eVars: { checkoutType: 'eVar15', loginStatus: 'eVar9' },
+  },
+  guestuser_address_close: {
+    events: 'event102', // best-guess (Login Popup Close [e102])
+    eVars: { checkoutType: 'eVar15', loginStatus: 'eVar9' },
+  },
+
+  // Form file upload
+  File_upload_successful: { events: 'event101' }, // best-guess (Registration complete-style — TBD verify)
 };
 
 /**
