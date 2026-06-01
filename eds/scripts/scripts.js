@@ -295,12 +295,82 @@ export function decorateMain(main) {
 
 
 /**
+ * Append a <link rel="preload" as="image" fetchpriority="high"> for an
+ * image URL. Idempotent — no-op if the same href is already preloaded.
+ */
+function appendImagePreload(href, srcset, sizes) {
+  if (!href) return;
+  if (document.querySelector(`link[rel="preload"][as="image"][href="${CSS.escape(href)}"]`)) return;
+
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'image';
+  link.href = href;
+  link.setAttribute('fetchpriority', 'high');
+  if (srcset) link.setAttribute('imagesrcset', srcset);
+  if (sizes) link.setAttribute('imagesizes', sizes);
+  document.head.appendChild(link);
+}
+
+/**
+ * Preload the LCP image as early as possible in the eager phase.
+ *
+ * EDS pages serve mostly-text HTML where the hero <img> is present but
+ * doesn't get `fetchpriority="high"` until block decoration runs in JS.
+ * By that point the browser's preload scanner has already missed it,
+ * so the LCP image fetches at default priority — failing the
+ * Lighthouse "LCP request discovery" audit ("fetchpriority=high should
+ * be applied", "Request is discoverable in initial document") and
+ * losing 200–500 ms of LCP on cold-cache runs.
+ *
+ * Injecting a <link rel="preload" as="image" fetchpriority="high">
+ * here, before any block decoration, lets the browser deduplicate the
+ * fetch the <img> tag triggers and bump it to high priority.
+ *
+ * URL resolution order:
+ *   1. Author override via  <meta name="lcp-image" content="<url>">
+ *   2. Auto-detect: first <img> inside the first section of <main>
+ *
+ * Mirrors the <picture> element's responsive sources via
+ * `imagesrcset` / `imagesizes` so the browser picks the same URL it
+ * would have picked from the <picture> markup.
+ */
+function preloadLcpImage(doc) {
+  // 1. Honor explicit author hint when present.
+  const metaHint = doc.querySelector('meta[name="lcp-image"]')?.content?.trim();
+  if (metaHint) {
+    appendImagePreload(metaHint);
+    return;
+  }
+
+  // 2. Auto-detect: first <img> in first section of <main>.
+  const firstImg = doc.querySelector('main > div:first-child img');
+  if (!firstImg) return;
+
+  const src = firstImg.getAttribute('src');
+  if (!src) return;
+
+  // Mirror the <picture>'s responsive sources, if present, so the
+  // browser picks the same URL the <img> would have resolved to.
+  const picture = firstImg.closest('picture');
+  const firstSource = picture?.querySelector('source[srcset]');
+  const imagesrcset = firstSource?.getAttribute('srcset') || '';
+  const imagesizes = firstSource?.getAttribute('sizes') || '';
+
+  appendImagePreload(src, imagesrcset, imagesizes);
+}
+
+/**
  * Loads only the assets and logic required for the initial render / LCP.
  * Analytics is intentionally excluded from this phase to avoid blocking
  * rendering and to keep jQuery out of the critical path.
  * @param {Element} doc The container element
  */
 async function loadEager(doc) {
+  // Run BEFORE any decoration so the browser's preload scanner picks
+  // up the LCP image as early as possible.
+  preloadLcpImage(doc);
+
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
 

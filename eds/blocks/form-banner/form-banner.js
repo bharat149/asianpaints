@@ -244,7 +244,11 @@ function trackFormSubmission(form) {
   };
 
   getDigitalData().form = formData;
-  trackEvent('form_submit', formData);
+  trackEvent('Form Submit', {
+    formName: form.dataset.formName || 'form-banner',
+    campaignId: 'TCS_AP.com',
+    ...formData,
+  });
 }
 
 /**
@@ -826,7 +830,7 @@ function buildFormCard(block, labelsRow, inputsRow) {
   formRow.addEventListener('focusin', (e) => {
     if (!formStarted && e.target.tagName === 'INPUT') {
       formStarted = true;
-      trackEvent('form_start', {
+      trackEvent('Form start', {
         formName,
         campaignId,
       });

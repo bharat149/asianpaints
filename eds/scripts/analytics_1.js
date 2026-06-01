@@ -203,18 +203,19 @@ function getScrollDepthString() {
 // ============================================================
 
 /**
- * Returns time from navigation start to beacon-send moment, in
- * milliseconds. Since analytics fires in loadLazy (post-LCP), this
- * value represents the user-perceived "page is interactive" time —
- * the meaningful page-load metric for an EDS site (no traditional
- * load event milestone like AMS pages had).
+ * Returns time from navigation start to beacon-send moment, in seconds.
  *
- * AMS historically sent banded 0–99 values here via a Launch rule;
- * we send real ms so the reports finally make sense.
+ * AMS beacons (confirmed via Adobe Debugger captures) send eVar51 as a
+ * small integer like 7, 10, 14, 17 — i.e. SECONDS of page-load time.
+ * Sending seconds (not ms) preserves the existing report distribution
+ * so dashboards keyed on this dimension keep working unchanged.
+ *
+ * Previously we sent Math.round(performance.now()) (ms) — flipped to
+ * seconds after observing the AMS shape on www.asianpaints.com.
  */
 function getPageLoadTime() {
-  // performance.now() is monotonic and starts at navigation start.
-  return Math.round(performance.now());
+  // performance.now() is monotonic and starts at navigation start (ms).
+  return Math.round(performance.now() / 1000);
 }
 
 // ============================================================
@@ -329,6 +330,283 @@ export function trackVirtualPageview() {
 // ============================================================
 
 /**
+ * EVENT_REGISTRY — maps EDS-side event names to:
+ *   - `events`: the AMS success-event ID (e.g. 'event8')
+ *   - `eVars`:  per-field eventData → eVarN map
+ *
+ * Built from real AMS beacons captured via Adobe Experience Platform
+ * Debugger on www.asianpaints.com (3 sessions, May 29 2026). Without
+ * Adobe Launch in between, the code populates the AMS payload directly
+ * — no server-side Processing Rules needed.
+ *
+ * Entries with `events: undefined` arrive at the report suite as
+ * link-tracking hits with contextData populated, but don't increment
+ * a specific success-event counter (gracefully degraded for
+ * unconfirmed mappings).
+ */
+const EVENT_REGISTRY = {
+  // Forms
+  'Form start': {
+    events: 'event8',
+    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
+  },
+  'Form Submit': {
+    events: 'event9',
+    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
+  },
+
+  // Search
+  'Header Search Icon Click': { events: 'event330' },
+  'Search Start': { events: 'event54' },
+  'Search Bar Close': { events: 'event336' },
+  ub_imagesearch_start: { events: 'event312' },
+  ub_imagesearch_close: { events: 'event313' },
+  ub_imagesearch_complete: { events: 'event174', eVars: { totalResults: 'eVar28' } },
+
+  // Auth
+  'Login Icon Click': { events: 'event7' },
+
+  // Cart
+  mini_cart_click: { events: 'event67' },
+
+  // CTAs / navigation
+  custom_cta_click: {
+    events: 'event132',
+    eVars: {
+      cta_: 'eVar45',
+      parentTitle: 'eVar67',
+      redirectionLink: 'eVar86',
+      param1: 'eVar46',
+    },
+  },
+  'Header icons': {
+    events: 'event335',
+    eVars: { title: 'eVar67', param1: 'eVar86' },
+  },
+  sitesection_click: {
+    events: 'event46',
+    eVars: { siteSection: 'eVar22', redirectionLink: 'eVar86' },
+  },
+  subsection_one_click: {
+    events: 'event113',
+    eVars: { siteSection: 'eVar22', subSection: 'eVar65' },
+  },
+  subsection_two_click: {
+    events: 'event114',
+    eVars: {
+      siteSection: 'eVar22',
+      subSection: 'eVar65',
+      subSectionTwo: 'eVar66',
+      redirectionLink: 'eVar86',
+    },
+  },
+
+  // Contractors / store
+  'Contractor Search Click': {
+    events: 'event220',
+    eVars: { cityPincode: 'eVar32' },
+  },
+  store_locator: {
+    events: 'event17',
+    eVars: { cityPincode: 'eVar32', cta_: 'eVar45' },
+  },
+
+  // Testimonial / video / downloads
+  'Testimonial - Click to expand (Open)': {
+    events: 'event298',
+    eVars: { ctaText: 'eVar45' },
+  },
+  short_video_play: { events: 'event296', eVars: { viewsCount: 'eVar35' } },
+  download_form_pdf: { events: 'event137', eVars: { pdfName: 'eVar96' } },
+
+  // Exit-intent modal
+  'Exit Intent Pop-up Impression': { events: 'event359' },
+  'Exit Intent Popup Close': { events: 'event277' },
+
+  // ============================================================
+  // BEST-GUESS MAPPINGS (not yet confirmed via debugger capture).
+  // Derived from:
+  //   - The May 2026 AMS report (test.csv) — confirms event ID and
+  //     dimension shape for events listed in that report.
+  //   - The `asianpaintsbeta` report-suite event definitions — used to
+  //     pick the semantically closest eventN for each linkName.
+  // Reviewers: please verify each entry with a debugger capture on
+  // www.asianpaints.com before relying on these IDs for reporting.
+  // ============================================================
+
+  // Splash popup
+  splash_view: { events: 'event6' }, // best-guess (matches test.csv "Splash Impressions [e6]")
+
+  // Header domain switch
+  domain_swicth: {
+    events: 'event331', // best-guess (matches test.csv "Domain Switch Tab Click [e331]")
+    eVars: { destinationUrl: 'eVar86' },
+  },
+
+  // Sticky form CTA
+  sticky_cta_click: {
+    events: 'event278', // best-guess (matches test.csv "Sticky Form CTA Clicks [e278]")
+    eVars: { cta_: 'eVar45', param1: 'eVar46' },
+  },
+
+  // Carousel banner
+  carousel_banner_click: {
+    events: 'event96', // best-guess (matches test.csv "Carousel Banner Click [e96]")
+    eVars: { bannerTitle: 'eVar81', bannerDestinationUrl: 'eVar86' },
+  },
+
+  // Inspiration category filter
+  waterproofing_categories: {
+    events: 'event324', // best-guess (matches test.csv "Waterproofing Categories [e324]")
+    eVars: { title: 'eVar67' },
+  },
+
+  // Generic CTA-link tracking
+  cta_link_text: {
+    events: 'event143', // best-guess (Custom Link Click [e143])
+    eVars: { cta_: 'eVar45', param1: 'eVar46' },
+  },
+  custom_link_text: {
+    events: 'event143', // best-guess (same as cta_link_text)
+    eVars: { cta_: 'eVar45' },
+  },
+
+  // Form thank-you popup (AMS has 4 per-form variants: e38–41 by form).
+  // Fires for ALL forms today — defaulting to event38 (All Services TYP)
+  // until each form block passes a formType field that we can switch on.
+  Form_thank_you_pop_up: {
+    events: 'event38', // best-guess — refine to formType-conditional later
+    eVars: { formName: 'eVar17' },
+  },
+
+  // PDF / download
+  download_multiple_pdf: {
+    events: 'event134', // best-guess (Download Click [e134])
+    eVars: { pdfName: 'eVar96' },
+  },
+
+  // Search no-result
+  no_result: {
+    events: 'event87', // best-guess (Null Searches [e87])
+    eVars: { search_term: 'eVar11' },
+  },
+
+  // Video
+  video_playbotton_click: {
+    events: 'event20', // best-guess (Video Played [e20])
+    eVars: { videoTitle: 'eVar35' },
+  },
+  youtube_play: {
+    events: 'event20', // best-guess (same as video_playbotton_click)
+    eVars: { url: 'eVar35' },
+  },
+  short_video_shop: { events: 'event132' }, // best-guess (Custom CTA Click)
+
+  // Product / gallery interactions
+  product_tile_click: { events: 'event122' }, // best-guess (Product click on plp page)
+  filter_click: { events: 'event121' }, // best-guess (Product Filter Click)
+  natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
+  squarecross_click: { events: 'event144' }, // best-guess (Square cross Image click)
+
+  // Calculator
+  calc_start: {
+    events: 'event42', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
+    eVars: { flowType: 'eVar36' },
+  },
+  calc_continue: {
+    events: 'event43', // best-guess (Rolls Calculator Submit)
+    eVars: { flowType: 'eVar36', filter: 'eVar34' },
+  },
+
+  // Footer
+  footer_phone_number_click: { events: 'event105' }, // best-guess (Footer contact us)
+  footer_tab: {
+    events: 'event107', // best-guess (Footer tab click)
+    eVars: { cta_: 'eVar45' },
+  },
+  footer_country: {
+    events: 'event109', // best-guess (Country selection)
+    eVars: { cta_: 'eVar45' },
+  },
+  footer_socialicons: {
+    events: 'event108', // best-guess (Social media icon Click)
+    eVars: { cta_: 'eVar45' },
+  },
+
+  // Contact CTAs
+  SPSContactClick: { events: 'event105' }, // best-guess (Footer contact us — tel: links)
+  contact_us_click_whatsapp: { events: 'event105' }, // best-guess (same)
+
+  // ============================================================
+  // AMS-fired linkNames our EDS code doesn't yet fire (or fires
+  // partially). Adding registry entries so that, once the
+  // corresponding trackEvent calls are added in block code (or as
+  // EDS authors blocks that need them), the AMS event ID flows
+  // automatically.
+  //
+  // Event IDs mapped from the asianpaintsbeta report-suite config
+  // by semantic name match. All are best-guess — verify via
+  // Adobe Experience Platform Debugger.
+  // ============================================================
+
+  // Footer
+  footer_email_click: { events: 'event103' }, // best-guess (Footer email Subscribe)
+  footer_links: {
+    events: 'event143', // best-guess (Custom Link Click — generic footer-link tracking)
+    eVars: { cta_: 'eVar45', parentTitle: 'eVar67', redirectionLink: 'eVar86' },
+  },
+
+  // App downloads (footer / banner)
+  appstore_click: {
+    events: 'event58', // best-guess (App Download Click [e58])
+    eVars: { location_Id: 'eVar70' }, // eVar70 = App downloads
+  },
+  googleplay_click: {
+    events: 'event58', // best-guess (same as appstore_click)
+    eVars: { location_Id: 'eVar70' },
+  },
+
+  // Store locator
+  'find a store': {
+    events: 'event164', // best-guess (Store locator click [e164])
+    eVars: { cta_: 'eVar45', pinCode: 'eVar32' },
+  },
+  share_store_location: {
+    events: 'event157', // best-guess (Store Locator share click [e157])
+    eVars: { shareMode: 'eVar45', storeName: 'eVar97', pinCode: 'eVar32' },
+  },
+
+  // Search
+  ub_search_enter: {
+    events: 'event56', // best-guess (Search Button Click [e56])
+    eVars: {
+      searchTerm: 'eVar11',
+      parentTitle: 'eVar67',
+      totalResults: 'eVar28',
+      flowType: 'eVar36',
+      successStatus: 'eVar55',
+    },
+  },
+
+  // Popups
+  popup_exit: { events: 'event18' }, // best-guess (Splash Popup Close [e18]) — verify per modal type
+
+  // Guest checkout / login flow (we already have guest_login_continue/successful/error
+  // mapped to event49/50/11 — adding guest_login_start as the "start" CTA click).
+  guest_login_start: {
+    events: 'event48', // best-guess (Login/Register CTA Click [e48])
+    eVars: { checkoutType: 'eVar15', loginStatus: 'eVar9' },
+  },
+  guestuser_address_close: {
+    events: 'event102', // best-guess (Login Popup Close [e102])
+    eVars: { checkoutType: 'eVar15', loginStatus: 'eVar9' },
+  },
+
+  // Form file upload
+  File_upload_successful: { events: 'event101' }, // best-guess (Registration complete-style — TBD verify)
+};
+
+/**
  * Returns the digitalData object or creates an empty one if it doesn't
  * exist. Kept as a no-op stub for backwards compatibility — many legacy
  * blocks still read from / mutate `window.digitalData.user.*` etc.
@@ -345,17 +623,15 @@ export function getDigitalData() {
 /**
  * Tracks a custom event by sending an Alloy beacon.
  *
- * Replaces the legacy `_satellite.track(eventName, eventData)` pattern.
- * Builds an equivalent Alloy `sendEvent` payload:
- *   linkName    = eventName       (reports group/filter on this)
- *   linkType    = 'o' (other)     (matches AMS s.tl(true,'o',name))
- *   contextData = stringified data (Processing Rules in the datastream
- *                                   config map keys → eVars/props)
+ * Looks up `eventName` in EVENT_REGISTRY:
+ *   - sets `events` (eventN) directly on the analytics payload
+ *   - maps known `eventData` keys to specific eVarN fields
+ *   - any unmapped keys land in `contextData`
  *
  * Fails silently if Alloy hasn't been bootstrapped yet (a click in the
  * first ~few hundred ms before loadLazy fires `initAnalytics`).
  *
- * @param {string} eventName
+ * @param {string} eventName  AMS linkName (preserve exact case + spaces)
  * @param {Object} [eventData]
  */
 export function trackEvent(eventName, eventData = {}) {
@@ -366,20 +642,26 @@ export function trackEvent(eventName, eventData = {}) {
   // Mutate legacy digitalData.event for any block still reading it.
   getDigitalData().event = name;
 
+  const def = EVENT_REGISTRY[name] || {};
   const analytics = {
     linkName: name,
     linkType: 'o',
   };
+  if (def.events) analytics.events = def.events;
 
-  const entries = Object.entries(eventData).filter(
-    ([, v]) => v !== undefined && v !== null && v !== '',
-  );
-  if (entries.length) {
-    analytics.contextData = {};
-    entries.forEach(([k, v]) => {
-      analytics.contextData[k] = String(v);
-    });
-  }
+  // Split eventData keys: known → eVarN; unknown → contextData
+  const eVarMap = def.eVars || {};
+  const contextData = {};
+  Object.entries(eventData).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return;
+    const target = eVarMap[k];
+    if (target) {
+      analytics[target] = String(v);
+    } else {
+      contextData[k] = String(v);
+    }
+  });
+  if (Object.keys(contextData).length) analytics.contextData = contextData;
 
   try {
     window.alloy('sendEvent', { data: { __adobe: { analytics } } });

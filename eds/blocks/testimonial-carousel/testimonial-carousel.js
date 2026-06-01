@@ -181,7 +181,7 @@ function buildSlide(row, block) {
       e.preventDefault();
       e.stopPropagation();
       openVideoModal(block, videoLink);
-      trackEvent("test_open", {
+      trackEvent("Testimonial - Click to expand (Open)", {
         "videoId": videoLink
       });
     });

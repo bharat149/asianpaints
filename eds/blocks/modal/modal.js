@@ -3,6 +3,7 @@ import {
   buildBlock, decorateBlock, loadBlock, loadCSS,
 } from '../../scripts/aem.js';
 import { getCookieValues } from '../../scripts/form-submit-common.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 /*
   This is not a traditional block, so there is no decorate function.
   Instead, links to a /modals/ path are automatically transformed into a modal.
@@ -257,6 +258,11 @@ const setLeadFieldValue = (container, selector, value) => {
   });
 
   dialog.addEventListener('close', () => {
+    // e277 - Exit Intent Popup Close (only when this is the exit-intent modal)
+    if (isBookFreeSiteVisitModal) {
+      trackEvent('Exit Intent Popup Close');
+    }
+
     document.body.classList.remove('eds-modal-open');
     block.classList.remove('modal-open');
     window.activeModalElement = null;
@@ -284,6 +290,8 @@ const setLeadFieldValue = (container, selector, value) => {
         updateExitIntentSubmitText();
         updateExitIntentCallUsContent();
         prefillLeadFormFromCookies();
+        // e359 - Exit Intent pop-up impression
+        trackEvent('Exit Intent Pop-up Impression');
       }
 
       dialog.show();
