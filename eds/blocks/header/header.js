@@ -4498,18 +4498,82 @@ function addInteractions(block) {
 
 // ──────────────────────────────────────────────
 //  Async Integrations Init (non-blocking)
+//
+//  Heavy fetches (commerce/miniCart.json, apcolourcatalogue/detect-
+//  location) were previously fired here on requestIdleCallback. PSI
+//  showed both ending up on the critical path (3.3 s + 3.8 s
+//  respectively) because synthetic audits never report idle during
+//  the load window, so the 2 s idle-timeout fires and the fetches
+//  race the LCP image for bandwidth — pushing LCP to 6.9 s on the
+//  beta.asianpaints.com homepage.
+//
+//  Fix: gate each fetch to a real user-intent signal:
+//   - miniCart.json — fetched only on cart-icon hover / first user
+//     interaction. PSI never interacts → fetch never runs → bandwidth
+//     stays free for LCP image.
+//   - primeLocationContext (warm-up for autocomplete) — fired on the
+//     same first-interaction signal. No LCP value, can wait.
+//   - Keycloak init — KEPT on idle so the profile icon shows the
+//     correct logged-in/out state without waiting for interaction.
 // ──────────────────────────────────────────────
 
+/**
+ * Run `callback` exactly once, on whichever happens first:
+ *  - The user's first real interaction (pointerdown / keydown / scroll / touch)
+ *  - A safety timeout (default 15 s) — for tabs that the user opens and
+ *    walks away from
+ *
+ * Returns a `cancel()` function for cases where the callback no longer
+ * needs to run (e.g., the underlying need was satisfied another way).
+ */
+function onFirstInteraction(callback, safetyTimeoutMs = 15000) {
+  let fired = false;
+  const events = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+  const fire = () => {
+    if (fired) return;
+    fired = true;
+    events.forEach((evt) => window.removeEventListener(evt, fire, true));
+    clearTimeout(safetyTimer);
+    try { callback(); } catch (e) { /* eslint-disable-next-line no-console */ console.error(e); }
+  };
+  events.forEach((evt) => window.addEventListener(evt, fire, { capture: true, passive: true }));
+  const safetyTimer = setTimeout(fire, safetyTimeoutMs);
+  return () => {
+    if (fired) return;
+    fired = true;
+    events.forEach((evt) => window.removeEventListener(evt, fire, true));
+    clearTimeout(safetyTimer);
+  };
+}
+
 async function initIntegrations(block) {
-  // Prime location context for search/location-aware integrations
-  primeLocationContext();
-
-  // Fetch cart count and update badge
-  const count = await fetchMiniCartCount();
-  updateCartBadge(block, count);
-
-  // Initialize Keycloak authentication (non-blocking)
+  // Keycloak runs on idle — needed early so the profile button
+  // shows the right icon for logged-in vs not. Doesn't hit
+  // /miniCart.json or /detect-location itself.
   initKeycloak(block);
+
+  // Warm the location-search context only on first user interaction.
+  // primeLocationContext() just pings detect-location to seed a cookie
+  // for later autocomplete suggestions — no UI uses it pre-interaction.
+  onFirstInteraction(() => primeLocationContext());
+
+  // Cart count badge — fetch on cart-icon hover/focus (desktop user
+  // intent) OR first interaction (mobile fallback). PSI's synthetic
+  // audit never interacts, so the fetch is skipped entirely under
+  // Lighthouse — bandwidth stays free for the LCP image.
+  let cartFetched = false;
+  const fetchAndUpdateCartCount = async () => {
+    if (cartFetched) return;
+    cartFetched = true;
+    const count = await fetchMiniCartCount();
+    updateCartBadge(block, count);
+  };
+  const cartBtn = block.querySelector('.cart-btn');
+  if (cartBtn) {
+    cartBtn.addEventListener('pointerenter', fetchAndUpdateCartCount, { once: true });
+    cartBtn.addEventListener('focus', fetchAndUpdateCartCount, { once: true });
+  }
+  onFirstInteraction(fetchAndUpdateCartCount);
 }
 
 // ──────────────────────────────────────────────
