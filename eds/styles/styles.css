@@ -831,7 +831,7 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
   }
 }
  .section-padding-desk-mob {
-    padding-top: 60xpx;
+    padding-top: 60px;
   }
 @media (width >= 992px) {
   main .section.contractors-rte-live>.default-content-wrapper h2 {
