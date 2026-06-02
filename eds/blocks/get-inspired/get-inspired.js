@@ -164,6 +164,12 @@ export default function decorate(block) {
     const anchors = [...contentEl.querySelectorAll('a')];
 
     anchors.forEach((a) => {
+      const image = a.querySelector('img');
+      if (image) {
+        image.setAttribute('width', '324');
+        image.setAttribute('height', '470');
+      }
+
       const slide = document.createElement('div');
       slide.className = 'swiper-slide';
 

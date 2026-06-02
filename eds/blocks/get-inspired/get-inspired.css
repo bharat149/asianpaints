@@ -29,10 +29,26 @@
     margin: 0;
 }
 
+/* Reserve space before JS hydrates the block to avoid CLS.
+   Raw authored markup stacks images vertically (very tall);
+   decorate() collapses it into a single-row swiper (~510px).
+   Hide raw children only while status is "loading" — if decorate
+   ever fails, the block falls back to visible raw content. */
+.get-inspired[data-block-status="loading"] > div {
+    visibility: hidden;
+}
+
 .get-inspired {
     padding: 32px;
     padding-top: 0;
     padding-right: 0;
+    min-height: 540px;
+}
+
+@media (min-width: 990px) {
+    .get-inspired {
+        min-height: 560px;
+    }
 }
 
 @media (max-width: 990px) {
@@ -69,6 +85,15 @@
 .get-inspired .swiper-container-wrapper {
     width: 100%;
     position: relative;
+}
+
+.get-inspired .swiper {
+    overflow: hidden;
+}
+
+.get-inspired .swiper-wrapper {
+    display: flex;
+    align-items: stretch;
 }
 
 .get-inspired .tabs-nav {
@@ -257,6 +282,26 @@
 .get-inspired .swiper-slide {
     overflow: hidden;
     border-radius: 8px;
+    flex-shrink: 0;
+    width: calc((100% - 16px) / 1.5);
+    max-width: 324px;
+}
+
+.get-inspired .swiper-slide a {
+    display: block;
+    width: 100%;
+}
+
+.get-inspired .swiper-slide picture {
+    display: block;
+    width: 100%;
+    aspect-ratio: 324 / 470;
+}
+
+.get-inspired .swiper-slide picture img {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 /* Desktop fixed card width */
@@ -264,10 +309,6 @@
     .get-inspired .swiper-slide {
         width: 324px !important;
         flex-shrink: 0;
-    }
-
-    .get-inspired .swiper {
-        overflow: hidden;
     }
 
     .get-inspired .tabs-content {
