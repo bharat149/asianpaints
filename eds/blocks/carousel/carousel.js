@@ -96,7 +96,7 @@ function buildVariant2(block) {
   const cards = document.createElement('div');
   cards.className = 'contractors-in-your-city-cards';
 
-  items.forEach((it) => {
+  items.forEach((it, index) => {
     const card = document.createElement('div');
     card.className = 'contractors-in-your-city-card focus-visible-auto-imp';
     card.setAttribute('tabindex', '0');
@@ -111,9 +111,23 @@ function buildVariant2(block) {
     const picture = document.createElement('picture');
     picture.className = 'contractors-in-your-city-card-img';
 
+    // The city carousel sits well below the fold on the contractors
+    // page. Earlier markup set loading="eager" + fetchpriority="high"
+    // on every tile, which on the painting-contractors page meant 9
+    // city tiles (~250 KiB total) competed with the real LCP image
+    // (the contractor-finder hero) for high-priority bandwidth.
+    // PSI flagged this as the main reason LCP was 7.1 s on that page.
+    //
+    // Now: lazy-load all tiles by default, and only eagerly load the
+    // FIRST two (which may be partially in viewport on tall desktop
+    // breakpoints) at default priority. The LCP image keeps its
+    // fetchpriority="high" slot to itself.
     const img = document.createElement('img');
-    img.loading = 'eager';
-    img.setAttribute('fetchpriority', 'high');
+    if (index < 2) {
+      img.loading = 'eager';
+    } else {
+      img.loading = 'lazy';
+    }
     img.src = it.src;
     img.width = '229';
     img.height = '210';
