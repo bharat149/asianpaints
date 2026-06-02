@@ -163,11 +163,19 @@ export default function decorate(block) {
 
     const anchors = [...contentEl.querySelectorAll('a')];
 
-    anchors.forEach((a) => {
+    anchors.forEach((a, slideIndex) => {
       const image = a.querySelector('img');
       if (image) {
         image.setAttribute('width', '324');
         image.setAttribute('height', '470');
+
+        // First slide of the first (active) panel is the LCP candidate —
+        // load eagerly with high priority so it isn't blocked behind lazy images.
+        if (index === 0 && slideIndex === 0) {
+          image.setAttribute('loading', 'eager');
+          image.setAttribute('fetchpriority', 'high');
+          image.removeAttribute('data-loading');
+        }
       }
 
       const slide = document.createElement('div');
