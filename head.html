@@ -4,6 +4,34 @@
 <link rel="preload" href="/eds/fonts/manrope-medium.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/eds/fonts/manrope-bold.woff2" as="font" type="font/woff2" crossorigin> -->
 <link rel="preload" href="/eds/fonts/manrope-extrabold.woff2" as="font" type="font/woff2" crossorigin>
+
+<!-- Adobe Target VEC pre-hiding — scoped to painting-contractors page only.
+     Hides <main> before first paint so VEC-delivered DOM replacements don't
+     flicker over the original content. Alloy removes the prehide once
+     decisions are rendered; the 3-second safety timer below is the fallback
+     for when Alloy never responds or no Target activity matches the visit.
+     LCP cost is contained to this one page. -->
+<script>
+  (function () {
+    var p = window.location.pathname;
+    var isContractorsPage = p.indexOf('/contractors/painting-contractors') === 0
+      || p === '/contractors/painting-contractors.html';
+    if (!isContractorsPage) return;
+
+    document.documentElement.classList.add('alloy-prehide-page');
+    var style = document.createElement('style');
+    style.id = 'alloy-prehiding';
+    style.textContent = '.alloy-prehide-page main { opacity: 0 !important; transition: opacity 0.1s; }';
+    document.head.appendChild(style);
+
+    setTimeout(function () {
+      document.documentElement.classList.remove('alloy-prehide-page');
+      var s = document.getElementById('alloy-prehiding');
+      if (s) s.remove();
+    }, 3000);
+  }());
+</script>
+
 <script src="/eds/scripts/aem.js" type="module"></script>
 <script src="/eds/scripts/scripts.js" type="module"></script>
 <link rel="stylesheet" href="/eds/styles/styles.css" />
