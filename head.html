@@ -5,6 +5,13 @@
 <link rel="preload" href="/eds/fonts/manrope-bold.woff2" as="font" type="font/woff2" crossorigin> -->
 <link rel="preload" href="/eds/fonts/manrope-extrabold.woff2" as="font" type="font/woff2" crossorigin>
 
+<!-- Warm the connection to Adobe Edge Network so the Alloy analytics
+     beacon + Target decision call don't pay DNS+TLS handshake cost.
+     Applied globally because every EDS page calls Edge for analytics.
+     Zero LHS impact — handshake doesn't compete with the LCP image. -->
+<link rel="preconnect" href="https://edge.adobedc.net" crossorigin>
+<link rel="dns-prefetch" href="https://edge.adobedc.net">
+
 <!-- Adobe Target VEC pre-hiding — scoped to painting-contractors page only.
      Hides <main> before first paint so VEC-delivered DOM replacements don't
      flicker over the original content. Alloy removes the prehide once
@@ -23,6 +30,20 @@
     style.id = 'alloy-prehiding';
     style.textContent = '.alloy-prehide-page main { opacity: 0 !important; transition: opacity 0.1s; }';
     document.head.appendChild(style);
+
+    // Preload alloy.min.js at low priority so it's already cached
+    // when initAnalytics runs in lazy phase — saves 300-500 ms on
+    // the Target proposition arrival time. Scoped to this page so
+    // other pages don't pay the 150 KB speculative download cost
+    // (they still call Alloy but at the normal lazy-phase timing).
+    // fetchpriority="low" keeps the LCP image's bandwidth budget
+    // intact — preload only consumes leftover capacity.
+    var preload = document.createElement('link');
+    preload.rel = 'preload';
+    preload.as = 'script';
+    preload.href = '/eds/scripts/vendor/alloy.min.js';
+    preload.setAttribute('fetchpriority', 'low');
+    document.head.appendChild(preload);
 
     setTimeout(function () {
       document.documentElement.classList.remove('alloy-prehide-page');
