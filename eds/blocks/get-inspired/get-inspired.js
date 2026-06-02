@@ -7,6 +7,15 @@ async function getSwiperClass() {
   return null;
 }
 
+function runWhenIdle(callback) {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(callback, { timeout: 1200 });
+    return;
+  }
+
+  window.setTimeout(callback, 0);
+}
+
 function trackNavClick(button, navigationAction, testTitle) {
   if (!button) return;
 
@@ -28,6 +37,7 @@ function trackNavClick(button, navigationAction, testTitle) {
 
 export default function decorate(block) {
   const sections = [...block.children];
+  let blockInView = false;
 
   const tabsContainer = document.createElement('div');
   tabsContainer.className = 'tabs';
@@ -37,6 +47,63 @@ export default function decorate(block) {
 
   const tabContent = document.createElement('div');
   tabContent.className = 'tabs-content';
+
+  const initializePanelSwiper = async (panel) => {
+    if (!panel || panel.swiperInstance || panel.dataset.swiperPending === 'true') return;
+
+    const swiperEl = panel.querySelector('.swiper');
+    const paginationEl = panel.querySelector('.swiper-pagination');
+    const nextEl = panel.querySelector('.swiper-button-next');
+    const prevEl = panel.querySelector('.swiper-button-prev');
+
+    if (!swiperEl || !paginationEl || !nextEl || !prevEl) return;
+
+    panel.dataset.swiperPending = 'true';
+
+    const Swiper = await getSwiperClass();
+    if (!Swiper) {
+      panel.dataset.swiperPending = 'false';
+      return;
+    }
+
+    panel.swiperInstance = new Swiper(swiperEl, {
+      slidesPerView: 1.5,
+      spaceBetween: 18,
+      loop: false,
+      watchOverflow: true,
+      observer: true,
+      observeParents: true,
+      pagination: {
+        el: paginationEl,
+        clickable: true,
+      },
+      breakpoints: {
+        0: {
+          slidesPerView: 1.5,
+          spaceBetween: 16,
+        },
+        1024: {
+          slidesPerView: 'auto',
+          spaceBetween: 18,
+        },
+      },
+      navigation: {
+        nextEl,
+        prevEl,
+      },
+    });
+
+    panel.dataset.swiperPending = 'false';
+  };
+
+  const maybeInitializePanelSwiper = (panel, force = false) => {
+    if (!panel) return;
+    if (!force && !blockInView) return;
+
+    runWhenIdle(() => {
+      initializePanelSwiper(panel);
+    });
+  };
 
   sections.forEach((section, index) => {
     const titleEl = section.querySelector(':scope > div:first-child');
@@ -143,6 +210,8 @@ export default function decorate(block) {
       btn.classList.add('active');
       panel.classList.add('active');
 
+      maybeInitializePanelSwiper(panel, true);
+
       requestAnimationFrame(() => {
         if (panel.swiperInstance) {
           panel.swiperInstance.update();
@@ -153,37 +222,9 @@ export default function decorate(block) {
     tabNav.appendChild(btn);
     tabContent.appendChild(panel);
 
-    setTimeout(async () => {
-      const Swiper = await getSwiperClass();
-      if (!Swiper) return;
-
-      panel.swiperInstance = new Swiper(swiperEl, {
-        slidesPerView: 1.5,
-        spaceBetween: 18,
-        loop: false,
-        watchOverflow: true,
-        observer: true,
-        observeParents: true,
-        pagination: {
-          el: paginationEl,
-          clickable: true,
-        },
-        breakpoints: {
-          0: {
-            slidesPerView: 1.5,
-            spaceBetween: 16,
-          },
-          1024: {
-            slidesPerView: 'auto',
-            spaceBetween: 18,
-          },
-        },
-        navigation: {
-          nextEl,
-          prevEl,
-        },
-      });
-    }, 0);
+    if (index === 0) {
+      maybeInitializePanelSwiper(panel);
+    }
   });
 
   block.innerHTML = '';
@@ -192,4 +233,18 @@ export default function decorate(block) {
   tabsContainer.appendChild(tabContent);
 
   block.appendChild(tabsContainer);
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    if (!entries[0]?.isIntersecting) return;
+
+    blockInView = true;
+    const activePanel = block.querySelector('.tab-panel.active');
+    maybeInitializePanelSwiper(activePanel, true);
+    obs.disconnect();
+  }, {
+    rootMargin: '200px 0px',
+    threshold: 0,
+  });
+
+  observer.observe(block);
 }
