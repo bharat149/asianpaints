@@ -304,12 +304,46 @@ export async function initAnalytics() {
     thirdPartyCookiesEnabled: false,
     defaultConsent: 'in',               // TODO[P2]: switch to 'pending' if CMP gates
     clickCollectionEnabled: true,
+    // Adobe Target / Web SDK personalization. Required so Alloy
+    // requests decisions on sendEvent and can render VEC visual edits
+    // automatically (via renderDecisions: true below).
+    personalizationStorageEnabled: true,
+    // Mirrors the inline <style id="alloy-prehiding"> injected by
+    // head.html on the painting-contractors page. Alloy uses this
+    // selector to know which CSS rule to remove once decisions render.
+    prehidingStyle: '.alloy-prehide-page main { opacity: 0 !important }',
     debugEnabled: location.hostname !== 'www.asianpaints.com',
   });
 
-  window.alloy('sendEvent', {
-    data: { __adobe: { analytics: buildAnalyticsPayload() } },
-  });
+  try {
+    // renderDecisions: Alloy auto-applies DOM-action propositions
+    //   (Replace HTML / Set Attribute / Insert) — this is what VEC
+    //   visual edits arrive as on the Edge Network response.
+    await window.alloy('sendEvent', {
+      renderDecisions: true,
+      data: { __adobe: { analytics: buildAnalyticsPayload() } },
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[analytics] alloy sendEvent failed', err);
+  } finally {
+    // Reveal the page on the contractors page whether or not
+    // propositions arrived — covers the zero-decision case so the
+    // visitor doesn't have to wait the full 3 s safety timeout.
+    // No-op on every other page (the class/style never existed).
+    revealVecPrehide();
+  }
+}
+
+/**
+ * Removes the page-scoped VEC pre-hiding injected by head.html on
+ * `/contractors/painting-contractors`. Called when Alloy's sendEvent
+ * resolves (success or failure) — independent of, and racing with,
+ * the 3-second safety timer in head.html. Idempotent on other pages.
+ */
+function revealVecPrehide() {
+  document.documentElement.classList.remove('alloy-prehide-page');
+  document.getElementById('alloy-prehiding')?.remove();
 }
 
 /**
