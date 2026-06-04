@@ -222,6 +222,34 @@ function getPageLoadTime() {
 // PAYLOAD CONSTRUCTION
 // ============================================================
 
+/**
+ * Build Adobe Target mbox parameters for the interact (sendEvent) call.
+ * These are evaluated SERVER-SIDE on Edge during decisioning, so they
+ * must be on the sendEvent payload — applyPropositions is too late
+ * (decisions are already made).
+ *
+ * Legacy at.js targetPageParams() on www.asianpaints.com sent ~10 keys
+ * (user.categoryId, user.colorCategoryId, profile.BHSdropoff, etc.).
+ * Confirmed via mbox network capture on /paint-products/interior-wall-paints.html.
+ * Of those:
+ *   - Only user.categoryId carried a real value ("interior-walls"); the
+ *     rest were either empty or unfilled template placeholders.
+ *   - profile.* are sticky server-side attributes on the Target profile;
+ *     they persist via ECID across visits and are written by
+ *     setTargetProfile() when form-funnel events fire — not on every
+ *     pageview. Sending them empty risks overwriting prior values.
+ *
+ * Source: <meta name="target-category-id" content="..."> authored on
+ * category pages. No fallback derivation — wrong category sends users
+ * into the wrong audience, which is worse than sending none.
+ */
+function buildTargetMboxParams() {
+  const params = {};
+  const categoryId = document.querySelector('meta[name="target-category-id"]')?.content?.trim();
+  if (categoryId) params['user.categoryId'] = categoryId;
+  return params;
+}
+
 function buildAnalyticsPayload() {
   const pageName = getPageName();
   const section = getSection();
@@ -331,9 +359,15 @@ export async function initAnalytics() {
     //
     // Pages without Target activity: empty propositions array, no
     // jQuery preload triggered, behaviour identical to today.
+    const targetParams = buildTargetMboxParams();
     const response = await window.alloy('sendEvent', {
       renderDecisions: false,
-      data: { __adobe: { analytics: buildAnalyticsPayload() } },
+      data: {
+        __adobe: {
+          analytics: buildAnalyticsPayload(),
+          ...(Object.keys(targetParams).length && { target: targetParams }),
+        },
+      },
     });
 
     const propositions = response?.propositions || [];
@@ -360,6 +394,32 @@ export async function initAnalytics() {
 export function trackVirtualPageview() {
   window.alloy('sendEvent', {
     data: { __adobe: { analytics: buildAnalyticsPayload() } },
+  });
+}
+
+/**
+ * Write Target profile attributes (sticky, server-side, persist across
+ * sessions on the ECID's Target profile).
+ *
+ * Call from form-funnel handlers — NOT on every pageview. Each key
+ * shows up in Target audiences as ${profile.<key>}.
+ *
+ *   import { setTargetProfile } from '/eds/scripts/analytics_1.js';
+ *   onBHSFormAbandon(() => setTargetProfile({ BHSdropoff: 1 }));
+ *   onBHSFormSubmit(()  => setTargetProfile({ BHSdropoff: 0 }));
+ *
+ * Fires its own lightweight sendEvent. No decisions are requested
+ * (this isn't a pageview), so Edge just writes the attributes and
+ * the next pageview's interact call qualifies any audiences that
+ * read them.
+ */
+export function setTargetProfile(attrs) {
+  if (!attrs || typeof attrs !== 'object') return;
+  const entries = Object.entries(attrs).filter(([, v]) => v !== undefined && v !== null && v !== '');
+  if (!entries.length) return;
+  const profileParams = Object.fromEntries(entries.map(([k, v]) => [`profile.${k}`, v]));
+  window.alloy('sendEvent', {
+    data: { __adobe: { target: profileParams } },
   });
 }
 
