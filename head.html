@@ -12,27 +12,12 @@
 <link rel="preconnect" href="https://edge.adobedc.net" crossorigin>
 <link rel="dns-prefetch" href="https://edge.adobedc.net">
 
-<!-- Page-scoped perf hint for the painting-contractors page: preload
-     alloy.min.js at low priority so it's already in HTTP cache when
-     initAnalytics runs in lazy phase. Saves ~300-500 ms on Target
-     proposition arrival without competing with the LCP image
-     (fetchpriority="low" queues behind it). Other pages don't pay
-     the 150 KB speculative download cost. -->
-<script>
-  (function () {
-    var p = window.location.pathname;
-    var isContractorsPage = p.indexOf('/contractors/painting-contractors') === 0
-      || p === '/contractors/painting-contractors.html';
-    if (!isContractorsPage) return;
-
-    var preload = document.createElement('link');
-    preload.rel = 'preload';
-    preload.as = 'script';
-    preload.href = '/eds/scripts/vendor/alloy.min.js';
-    preload.setAttribute('fetchpriority', 'low');
-    document.head.appendChild(preload);
-  }());
-</script>
+<!-- Preload the self-hosted Adobe Web SDK so it's in cache when
+     initAnalytics runs in lazy phase. Saves ~300-500 ms on the
+     analytics beacon + Target proposition arrival on every EDS
+     page. fetchpriority="low" keeps the LCP image's bandwidth
+     budget intact — preload only consumes leftover capacity. -->
+<link rel="preload" as="script" href="/eds/scripts/vendor/alloy.min.js" fetchpriority="low">
 
 <script src="/eds/scripts/aem.js" type="module"></script>
 <script src="/eds/scripts/scripts.js" type="module"></script>
