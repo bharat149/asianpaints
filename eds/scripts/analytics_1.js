@@ -545,7 +545,7 @@ const EVENT_REGISTRY = {
 
   // Product / gallery interactions
   product_tile_click: { events: 'event122',
-    eVars: { productName: 'eVar8', param1: 'eVar86', title: 'eVar67' },
+    eVars: { productName: 'eVar8', param1: 'eVar86', Title: 'eVar67' },
   }, 
   
   // best-guess (Product click on plp page)
