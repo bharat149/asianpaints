@@ -537,7 +537,11 @@ const EVENT_REGISTRY = {
   short_video_shop: { events: 'event132' }, // best-guess (Custom CTA Click)
 
   // Product / gallery interactions
-  product_tile_click: { events: 'event122' }, // best-guess (Product click on plp page)
+  product_tile_click: { events: 'event122',
+    eVars: { productName: 'eVar8', param1: 'eVar86', title: 'eVar67' },
+  }, 
+  
+  // best-guess (Product click on plp page)
   filter_click: { events: 'event121' }, // best-guess (Product Filter Click)
   natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
   squarecross_click: { events: 'event144' }, // best-guess (Square cross Image click)
