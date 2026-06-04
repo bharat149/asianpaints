@@ -316,13 +316,41 @@ export async function initAnalytics() {
   });
 
   try {
-    // renderDecisions: Alloy auto-applies DOM-action propositions
-    //   (Replace HTML / Set Attribute / Insert) — this is what VEC
-    //   visual edits arrive as on the Edge Network response.
-    await window.alloy('sendEvent', {
-      renderDecisions: true,
+    // Two-phase Target apply (renderDecisions: false + applyPropositions):
+    //
+    // Why not renderDecisions: true? The legacy AMS Target customCode
+    // (every existing activity inherited from Adobe Launch) uses
+    // jQuery patterns: $(document).ready, $(selector), $.append, etc.
+    // jQuery is loaded on-demand in EDS — not present when Alloy
+    // first executes propositions in lazy phase. With auto-render,
+    // the customCode throws "ReferenceError: $ is not defined" and
+    // the Target experience silently fails.
+    //
+    // Instead: receive propositions, conditionally preload jQuery if
+    // any customCode actually uses it (regex on the content string),
+    // then hand the propositions back to Alloy via applyPropositions.
+    // The Display notification (for impression reporting + A4T) still
+    // fires correctly — applyPropositions emits it just like
+    // renderDecisions: true would.
+    //
+    // Pages without Target activity: empty propositions array, no
+    // jQuery preload triggered, behaviour identical to today.
+    const response = await window.alloy('sendEvent', {
+      renderDecisions: false,
       data: { __adobe: { analytics: buildAnalyticsPayload() } },
     });
+
+    const propositions = response?.propositions || [];
+    if (propositions.length) {
+      const customCodeNeedsJQuery = propositions.some((p) => p.items?.some(
+        (i) => i?.data?.type === 'customCode'
+          && /\$\(|jQuery/.test(i.data.content || ''),
+      ));
+      if (customCodeNeedsJQuery && typeof window.loadJQuery === 'function') {
+        await window.loadJQuery().catch(() => { /* fall through, customCode may still fail but rest applies */ });
+      }
+      await window.alloy('applyPropositions', { propositions });
+    }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[analytics] alloy sendEvent failed', err);
