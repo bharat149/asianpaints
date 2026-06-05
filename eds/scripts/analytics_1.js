@@ -256,6 +256,13 @@ function getPageLoadTime() {
  * a meta tag for the values that should drive audience qualification
  * on that specific page.
  *
+ * Special case for user.categoryId: if the meta tag is absent, the
+ * value is derived from the URL by deriveCategoryIdFromUrl(), which
+ * ports the legacy Launch %categoryID% data element verbatim. This
+ * restores category-affinity tracking (profile.categoryAffinities)
+ * for paint-products and colour-catalogue pages without each one
+ * needing an explicit meta tag.
+ *
  * Pattern preference for profile.* attributes:
  *   - PAGE-LEVEL constant (meta tag) — useful when the value is a
  *     property of the page itself (e.g., page category, color bucket).
@@ -290,12 +297,64 @@ const TARGET_MBOX_PARAM_META = Object.freeze({
   'profile.TDchannelpref':   'target-profile-tdchannelpref',
 });
 
+/**
+ * URL → category-id mapping, byte-equivalent to the legacy AMS Launch
+ * data element %categoryID% (from launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js).
+ * Uses String.includes() rather than strict path matching to match
+ * legacy semantics exactly — any URL containing the substring matches.
+ *
+ * Side effect: maintains a `target-cat-<value>` class on document.body
+ * (removes any prior `target-cat-*` first). Legacy Target activities
+ * and CSS may select on this class — preserving the behaviour avoids
+ * silent breakage on category pages.
+ */
+function deriveCategoryIdFromUrl() {
+  const href = window.location.href;
+  let id = '';
+  if (href.includes('interior-wall-paints'))                                            id = 'interior-walls';
+  else if (href.includes('interior-textures') || href.includes('royale-play'))          id = 'interior-textures';
+  else if (href.includes('exterior-wall-paints'))                                       id = 'exterior-walls';
+  else if (href.includes('exterior-textures'))                                          id = 'exterior-textures';
+  else if (href.includes('wall-coverings'))                                             id = 'wall-coverings';
+  else if (href.includes('waterproofing-products') || href.includes('waterproofing-solutions')) id = 'waterproofing-solutions';
+  else if (href.includes('wood-for-interior') || href.includes('wood-finish') || href.includes('wood-for-exterior')) id = 'woods';
+  else if (href.includes('enamel-paints'))                                              id = 'metal-enamels';
+  else if (href.includes('colour-catalogue/red-wall-colours'))                          id = 'red';
+  else if (href.includes('colour-catalogue/grey-wall-colours'))                         id = 'grey';
+  else if (href.includes('colour-catalogue/blue-wall-colours'))                         id = 'blue';
+  else if (href.includes('colour-catalogue/brown-wall-colours'))                        id = 'brown';
+  else if (href.includes('colour-catalogue/orange-wall-colours'))                       id = 'orange';
+  else if (href.includes('colour-catalogue/yellow-wall-colours'))                       id = 'yellow';
+  else if (href.includes('colour-catalogue/green-wall-colours'))                        id = 'green';
+  else if (href.includes('colour-catalogue/purple-wall-colours'))                       id = 'purple';
+  else if (href.includes('colour-catalogue/pink-wall-colours'))                         id = 'pink';
+  else if (href.includes('colour-catalogue/white-wall-colours'))                        id = 'white';
+  else if (href.includes('colour-catalogue/off-white-wall-colours'))                    id = 'off-white';
+
+  // Mirror legacy's body-class hook for any Target activity / CSS that
+  // selects on `body.target-cat-<value>`.
+  document.body.classList.forEach((c) => {
+    if (c.startsWith('target-cat-')) document.body.classList.remove(c);
+  });
+  if (id) document.body.classList.add(`target-cat-${id}`);
+
+  return id;
+}
+
 function buildTargetMboxParams() {
   const params = {};
   Object.entries(TARGET_MBOX_PARAM_META).forEach(([paramKey, metaName]) => {
     const v = document.querySelector(`meta[name="${metaName}"]`)?.content?.trim();
     params[paramKey] = v || '';
   });
+  // user.categoryId: meta tag overrides URL-derived value. Falling back
+  // to URL derivation restores legacy's auto-detection behaviour so
+  // visitors browsing paint-products + colour-catalogue pages accumulate
+  // category affinity (profile.categoryAffinities) without each page
+  // needing an explicit meta tag.
+  if (!params['user.categoryId']) {
+    params['user.categoryId'] = deriveCategoryIdFromUrl();
+  }
   return params;
 }
 
