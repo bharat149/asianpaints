@@ -437,6 +437,7 @@ export async function initAnalytics() {
     edgeConfigId: getEdgeConfigId(),
     orgId: ORG_ID,
     idMigrationEnabled: true,           // reuse AMCV cookie from AppMeasurement
+    targetMigrationEnabled: true,
     thirdPartyCookiesEnabled: false,
     defaultConsent: 'in',               // TODO[P2]: switch to 'pending' if CMP gates
     clickCollectionEnabled: true,
