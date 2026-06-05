@@ -231,32 +231,71 @@ function getPageLoadTime() {
  * Inventory from the legacy AMS Launch container
  * (launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js, addGlobalMboxParams
  * extension settings):
- *   ENABLED (checked: true) — must restore on EDS:
- *     - user.categoryId       <- %categoryID%
- *     - user.colorCategoryId  <- %ColorCategoryID%
- *   DISABLED (checked: false) — skip; not driving any active audience:
- *     - mbox3rdPartyId, profile.BHSdropoff, profile.HCGdropoff,
- *       profile.PBCdropoff, profile.WBCdropoff, profile.cwapWFdropoff,
- *       profile.cwapHCGdropoff, profile.cwapPBCdropoff,
- *       profile.cwapWBCdropoff, profile.TDchannelpref
  *
- * Note: profile.IDS_PS, profile.visitedSPS, profile.DEPT_KitchenURL etc.
- * appear in Target response meta but are NOT set by client code on
- * legacy — they're written by SERVER-SIDE Profile Scripts defined in
- * Target admin (Audiences → Profile Scripts). They continue to work on
- * EDS via ECID migration as long as the Profile Scripts' URL trigger
- * conditions match EDS paths.
+ *   ENABLED on legacy (checked: true):
+ *     - user.categoryId        <- %categoryID%
+ *     - user.colorCategoryId   <- %ColorCategoryID%
  *
- * Source for user.* params: <meta name="target-..."> tags authored on
- * pages that need them. No URL-regex fallback — wrong category sends
- * users into the wrong audience, which is worse than sending none.
+ *   DISABLED on legacy (checked: false) but plumbed below for parity
+ *   so re-enabling is a meta-tag change, not a code change:
+ *     - mbox3rdPartyId         <- %CA_user_email%
+ *     - profile.BHSdropoff     <- %tgt_bhs_audience%
+ *     - profile.HCGdropoff     <- %tgt_hcg_audience%
+ *     - profile.PBCdropoff     <- %tgt_pbc_audience%
+ *     - profile.WBCdropoff     <- %tgt_wbc_audience%
+ *     - profile.cwapWFdropoff  <- %tgt_cwap_wf%
+ *     - profile.cwapHCGdropoff <- %tgt_cwap_hcg%
+ *     - profile.cwapPBCdropoff <- %tgt_cwap_pbc%
+ *     - profile.cwapWBCdropoff <- %tgt_cwap_wbc%
+ *     - profile.TDchannelpref  <- %tgt_td_channelpref%
+ *
+ * Matches the legacy at.js behaviour from the captured mbox payload —
+ * every configured key is sent on every Target call, with the value
+ * coming from a <meta name="target-..."> tag on the page when present,
+ * falling back to an empty string otherwise. Authors only need to add
+ * a meta tag for the values that should drive audience qualification
+ * on that specific page.
+ *
+ * Pattern preference for profile.* attributes:
+ *   - PAGE-LEVEL constant (meta tag) — useful when the value is a
+ *     property of the page itself (e.g., page category, color bucket).
+ *   - EVENT-DRIVEN updates — prefer setTargetProfile() for behavioral
+ *     attributes like "user dropped off the BHS form". Meta tags fire
+ *     on every page load with the same value; setTargetProfile() fires
+ *     once at the actual event moment with the relevant value.
+ *
+ * Note on response-meta-only attributes (profile.IDS_PS,
+ * profile.visitedSPS, profile.DEPT_KitchenURL, etc.): these appear in
+ * Target response meta but are NOT set by client code on legacy — they
+ * are written by SERVER-SIDE Profile Scripts defined in Target admin
+ * (Audiences → Profile Scripts). They continue to work on EDS via ECID
+ * migration as long as the Profile Scripts' URL trigger conditions
+ * match EDS paths. Sending these from the client would race with the
+ * Profile Scripts' writes — leave them out.
  */
+const TARGET_MBOX_PARAM_META = Object.freeze({
+  // Enabled on legacy — actively used by audiences
+  'user.categoryId':         'target-category-id',
+  'user.colorCategoryId':    'target-color-category-id',
+  // Disabled on legacy, sent with empty default for parity
+  'mbox3rdPartyId':          'target-3rdparty-id',
+  'profile.BHSdropoff':      'target-profile-bhsdropoff',
+  'profile.HCGdropoff':      'target-profile-hcgdropoff',
+  'profile.PBCdropoff':      'target-profile-pbcdropoff',
+  'profile.WBCdropoff':      'target-profile-wbcdropoff',
+  'profile.cwapWFdropoff':   'target-profile-cwapwfdropoff',
+  'profile.cwapHCGdropoff':  'target-profile-cwaphcgdropoff',
+  'profile.cwapPBCdropoff':  'target-profile-cwappbcdropoff',
+  'profile.cwapWBCdropoff':  'target-profile-cwapwbcdropoff',
+  'profile.TDchannelpref':   'target-profile-tdchannelpref',
+});
+
 function buildTargetMboxParams() {
   const params = {};
-  const categoryId = document.querySelector('meta[name="target-category-id"]')?.content?.trim();
-  if (categoryId) params['user.categoryId'] = categoryId;
-  const colorCategoryId = document.querySelector('meta[name="target-color-category-id"]')?.content?.trim();
-  if (colorCategoryId) params['user.colorCategoryId'] = colorCategoryId;
+  Object.entries(TARGET_MBOX_PARAM_META).forEach(([paramKey, metaName]) => {
+    const v = document.querySelector(`meta[name="${metaName}"]`)?.content?.trim();
+    params[paramKey] = v || '';
+  });
   return params;
 }
 
@@ -369,13 +408,12 @@ export async function initAnalytics() {
     //
     // Pages without Target activity: empty propositions array, no
     // jQuery preload triggered, behaviour identical to today.
-    const targetParams = buildTargetMboxParams();
     const response = await window.alloy('sendEvent', {
       renderDecisions: false,
       data: {
         __adobe: {
           analytics: buildAnalyticsPayload(),
-          ...(Object.keys(targetParams).length && { target: targetParams }),
+          target: buildTargetMboxParams(),
         },
       },
     });
