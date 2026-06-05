@@ -434,7 +434,7 @@ export async function initAnalytics() {
   initScrollTracking();
 
   window.alloy('configure', {
-    edgeConfigId: getEdgeConfigId(),
+    datastreamId: getEdgeConfigId(),
     orgId: ORG_ID,
     idMigrationEnabled: true,           // reuse AMCV cookie from AppMeasurement
     targetMigrationEnabled: true,
