@@ -228,25 +228,35 @@ function getPageLoadTime() {
  * must be on the sendEvent payload — applyPropositions is too late
  * (decisions are already made).
  *
- * Legacy at.js targetPageParams() on www.asianpaints.com sent ~10 keys
- * (user.categoryId, user.colorCategoryId, profile.BHSdropoff, etc.).
- * Confirmed via mbox network capture on /paint-products/interior-wall-paints.html.
- * Of those:
- *   - Only user.categoryId carried a real value ("interior-walls"); the
- *     rest were either empty or unfilled template placeholders.
- *   - profile.* are sticky server-side attributes on the Target profile;
- *     they persist via ECID across visits and are written by
- *     setTargetProfile() when form-funnel events fire — not on every
- *     pageview. Sending them empty risks overwriting prior values.
+ * Inventory from the legacy AMS Launch container
+ * (launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js, addGlobalMboxParams
+ * extension settings):
+ *   ENABLED (checked: true) — must restore on EDS:
+ *     - user.categoryId       <- %categoryID%
+ *     - user.colorCategoryId  <- %ColorCategoryID%
+ *   DISABLED (checked: false) — skip; not driving any active audience:
+ *     - mbox3rdPartyId, profile.BHSdropoff, profile.HCGdropoff,
+ *       profile.PBCdropoff, profile.WBCdropoff, profile.cwapWFdropoff,
+ *       profile.cwapHCGdropoff, profile.cwapPBCdropoff,
+ *       profile.cwapWBCdropoff, profile.TDchannelpref
  *
- * Source: <meta name="target-category-id" content="..."> authored on
- * category pages. No fallback derivation — wrong category sends users
- * into the wrong audience, which is worse than sending none.
+ * Note: profile.IDS_PS, profile.visitedSPS, profile.DEPT_KitchenURL etc.
+ * appear in Target response meta but are NOT set by client code on
+ * legacy — they're written by SERVER-SIDE Profile Scripts defined in
+ * Target admin (Audiences → Profile Scripts). They continue to work on
+ * EDS via ECID migration as long as the Profile Scripts' URL trigger
+ * conditions match EDS paths.
+ *
+ * Source for user.* params: <meta name="target-..."> tags authored on
+ * pages that need them. No URL-regex fallback — wrong category sends
+ * users into the wrong audience, which is worse than sending none.
  */
 function buildTargetMboxParams() {
   const params = {};
   const categoryId = document.querySelector('meta[name="target-category-id"]')?.content?.trim();
   if (categoryId) params['user.categoryId'] = categoryId;
+  const colorCategoryId = document.querySelector('meta[name="target-color-category-id"]')?.content?.trim();
+  if (colorCategoryId) params['user.colorCategoryId'] = colorCategoryId;
   return params;
 }
 
