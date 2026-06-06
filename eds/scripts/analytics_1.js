@@ -295,6 +295,13 @@ const TARGET_MBOX_PARAM_META = Object.freeze({
   'profile.cwapPBCdropoff':  'target-profile-cwappbcdropoff',
   'profile.cwapWBCdropoff':  'target-profile-cwapwbcdropoff',
   'profile.TDchannelpref':   'target-profile-tdchannelpref',
+  // Target Property override — empty by default forces Edge to use the
+  // datastream's default property (matching mbox.js, which sends no
+  // at_property either). Diagnostic plumbing for a suspected profile
+  // split caused by the datastream silently scoping EDS requests to
+  // a different Target Property than mbox.js uses. Override per page
+  // via <meta name="target-at-property" content="<UUID>"> if needed.
+  'at_property':             'target-at-property',
 });
 
 /**
