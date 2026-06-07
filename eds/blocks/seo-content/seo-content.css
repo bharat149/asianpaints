@@ -3,15 +3,16 @@
     margin: 40px auto;
 }
 
-.seo-content.mt-5.block {
+/* .seo-content.mt-5.block {
     margin-top: 6rem !important;
-}
+} */
 
 .seo-content.block h2 {
     color: #222;
     margin-bottom: .5rem;
     font-size: 30px;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 34px;
 
     @media (max-width: 991px) {
         font-size: 22px;

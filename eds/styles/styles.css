@@ -187,7 +187,7 @@ footer {
    fills the parent via object-fit: cover — this rule only puts a floor
    on the parent so the layout reserves height before image load. */
 @media (max-width: 768px) {
-  main .cards.grid > ul > li {
+  main .cards.grid>ul>li {
     min-height: 190px;
   }
 }
@@ -429,23 +429,23 @@ main .section.section-padding-top-15 {
 }
 
 main .section.text-grey {
-  color: rgb(93,79,67);
+  color: rgb(93, 79, 67);
 }
 
-main .section .default-content-wrapper #how-to-hire-an-asian-paints-contractor + p + ol li:first-child a,
+main .section .default-content-wrapper #how-to-hire-an-asian-paints-contractor+p+ol li:first-child a,
 main .section.rte-section .default-content-wrapper a[href*="contractors/painting-contractors.html"] {
   color: #00e !important;
   text-decoration: underline !important;
 }
 
 main .section .default-content-wrapper a[href*="colour-catalogue.html"] {
-    color: #00e !important;
-    text-decoration: underline !important;
+  color: #00e !important;
+  text-decoration: underline !important;
 }
 
 main .section .default-content-wrapper a[href*="services/asian-paints-safe-painting-service.html"] {
-    color: #00e !important;
-    text-decoration: underline !important;
+  color: #00e !important;
+  text-decoration: underline !important;
 }
 
 main .section.zero-margin {
@@ -821,19 +821,22 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
   margin-top: 0;
 }
 
-@media (width <= 991px) {
+@media (width <=991px) {
   main .section.contractors-rte-live>.default-content-wrapper {
     padding-right: 4.5%;
     padding-left: 4.5%;
   }
+
   .section-padding-desk-mob {
     padding-top: 30px;
   }
 }
- .section-padding-desk-mob {
-    padding-top: 60px;
-  }
-@media (width >= 992px) {
+
+.section-padding-desk-mob {
+  padding-top: 60px;
+}
+
+@media (width >=992px) {
   main .section.contractors-rte-live>.default-content-wrapper h2 {
     font-size: 30px;
     line-height: 34px;
@@ -851,10 +854,10 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
     line-height: 22px;
   }
 
-   main .section.royale-seo-content-container {
-      padding-left: 0;
-      padding-right: 0;
-    }
+  main .section.royale-seo-content-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 main>.section:has(.embed-wrapper) {
@@ -868,29 +871,6 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper {
   margin: 0 auto;
   text-align: center;
 }
-
-/* main>.section:has(.embed-wrapper)>.default-content-wrapper h2 {
-  font-size: 32px;
-  font-weight: 800;
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34);
-  line-height: 40px;
-  margin: 0 0 24px;
-  text-align: center;
-} */
-
-
-/* main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type p {
-  font-size: 16px;
-  font-weight: 400;
-  font-family: Manrope, sans-serif;
-  color: rgb(34 34 34);
-  line-height: 26px;
-  margin: 24px auto 16px;
-  max-width: 900px;
-  text-align: center;
-} */
-
 
 main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a {
   /* Pixel-perfect: black */
@@ -908,107 +888,87 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   text-align: center;
 }
 
-/* .section:has(#interior-design-solutions-for-your-home) {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper {
-  padding: 0;
-  margin-top: 5rem;
-}
-
-.section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper h2 {
-  text-align: center;
-} */
-
-/* @media screen and (max-width:992px) {
-  .section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper {
-    margin-top: 2rem;
-  }
-
-  .section:has(#interior-design-solutions-for-your-home)>.default-content-wrapper h2 {
-    font-size: 22px;
-  }
-} */
-
- @media (min-width: 1280px) and (max-width: 1365px) {
-   body {
-     zoom: .85;
-   }
- }
 @media (min-width: 1280px) and (max-width: 1365px) {
   body {
     zoom: .85;
   }
 }
-  @media (width <= 600px) {
-  main .section.no-padding-mob{
+
+@media (min-width: 1280px) and (max-width: 1365px) {
+  body {
+    zoom: .85;
+  }
+}
+
+@media (width <=600px) {
+  main .section.no-padding-mob {
     padding: 0;
   }
 }
 
 /* animation start */
 @keyframes move-from-bottom-to-top {
-    1% {
-        bottom: -250px
-    }
+  1% {
+    bottom: -250px
+  }
 
-    to {
-        bottom: 0;
-        opacity: 1
-    }
+  to {
+    bottom: 0;
+    opacity: 1
+  }
 }
 
 @keyframes fade-from-bottom-to-top {
-    to {
-        opacity: 1
-    }
+  to {
+    opacity: 1
+  }
 }
 
 .allow-bottom-up-animation {
-    opacity: 0
+  opacity: 0
 }
 
 .animate-bottom-to-top {
-    display: block;
-    opacity: 0;
-    position: relative;
-    animation: move-from-bottom-to-top 1.5s forwards
+  display: block;
+  opacity: 0;
+  position: relative;
+  animation: move-from-bottom-to-top 1.5s forwards
 }
 
 .animate-fade-to-top {
-    display: block;
-    opacity: 0;
-    position: relative;
-    animation: fade-from-bottom-to-top 1.5s ease-in forwards
+  display: block;
+  opacity: 0;
+  position: relative;
+  animation: fade-from-bottom-to-top 1.5s ease-in forwards
 }
+
 /* end animation styles */
 
 /* title styles for inspiration page */
-.default-content-wrapper #ideas-gallery{
-    font-weight: 400;
-    font-size: 28px;
-    line-height: 36.4px;
+.default-content-wrapper #ideas-gallery {
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 36.4px;
+  color: rgb(93, 79, 67);
 
-    @media (max-width: 990px) {
-      font-size: 16px;
-      line-height: 24px;
-    }
+  @media (max-width: 990px) {
+    font-size: 16px;
+    line-height: 24px;
+  }
 }
 
 /* common styles to hide exitintent popup questions */
-  body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .lead-form-fields .question-panel{
-    display: none;
-  }
+body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .lead-form-fields .question-panel {
+  display: none;
+}
 
-  /* modal backdrop height and width fixes */
-  .modal-backdrop{
-    height: 100% !important;
-    width: 100% !important;
-  }
+/* modal backdrop height and width fixes */
+.modal-backdrop {
+  height: 100% !important;
+  width: 100% !important;
+}
+
 /* hideExitIntentCTA for inspiration page adde */
-body.hideExitIntentCTA .header-main .header-main-inner .header-cta{
+body.hideExitIntentCTA .header-main .header-main-inner .header-cta {
   display: none;
 }
