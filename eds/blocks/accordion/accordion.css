@@ -33,7 +33,6 @@ main .section.sectionpadding.accordion-container {
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
-    padding-bottom: 50px;
 }
 
 /* Each FAQ item = AEM each-container */
