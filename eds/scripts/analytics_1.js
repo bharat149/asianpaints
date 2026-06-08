@@ -194,6 +194,43 @@ function initScrollTracking() {
   }, { passive: true });
 }
 
+/**
+ * Document-level delegation for carousel Previous/Next clicks.
+ *
+ * Eight blocks on this site use Slick (carousel, carousel-categories,
+ * carousel-expertise, carousel-hero-banner, carousel-trending,
+ * designer-collections, royal-play-banner, testimonial-carousel,
+ * tools-carousel and the *-banner variants). Rather than edit each
+ * block individually, intercept the click on any .slick-prev /
+ * .slick-next button and fire trackCarouselNavigation with the nearest
+ * section title.
+ *
+ * Title resolution priority:
+ *   1. Nearest ancestor's [data-carousel-title] attribute (explicit
+ *      opt-in for blocks that want to override)
+ *   2. Nearest ancestor heading (h2/h3/h4) text
+ *   3. Empty string (event still fires, just without a title)
+ *
+ * Covers swiper- and generic .carousel-prev/.carousel-next button
+ * patterns too, in case any non-Slick carousel ever ships.
+ */
+function initCarouselNavigationTracking() {
+  document.addEventListener('click', (e) => {
+    const prev = e.target.closest('.slick-prev, .swiper-button-prev, .carousel-prev');
+    const next = e.target.closest('.slick-next, .swiper-button-next, .carousel-next');
+    if (!prev && !next) return;
+    const btn = prev || next;
+    // Walk up to find an explicit title attribute, else nearest heading
+    const container = btn.closest('[data-carousel-title], .block, section');
+    let title = container?.getAttribute('data-carousel-title') || '';
+    if (!title) {
+      const heading = container?.querySelector('h2, h3, h4');
+      title = heading?.textContent?.trim() || '';
+    }
+    trackCarouselNavigation(prev ? 'Previous' : 'Next', title);
+  }, true); // capture phase — fires even if the carousel stops propagation
+}
+
 function getScrollDepthString() {
   return `highestPercentViewed = ${scrollState.highest} | initialPercentViewed=${scrollState.initial}`;
 }
@@ -221,6 +258,142 @@ function getPageLoadTime() {
 // ============================================================
 // PAYLOAD CONSTRUCTION
 // ============================================================
+
+/**
+ * Build Adobe Target mbox parameters for the interact (sendEvent) call.
+ * These are evaluated SERVER-SIDE on Edge during decisioning, so they
+ * must be on the sendEvent payload — applyPropositions is too late
+ * (decisions are already made).
+ *
+ * Inventory from the legacy AMS Launch container
+ * (launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js, addGlobalMboxParams
+ * extension settings):
+ *
+ *   ENABLED on legacy (checked: true):
+ *     - user.categoryId        <- %categoryID%
+ *     - user.colorCategoryId   <- %ColorCategoryID%
+ *
+ *   DISABLED on legacy (checked: false) but plumbed below for parity
+ *   so re-enabling is a meta-tag change, not a code change:
+ *     - mbox3rdPartyId         <- %CA_user_email%
+ *     - profile.BHSdropoff     <- %tgt_bhs_audience%
+ *     - profile.HCGdropoff     <- %tgt_hcg_audience%
+ *     - profile.PBCdropoff     <- %tgt_pbc_audience%
+ *     - profile.WBCdropoff     <- %tgt_wbc_audience%
+ *     - profile.cwapWFdropoff  <- %tgt_cwap_wf%
+ *     - profile.cwapHCGdropoff <- %tgt_cwap_hcg%
+ *     - profile.cwapPBCdropoff <- %tgt_cwap_pbc%
+ *     - profile.cwapWBCdropoff <- %tgt_cwap_wbc%
+ *     - profile.TDchannelpref  <- %tgt_td_channelpref%
+ *
+ * Matches the legacy at.js behaviour from the captured mbox payload —
+ * every configured key is sent on every Target call, with the value
+ * coming from a <meta name="target-..."> tag on the page when present,
+ * falling back to an empty string otherwise. Authors only need to add
+ * a meta tag for the values that should drive audience qualification
+ * on that specific page.
+ *
+ * Special case for user.categoryId: if the meta tag is absent, the
+ * value is derived from the URL by deriveCategoryIdFromUrl(), which
+ * ports the legacy Launch %categoryID% data element verbatim. This
+ * restores category-affinity tracking (profile.categoryAffinities)
+ * for paint-products and colour-catalogue pages without each one
+ * needing an explicit meta tag.
+ *
+ * Pattern preference for profile.* attributes:
+ *   - PAGE-LEVEL constant (meta tag) — useful when the value is a
+ *     property of the page itself (e.g., page category, color bucket).
+ *   - EVENT-DRIVEN updates — prefer setTargetProfile() for behavioral
+ *     attributes like "user dropped off the BHS form". Meta tags fire
+ *     on every page load with the same value; setTargetProfile() fires
+ *     once at the actual event moment with the relevant value.
+ *
+ * Note on response-meta-only attributes (profile.IDS_PS,
+ * profile.visitedSPS, profile.DEPT_KitchenURL, etc.): these appear in
+ * Target response meta but are NOT set by client code on legacy — they
+ * are written by SERVER-SIDE Profile Scripts defined in Target admin
+ * (Audiences → Profile Scripts). They continue to work on EDS via ECID
+ * migration as long as the Profile Scripts' URL trigger conditions
+ * match EDS paths. Sending these from the client would race with the
+ * Profile Scripts' writes — leave them out.
+ */
+const TARGET_MBOX_PARAM_META = Object.freeze({
+  // Enabled on legacy — actively used by audiences
+  'user.categoryId':         'target-category-id',
+  'user.colorCategoryId':    'target-color-category-id',
+  // Disabled on legacy, sent with empty default for parity
+  'mbox3rdPartyId':          'target-3rdparty-id',
+  'profile.BHSdropoff':      'target-profile-bhsdropoff',
+  'profile.HCGdropoff':      'target-profile-hcgdropoff',
+  'profile.PBCdropoff':      'target-profile-pbcdropoff',
+  'profile.WBCdropoff':      'target-profile-wbcdropoff',
+  'profile.cwapWFdropoff':   'target-profile-cwapwfdropoff',
+  'profile.cwapHCGdropoff':  'target-profile-cwaphcgdropoff',
+  'profile.cwapPBCdropoff':  'target-profile-cwappbcdropoff',
+  'profile.cwapWBCdropoff':  'target-profile-cwapwbcdropoff',
+  'profile.TDchannelpref':   'target-profile-tdchannelpref',
+});
+
+/**
+ * URL → category-id mapping, byte-equivalent to the legacy AMS Launch
+ * data element %categoryID% (from launch-ENf4c71a0706064fe7b2ffe21cbff613f3.min.js).
+ * Uses String.includes() rather than strict path matching to match
+ * legacy semantics exactly — any URL containing the substring matches.
+ *
+ * Side effect: maintains a `target-cat-<value>` class on document.body
+ * (removes any prior `target-cat-*` first). Legacy Target activities
+ * and CSS may select on this class — preserving the behaviour avoids
+ * silent breakage on category pages.
+ */
+function deriveCategoryIdFromUrl() {
+  const href = window.location.href;
+  let id = '';
+  if (href.includes('interior-wall-paints'))                                            id = 'interior-walls';
+  else if (href.includes('interior-textures') || href.includes('royale-play'))          id = 'interior-textures';
+  else if (href.includes('exterior-wall-paints'))                                       id = 'exterior-walls';
+  else if (href.includes('exterior-textures'))                                          id = 'exterior-textures';
+  else if (href.includes('wall-coverings'))                                             id = 'wall-coverings';
+  else if (href.includes('waterproofing-products') || href.includes('waterproofing-solutions')) id = 'waterproofing-solutions';
+  else if (href.includes('wood-for-interior') || href.includes('wood-finish') || href.includes('wood-for-exterior')) id = 'woods';
+  else if (href.includes('enamel-paints'))                                              id = 'metal-enamels';
+  else if (href.includes('colour-catalogue/red-wall-colours'))                          id = 'red';
+  else if (href.includes('colour-catalogue/grey-wall-colours'))                         id = 'grey';
+  else if (href.includes('colour-catalogue/blue-wall-colours'))                         id = 'blue';
+  else if (href.includes('colour-catalogue/brown-wall-colours'))                        id = 'brown';
+  else if (href.includes('colour-catalogue/orange-wall-colours'))                       id = 'orange';
+  else if (href.includes('colour-catalogue/yellow-wall-colours'))                       id = 'yellow';
+  else if (href.includes('colour-catalogue/green-wall-colours'))                        id = 'green';
+  else if (href.includes('colour-catalogue/purple-wall-colours'))                       id = 'purple';
+  else if (href.includes('colour-catalogue/pink-wall-colours'))                         id = 'pink';
+  else if (href.includes('colour-catalogue/white-wall-colours'))                        id = 'white';
+  else if (href.includes('colour-catalogue/off-white-wall-colours'))                    id = 'off-white';
+
+  // Mirror legacy's body-class hook for any Target activity / CSS that
+  // selects on `body.target-cat-<value>`.
+  document.body.classList.forEach((c) => {
+    if (c.startsWith('target-cat-')) document.body.classList.remove(c);
+  });
+  if (id) document.body.classList.add(`target-cat-${id}`);
+
+  return id;
+}
+
+function buildTargetMboxParams() {
+  const params = {};
+  Object.entries(TARGET_MBOX_PARAM_META).forEach(([paramKey, metaName]) => {
+    const v = document.querySelector(`meta[name="${metaName}"]`)?.content?.trim();
+    params[paramKey] = v || '';
+  });
+  // user.categoryId: meta tag overrides URL-derived value. Falling back
+  // to URL derivation restores legacy's auto-detection behaviour so
+  // visitors browsing paint-products + colour-catalogue pages accumulate
+  // category affinity (profile.categoryAffinities) without each page
+  // needing an explicit meta tag.
+  if (!params['user.categoryId']) {
+    params['user.categoryId'] = deriveCategoryIdFromUrl();
+  }
+  return params;
+}
 
 function buildAnalyticsPayload() {
   const pageName = getPageName();
@@ -296,11 +469,13 @@ export async function initAnalytics() {
 
   bootstrapAlloy();
   initScrollTracking();
+  initCarouselNavigationTracking();
 
   window.alloy('configure', {
-    edgeConfigId: getEdgeConfigId(),
+    datastreamId: getEdgeConfigId(),
     orgId: ORG_ID,
     idMigrationEnabled: true,           // reuse AMCV cookie from AppMeasurement
+    targetMigrationEnabled: true,
     thirdPartyCookiesEnabled: false,
     defaultConsent: 'in',               // TODO[P2]: switch to 'pending' if CMP gates
     clickCollectionEnabled: true,
@@ -308,42 +483,54 @@ export async function initAnalytics() {
     // requests decisions on sendEvent and can render VEC visual edits
     // automatically (via renderDecisions: true below).
     personalizationStorageEnabled: true,
-    // Mirrors the inline <style id="alloy-prehiding"> injected by
-    // head.html on the painting-contractors page. Alloy uses this
-    // selector to know which CSS rule to remove once decisions render.
-    prehidingStyle: '.alloy-prehide-page main { opacity: 0 !important }',
     debugEnabled: location.hostname !== 'www.asianpaints.com',
   });
 
   try {
-    // renderDecisions: Alloy auto-applies DOM-action propositions
-    //   (Replace HTML / Set Attribute / Insert) — this is what VEC
-    //   visual edits arrive as on the Edge Network response.
-    await window.alloy('sendEvent', {
-      renderDecisions: true,
-      data: { __adobe: { analytics: buildAnalyticsPayload() } },
+    // Two-phase Target apply (renderDecisions: false + applyPropositions):
+    //
+    // Why not renderDecisions: true? The legacy AMS Target customCode
+    // (every existing activity inherited from Adobe Launch) uses
+    // jQuery patterns: $(document).ready, $(selector), $.append, etc.
+    // jQuery is loaded on-demand in EDS — not present when Alloy
+    // first executes propositions in lazy phase. With auto-render,
+    // the customCode throws "ReferenceError: $ is not defined" and
+    // the Target experience silently fails.
+    //
+    // Instead: receive propositions, conditionally preload jQuery if
+    // any customCode actually uses it (regex on the content string),
+    // then hand the propositions back to Alloy via applyPropositions.
+    // The Display notification (for impression reporting + A4T) still
+    // fires correctly — applyPropositions emits it just like
+    // renderDecisions: true would.
+    //
+    // Pages without Target activity: empty propositions array, no
+    // jQuery preload triggered, behaviour identical to today.
+    const response = await window.alloy('sendEvent', {
+      renderDecisions: false,
+      data: {
+        __adobe: {
+          analytics: buildAnalyticsPayload(),
+          target: buildTargetMboxParams(),
+        },
+      },
     });
+
+    const propositions = response?.propositions || [];
+    if (propositions.length) {
+      const customCodeNeedsJQuery = propositions.some((p) => p.items?.some(
+        (i) => i?.data?.type === 'customCode'
+          && /\$\(|jQuery/.test(i.data.content || ''),
+      ));
+      if (customCodeNeedsJQuery && typeof window.loadJQuery === 'function') {
+        await window.loadJQuery().catch(() => { /* fall through, customCode may still fail but rest applies */ });
+      }
+      await window.alloy('applyPropositions', { propositions });
+    }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[analytics] alloy sendEvent failed', err);
-  } finally {
-    // Reveal the page on the contractors page whether or not
-    // propositions arrived — covers the zero-decision case so the
-    // visitor doesn't have to wait the full 3 s safety timeout.
-    // No-op on every other page (the class/style never existed).
-    revealVecPrehide();
   }
-}
-
-/**
- * Removes the page-scoped VEC pre-hiding injected by head.html on
- * `/contractors/painting-contractors`. Called when Alloy's sendEvent
- * resolves (success or failure) — independent of, and racing with,
- * the 3-second safety timer in head.html. Idempotent on other pages.
- */
-function revealVecPrehide() {
-  document.documentElement.classList.remove('alloy-prehide-page');
-  document.getElementById('alloy-prehiding')?.remove();
 }
 
 /**
@@ -353,6 +540,32 @@ function revealVecPrehide() {
 export function trackVirtualPageview() {
   window.alloy('sendEvent', {
     data: { __adobe: { analytics: buildAnalyticsPayload() } },
+  });
+}
+
+/**
+ * Write Target profile attributes (sticky, server-side, persist across
+ * sessions on the ECID's Target profile).
+ *
+ * Call from form-funnel handlers — NOT on every pageview. Each key
+ * shows up in Target audiences as ${profile.<key>}.
+ *
+ *   import { setTargetProfile } from '/eds/scripts/analytics_1.js';
+ *   onBHSFormAbandon(() => setTargetProfile({ BHSdropoff: 1 }));
+ *   onBHSFormSubmit(()  => setTargetProfile({ BHSdropoff: 0 }));
+ *
+ * Fires its own lightweight sendEvent. No decisions are requested
+ * (this isn't a pageview), so Edge just writes the attributes and
+ * the next pageview's interact call qualifies any audiences that
+ * read them.
+ */
+export function setTargetProfile(attrs) {
+  if (!attrs || typeof attrs !== 'object') return;
+  const entries = Object.entries(attrs).filter(([, v]) => v !== undefined && v !== null && v !== '');
+  if (!entries.length) return;
+  const profileParams = Object.fromEntries(entries.map(([k, v]) => [`profile.${k}`, v]));
+  window.alloy('sendEvent', {
+    data: { __adobe: { target: profileParams } },
   });
 }
 
@@ -378,16 +591,57 @@ export function trackVirtualPageview() {
  * a specific success-event counter (gracefully degraded for
  * unconfirmed mappings).
  */
+// Shared definitions for events that have both snake_case (spec) and
+// titlecase (legacy code) aliases. Defining once and referencing from
+// both keys avoids drift.
+const FORM_START_DEF = {
+  events: 'event8',
+  eVars: {
+    campaignId: 'eVar15',
+    // formName lands in BOTH eVar17 and prop17 per spec
+    formName:   ['eVar17', 'prop17'],
+  },
+};
+const FORM_SUBMIT_DEF = {
+  events: 'event9',
+  eVars: {
+    campaignId:     'eVar15',
+    formName:       ['eVar17', 'prop17'],
+    dataDestination:'eVar117',
+    contruction:    'eVar73',
+    whatsappOptIn:  'eVar108',
+    localpainter:   'eVar110',
+  },
+};
+const FORM_ERROR_DEF = {
+  events: 'event10',
+  eVars: {
+    campaignId: 'eVar15',
+    formName:   ['eVar17', 'prop17'],
+    // formError carries pipe-joined field names per spec; lands in
+    // both eVar18 and prop18.
+    formError:  ['eVar18', 'prop18'],
+  },
+};
+const HEADER_ICONS_DEF = {
+  events: 'event335',
+  eVars: { title: 'eVar67', parentTitle: 'eVar67', param1: 'eVar86', redirectionLink: 'eVar86' },
+};
+const CONTRACTOR_SEARCH_DEF = {
+  events: 'event220',
+  eVars: { cityPincode: 'eVar32' },
+};
+
 const EVENT_REGISTRY = {
-  // Forms
-  'Form start': {
-    events: 'event8',
-    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
-  },
-  'Form Submit': {
-    events: 'event9',
-    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
-  },
+  // Forms — both legacy titlecase keys AND spec snake_case keys map to
+  // the same definition. New code should prefer the snake_case names
+  // (form_start, form_submit, form_error) — they match the EDS data
+  // layer spec verbatim.
+  'Form start':  FORM_START_DEF,
+  form_start:    FORM_START_DEF,
+  'Form Submit': FORM_SUBMIT_DEF,
+  form_submit:   FORM_SUBMIT_DEF,
+  form_error:    FORM_ERROR_DEF,
 
   // Search
   'Header Search Icon Click': { events: 'event330' },
@@ -395,7 +649,9 @@ const EVENT_REGISTRY = {
   'Search Bar Close': { events: 'event336' },
   ub_imagesearch_start: { events: 'event312' },
   ub_imagesearch_close: { events: 'event313' },
-  ub_imagesearch_complete: { events: 'event174', eVars: { totalResults: 'eVar28' } },
+  // Spec event ID is event314, not event174 (earlier best-guess corrected
+  // against EDS data layer doc, Header sheet row 7).
+  ub_imagesearch_complete: { events: 'event314', eVars: { totalResults: 'eVar28' } },
 
   // Auth
   'Login Icon Click': { events: 'event7' },
@@ -413,10 +669,12 @@ const EVENT_REGISTRY = {
       param1: 'eVar46',
     },
   },
-  'Header icons': {
-    events: 'event335',
-    eVars: { title: 'eVar67', param1: 'eVar86' },
-  },
+  // Header icon — legacy titlecase + spec snake_case both map here.
+  // Spec adds parentTitle/redirectionLink (HEADER_ICONS_DEF supports
+  // both old { title, param1 } AND new { parentTitle, redirectionLink }
+  // keys so legacy callers don't break).
+  'Header icons': HEADER_ICONS_DEF,
+  header_icons:   HEADER_ICONS_DEF,
   sitesection_click: {
     events: 'event46',
     eVars: { siteSection: 'eVar22', redirectionLink: 'eVar86' },
@@ -435,11 +693,10 @@ const EVENT_REGISTRY = {
     },
   },
 
-  // Contractors / store
-  'Contractor Search Click': {
-    events: 'event220',
-    eVars: { cityPincode: 'eVar32' },
-  },
+  // Contractors / store — legacy titlecase + spec snake_case both map
+  // to the same definition.
+  'Contractor Search Click': CONTRACTOR_SEARCH_DEF,
+  contractor_search:         CONTRACTOR_SEARCH_DEF,
   store_locator: {
     events: 'event17',
     eVars: { cityPincode: 'eVar32', cta_: 'eVar45' },
@@ -450,8 +707,25 @@ const EVENT_REGISTRY = {
     events: 'event298',
     eVars: { ctaText: 'eVar45' },
   },
-  short_video_play: { events: 'event296', eVars: { viewsCount: 'eVar35' } },
+  // Spec uses snake_case `test_open` for the same testimonial-video-play
+  // event (EDS Home Page sheet row 16).
+  test_open: { events: 'event298' },
+  // short_video_play — spec uses videoTitle as the key (legacy code
+  // passed viewsCount). Map both to eVar35.
+  short_video_play: { events: 'event296', eVars: { viewsCount: 'eVar35', videoTitle: 'eVar35' } },
   download_form_pdf: { events: 'event137', eVars: { pdfName: 'eVar96' } },
+
+  // Navigation arrows (Previous/Next) on home + contractor carousels.
+  // Spec key is exactly "Navigation" with capital N; also accept the
+  // lowercase form for safety.
+  Navigation: {
+    events: 'event300',
+    eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
+  },
+  navigation: {
+    events: 'event300',
+    eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
+  },
 
   // Exit-intent modal
   'Exit Intent Pop-up Impression': { events: 'event359' },
@@ -513,10 +787,10 @@ const EVENT_REGISTRY = {
     eVars: { formName: 'eVar17' },
   },
 
-  // PDF / download
+  // PDF / download — spec adds Title → eVar67 (EDS Home Page row 14).
   download_multiple_pdf: {
-    events: 'event134', // best-guess (Download Click [e134])
-    eVars: { pdfName: 'eVar96' },
+    events: 'event134',
+    eVars: { pdfName: 'eVar96', Title: 'eVar67', parentTitle: 'eVar67' },
   },
 
   // Search no-result
@@ -531,16 +805,36 @@ const EVENT_REGISTRY = {
     eVars: { videoTitle: 'eVar35' },
   },
   youtube_play: {
-    events: 'event20', // best-guess (same as video_playbotton_click)
-    eVars: { url: 'eVar35' },
+    events: 'event20', // Painting Contractors sheet row 10
+    eVars: { url: 'eVar35', videoTitle: 'eVar35' },   // accept either key
   },
-  short_video_shop: { events: 'event132' }, // best-guess (Custom CTA Click)
+  // Spec event ID is event297 (EDS Home Page sheet row 17),
+  // not event132 (earlier best-guess as a generic Custom CTA Click).
+  short_video_shop: {
+    events: 'event297',
+    eVars: { param1: 'eVar86', redirectionLink: 'eVar86' },
+  },
 
-  // Product / gallery interactions
-  product_tile_click: { events: 'event122' }, // best-guess (Product click on plp page)
+  // Product / gallery interactions — spec event ID is event293
+  // (EDS Home Page sheet rows 5, 10; Painting Contractors sheet row 2),
+  // not event122 (earlier best-guess as Product click on PLP).
+  product_tile_click: {
+    events: 'event293',
+    eVars: {
+      productName: 'eVar8',
+      param1:      'eVar86',
+      Title:       'eVar67',
+      parentTitle: 'eVar67',   // accept either Title or parentTitle
+    },
+  },
+
   filter_click: { events: 'event121' }, // best-guess (Product Filter Click)
   natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
-  squarecross_click: { events: 'event144' }, // best-guess (Square cross Image click)
+  // Painting Contractors sheet row 5 — areas of expertise tiles.
+  squarecross_click: {
+    events: 'event144',
+    eVars: { cta_: 'eVar45', param2: 'eVar86' },
+  },
 
   // Calculator
   calc_start: {
@@ -659,8 +953,19 @@ export function getDigitalData() {
  *
  * Looks up `eventName` in EVENT_REGISTRY:
  *   - sets `events` (eventN) directly on the analytics payload
- *   - maps known `eventData` keys to specific eVarN fields
+ *   - maps known `eventData` keys to specific eVarN / propN fields
+ *     (a registry value may be a string OR an array of strings, in
+ *     which case the same value lands in every listed destination —
+ *     used when spec requires e.g. formName to populate eVar17 AND
+ *     prop17 simultaneously)
  *   - any unmapped keys land in `contextData`
+ *
+ * Every event auto-includes page-context fields (eVar6/prop6/eVar54/
+ * prop54) so link-tracking beacons carry page identity the same way
+ * pageview beacons do. With Web SDK each sendEvent is stateless — no
+ * inherited page context — so we have to set these explicitly per
+ * event. Matches the legacy AMS behaviour declared in the EDS data
+ * layer spec (Header sheet rows 1, 3-8).
  *
  * Fails silently if Alloy hasn't been bootstrapped yet (a click in the
  * first ~few hundred ms before loadLazy fires `initAnalytics`).
@@ -680,17 +985,28 @@ export function trackEvent(eventName, eventData = {}) {
   const analytics = {
     linkName: name,
     linkType: 'o',
+    // Page-context fields (eVar6/prop6/eVar54/prop54) on every event —
+    // matches legacy at.js where link-tracking hits inherited current
+    // page state. Web SDK is stateless per-call so we set them
+    // explicitly. Registry-driven mappings below may override if a
+    // specific event needs a different value here.
+    eVar6:  location.href,
+    prop6:  'D=v6',
+    eVar54: getPageName(),
+    prop54: 'D=v54',
   };
   if (def.events) analytics.events = def.events;
 
-  // Split eventData keys: known → eVarN; unknown → contextData
+  // Split eventData keys: known → eVarN/propN (may be array of dests);
+  // unknown → contextData
   const eVarMap = def.eVars || {};
   const contextData = {};
   Object.entries(eventData).forEach(([k, v]) => {
     if (v === undefined || v === null || v === '') return;
     const target = eVarMap[k];
     if (target) {
-      analytics[target] = String(v);
+      const dests = Array.isArray(target) ? target : [target];
+      dests.forEach((t) => { analytics[t] = String(v); });
     } else {
       contextData[k] = String(v);
     }
@@ -748,6 +1064,83 @@ export function trackImageSearchClose() {
 export function trackImageSearchComplete(totalResults) {
   trackEvent('ub_imagesearch_complete', {
     totalResults,
+  });
+}
+
+/**
+ * Fires the Navigation event (event300) when the user clicks a
+ * carousel's previous or next arrow. Per EDS data layer spec
+ * (Home Page row 9, Painting Contractors row 3).
+ *
+ * @param {string} direction 'Previous' or 'Next'
+ * @param {string} testTitle The carousel/section title
+ */
+export function trackCarouselNavigation(direction, testTitle) {
+  trackEvent('Navigation', {
+    direction,
+    testTitle,
+    parentTitle: testTitle, // accept either key
+  });
+}
+
+/**
+ * Attaches Previous/Next click handlers to a Slick-initialised carousel
+ * (or any DOM element containing .slick-prev / .slick-next buttons) so
+ * navigation interactions fire the Navigation event.
+ *
+ * Idempotent — safe to call multiple times on the same carousel. Uses
+ * a data attribute guard to avoid double-binding.
+ *
+ * @param {HTMLElement|Element|JQuery} rootEl   Carousel container element
+ * @param {string} title  Section title (used as testTitle on the event)
+ */
+export function bindCarouselNavigationTracking(rootEl, title) {
+  if (!rootEl) return;
+  const root = rootEl.jquery ? rootEl[0] : rootEl;
+  if (!root || root.dataset.navTrackingBound === 'true') return;
+  root.dataset.navTrackingBound = 'true';
+
+  root.addEventListener('click', (e) => {
+    const prev = e.target.closest('.slick-prev, [aria-label="Previous"], .swiper-button-prev, .carousel-prev');
+    const next = e.target.closest('.slick-next, [aria-label="Next"], .swiper-button-next, .carousel-next');
+    if (prev) trackCarouselNavigation('Previous', title);
+    else if (next) trackCarouselNavigation('Next', title);
+  });
+}
+
+/**
+ * Fires form_error (event10) when client-side validation rejects a
+ * submit attempt. Per EDS data layer spec (Home Page row 8 +
+ * Painting Contractors row 8). The `formError` field carries the
+ * pipe-joined names of the fields that failed validation.
+ *
+ * @param {Object} opts
+ * @param {string} opts.campaignId
+ * @param {string} opts.formName
+ * @param {string|string[]} opts.formError  Either pre-joined string or array of field names
+ */
+export function trackFormError({ campaignId, formName, formError } = {}) {
+  const errorString = Array.isArray(formError) ? formError.join('|') : (formError || '');
+  if (!errorString) return; // nothing to report
+  trackEvent('form_error', {
+    campaignId: campaignId || '',
+    formName:   formName   || '',
+    formError:  errorString,
+  });
+}
+
+/**
+ * Fires subsection_one_click (event113) when the user clicks an L1
+ * column heading inside the mega-menu dropdown. Per EDS data layer
+ * spec (Header row 4).
+ *
+ * @param {string} siteSection  The L0 nav header (e.g., "Colours")
+ * @param {string} subSection   The L1 column title (e.g., "Colour by family")
+ */
+export function trackSubsectionOneClick(siteSection, subSection) {
+  trackEvent('subsection_one_click', {
+    siteSection: siteSection || '',
+    subSection:  subSection  || '',
   });
 }
 

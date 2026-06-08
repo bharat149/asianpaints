@@ -26,7 +26,7 @@ Two variant: White form, Blue form
 */
 
 import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
+import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
 
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
@@ -773,7 +773,9 @@ function trackFormSubmission(form) {
     "pincode": form.querySelector("#enquire-pincode")?.value?.trim() || '',
     "whatsappOptIn": form.querySelector('[name="updateMeOnWhatsapp"]')?.checked ? 'Y' : 'N',
     "contruction": form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
-    "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No'
+    "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
+    // Spec field — see lead-form.js for rationale. Default 'both'.
+    "dataDestination": form.dataset?.dataDestination || 'both'
   };
   getDigitalData().form = formData;
   trackEvent("Form Submit", {
@@ -819,15 +821,20 @@ function bindSubmitHandler(block, row, buttonCell) {
 
     const inputs = row.querySelectorAll('.form-input');
     let isValid = true;
+    const failedFields = [];
 
     inputs.forEach((input) => {
       const validField = validateInputField(input, true);
       if (!validField) {
         isValid = false;
+        failedFields.push(input.name || input.id || input.getAttribute('aria-label') || 'unknown');
       }
     });
 
-    if (!isValid) return;
+    if (!isValid) {
+      trackFormError({ campaignId, formName, formError: failedFields });
+      return;
+    }
 
     row.dataset.submitting = 'true';
     submitBtn.disabled = true;
