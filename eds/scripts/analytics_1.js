@@ -570,7 +570,7 @@ const EVENT_REGISTRY = {
   'Search Bar Close': { events: 'event336' },
   ub_imagesearch_start: { events: 'event312' },
   ub_imagesearch_close: { events: 'event313' },
-  ub_imagesearch_complete: { events: 'event174', eVars: { totalResults: 'eVar28' } },
+  ub_imagesearch_complete: { events: 'event314', eVars: { totalResults: 'eVar28' } },
 
   // Auth
   'Login Icon Click': { events: 'event7' },

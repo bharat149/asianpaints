@@ -4054,13 +4054,14 @@ function getNavSectionName(navItem, navLink) {
   return sectionName;
 }
 
-function trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName) {
+function trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName, redirectionLink) {
   if (!sectionName && !subsectionNameParent && !subsectionName) return;
 
   const sectionData = {
     siteSection: sectionName,
     subSection: subsectionNameParent,
     subSectionTwo: subsectionName,
+    redirectionLink,
   };
 
   getDigitalData().section = sectionData;
@@ -4088,8 +4089,9 @@ function bindDropdownLinkAnalytics(block) {
       const sectionName = link.dataset.siteSection || '';
       const subsectionNameParent = link.dataset.subSection || '';
       const subsectionName = link.dataset.subSectionTwo || link.textContent?.trim() || '';
+      const redirectionLink = link.getAttribute('href') || '';
 
-      trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName);
+      trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName, redirectionLink);
 
       const isModifiedClick = event.defaultPrevented
         || event.button !== 0
