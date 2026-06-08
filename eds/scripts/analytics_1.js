@@ -392,16 +392,6 @@ function buildTargetMboxParams() {
   if (!params['user.categoryId']) {
     params['user.categoryId'] = deriveCategoryIdFromUrl();
   }
-  // mboxMCGVID — legacy at.js name for the Marketing Cloud Global
-  // Visitor ID (ECID). Web SDK normally conveys identity via
-  // xdm.identityMap.ECID which Edge resolves server-side, but Target
-  // Profile Scripts authored on legacy may read it explicitly as
-  // mbox.param('mboxMCGVID'). Inject the ECID under the literal
-  // legacy key for parity. Pulled from the AMCV cookie (same source
-  // idMigrationEnabled uses) so it matches what at.js / mbox.js
-  // would have sent on the same browser.
-  const ecid = getECID();
-  if (ecid) params.mboxMCGVID = ecid;
   return params;
 }
 
