@@ -1859,12 +1859,15 @@ function buildSearchDialog() {
   let locationRequestToken = 0;
 
   // Interactions
+  let searchStartFired = false;
   const closeDialog = () => {
     locationRequestToken += 1;
     overlay.classList.remove('active');
     document.body.classList.remove('search-dialog-open');
     input.value = '';
     toggleSearchDialogQueryMode(dialog, false);
+    trackEvent('Search Bar Close');
+    searchStartFired = false;
   };
 
   closeBtn.addEventListener('click', closeDialog);
@@ -1884,6 +1887,10 @@ function buildSearchDialog() {
     const currentLocationToken = locationRequestToken;
     const rawQuery = input.value;
     const query = rawQuery.trim();
+    if (!searchStartFired && rawQuery.length > 0) {
+      trackEvent('Search Start');
+      searchStartFired = true;
+    }
     dialogDebounce = setTimeout(() => {
       handleSearchDialogQuery(dialog, rawQuery);
       seeAll.href = query
@@ -4050,13 +4057,14 @@ function getNavSectionName(navItem, navLink) {
   return sectionName;
 }
 
-function trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName) {
+function trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName, redirectionLink) {
   if (!sectionName && !subsectionNameParent && !subsectionName) return;
 
   const sectionData = {
     siteSection: sectionName,
     subSection: subsectionNameParent,
     subSectionTwo: subsectionName,
+    redirectionLink,
   };
 
   getDigitalData().section = sectionData;
@@ -4064,6 +4072,18 @@ function trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionNa
 }
 
 function bindDropdownLinkAnalytics(block) {
+  block.querySelectorAll('.dropdown-title').forEach((heading) => {
+    if (heading.dataset.analyticsBound === 'true') return;
+    heading.dataset.analyticsBound = 'true';
+    heading.addEventListener('click', () => {
+      const siteSection = heading.dataset.siteSection || '';
+      const subSection = heading.dataset.subSection || '';
+      if (!siteSection && !subSection) return;
+      getDigitalData().section = { siteSection, subSection };
+      trackEvent('subsection_one_click', { siteSection, subSection });
+    });
+  });
+
   block.querySelectorAll('.dropdown-links li a').forEach((link) => {
     if (link.dataset.analyticsBound === 'true') return;
 
@@ -4072,8 +4092,9 @@ function bindDropdownLinkAnalytics(block) {
       const sectionName = link.dataset.siteSection || '';
       const subsectionNameParent = link.dataset.subSection || '';
       const subsectionName = link.dataset.subSectionTwo || link.textContent?.trim() || '';
+      const redirectionLink = link.getAttribute('href') || '';
 
-      trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName);
+      trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName, redirectionLink);
 
       const isModifiedClick = event.defaultPrevented
         || event.button !== 0
@@ -4461,9 +4482,18 @@ function addInteractions(block) {
   const mobileSearchBtn = block.querySelector('.mobile-search-btn');
   if (mobileSearchBtn) {
     mobileSearchBtn.addEventListener('click', () => {
+      trackEvent('Header Search Icon Click');
       openSearchDialog(block);
     });
   }
+
+  block.querySelectorAll('.header-cta .cta-btn').forEach((ctaBtn) => {
+    ctaBtn.addEventListener('click', () => {
+      const ctaLink = ctaBtn.getAttribute('href') || '';
+      const btnTitle = ctaBtn.textContent?.trim() || '';
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, 'Header');
+    });
+  });
 
   block.querySelectorAll('.header-cta .cta-btn.trigger-book-free-site-visit-modal[data-modal-path]').forEach((ctaBtn) => {
     ctaBtn.addEventListener('click', async (e) => {
