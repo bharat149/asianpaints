@@ -859,6 +859,11 @@ export function trackEvent(eventName, eventData = {}) {
   const analytics = {
     linkName: name,
     linkType: 'o',
+    // Page-level context vars required on every link tracking call per spec
+    eVar6: location.href,
+    prop6: 'D=v6',
+    eVar54: getPageName(),
+    prop54: 'D=v54',
   };
   if (def.events) analytics.events = def.events;
 
