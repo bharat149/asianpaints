@@ -6,7 +6,7 @@
  */
 
 import { submitLeadFromForm, getCampaignIdFromUrl } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
+import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
 
 const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
 const DEFAULT_SUCCESS_MESSAGE = 'Thank you! We will contact you soon.';
@@ -730,6 +730,10 @@ function trackLeadFormSubmission(form) {
     whatsappOptIn: whatsappConsent,
     contruction: normalizeYesNo(getRadioOrCheckboxValue(form, 'renovating_home')),
     localpainter: normalizeYesNo(getRadioOrCheckboxValue(form, 'hired_painter')),
+    // Spec field — default to 'both' per the EDS data layer doc
+    // (forms write to AMS + Salesforce). Form authoring can override
+    // by setting <form data-data-destination="<value>">.
+    dataDestination: form.dataset.dataDestination || 'both',
   };
 
   getDigitalData().form = formData;
@@ -861,14 +865,25 @@ async function handleSubmit(event) {
   // Validate all required fields and show errors
   const requiredFields = getRequiredFields(form);
   let isValid = true;
+  const failedFields = [];
 
   requiredFields.forEach((input) => {
     if (!validateInputField(input, true)) {
       isValid = false;
+      // Field-name fallback chain to produce a meaningful pipe-joined
+      // error string (e.g., "Email|MobileNumber|PINCode") per spec.
+      failedFields.push(input.name || input.id || input.getAttribute('aria-label') || 'unknown');
     }
   });
 
-  if (!isValid) return;
+  if (!isValid) {
+    trackFormError({
+      campaignId: getCampaignId(),
+      formName:   form.dataset.formName || 'lead-form',
+      formError:  failedFields,
+    });
+    return;
+  }
   if (form.dataset.submitting === 'true') return;
 
   form.dataset.submitting = 'true';

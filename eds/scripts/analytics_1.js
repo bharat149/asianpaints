@@ -194,6 +194,43 @@ function initScrollTracking() {
   }, { passive: true });
 }
 
+/**
+ * Document-level delegation for carousel Previous/Next clicks.
+ *
+ * Eight blocks on this site use Slick (carousel, carousel-categories,
+ * carousel-expertise, carousel-hero-banner, carousel-trending,
+ * designer-collections, royal-play-banner, testimonial-carousel,
+ * tools-carousel and the *-banner variants). Rather than edit each
+ * block individually, intercept the click on any .slick-prev /
+ * .slick-next button and fire trackCarouselNavigation with the nearest
+ * section title.
+ *
+ * Title resolution priority:
+ *   1. Nearest ancestor's [data-carousel-title] attribute (explicit
+ *      opt-in for blocks that want to override)
+ *   2. Nearest ancestor heading (h2/h3/h4) text
+ *   3. Empty string (event still fires, just without a title)
+ *
+ * Covers swiper- and generic .carousel-prev/.carousel-next button
+ * patterns too, in case any non-Slick carousel ever ships.
+ */
+function initCarouselNavigationTracking() {
+  document.addEventListener('click', (e) => {
+    const prev = e.target.closest('.slick-prev, .swiper-button-prev, .carousel-prev');
+    const next = e.target.closest('.slick-next, .swiper-button-next, .carousel-next');
+    if (!prev && !next) return;
+    const btn = prev || next;
+    // Walk up to find an explicit title attribute, else nearest heading
+    const container = btn.closest('[data-carousel-title], .block, section');
+    let title = container?.getAttribute('data-carousel-title') || '';
+    if (!title) {
+      const heading = container?.querySelector('h2, h3, h4');
+      title = heading?.textContent?.trim() || '';
+    }
+    trackCarouselNavigation(prev ? 'Previous' : 'Next', title);
+  }, true); // capture phase — fires even if the carousel stops propagation
+}
+
 function getScrollDepthString() {
   return `highestPercentViewed = ${scrollState.highest} | initialPercentViewed=${scrollState.initial}`;
 }
@@ -432,6 +469,7 @@ export async function initAnalytics() {
 
   bootstrapAlloy();
   initScrollTracking();
+  initCarouselNavigationTracking();
 
   window.alloy('configure', {
     datastreamId: getEdgeConfigId(),
@@ -1026,6 +1064,83 @@ export function trackImageSearchClose() {
 export function trackImageSearchComplete(totalResults) {
   trackEvent('ub_imagesearch_complete', {
     totalResults,
+  });
+}
+
+/**
+ * Fires the Navigation event (event300) when the user clicks a
+ * carousel's previous or next arrow. Per EDS data layer spec
+ * (Home Page row 9, Painting Contractors row 3).
+ *
+ * @param {string} direction 'Previous' or 'Next'
+ * @param {string} testTitle The carousel/section title
+ */
+export function trackCarouselNavigation(direction, testTitle) {
+  trackEvent('Navigation', {
+    direction,
+    testTitle,
+    parentTitle: testTitle, // accept either key
+  });
+}
+
+/**
+ * Attaches Previous/Next click handlers to a Slick-initialised carousel
+ * (or any DOM element containing .slick-prev / .slick-next buttons) so
+ * navigation interactions fire the Navigation event.
+ *
+ * Idempotent — safe to call multiple times on the same carousel. Uses
+ * a data attribute guard to avoid double-binding.
+ *
+ * @param {HTMLElement|Element|JQuery} rootEl   Carousel container element
+ * @param {string} title  Section title (used as testTitle on the event)
+ */
+export function bindCarouselNavigationTracking(rootEl, title) {
+  if (!rootEl) return;
+  const root = rootEl.jquery ? rootEl[0] : rootEl;
+  if (!root || root.dataset.navTrackingBound === 'true') return;
+  root.dataset.navTrackingBound = 'true';
+
+  root.addEventListener('click', (e) => {
+    const prev = e.target.closest('.slick-prev, [aria-label="Previous"], .swiper-button-prev, .carousel-prev');
+    const next = e.target.closest('.slick-next, [aria-label="Next"], .swiper-button-next, .carousel-next');
+    if (prev) trackCarouselNavigation('Previous', title);
+    else if (next) trackCarouselNavigation('Next', title);
+  });
+}
+
+/**
+ * Fires form_error (event10) when client-side validation rejects a
+ * submit attempt. Per EDS data layer spec (Home Page row 8 +
+ * Painting Contractors row 8). The `formError` field carries the
+ * pipe-joined names of the fields that failed validation.
+ *
+ * @param {Object} opts
+ * @param {string} opts.campaignId
+ * @param {string} opts.formName
+ * @param {string|string[]} opts.formError  Either pre-joined string or array of field names
+ */
+export function trackFormError({ campaignId, formName, formError } = {}) {
+  const errorString = Array.isArray(formError) ? formError.join('|') : (formError || '');
+  if (!errorString) return; // nothing to report
+  trackEvent('form_error', {
+    campaignId: campaignId || '',
+    formName:   formName   || '',
+    formError:  errorString,
+  });
+}
+
+/**
+ * Fires subsection_one_click (event113) when the user clicks an L1
+ * column heading inside the mega-menu dropdown. Per EDS data layer
+ * spec (Header row 4).
+ *
+ * @param {string} siteSection  The L0 nav header (e.g., "Colours")
+ * @param {string} subSection   The L1 column title (e.g., "Colour by family")
+ */
+export function trackSubsectionOneClick(siteSection, subSection) {
+  trackEvent('subsection_one_click', {
+    siteSection: siteSection || '',
+    subSection:  subSection  || '',
   });
 }
 

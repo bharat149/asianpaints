@@ -3303,6 +3303,11 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
       const heading = document.createElement('h4');
       heading.className = 'dropdown-title';
       heading.textContent = headingText;
+      // Stash siteSection (parent menu name) + subSection (this column
+      // heading) so the delegated click handler can read them without
+      // walking the DOM.
+      heading.dataset.siteSection = parentLabel;
+      heading.dataset.subSection = headingText;
       column.appendChild(heading);
     } else {
       column.classList.add('dropdown-column-no-title');
@@ -4091,6 +4096,24 @@ function bindDropdownLinkAnalytics(block) {
   });
 }
 
+/**
+ * Wire click tracking on each L1 column heading inside the mega-menu
+ * (.dropdown-title). Fires subsection_one_click (event113) per EDS
+ * data layer spec (Header sheet row 4). The heading itself isn't a
+ * link — this only emits the analytics event, no navigation.
+ */
+function bindDropdownTitleAnalytics(block) {
+  block.querySelectorAll('.dropdown-title').forEach((heading) => {
+    if (heading.dataset.analyticsBound === 'true') return;
+    heading.dataset.analyticsBound = 'true';
+    heading.addEventListener('click', () => {
+      const siteSection = heading.dataset.siteSection || '';
+      const subSection = heading.dataset.subSection || heading.textContent?.trim() || '';
+      trackEvent('subsection_one_click', { siteSection, subSection });
+    });
+  });
+}
+
 function trackSiteSectionClick(siteSection, redirectionLink) {
   if (!siteSection && !redirectionLink) return;
 
@@ -4176,6 +4199,7 @@ function addInteractions(block) {
   bindMainNavAnalytics(block);
   bindSecondaryNavAnalytics(block);
   bindDropdownLinkAnalytics(block);
+  bindDropdownTitleAnalytics(block);
 
   // Mobile hamburger toggle
   if (hamburger && navBar) {
