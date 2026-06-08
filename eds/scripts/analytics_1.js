@@ -382,7 +382,15 @@ function buildTargetMboxParams() {
   const params = {};
   Object.entries(TARGET_MBOX_PARAM_META).forEach(([paramKey, metaName]) => {
     const v = document.querySelector(`meta[name="${metaName}"]`)?.content?.trim();
-    params[paramKey] = v || '';
+    // Omit the key entirely when the value is empty. Mirrors the legacy
+    // Adobe Launch "Don't send if empty value" checkbox that was enabled
+    // for user.categoryId (and the way at.js handled the disabled rows
+    // for the 10 profile.* keys — they were never sent on legacy either).
+    // Sending empty strings pollutes Target's CategoryAffinity Profile
+    // Script — the empty value gets pushed into profile.categoryAffinities
+    // and displaces real category history, which breaks audiences that
+    // read profile.categoryAffinities[0] for the visitor's top category.
+    if (v) params[paramKey] = v;
   });
   // user.categoryId: meta tag overrides URL-derived value. Falling back
   // to URL derivation restores legacy's auto-detection behaviour so
@@ -390,7 +398,8 @@ function buildTargetMboxParams() {
   // category affinity (profile.categoryAffinities) without each page
   // needing an explicit meta tag.
   if (!params['user.categoryId']) {
-    params['user.categoryId'] = deriveCategoryIdFromUrl();
+    const derived = deriveCategoryIdFromUrl();
+    if (derived) params['user.categoryId'] = derived;
   }
   return params;
 }
@@ -506,12 +515,16 @@ export async function initAnalytics() {
     //
     // Pages without Target activity: empty propositions array, no
     // jQuery preload triggered, behaviour identical to today.
+    const targetParams = buildTargetMboxParams();
     const response = await window.alloy('sendEvent', {
       renderDecisions: false,
       data: {
         __adobe: {
           analytics: buildAnalyticsPayload(),
-          target: buildTargetMboxParams(),
+          // Only include target key when at least one param has a value.
+          // Sending an empty target object is harmless but cleaner to omit
+          // when there's nothing for Target to act on.
+          ...(Object.keys(targetParams).length && { target: targetParams }),
         },
       },
     });
