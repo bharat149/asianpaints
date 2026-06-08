@@ -553,16 +553,57 @@ export function setTargetProfile(attrs) {
  * a specific success-event counter (gracefully degraded for
  * unconfirmed mappings).
  */
+// Shared definitions for events that have both snake_case (spec) and
+// titlecase (legacy code) aliases. Defining once and referencing from
+// both keys avoids drift.
+const FORM_START_DEF = {
+  events: 'event8',
+  eVars: {
+    campaignId: 'eVar15',
+    // formName lands in BOTH eVar17 and prop17 per spec
+    formName:   ['eVar17', 'prop17'],
+  },
+};
+const FORM_SUBMIT_DEF = {
+  events: 'event9',
+  eVars: {
+    campaignId:     'eVar15',
+    formName:       ['eVar17', 'prop17'],
+    dataDestination:'eVar117',
+    contruction:    'eVar73',
+    whatsappOptIn:  'eVar108',
+    localpainter:   'eVar110',
+  },
+};
+const FORM_ERROR_DEF = {
+  events: 'event10',
+  eVars: {
+    campaignId: 'eVar15',
+    formName:   ['eVar17', 'prop17'],
+    // formError carries pipe-joined field names per spec; lands in
+    // both eVar18 and prop18.
+    formError:  ['eVar18', 'prop18'],
+  },
+};
+const HEADER_ICONS_DEF = {
+  events: 'event335',
+  eVars: { title: 'eVar67', parentTitle: 'eVar67', param1: 'eVar86', redirectionLink: 'eVar86' },
+};
+const CONTRACTOR_SEARCH_DEF = {
+  events: 'event220',
+  eVars: { cityPincode: 'eVar32' },
+};
+
 const EVENT_REGISTRY = {
-  // Forms
-  'Form start': {
-    events: 'event8',
-    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
-  },
-  'Form Submit': {
-    events: 'event9',
-    eVars: { campaignId: 'eVar15', formName: 'eVar17' },
-  },
+  // Forms — both legacy titlecase keys AND spec snake_case keys map to
+  // the same definition. New code should prefer the snake_case names
+  // (form_start, form_submit, form_error) — they match the EDS data
+  // layer spec verbatim.
+  'Form start':  FORM_START_DEF,
+  form_start:    FORM_START_DEF,
+  'Form Submit': FORM_SUBMIT_DEF,
+  form_submit:   FORM_SUBMIT_DEF,
+  form_error:    FORM_ERROR_DEF,
 
   // Search
   'Header Search Icon Click': { events: 'event330' },
@@ -570,7 +611,9 @@ const EVENT_REGISTRY = {
   'Search Bar Close': { events: 'event336' },
   ub_imagesearch_start: { events: 'event312' },
   ub_imagesearch_close: { events: 'event313' },
-  ub_imagesearch_complete: { events: 'event174', eVars: { totalResults: 'eVar28' } },
+  // Spec event ID is event314, not event174 (earlier best-guess corrected
+  // against EDS data layer doc, Header sheet row 7).
+  ub_imagesearch_complete: { events: 'event314', eVars: { totalResults: 'eVar28' } },
 
   // Auth
   'Login Icon Click': { events: 'event7' },
@@ -588,10 +631,12 @@ const EVENT_REGISTRY = {
       param1: 'eVar46',
     },
   },
-  'Header icons': {
-    events: 'event335',
-    eVars: { title: 'eVar67', param1: 'eVar86' },
-  },
+  // Header icon — legacy titlecase + spec snake_case both map here.
+  // Spec adds parentTitle/redirectionLink (HEADER_ICONS_DEF supports
+  // both old { title, param1 } AND new { parentTitle, redirectionLink }
+  // keys so legacy callers don't break).
+  'Header icons': HEADER_ICONS_DEF,
+  header_icons:   HEADER_ICONS_DEF,
   sitesection_click: {
     events: 'event46',
     eVars: { siteSection: 'eVar22', redirectionLink: 'eVar86' },
@@ -610,11 +655,10 @@ const EVENT_REGISTRY = {
     },
   },
 
-  // Contractors / store
-  'Contractor Search Click': {
-    events: 'event220',
-    eVars: { cityPincode: 'eVar32' },
-  },
+  // Contractors / store — legacy titlecase + spec snake_case both map
+  // to the same definition.
+  'Contractor Search Click': CONTRACTOR_SEARCH_DEF,
+  contractor_search:         CONTRACTOR_SEARCH_DEF,
   store_locator: {
     events: 'event17',
     eVars: { cityPincode: 'eVar32', cta_: 'eVar45' },
@@ -625,8 +669,25 @@ const EVENT_REGISTRY = {
     events: 'event298',
     eVars: { ctaText: 'eVar45' },
   },
-  short_video_play: { events: 'event296', eVars: { viewsCount: 'eVar35' } },
+  // Spec uses snake_case `test_open` for the same testimonial-video-play
+  // event (EDS Home Page sheet row 16).
+  test_open: { events: 'event298' },
+  // short_video_play — spec uses videoTitle as the key (legacy code
+  // passed viewsCount). Map both to eVar35.
+  short_video_play: { events: 'event296', eVars: { viewsCount: 'eVar35', videoTitle: 'eVar35' } },
   download_form_pdf: { events: 'event137', eVars: { pdfName: 'eVar96' } },
+
+  // Navigation arrows (Previous/Next) on home + contractor carousels.
+  // Spec key is exactly "Navigation" with capital N; also accept the
+  // lowercase form for safety.
+  Navigation: {
+    events: 'event300',
+    eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
+  },
+  navigation: {
+    events: 'event300',
+    eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
+  },
 
   // Exit-intent modal
   'Exit Intent Pop-up Impression': { events: 'event359' },
@@ -688,10 +749,10 @@ const EVENT_REGISTRY = {
     eVars: { formName: 'eVar17' },
   },
 
-  // PDF / download
+  // PDF / download — spec adds Title → eVar67 (EDS Home Page row 14).
   download_multiple_pdf: {
-    events: 'event134', // best-guess (Download Click [e134])
-    eVars: { pdfName: 'eVar96' },
+    events: 'event134',
+    eVars: { pdfName: 'eVar96', Title: 'eVar67', parentTitle: 'eVar67' },
   },
 
   // Search no-result
@@ -706,20 +767,36 @@ const EVENT_REGISTRY = {
     eVars: { videoTitle: 'eVar35' },
   },
   youtube_play: {
-    events: 'event20', // best-guess (same as video_playbotton_click)
-    eVars: { url: 'eVar35' },
+    events: 'event20', // Painting Contractors sheet row 10
+    eVars: { url: 'eVar35', videoTitle: 'eVar35' },   // accept either key
   },
-  short_video_shop: { events: 'event132' }, // best-guess (Custom CTA Click)
+  // Spec event ID is event297 (EDS Home Page sheet row 17),
+  // not event132 (earlier best-guess as a generic Custom CTA Click).
+  short_video_shop: {
+    events: 'event297',
+    eVars: { param1: 'eVar86', redirectionLink: 'eVar86' },
+  },
 
-  // Product / gallery interactions
-  product_tile_click: { events: 'event122',
-    eVars: { productName: 'eVar8', param1: 'eVar86', Title: 'eVar67' },
-  }, 
-  
-  // best-guess (Product click on plp page)
+  // Product / gallery interactions — spec event ID is event293
+  // (EDS Home Page sheet rows 5, 10; Painting Contractors sheet row 2),
+  // not event122 (earlier best-guess as Product click on PLP).
+  product_tile_click: {
+    events: 'event293',
+    eVars: {
+      productName: 'eVar8',
+      param1:      'eVar86',
+      Title:       'eVar67',
+      parentTitle: 'eVar67',   // accept either Title or parentTitle
+    },
+  },
+
   filter_click: { events: 'event121' }, // best-guess (Product Filter Click)
   natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
-  squarecross_click: { events: 'event144' }, // best-guess (Square cross Image click)
+  // Painting Contractors sheet row 5 — areas of expertise tiles.
+  squarecross_click: {
+    events: 'event144',
+    eVars: { cta_: 'eVar45', param2: 'eVar86' },
+  },
 
   // Calculator
   calc_start: {
@@ -838,8 +915,19 @@ export function getDigitalData() {
  *
  * Looks up `eventName` in EVENT_REGISTRY:
  *   - sets `events` (eventN) directly on the analytics payload
- *   - maps known `eventData` keys to specific eVarN fields
+ *   - maps known `eventData` keys to specific eVarN / propN fields
+ *     (a registry value may be a string OR an array of strings, in
+ *     which case the same value lands in every listed destination —
+ *     used when spec requires e.g. formName to populate eVar17 AND
+ *     prop17 simultaneously)
  *   - any unmapped keys land in `contextData`
+ *
+ * Every event auto-includes page-context fields (eVar6/prop6/eVar54/
+ * prop54) so link-tracking beacons carry page identity the same way
+ * pageview beacons do. With Web SDK each sendEvent is stateless — no
+ * inherited page context — so we have to set these explicitly per
+ * event. Matches the legacy AMS behaviour declared in the EDS data
+ * layer spec (Header sheet rows 1, 3-8).
  *
  * Fails silently if Alloy hasn't been bootstrapped yet (a click in the
  * first ~few hundred ms before loadLazy fires `initAnalytics`).
@@ -859,17 +947,28 @@ export function trackEvent(eventName, eventData = {}) {
   const analytics = {
     linkName: name,
     linkType: 'o',
+    // Page-context fields (eVar6/prop6/eVar54/prop54) on every event —
+    // matches legacy at.js where link-tracking hits inherited current
+    // page state. Web SDK is stateless per-call so we set them
+    // explicitly. Registry-driven mappings below may override if a
+    // specific event needs a different value here.
+    eVar6:  location.href,
+    prop6:  'D=v6',
+    eVar54: getPageName(),
+    prop54: 'D=v54',
   };
   if (def.events) analytics.events = def.events;
 
-  // Split eventData keys: known → eVarN; unknown → contextData
+  // Split eventData keys: known → eVarN/propN (may be array of dests);
+  // unknown → contextData
   const eVarMap = def.eVars || {};
   const contextData = {};
   Object.entries(eventData).forEach(([k, v]) => {
     if (v === undefined || v === null || v === '') return;
     const target = eVarMap[k];
     if (target) {
-      analytics[target] = String(v);
+      const dests = Array.isArray(target) ? target : [target];
+      dests.forEach((t) => { analytics[t] = String(v); });
     } else {
       contextData[k] = String(v);
     }
