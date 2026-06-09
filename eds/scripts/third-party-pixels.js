@@ -100,6 +100,74 @@ function getGaSession() {
 }
 
 // =============================================================
+// HELPERS — Facebook Pixel parity. FB SDK sends `fbp` browser-ID
+// cookie + `eid` event-dedup ID + `pmd` page metadata. Replicate
+// them so our beacon matches what the legacy SDK fires (retargeting
+// audience match rate, future Conversions API dedup, ad relevance).
+// =============================================================
+
+/**
+ * Returns the FB browser ID from the `_fbp` cookie, or generates and
+ * persists a new one in the exact format Meta's SDK writes
+ * (`fb.1.<unixMs>.<random>`). Critical for FB retargeting / Custom
+ * Audience matching — without this, FB cannot stitch a visitor
+ * across sessions.
+ */
+function getFbp() {
+  const m = document.cookie.match(/(?:^|;\s*)_fbp=([^;]+)/);
+  if (m) return m[1];
+  const fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 1e16)}`;
+  try {
+    document.cookie = `_fbp=${fbp}; domain=${COOKIE_DOMAIN}; path=/; max-age=63072000; SameSite=None; Secure`;
+  } catch (e) { /* incognito */ }
+  return fbp;
+}
+
+/**
+ * Generates an event dedup ID that FB Pixel + FB Conversions API (server-
+ * side) can match for deduplication. If marketing later enables Adobe
+ * Event Forwarding for FB CAPI, both client and server events must
+ * reference the same eid to avoid double-counting.
+ *
+ * Format mirrors the FB SDK's "client-side identifier": `ob3_plugin-
+ * set_<sha256-of-event-and-cookie>`. We use a simpler random-per-event
+ * pattern since we don't have the page's full FB context.
+ */
+function generateFbEid() {
+  const rand = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
+  return `ob3_eds_${rand}`;
+}
+
+/**
+ * Returns page metadata FB uses for ad relevance + advanced matching.
+ * Read from <title> + <meta name="description"> + lang attr.
+ */
+function getFbPageMetadata() {
+  return {
+    'pmd[title]':       document.title || '',
+    'pmd[locale]':      document.documentElement.lang || 'en',
+    'pmd[description]': document.querySelector('meta[name="description"]')?.content || '',
+  };
+}
+
+/**
+ * Page load time in ms (from performance API) — FB uses this for
+ * page-quality signals.
+ */
+function getPageLoadTime() {
+  try {
+    const t = performance.timing;
+    if (t && t.loadEventEnd && t.navigationStart) {
+      const plt = t.loadEventEnd - t.navigationStart;
+      return plt > 0 ? plt : performance.now();
+    }
+    return performance.now();
+  } catch (e) {
+    return 0;
+  }
+}
+
+// =============================================================
 // BEACONS — image-pixel firing, no SDK library required.
 // Image beacons run at low priority so they don't compete with LCP
 // image bandwidth, and they cost ~0 JS parse time.
@@ -111,7 +179,10 @@ function fireBeacon(url) {
   } catch (e) { /* never throw from analytics */ }
 }
 
+let fbEventCount = 0; // increments per beacon — FB uses this as `ec` (event count)
+
 function fireFacebookBeacon(eventName, params = {}) {
+  const meta = getFbPageMetadata();
   const qs = new URLSearchParams({
     id: PIXELS.fb,
     ev: eventName,
@@ -121,8 +192,14 @@ function fireFacebookBeacon(eventName, params = {}) {
     ts: String(Date.now()),
     sw: String(screen.width),
     sh: String(screen.height),
-    v: '2.9.0',
+    v: '2.9.334',                  // match the FB SDK version legacy site fires
     r: 'stable',
+    ec: String(fbEventCount++),    // event count — FB uses for ordering
+    fbp: getFbp(),                 // browser ID cookie — critical for retargeting
+    eid: generateFbEid(),          // event dedup ID — for future Conversions API match
+    tz: String(new Date().getTimezoneOffset() * -1),
+    plt: String(getPageLoadTime()),
+    ...meta,                       // pmd[title], pmd[locale], pmd[description]
     ...params,
   });
   fireBeacon(`https://www.facebook.com/tr/?${qs}`);
