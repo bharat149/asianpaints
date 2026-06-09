@@ -27,6 +27,7 @@ Two variant: White form, Blue form
 
 import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
 import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
+import { firePixelConversion } from '../../scripts/third-party-pixels.js';
 
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
@@ -783,6 +784,12 @@ function trackFormSubmission(form) {
     campaignId,
     ...formData,
   });
+  // Mirror to marketing pixels via image beacons — no SDK library load
+  firePixelConversion('form_submit', {
+    event_category: formName,
+    value: 1,
+    currency: 'INR',
+  });
 }
 
 /**
@@ -1005,6 +1012,11 @@ function renderForm(block) {
       trackEvent("Form start", {
         "formName": formName,
         "campaignId": campaignId
+      });
+      // Mirror to marketing pixels via image beacons — no SDK library load
+      firePixelConversion('form_start', {
+        event_category: formName,
+        campaign: campaignId,
       });
     }
   });
