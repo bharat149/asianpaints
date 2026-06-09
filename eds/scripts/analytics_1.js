@@ -401,6 +401,21 @@ function buildTargetMboxParams() {
     const derived = deriveCategoryIdFromUrl();
     if (derived) params['user.categoryId'] = derived;
   }
+  // Mirror user.categoryId into mbox.categoryId so Adobe Target's
+  // BUILT-IN Category Affinity feature receives the signal too. The
+  // built-in feature reads mbox.categoryId (not user.categoryId) and
+  // maintains its own top-N category list with proper accumulation
+  // and recency-decay algorithms — independent of any custom Profile
+  // Script that may be reading user.categoryId.
+  //
+  // Defense against the observed Profile Script behaviour where
+  // categoryAffinities gets OVERWRITTEN on each new category visit
+  // instead of accumulated. Sending both lets either mechanism (custom
+  // script OR built-in) fire, whichever is correctly wired in Target
+  // admin. If both fire, they update separate attributes — no conflict.
+  if (params['user.categoryId']) {
+    params['mbox.categoryId'] = params['user.categoryId'];
+  }
   return params;
 }
 
