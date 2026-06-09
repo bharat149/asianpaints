@@ -1,4 +1,4 @@
-import { trackEvent } from "../../scripts/analytics_1.js";
+import { trackEvent, bindCarouselNavigationTracking } from "../../scripts/analytics_1.js";
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -399,6 +399,7 @@ export default function decorate(block) {
     });
 
     block._testimonialSwiper = swiper;
+    bindCarouselNavigationTracking(block, headingText);
   };
 
   if ('IntersectionObserver' in window) {

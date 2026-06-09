@@ -1,4 +1,4 @@
-import { trackEvent, getDigitalData } from "../../scripts/analytics_1.js";
+import { trackEvent, getDigitalData, bindCarouselNavigationTracking } from "../../scripts/analytics_1.js";
 /*
 ** Authoring format **
 Column 1 → logo desktop
@@ -136,6 +136,10 @@ function trackNavClick(button, sectionTitle) {
     }
 
     trackEvent('sitesection_click', {
+      direction,
+      testTitle: sectionTitle,
+    });
+    trackEvent('Navigation', {
       direction,
       testTitle: sectionTitle,
     });

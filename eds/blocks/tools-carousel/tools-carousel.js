@@ -6,7 +6,7 @@ col 3 = multiple titles
 col 4 = multiple URLs
 */
 
-import { trackEvent } from '../../scripts/analytics_1.js';
+import { trackEvent, bindCarouselNavigationTracking } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -96,6 +96,10 @@ function trackNavClick(button, parentTitle) {
     }
 
     trackEvent('sitesection_click', {
+      direction,
+      testTitle: parentTitle,
+    });
+    trackEvent('Navigation', {
       direction,
       testTitle: parentTitle,
     });

@@ -772,8 +772,13 @@ const EVENT_REGISTRY = {
 
   // Carousel banner
   carousel_banner_click: {
-    events: 'event96', // best-guess (matches test.csv "Carousel Banner Click [e96]")
-    eVars: { bannerTitle: 'eVar81', bannerDestinationUrl: 'eVar86' },
+    events: 'event96', // Painting Contractors sheet row 1 — Banner Image Click
+    eVars: {
+      parentTitle:          'eVar67', // "Title of the Banner"
+      bannerTitle:          'eVar67', // legacy key alias
+      redirectionLink:      'eVar86', // "redirection url"
+      bannerDestinationUrl: 'eVar86', // legacy key alias
+    },
   },
 
   // Inspiration category filter
@@ -785,7 +790,7 @@ const EVENT_REGISTRY = {
   // Generic CTA-link tracking
   cta_link_text: {
     events: 'event143', // best-guess (Custom Link Click [e143])
-    eVars: { cta_: 'eVar45', param1: 'eVar46' },
+    eVars: { cta_: 'eVar45', parentTitle: 'eVar67', param1: 'eVar86' },
   },
   custom_link_text: {
     events: 'event143', // best-guess (same as cta_link_text)
