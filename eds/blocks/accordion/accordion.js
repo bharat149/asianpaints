@@ -202,15 +202,25 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
 }
 
 function trackAccordionClick(block, summaryEl) {
-  const cta = block.classList.contains('faq') ? 'FAQ' : 'Accordion'; // FIXME: check for other variants
+  const isFaq = block.classList.contains('faq');
   summaryEl.addEventListener('click', (e) => {
     setTimeout(() => {
-      const state = e.target.closest(".accordion-item")?.open ? "Open" : "Close";
-      trackEvent("cta_link_text", {
-        "cta_": cta + " " + state,
-        "Title": e.target.textContent?.trim(), // FIXME: ??
-        "parentTitle": "" // FIXME: ??
-      });
+      const item = e.target.closest('.accordion-item');
+      const isOpen = item?.open;
+      if (isFaq) {
+        const questionText = e.target.textContent?.trim() || '';
+        trackEvent('cta_link_text', {
+          cta_: isOpen ? 'FAQ Open' : 'FAQ close',
+          parentTitle: questionText,
+        });
+      } else if (!isFaq) {
+        const state = isOpen ? 'Open' : 'Close';
+        const questionText = e.target.textContent?.trim() || '';
+        trackEvent('cta_link_text', {
+          cta_: 'Accordion ' + state,
+          parentTitle: questionText,
+        });
+      }
     }, 200);
   });
 }
