@@ -4,7 +4,7 @@ Col 1 contains multiple desktop top images
 Col 2 contains multiple mobile top images
 Col 3 contains multiple URLs
 */
-import { trackEvent } from "../../scripts/analytics_1.js";
+import { trackEvent, bindCarouselNavigationTracking } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -129,8 +129,9 @@ export default async function decorate(block) {
 
     anchor.addEventListener("click", (e) => {
       trackEvent("product_tile_click", {
-        "productName": getTitle(linkCol),
-        "param1": href
+        productName: getTitle(linkCol),
+        Title:       titleText,
+        param1:      href,
       });
     });
 
@@ -191,6 +192,7 @@ export default async function decorate(block) {
 
     removeInjectedSwiperIcons(prevBtn, nextBtn);
     block.featuredProductsSwiper = swiper;
+    bindCarouselNavigationTracking(block, titleText);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Failed to initialize Swiper', error);

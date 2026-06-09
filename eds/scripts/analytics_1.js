@@ -401,6 +401,21 @@ function buildTargetMboxParams() {
     const derived = deriveCategoryIdFromUrl();
     if (derived) params['user.categoryId'] = derived;
   }
+  // Mirror user.categoryId into mbox.categoryId so Adobe Target's
+  // BUILT-IN Category Affinity feature receives the signal too. The
+  // built-in feature reads mbox.categoryId (not user.categoryId) and
+  // maintains its own top-N category list with proper accumulation
+  // and recency-decay algorithms — independent of any custom Profile
+  // Script that may be reading user.categoryId.
+  //
+  // Defense against the observed Profile Script behaviour where
+  // categoryAffinities gets OVERWRITTEN on each new category visit
+  // instead of accumulated. Sending both lets either mechanism (custom
+  // script OR built-in) fire, whichever is correctly wired in Target
+  // admin. If both fire, they update separate attributes — no conflict.
+  if (params['user.categoryId']) {
+    params['mbox.categoryId'] = params['user.categoryId'];
+  }
   return params;
 }
 
@@ -772,8 +787,13 @@ const EVENT_REGISTRY = {
 
   // Carousel banner
   carousel_banner_click: {
-    events: 'event96', // best-guess (matches test.csv "Carousel Banner Click [e96]")
-    eVars: { bannerTitle: 'eVar81', redirectionLink: 'eVar86' },
+    events: 'event96', // Painting Contractors sheet row 1 — Banner Image Click
+    eVars: {
+      parentTitle:          'eVar67', // "Title of the Banner"
+      bannerTitle:          'eVar67', // legacy key alias
+      redirectionLink:      'eVar86', // "redirection url"
+      bannerDestinationUrl: 'eVar86', // legacy key alias
+    },
   },
 
   // Inspiration category filter
@@ -785,7 +805,7 @@ const EVENT_REGISTRY = {
   // Generic CTA-link tracking
   cta_link_text: {
     events: 'event143', // best-guess (Custom Link Click [e143])
-    eVars: { cta_: 'eVar45', parentTitle: 'evar67', param1: 'eVar46' },
+    eVars: { cta_: 'eVar45', parentTitle: 'eVar67', param1: 'eVar86' },
   },
   custom_link_text: {
     events: 'event143', // best-guess (same as cta_link_text)

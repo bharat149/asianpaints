@@ -1,4 +1,4 @@
-import { trackEvent } from '../../scripts/analytics_1.js';
+import { trackEvent, bindCarouselNavigationTracking } from '../../scripts/analytics_1.js';
 
 function loadScript(src) {
   return new Promise((resolve) => {
@@ -200,6 +200,7 @@ function initVariant2(block) {
     });
 
     $root.find('.contractors-in-your-city-cards .slick-arrow').addClass('focus-visible-auto-imp');
+    bindCarouselNavigationTracking(block, block.querySelector('.contractors-in-your-city-title')?.textContent?.trim() || 'Contractors in Your City');
 
     $root.find('.contractors-in-your-city-card').off('click keydown').on('click keydown', function (e) {
       if (e.type !== 'click' && !(e.type === 'keydown' && e.key === 'Enter')) return;

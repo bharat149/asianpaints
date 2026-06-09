@@ -60,8 +60,8 @@ function bindMediaClickTracking(linkEl, ctaLink, bannerTitle) {
 
   linkEl.addEventListener("click", () => {
     trackEvent("carousel_banner_click", {
-      bannerDestinationUrl: ctaLink,
-      bannerTitle,
+      parentTitle:     bannerTitle,   // eVar67 = "Title of the Banner"
+      redirectionLink: ctaLink,        // eVar86 = "redirection url"
     });
   });
 }
@@ -168,7 +168,8 @@ export default async function decorate(block) {
       cta.href = ctaLink;
       cta.textContent = ctaText;
 
-      bindCtaClickTracking(cta, ctaLink, ctaText, ctaText || "carousel-hero-banner");
+      const bannerTitle = (desktopImg || mobileImg)?.querySelector("img")?.alt?.trim() || ctaText || "carousel-hero-banner";
+      bindCtaClickTracking(cta, ctaLink, ctaText, bannerTitle);
 
       mediaWrap.appendChild(cta);
     }

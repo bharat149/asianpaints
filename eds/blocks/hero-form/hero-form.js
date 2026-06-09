@@ -4,7 +4,7 @@ import {
   toClassName,
 } from '../../scripts/aem.js';
 import { AesUtil } from '../../scripts/aesUtil.module.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
+import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
 
 function getAmsBase() {
   if (typeof window === 'undefined') return 'https://beta.asianpaints.com';
@@ -262,16 +262,18 @@ function trackInterestCTA(campaignId, formName) {
   });
 }
 
-function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn) {
+function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn, extraData = {}) {
   const formData = {
     formName,
     campaignId,
     pincode,
     whatsappOptIn,
+    dataDestination: extraData.dataDestination || '',
+    contruction:     extraData.contruction     || '',
+    localpainter:    extraData.localpainter    || '',
   };
 
   getDigitalData().form = formData;
-  // formData already includes formName + campaignId from the function args.
   trackEvent('Form Submit', formData);
 }
 
@@ -515,7 +517,19 @@ export default function decorate(block) {
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!isFormValid()) return;
+    if (!isFormValid()) {
+      const failedFields = [];
+      const m = mobileInput?.value?.trim() || '';
+      const p = pinInput?.value?.trim() || '';
+      if (!m || !isMobileValid(m)) failedFields.push('MobileNumber');
+      if (!p || !isPincodeValid(p)) failedFields.push('PINCode');
+      trackFormError({
+        campaignId: currentCampaignId,
+        formName: currentFormName,
+        formError: failedFields.length ? failedFields : ['required'],
+      });
+      return;
+    }
 
     spinner?.classList.remove('d-none');
 
@@ -537,7 +551,11 @@ export default function decorate(block) {
 
     const campaignId = currentCampaignId;
 
-    trackFormSubmission(currentFormName, campaignId, pinInput.value.trim(), whatsAppConsent);
+    trackFormSubmission(currentFormName, campaignId, pinInput.value.trim(), whatsAppConsent, {
+      dataDestination: cfg.dataDestination || '',
+      contruction:     cfg.contruction     || '',
+      localpainter:    cfg.localpainter    || '',
+    });
 
     const payload = buildBasePayload();
     payload.pageUrl = window.location.href;
