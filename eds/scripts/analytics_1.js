@@ -750,10 +750,10 @@ const EVENT_REGISTRY = {
     events: 'event300',
     eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
   },
-  navigation: {
-    events: 'event300',
-    eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
-  },
+  // navigation: {
+  //   events: 'event300',
+  //   eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
+  // },
 
   // Exit-intent modal
   'Exit Intent Pop-up Impression': { events: 'event359' },
