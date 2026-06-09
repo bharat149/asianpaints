@@ -643,7 +643,8 @@ function createPopupScreen(block, type = 'success') {
     trackCtaLink.addEventListener('click', () => {
       const btnTitle = trackCtaLink.textContent.trim();
       const ctaLink = trackCtaLink.getAttribute('href') || '';
-      triggerCtaLinkText(btnTitle, ctaLink);
+      const bannerTitle = block.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
+      triggerCtaLinkText(btnTitle, ctaLink, bannerTitle);
     });
   }
 

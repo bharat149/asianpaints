@@ -861,7 +861,7 @@ const EVENT_REGISTRY = {
     },
   },
 
-  filter_click: { events: 'event121' }, // best-guess (Product Filter Click)
+  filter_click: { events: 'event121', eVars: { filter: 'eVar34' } },
   natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
   // Painting Contractors sheet row 5 — areas of expertise tiles.
   squarecross_click: {
@@ -1059,9 +1059,10 @@ export function trackEvent(eventName, eventData = {}) {
  * @param {string} btnTitle The CTA label
  * @param {string} ctaLink The CTA URL
  */
-export function triggerCtaLinkText(btnTitle, ctaLink) {
+export function triggerCtaLinkText(btnTitle, ctaLink, parentTitle = '') {
   trackEvent('cta_link_text', {
     cta_: btnTitle,
+    parentTitle,
     param1: ctaLink,
   });
 }
