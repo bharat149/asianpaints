@@ -735,10 +735,10 @@ const EVENT_REGISTRY = {
     events: 'event300',
     eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
   },
-  navigation: {
-    events: 'event300',
-    eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
-  },
+  // navigation: {
+  //   events: 'event300',
+  //   eVars: { direction: 'eVar45', testTitle: 'eVar67', parentTitle: 'eVar67' },
+  // },
 
   // Exit-intent modal
   'Exit Intent Pop-up Impression': { events: 'event359' },
@@ -773,7 +773,7 @@ const EVENT_REGISTRY = {
   // Carousel banner
   carousel_banner_click: {
     events: 'event96', // best-guess (matches test.csv "Carousel Banner Click [e96]")
-    eVars: { bannerTitle: 'eVar81', bannerDestinationUrl: 'eVar86' },
+    eVars: { bannerTitle: 'eVar81', redirectionLink: 'eVar86' },
   },
 
   // Inspiration category filter
@@ -785,7 +785,7 @@ const EVENT_REGISTRY = {
   // Generic CTA-link tracking
   cta_link_text: {
     events: 'event143', // best-guess (Custom Link Click [e143])
-    eVars: { cta_: 'eVar45', param1: 'eVar46' },
+    eVars: { cta_: 'eVar45', parentTitle: 'evar67', param1: 'eVar46' },
   },
   custom_link_text: {
     events: 'event143', // best-guess (same as cta_link_text)
