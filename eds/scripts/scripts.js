@@ -343,21 +343,42 @@ function preloadLcpImage(doc) {
     return;
   }
 
+  const firstSection = doc.querySelector('main > div:first-child');
+  if (!firstSection) return;
+
   // 2. Auto-detect: first <img> in first section of <main>.
-  const firstImg = doc.querySelector('main > div:first-child img');
-  if (!firstImg) return;
+  const firstImg = firstSection.querySelector('img');
+  if (firstImg) {
+    const src = firstImg.getAttribute('src');
+    if (src) {
+      // Mirror the <picture>'s responsive sources, if present, so the
+      // browser picks the same URL the <img> would have resolved to.
+      const picture = firstImg.closest('picture');
+      const firstSource = picture?.querySelector('source[srcset]');
+      const imagesrcset = firstSource?.getAttribute('srcset') || '';
+      const imagesizes = firstSource?.getAttribute('sizes') || '';
+      appendImagePreload(src, imagesrcset, imagesizes);
+      return;
+    }
+  }
 
-  const src = firstImg.getAttribute('src');
-  if (!src) return;
-
-  // Mirror the <picture>'s responsive sources, if present, so the
-  // browser picks the same URL the <img> would have resolved to.
-  const picture = firstImg.closest('picture');
-  const firstSource = picture?.querySelector('source[srcset]');
-  const imagesrcset = firstSource?.getAttribute('srcset') || '';
-  const imagesizes = firstSource?.getAttribute('sizes') || '';
-
-  appendImagePreload(src, imagesrcset, imagesizes);
+  // 3. Fallback: hero-form / hero blocks may store the background image
+  //    URL as plain text in a config row rather than as an <img> tag.
+  //    Scan config rows for a recognisable background-image key.
+  const heroBlock = firstSection.querySelector('.hero-form, .hero');
+  if (heroBlock) {
+    const rows = heroBlock.querySelectorAll(':scope > div');
+    for (let i = 0; i < rows.length; i += 1) {
+      const key = (rows[i].children[0]?.textContent || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+      if (key === 'hero-bg-desktop' || key === 'hero-background-desktop') {
+        const url = (rows[i].children[1]?.textContent || '').trim();
+        if (url && (url.startsWith('http') || url.startsWith('/') || url.startsWith('.'))) {
+          appendImagePreload(url);
+          return;
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -400,6 +421,16 @@ async function loadLazy(doc) {
     // eslint-disable-next-line no-console
     console.error('Failed to initialize analytics', e);
   });
+
+  // Google Tag Manager — loaded in lazy phase (like analytics) to catch bouncers.
+  // GTM container GTM-MP96GBBF handles GA4, Clarity, FB Pixel, Google Ads, DoubleClick.
+  const GTM_ID = 'GTM-MP96GBBF';
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+  const gtmScript = document.createElement('script');
+  gtmScript.async = true;
+  gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}`;
+  document.head.appendChild(gtmScript);
 
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);
