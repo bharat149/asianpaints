@@ -74,6 +74,21 @@ function getGaCid() {
 }
 
 /**
+ * Reads the Adobe Marketing Cloud Visitor ID (ECID) from the AMCV
+ * cookie. Returns empty string if not present.
+ *
+ * Same source `analytics_1.js#getECID()` reads from — kept duplicated
+ * here to keep this module dependency-free. If the source ever changes
+ * (e.g., ECID moves to a different cookie), update both.
+ */
+function getAdobeEcid() {
+  // MCMID can be either %7C (URL-encoded pipe) or literal | depending
+  // on how the cookie was written.
+  const m = document.cookie.match(/MCMID(?:%7C|\|)(\d+)/);
+  return m ? m[1] : '';
+}
+
+/**
  * Returns the GA4 session state from the container-specific cookie
  * `_ga_<container>`, or generates and persists a fresh session if the
  * cookie is missing.
@@ -207,7 +222,7 @@ function fireFacebookBeacon(eventName, params = {}) {
 
 function fireGa4Beacon(eventName, params = {}) {
   const { sid, sct, seg } = getGaSession();
-  const qs = new URLSearchParams({
+  const baseParams = {
     v: '2',
     tid: PIXELS.ga4,
     cid: getGaCid(),
@@ -224,8 +239,20 @@ function fireGa4Beacon(eventName, params = {}) {
     // engaged time would require a visibilitychange tracker (follow-up
     // if metrics skew complaints come in from marketing).
     _et: '10000',
-    ...params,
-  });
+  };
+  // Adobe ECID → GA4 user property (`up.adobe_ecid`). Standard GA4
+  // Measurement Protocol convention for sending custom identifiers as
+  // user-scoped properties. Enables cross-platform stitching with
+  // Adobe Analytics — marketing can use `User > Adobe ECID` as a
+  // dimension in GA4 reports and join to Adobe Analytics datasets.
+  //
+  // Not literally replicating the `ecid=` and `_eu=` params from the
+  // legacy GTM call — those are GTM-internal encoded flags we can't
+  // accurately reproduce. The user-property approach is GA4's
+  // documented stitching mechanism (does the same job).
+  const adobeEcid = getAdobeEcid();
+  if (adobeEcid) baseParams['up.adobe_ecid'] = adobeEcid;
+  const qs = new URLSearchParams({ ...baseParams, ...params });
   fireBeacon(`https://www.google-analytics.com/g/collect?${qs}`);
 }
 
