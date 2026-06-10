@@ -210,18 +210,27 @@ function getConsentParams() {
 // =============================================================
 
 let uaHintsCache = null;
+let uaHintsReady;   // Promise — resolves when high-entropy hints land
+                    // (or immediately if UA-CH is unavailable). Awaited
+                    // by firePixelPageView with a 50ms timeout so the
+                    // beacon includes the full hint set on Chromium.
 
 (function warmUaHints() {
   const uad = navigator.userAgentData;
-  if (!uad) return;
-  // Seed low-entropy values immediately so a beacon that fires
+  if (!uad) {
+    // Safari / Firefox — no UA-CH. Resolve immediately so the
+    // await in firePixelPageView doesn't block.
+    uaHintsReady = Promise.resolve();
+    return;
+  }
+  // Seed low-entropy values immediately so any beacon that fires
   // before the async resolve still gets something.
   uaHintsCache = {
     uap: uad.platform || '',
     uamb: uad.mobile ? '1' : '0',
   };
   try {
-    uad.getHighEntropyValues([
+    uaHintsReady = uad.getHighEntropyValues([
       'architecture', 'bitness', 'fullVersionList',
       'model', 'platformVersion', 'wow64',
     ]).then((full) => {
@@ -238,11 +247,31 @@ let uaHintsCache = null;
         uaw: full.wow64 ? '1' : '0',
       };
     }).catch(() => { /* permission denied — keep low-entropy */ });
-  } catch (e) { /* older Chromium — keep low-entropy */ }
+  } catch (e) {
+    // Older Chromium without getHighEntropyValues — keep low-entropy.
+    uaHintsReady = Promise.resolve();
+  }
 }());
 
 function getUaHints() {
   return uaHintsCache || {};
+}
+
+/**
+ * Resolves when UA Client Hints high-entropy values have been
+ * fetched, or after `timeoutMs` — whichever comes first. Called from
+ * firePixelPageView so the lazy-phase beacons include the full UA-CH
+ * set rather than only the low-entropy seed.
+ *
+ * 50 ms is well under the lazy-phase budget (the lazy phase fires
+ * after LCP, and 50 ms is below the 100 ms input-delay threshold).
+ * In practice getHighEntropyValues resolves in <5 ms on warm pages.
+ */
+function waitForUaHints(timeoutMs = 50) {
+  return Promise.race([
+    uaHintsReady || Promise.resolve(),
+    new Promise((r) => { setTimeout(r, timeoutMs); }),
+  ]);
 }
 
 // =============================================================
@@ -421,8 +450,14 @@ function fireDcmFloodlightBeacon(type, cat, params = {}) {
  * Floodlight. Call from lazy phase. Each beacon is ~250 bytes; all
  * four fire in parallel. No SDK libraries loaded — near-zero LHS
  * impact.
+ *
+ * Awaits UA Client Hints high-entropy resolve (with 50 ms timeout)
+ * before firing so GA4 / DCM include the full UA-CH set rather than
+ * only low-entropy seed values. Without this await, the beacons
+ * sometimes win the race and ship without uapv/uaa/uab/uafvl etc.
  */
-export function firePixelPageView() {
+export async function firePixelPageView() {
+  await waitForUaHints();
   fireFacebookBeacon('PageView');
   fireGa4Beacon('page_view');
   fireGoogleAdsBeacon('gtag.config');
