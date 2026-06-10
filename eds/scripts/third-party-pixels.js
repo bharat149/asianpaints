@@ -237,8 +237,13 @@ let uaHintsReady;   // Promise — resolves when high-entropy hints land
       uaHintsCache = {
         uaa: full.architecture || '',
         uab: full.bitness || '',
+        // Brand names are NOT pre-encoded here — the downstream URL
+        // builders (URLSearchParams in GA4, the encodeURIComponent
+        // map in DCM) handle encoding once. Pre-encoding caused
+        // double-encoding (`%20` → `%2520`) which was visible in the
+        // gtm-parity-followups preview verification.
         uafvl: (full.fullVersionList || [])
-          .map((b) => `${encodeURIComponent(b.brand)};${b.version}`)
+          .map((b) => `${b.brand};${b.version}`)
           .join('|'),
         uam: full.model || '',
         uamb: uad.mobile ? '1' : '0',
