@@ -165,6 +165,138 @@ function getFbPageMetadata() {
   };
 }
 
+// =============================================================
+// HELPERS — Consent Mode v2 (Google Consent Mode v2). GA4 + DCM
+// expect `gcs`, `gcd`, `npa`, `dma` so Google's downstream pipeline
+// includes/excludes the hit per regional privacy law. OneTrust is
+// not yet wired on EDS, so we default to "all granted" — when the
+// AEM cookie banner lands, swap getConsentState() to read it.
+// =============================================================
+
+/**
+ * Returns Google Consent Mode v2 params. Defaults match GTM's
+ * legacy behavior on asianpaints.com (all consent granted, no
+ * personalization restrictions). When OneTrust / EDS cookie banner
+ * is integrated, decode `OnetrustActiveGroups` cookie here.
+ *
+ *   gcs: G111 = ad_storage granted, analytics_storage granted
+ *   gcd: 13l3l3l3l1l1 = ad/analytics/ad_user_data/ad_personalization
+ *         all granted, no region adjustments
+ *   npa: 0  = personalized ads allowed
+ *   dma:  0  = Digital Markets Act not applicable (India primary)
+ */
+function getConsentParams() {
+  return {
+    gcs: 'G111',
+    gcd: '13l3l3l3l1l1',
+    npa: '0',
+    dma: '0',
+    dma_cps: '-',
+  };
+}
+
+// =============================================================
+// HELPERS — User-Agent Client Hints. UA-CH is replacing the
+// deprecated User-Agent header. GA4 + DCM read these for audience
+// targeting + device-class reporting. Chromium-only (Safari /
+// Firefox don't expose UA-CH — params will be empty on those
+// browsers, which matches GTM's legacy behavior there too).
+//
+// High-entropy hints require an async `getHighEntropyValues()`
+// call — we warm them at module load and cache so the synchronous
+// beacon fire path can read them without awaiting. If the beacon
+// fires before warm-up completes, only low-entropy hints
+// (platform, mobile) are sent.
+// =============================================================
+
+let uaHintsCache = null;
+let uaHintsReady;   // Promise — resolves when high-entropy hints land
+                    // (or immediately if UA-CH is unavailable). Awaited
+                    // by firePixelPageView with a 50ms timeout so the
+                    // beacon includes the full hint set on Chromium.
+
+(function warmUaHints() {
+  const uad = navigator.userAgentData;
+  if (!uad) {
+    // Safari / Firefox — no UA-CH. Resolve immediately so the
+    // await in firePixelPageView doesn't block.
+    uaHintsReady = Promise.resolve();
+    return;
+  }
+  // Seed low-entropy values immediately so any beacon that fires
+  // before the async resolve still gets something.
+  uaHintsCache = {
+    uap: uad.platform || '',
+    uamb: uad.mobile ? '1' : '0',
+  };
+  try {
+    uaHintsReady = uad.getHighEntropyValues([
+      'architecture', 'bitness', 'fullVersionList',
+      'model', 'platformVersion', 'wow64',
+    ]).then((full) => {
+      uaHintsCache = {
+        uaa: full.architecture || '',
+        uab: full.bitness || '',
+        // Brand names are NOT pre-encoded here — the downstream URL
+        // builders (URLSearchParams in GA4, the encodeURIComponent
+        // map in DCM) handle encoding once. Pre-encoding caused
+        // double-encoding (`%20` → `%2520`) which was visible in the
+        // gtm-parity-followups preview verification.
+        uafvl: (full.fullVersionList || [])
+          .map((b) => `${b.brand};${b.version}`)
+          .join('|'),
+        uam: full.model || '',
+        uamb: uad.mobile ? '1' : '0',
+        uap: full.platform || '',
+        uapv: full.platformVersion || '',
+        uaw: full.wow64 ? '1' : '0',
+      };
+    }).catch(() => { /* permission denied — keep low-entropy */ });
+  } catch (e) {
+    // Older Chromium without getHighEntropyValues — keep low-entropy.
+    uaHintsReady = Promise.resolve();
+  }
+}());
+
+function getUaHints() {
+  return uaHintsCache || {};
+}
+
+/**
+ * Resolves when UA Client Hints high-entropy values have been
+ * fetched, or after `timeoutMs` — whichever comes first. Called from
+ * firePixelPageView so the lazy-phase beacons include the full UA-CH
+ * set rather than only the low-entropy seed.
+ *
+ * 50 ms is well under the lazy-phase budget (the lazy phase fires
+ * after LCP, and 50 ms is below the 100 ms input-delay threshold).
+ * In practice getHighEntropyValues resolves in <5 ms on warm pages.
+ */
+function waitForUaHints(timeoutMs = 50) {
+  return Promise.race([
+    uaHintsReady || Promise.resolve(),
+    new Promise((r) => { setTimeout(r, timeoutMs); }),
+  ]);
+}
+
+// =============================================================
+// HELPERS — DoubleClick auid (cross-site user ID). Set by Google's
+// ad-tag servers as `_gcl_au` cookie when ads are served. Critical
+// for DCM Floodlight conversion → impression attribution.
+// =============================================================
+
+/**
+ * Reads the DoubleClick auid from the `_gcl_au` cookie.
+ * Cookie format: `GCL.<version>.<auid-decimal>.<auid-decimal>`.
+ * Returns empty string if not set (visitor hasn't been served any
+ * Google ad yet — DCM will skip attribution stitching for them,
+ * which is correct).
+ */
+function getAuiddc() {
+  const m = document.cookie.match(/(?:^|;\s*)_gcl_au=GCL\.\d+\.([\d.]+)/);
+  return m ? m[1] : '';
+}
+
 /**
  * Page load time in ms (from performance API) — FB uses this for
  * page-quality signals.
@@ -239,6 +371,14 @@ function fireGa4Beacon(eventName, params = {}) {
     // engaged time would require a visibilitychange tracker (follow-up
     // if metrics skew complaints come in from marketing).
     _et: '10000',
+    // Consent Mode v2 — required for GA4 to include the hit in
+    // EU/UK/India-DPDP-region reporting. Defaults grant all storage;
+    // when OneTrust is wired, getConsentParams() reads real state.
+    ...getConsentParams(),
+    // UA Client Hints — replaces the deprecated User-Agent header for
+    // device-class reporting + audience targeting. Empty on Safari /
+    // Firefox (which is fine — GA4 falls back to UA parsing there).
+    ...getUaHints(),
   };
   // Adobe ECID → GA4 user property (`up.adobe_ecid`). Standard GA4
   // Measurement Protocol convention for sending custom identifiers as
@@ -276,12 +416,27 @@ function fireGoogleAdsBeacon(eventName, params = {}) {
 }
 
 function fireDcmFloodlightBeacon(type, cat, params = {}) {
-  // DCM activity tag URL pattern (matches what GTM was firing, verified via
-  // Omnibug export 2026-06-09).
-  const extra = Object.entries(params)
+  // DCM activity tag URL pattern. Switched from
+  // `<src>.fls.doubleclick.net/activityi` to `ad.doubleclick.net/activity`
+  // to match GTM's canonical endpoint (verified via Tag Assistant capture
+  // 2026-06-10). Both endpoints accept the same `src;type;cat` triplet,
+  // but the `ad.doubleclick.net/activity` path is the one Google's
+  // Floodlight conversion-attribution pipeline expects to find `auiddc`
+  // on — using the fls subdomain bypasses some attribution joins.
+  const auiddc = getAuiddc();
+  const enriched = {
+    ...getConsentParams(),         // gcs, gcd, npa, dma, dma_cps
+    ...getUaHints(),               // uap, uapv, uaa, uab, uam, uamb, uaw, uafvl
+    ...(auiddc ? { auiddc } : {}),  // DoubleClick cross-site user ID (when present)
+    dc_fmt: '3',                    // Format version (matches legacy GTM)
+    dc_random: `${Date.now()}_${Math.floor(Math.random() * 1e10)}`,
+    epver: '2',                     // Endpoint protocol version
+    ...params,
+  };
+  const extra = Object.entries(enriched)
     .map(([k, v]) => `;${k}=${encodeURIComponent(String(v))}`)
     .join('');
-  const url = `https://${PIXELS.dcm}.fls.doubleclick.net/activityi`
+  const url = 'https://ad.doubleclick.net/activity'
     + `;src=${PIXELS.dcm}`
     + `;type=${type}`
     + `;cat=${cat}`
@@ -300,8 +455,14 @@ function fireDcmFloodlightBeacon(type, cat, params = {}) {
  * Floodlight. Call from lazy phase. Each beacon is ~250 bytes; all
  * four fire in parallel. No SDK libraries loaded — near-zero LHS
  * impact.
+ *
+ * Awaits UA Client Hints high-entropy resolve (with 50 ms timeout)
+ * before firing so GA4 / DCM include the full UA-CH set rather than
+ * only low-entropy seed values. Without this await, the beacons
+ * sometimes win the race and ship without uapv/uaa/uab/uafvl etc.
  */
-export function firePixelPageView() {
+export async function firePixelPageView() {
+  await waitForUaHints();
   fireFacebookBeacon('PageView');
   fireGa4Beacon('page_view');
   fireGoogleAdsBeacon('gtag.config');
