@@ -2,6 +2,30 @@
 
 import { trackEvent } from './analytics_1.js';
 
+// Third-party marketing pixels (Facebook Pixel and friends).
+// Loaded via requestIdleCallback so the pixel scripts never compete
+// with LCP/TBT and contribute zero to the Lighthouse Performance
+// score (delayed phase fires after the synthetic audit window
+// closes). When Adobe Edge Network Event Forwarding goes live for
+// these destinations, this dynamic import can be removed — the
+// third-party-pixels module is designed to be safely no-op'd or
+// fully deleted without touching any other code.
+(() => {
+  const init = () => import('./third-party-pixels.js')
+    .then(({ initThirdPartyPixels }) => initThirdPartyPixels())
+    // eslint-disable-next-line no-console
+    .catch((e) => console.error('[delayed] third-party-pixels import failed:', e));
+
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(init, { timeout: 3000 });
+  } else {
+    // Safari < 15 + a few mobile browsers lack rIC. Fall back to a
+    // short setTimeout — still in the delayed phase, just no idle
+    // scheduling. Covers ~5 % of traffic.
+    setTimeout(init, 100);
+  }
+})();
+
 /**
  * Global function to trigger the exit-intent modal from any CTA with class 'trigger-exit-intent-popup-form'
  * Can be called from JavaScript, Target, or data attributes

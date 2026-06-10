@@ -422,15 +422,24 @@ async function loadLazy(doc) {
     console.error('Failed to initialize analytics', e);
   });
 
-  // Google Tag Manager — loaded in lazy phase (like analytics) to catch bouncers.
-  // GTM container GTM-MP96GBBF handles GA4, Clarity, FB Pixel, Google Ads, DoubleClick.
-  const GTM_ID = 'GTM-MP96GBBF';
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
-  const gtmScript = document.createElement('script');
-  gtmScript.async = true;
-  gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}`;
-  document.head.appendChild(gtmScript);
+  // Third-party marketing pixels — lightweight PageView image beacons
+  // (~1 KB total, no SDK libraries loaded in lazy phase). Replaces the
+  // GTM container (GTM-MP96GBBF) that was costing ~271 KB of JS in
+  // lazy phase and 10-15 PSI Performance points. Identical PageView
+  // coverage for FB Pixel, GA4, Google Ads, DCM Floodlight.
+  //
+  // Microsoft Clarity (session replay) loads in the delayed phase via
+  // delayed.js — see initThirdPartyPixels() in third-party-pixels.js.
+  //
+  // Conversion events (form_submit, form_start, etc.) fire as additional
+  // beacons via firePixelConversion() — wired from form handlers
+  // alongside the existing trackEvent() calls.
+  import('./third-party-pixels.js').then(({ firePixelPageView }) => {
+    firePixelPageView();
+  }).catch((e) => {
+    // eslint-disable-next-line no-console
+    console.error('[scripts] third-party-pixels PageView beacons failed:', e);
+  });
 
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);

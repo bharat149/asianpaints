@@ -7,6 +7,7 @@
 
 import { submitLeadFromForm, getCampaignIdFromUrl } from '../../scripts/form-submit-common.js';
 import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
+import { firePixelConversion } from '../../scripts/third-party-pixels.js';
 
 const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
 const DEFAULT_SUCCESS_MESSAGE = 'Thank you! We will contact you soon.';
@@ -713,10 +714,12 @@ function trackLeadFormStart(form) {
   if (form.dataset.formStarted === 'true') return;
 
   form.dataset.formStarted = 'true';
-  trackEvent('Form start', {
-    formName: form.dataset.formName || 'lead-form',
-    campaignId: getCampaignId(),
-  });
+  const formName = form.dataset.formName || 'lead-form';
+  const campaignId = getCampaignId();
+  trackEvent('Form start', { formName, campaignId });
+  // Mirror to marketing pixels (FB, GA4, Google Ads) via image beacons.
+  // No SDK library load required — the beacon URL carries the event.
+  firePixelConversion('form_start', { event_category: formName, campaign: campaignId });
 }
 
 function trackLeadFormSubmission(form) {
@@ -741,6 +744,13 @@ function trackLeadFormSubmission(form) {
     formName: form.dataset.formName || 'lead-form',
     campaignId: getCampaignId(),
     ...formData,
+  });
+  // Mirror to marketing pixels (FB Pixel as 'Lead', GA4 as 'form_submit',
+  // Google Ads as 'form_submit' conversion). Image beacons — no SDK load.
+  firePixelConversion('form_submit', {
+    event_category: formData.formName,
+    value: 1,
+    currency: 'INR',
   });
 }
 
