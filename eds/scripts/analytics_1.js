@@ -673,7 +673,8 @@ const EVENT_REGISTRY = {
 
   // Search
   'Header Search Icon Click': { events: 'event330' },
-  'Search Start': { events: 'event54' },
+  'Search Start': { events: 'event54', eVars: { flowType: 'eVar36', category: 'eVar29', subFlow: 'eVar119' } },
+  search_start:   { events: 'event54', eVars: { flowType: 'eVar36', category: 'eVar29', subFlow: 'eVar119' } },
   'Search Bar Close': { events: 'event336' },
   ub_imagesearch_start: { events: 'event312' },
   ub_imagesearch_close: { events: 'event313' },
@@ -681,11 +682,19 @@ const EVENT_REGISTRY = {
   // against EDS data layer doc, Header sheet row 7).
   ub_imagesearch_complete: { events: 'event314', eVars: { totalResults: 'eVar28' } },
 
-  // Auth
+  // Auth — titlecase (legacy) + snake_case (spec); eVar6/prop6/eVar54/prop54
+  // are page-level vars set globally in buildPageData() on every hit.
   'Login Icon Click': { events: 'event7' },
+  login_icon:         { events: 'event7' },
 
-  // Cart
-  mini_cart_click: { events: 'event67' },
+  // Cart — spec action name: mini_cart_icon_click; mini_cart_click kept as legacy alias.
+  // eVar21 = value of the HybrisCart cookie (auto-read at dispatch time via def.cookies).
+  mini_cart_click:      { events: 'event67', cookies: { HybrisCart: 'eVar21' } },
+  mini_cart_icon_click: { events: 'event67', cookies: { HybrisCart: 'eVar21' } },
+
+  // Checkout — titlecase (legacy) + snake_case (spec); eVar6/prop6/eVar54/prop54 are global.
+  'Mini_cart_checkout':  { events: 'event97' },
+  mini_cart_checkout:    { events: 'event97' },
 
   // CTAs / navigation
   custom_cta_click: {
@@ -1030,6 +1039,14 @@ export function trackEvent(eventName, eventData = {}) {
   };
   if (def.events) analytics.events = def.events;
 
+  // Auto-read cookies declared in the registry def (e.g. cookies: { HybrisCart: 'eVar21' })
+  if (def.cookies) {
+    Object.entries(def.cookies).forEach(([cookieName, dest]) => {
+      const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${cookieName}=([^;]*)`, 'i'));
+      if (m) analytics[dest] = decodeURIComponent(m[1]);
+    });
+  }
+
   // Split eventData keys: known → eVarN/propN (may be array of dests);
   // unknown → contextData
   const eVarMap = def.eVars || {};
@@ -1046,12 +1063,36 @@ export function trackEvent(eventName, eventData = {}) {
   });
   if (Object.keys(contextData).length) analytics.contextData = contextData;
 
+  // Pass through reserved Adobe Analytics variables set directly by the caller.
+  if (eventData.products) analytics.products = String(eventData.products);
+
   try {
     window.alloy('sendEvent', { data: { __adobe: { analytics } } });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[analytics] trackEvent failed', err);
   }
+}
+
+/**
+ * Fires Mini_cart_checkout (event97) when the user clicks the minicart
+ * checkout button. Builds the Adobe Analytics products string from
+ * digitalData.productDetails.item if present.
+ */
+export function trackMiniCartCheckout() {
+  const items = getDigitalData().productDetails?.item;
+  let products;
+  if (Array.isArray(items) && items.length) {
+    products = items.map((p) => [
+      '',
+      p.productSKU       || '',
+      p.productQuantity  || '',
+      p.productPrice     || '',
+      '',
+      `eVar106=${p.productQuantity || ''};eVar107=${p.productPrice || ''}`,
+    ].join(';')).join(',');
+  }
+  trackEvent('Mini_cart_checkout', products ? { products } : {});
 }
 
 /**
