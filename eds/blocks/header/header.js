@@ -2692,7 +2692,13 @@ function buildLoginGuestPopup() {
   overlay.querySelector('#validate-mobile')?.addEventListener('submit', (e) => {
     e.preventDefault();
     closePopup();
-    window.location.href = getApApi().KEYCLOAK_PAGE_URL;
+    buildProfileAuthUrl(AUTH_REDIRECT_URI)
+      .then((url) => {
+        window.location.href = url;
+      })
+      .catch(() => {
+        window.location.href = getApApi().KEYCLOAK_PAGE_URL;
+      });
   });
 
   // overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
@@ -3181,7 +3187,13 @@ async function submitGuestDeliveryAddress(modal, submitBtn) {
       setTimeout(() => {
         closeGuestDeliveryAddressModal();
 
-        window.location.href = getApApi().KEYCLOAK_PAGE_URL;
+        buildProfileAuthUrl(AUTH_REDIRECT_URI)
+          .then((url) => {
+            window.location.href = url;
+          })
+          .catch(() => {
+            window.location.href = getApApi().KEYCLOAK_PAGE_URL;
+          });
       }, 1000);
 
       return;
