@@ -1,4 +1,4 @@
-import { trackEvent } from '../../scripts/analytics_1.js';
+import { trackEvent , ga4Implementaion } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const row = block.querySelector(':scope > div');
@@ -63,6 +63,11 @@ export default function decorate(block) {
         parentTitle,
         param1,
       });
+      ga4Implementaion({
+        event:'services_home_needs',
+        click_text:serviceName,
+        click_category:parentTitle
+      })
     });
 
     const imgContainer = document.createElement('div');

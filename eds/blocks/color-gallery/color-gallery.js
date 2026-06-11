@@ -8,7 +8,7 @@ Col 5 contains multiple mobile bottom images
 Col 6 contains multiple URLs
 */
 
-import { trackEvent } from '../../scripts/analytics_1.js';
+import { trackEvent , ga4Implementaion } from '../../scripts/analytics_1.js';
 
 function getPicturesFromColumn(col) {
   if (!col) return [];
@@ -225,6 +225,15 @@ export default async function decorate(block) {
     cardLink.dataset.productName = getCardProductName(topPicture, bottomPicture, i);
     cardLink.dataset.parentTitle = parentTitle;
 
+    /*GA 4 */
+
+    cardLink.addEventListener('click', () => {
+        ga4Implementaion({
+        event:'catelouge_interaction',
+        click_text: '',
+        click_category: 'Colours of the year 2025'
+      })
+    })
     const topWrap = document.createElement('div');
     topWrap.className = 'color-gallery-card-top';
 
@@ -288,6 +297,16 @@ export default async function decorate(block) {
   mobileCta.className = 'color-gallery-mobile-cta';
 
   const ctaLink = textCol.querySelector('a');
+  if (ctaLink) {
+  ctaLink.addEventListener('click', () => {
+
+    ga4Implementaion({
+      event: 'catelouge_interaction',
+      click_text: ctaLink.textContent.trim(),
+      click_category: 'Colours of the year 2025',
+    });
+  });
+}
   if (ctaLink) {
     const mobileLink = ctaLink.cloneNode(true);
     mobileCta.appendChild(mobileLink);
