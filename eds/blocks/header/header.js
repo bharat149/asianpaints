@@ -2691,10 +2691,8 @@ function buildLoginGuestPopup() {
 
   overlay.querySelector('#validate-mobile')?.addEventListener('submit', (e) => {
     e.preventDefault();
-
-    // Trigger your existing login flow here.
-    // Example:
-    document.dispatchEvent(new CustomEvent('cart-login-click'));
+    closePopup();
+    window.location.href = getApApi().KEYCLOAK_PAGE_URL;
   });
 
   // overlay.querySelector('.continue-as-guest')?.addEventListener('click', () => {
@@ -3183,11 +3181,7 @@ async function submitGuestDeliveryAddress(modal, submitBtn) {
       setTimeout(() => {
         closeGuestDeliveryAddressModal();
 
-        if (typeof showLoginGuestPopup === 'function') {
-          showLoginGuestPopup();
-        } else if (typeof window.showLogin === 'function') {
-          window.showLogin();
-        }
+        window.location.href = getApApi().KEYCLOAK_PAGE_URL;
       }, 1000);
 
       return;
