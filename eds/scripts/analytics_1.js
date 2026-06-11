@@ -854,7 +854,7 @@ const EVENT_REGISTRY = {
   // not event132 (earlier best-guess as a generic Custom CTA Click).
   short_video_shop: {
     events: 'event297',
-    eVars: { param1: 'eVar86', redirectionLink: 'eVar86' },
+    eVars: { param1: 'eVar86'},
   },
 
   // Product / gallery interactions — spec event ID is event293
@@ -871,7 +871,7 @@ const EVENT_REGISTRY = {
   },
 
   filter_click: { events: 'event121', eVars: { filter: 'eVar34' } },
-  natural_wood_shade_click: { events: 'event158' }, // best-guess (Natural wood shade click)
+  natural_wood_shade_click: { events: 'event158', eVars: { productName: 'eVar8' } }, // best-guess (Natural wood shade click)
   // Painting Contractors sheet row 5 — areas of expertise tiles.
   squarecross_click: {
     events: 'event144',
@@ -885,7 +885,7 @@ const EVENT_REGISTRY = {
   },
   calc_continue: {
     events: 'event43', // best-guess (Rolls Calculator Submit)
-    eVars: { flowType: 'eVar36', filter: 'eVar34' },
+    eVars: { flowType: 'eVar36', calcType : 'eVar67', filter: 'eVar26' },
   },
 
   // Footer
@@ -904,8 +904,8 @@ const EVENT_REGISTRY = {
   },
 
   // Contact CTAs
-  SPSContactClick: { events: 'event105' }, // best-guess (Footer contact us — tel: links)
-  contact_us_click_whatsapp: { events: 'event105' }, // best-guess (same)
+  SPSContactClick: { events: 'event280', eVars:{"Contact Us Component": 'eVar45'} }, // best-guess (Footer contact us — tel: links)
+  contact_us_click_whatsapp: { events: 'event280' }, // best-guess (same)
 
   // ============================================================
   // AMS-fired linkNames our EDS code doesn't yet fire (or fires
