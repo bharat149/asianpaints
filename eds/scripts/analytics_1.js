@@ -1411,3 +1411,31 @@ export function royalePlayAnimatedImageTracking(element) {
     triggerCTAClickWithLinkAndTitle(href, btnTitle, 'default-content-wrapper');
   });
 }
+
+function getClientID() {
+    const gaCookie = document.cookie.split('; ').find(row => row.startsWith('_ga='))
+  if(!gaCookie) return;
+  const gaValue =gaCookie.split("=")[1];
+  const parts = gaValue.split('.');
+return parts.length > 2 ? parts[2] + '.' + parts[3] : null;
+}
+
+export function ga4Implementaion({
+  event = '',
+  click_text = '',
+  click_category = '',
+  ...extraFields
+}={}) {
+
+  if(!event) return ;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event,
+    click_text,
+    click_category,
+    userID:getClientID(),
+    user_status:getLoginStatus() === 'logged in' ? 'Yes' : 'No',
+    ...extraFields
+  })
+
+}
