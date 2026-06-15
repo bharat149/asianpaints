@@ -22,9 +22,8 @@
  *                                          misses the first ~8 s of session but
  *                                          the rest is captured.
  *
- * Replaces the previously-shipped GTM container (GTM-MP96GBBF) which was loading
- * in lazy phase and costing ~271 KB of JS + 10-15 PSI Performance points.
- * Identical PageView + conversion coverage in ~1 KB of network bandwidth.
+ * GTM container (GTM-MP96GBBF) can be re-enabled via `fireGTM()` in lazy phase
+ * while still keeping direct-beacon coverage in this module.
  *
  * GA4 visitor / session continuity
  * ────────────────────────────────
@@ -48,6 +47,7 @@ const PIXELS = Object.freeze({
   ads:     'AW-988076575',      // "AW-" prefix is stripped when building the URL
   dcm:     '8404938',            // Floodlight advertiser ID
   clarity: 'scmwsisrlt',
+  gtm:     'GTM-MP96GBBF',
 });
 
 const COOKIE_DOMAIN = '.asianpaints.com';
@@ -326,6 +326,33 @@ function fireBeacon(url) {
   } catch (e) { /* never throw from analytics */ }
 }
 
+let gtmLoaded = false;
+
+/**
+ * Pushes an event into `dataLayer` and loads GTM once.
+ * Safe to call repeatedly from both pageview and conversion flows.
+ */
+function fireGTM(eventName = 'page_view', params = {}) {
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, ...params });
+
+    if (gtmLoaded) return;
+    gtmLoaded = true;
+
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${PIXELS.gtm}`;
+
+    const firstScript = document.getElementsByTagName('script')[0];
+    if (firstScript?.parentNode) {
+      firstScript.parentNode.insertBefore(script, firstScript);
+    } else {
+      (document.head || document.documentElement).appendChild(script);
+    }
+  } catch (e) { /* never throw from analytics */ }
+}
+
 let fbEventCount = 0; // increments per beacon — FB uses this as `ec` (event count)
 
 function fireFacebookBeacon(eventName, params = {}) {
@@ -466,6 +493,11 @@ export async function firePixelPageView() {
   fireFacebookBeacon('PageView');
   fireGa4Beacon('page_view');
   fireGoogleAdsBeacon('gtag.config');
+  fireGTM('page_view', {
+    page_location: location.href,
+    page_referrer: document.referrer || '',
+    page_title: document.title || '',
+  });
   // DCM PageView Floodlight — matches the asian0/asian0 type/cat pair
   // that GTM was firing (per Omnibug capture 2026-06-09).
   fireDcmFloodlightBeacon('asian0', 'asian0');
@@ -488,6 +520,8 @@ export async function firePixelPageView() {
  * @param {Object} [params]   Event params (value, currency, custom dims, etc.)
  */
 export function firePixelConversion(eventName, params = {}) {
+  fireGTM(eventName, params);
+
   // FB — translate our spec name to FB's standard event vocabulary
   const fbEventName = FB_EVENT_MAP[eventName] || 'CustomEvent';
   fireFacebookBeacon(fbEventName, params);
@@ -566,7 +600,8 @@ function loadMicrosoftClarity() {
  * but cannot be replaced by image beacons.
  *
  * Currently only Microsoft Clarity (session replay). FB / GA4 / Ads /
- * DCM are handled via lazy beacons + on-event beacons (no library load).
+ * DCM are handled via lazy beacons + on-event beacons. GTM is loaded
+ * from fireGTM() when pageview/conversion APIs are invoked.
  *
  * Each loader is wrapped in try/catch so one pixel's failure (script
  * blocked by browser, network error, etc.) never breaks the others.
