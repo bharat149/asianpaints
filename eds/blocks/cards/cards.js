@@ -1,6 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle , ga4Implementaion } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
@@ -211,7 +211,15 @@ export default function decorate(block) {
       const btnTitle = cta.textContent.trim();
       const body = cta.closest('.cards-card-body');
       const parentTitle = body?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent.trim() || '';
-
+      const imageAlt = cta
+        .closest('li')
+        ?.querySelector('.cards-card-image img')
+        ?.alt || '';
+      ga4Implementaion({
+        event: 'product_cards',
+        click_text: btnTitle,
+        click_category: imageAlt
+      })
       if (isRoomBlock && btnTitle.toLowerCase() === 'explore now') {
         const roomTitle = body?.querySelector('.cards-card-title')?.textContent.trim() || parentTitle;
 

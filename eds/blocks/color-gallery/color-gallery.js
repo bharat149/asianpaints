@@ -212,6 +212,9 @@ export default async function decorate(block) {
       `Bottom image ${i + 1}`,
     );
 
+    const bottomImageAlt =
+  bottomPicture?.querySelector('img')?.alt?.trim() || '';
+
     // Skip card if both images are missing
     if (!topPicture && !bottomPicture) continue;
 
@@ -230,7 +233,7 @@ export default async function decorate(block) {
     cardLink.addEventListener('click', () => {
         ga4Implementaion({
         event:'catelouge_interaction',
-        click_text: '',
+        click_text: bottomImageAlt,
         click_category: 'Colours of the year 2025'
       })
     })

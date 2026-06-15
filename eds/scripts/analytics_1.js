@@ -1430,8 +1430,6 @@ return parts.length > 2 ? parts[2] + '.' + parts[3] : null;
 
 export function ga4Implementaion({
   event = '',
-  click_text = '',
-  click_category = '',
   ...extraFields
 }={}) {
 
@@ -1439,8 +1437,6 @@ export function ga4Implementaion({
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
     event,
-    click_text,
-    click_category,
     userID:getClientID(),
     user_status:getLoginStatus() === 'logged in' ? 'Yes' : 'No',
     ...extraFields
