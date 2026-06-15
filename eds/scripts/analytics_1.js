@@ -726,7 +726,6 @@ const EVENT_REGISTRY = {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
       redirectionLink: 'eVar86',
-      param1: 'eVar46',
     },
   },
   // Header icon — legacy titlecase + spec snake_case both map here.
@@ -1325,7 +1324,6 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
       cta_: btnTitle,
       redirectionLink: ctaLink,
       parentTitle,
-      param1: ctaLink,
     });
   }
 }

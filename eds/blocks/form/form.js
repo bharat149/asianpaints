@@ -768,11 +768,11 @@ function showThankYouScreen(block) {
 }
 
 function trackFormSubmission(form) {
+  const isWhatsappChecked = form.querySelector('[name="updateMeOnWhatsapp"]')?.checked;
   const formData = {
     "formName": formName,
     "campaignId": campaignId,
-    "pincode": form.querySelector("#enquire-pincode")?.value?.trim() || '',
-    "whatsappOptIn": form.querySelector('[name="updateMeOnWhatsapp"]')?.checked ? 'Y' : 'N',
+    "whatsappOptIn": isWhatsappChecked ? 'checked' : undefined,
     "contruction": form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
     "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
     // Spec field — see lead-form.js for rationale. Default 'both'.
