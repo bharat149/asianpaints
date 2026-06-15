@@ -419,29 +419,39 @@ function buildTargetMboxParams() {
   return params;
 }
 
-function buildAnalyticsPayload() {
+function buildCommonAnalyticsContext() {
   const pageName = getPageName();
+  const timestamp = getDateString();
+
+  return {
+    pageName,
+    eVar5: timestamp,
+    prop5: timestamp,
+    eVar6: location.href,
+    prop6: location.href,
+    eVar9: getLoginStatus(),
+    eVar12: getECID(),
+    eVar54: pageName,
+    prop54: pageName,
+  };
+}
+
+function buildAnalyticsPayload() {
+  const common = buildCommonAnalyticsContext();
+  const { pageName } = common;
   const section = getSection();
   const previousPageName = getPreviousPageName();
 
   const payload = {
-    pageName,
+    ...common,
     server: location.hostname,
     currencyCode: 'INR',
 
     // Confirmed from AMS beacons (Hit 1 & Hit 2 incognito + regular):
     eVar2:  getVisitorType(),                 // 'New' | 'Repeat'
-    prop5:  getDateString(),                  // formatted date string
-    eVar5:  'D=c5',                           // literal — server-side dynamic copy
-    eVar6:  location.href,
-    prop6:  'D=v6',                           // literal
-    eVar9:  getLoginStatus(),
-    eVar12: getECID(),                        // ECID as a reportable dimension
     prop12: previousPageName,                 // PREVIOUS page name (AMS pattern)
     prop13: getScrollDepthString(),
     eVar51: getPageLoadTime(),                // page load time in ms (since navigation start)
-    eVar54: pageName,                         // mirrors pageName
-    prop54: 'D=v54',                          // literal
   };
 
   // prop1 = section, only when not homepage (matches AMS)
@@ -1034,17 +1044,9 @@ export function trackEvent(eventName, eventData = {}) {
 
   const def = EVENT_REGISTRY[name] || {};
   const analytics = {
+    ...buildCommonAnalyticsContext(),
     linkName: name,
     linkType: 'o',
-    // Page-context fields (eVar6/prop6/eVar54/prop54) on every event —
-    // matches legacy at.js where link-tracking hits inherited current
-    // page state. Web SDK is stateless per-call so we set them
-    // explicitly. Registry-driven mappings below may override if a
-    // specific event needs a different value here.
-    eVar6:  location.href,
-    prop6:  'D=v6',
-    eVar54: getPageName(),
-    prop54: 'D=v54',
   };
   if (def.events) analytics.events = def.events;
 
