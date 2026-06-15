@@ -94,6 +94,16 @@ function apUrl(path) {
   return isOnAsianPaintsDomain() ? normalizedPath : `${getApiBaseUrl()}${normalizedPath}`;
 }
 
+/** Resolve any href to a full absolute URL for analytics eVars. */
+function toAbsoluteUrl(href) {
+  if (!href || href === '#' || href.startsWith('javascript:')) return '';
+  try {
+    return new URL(href, window.location.href).href;
+  } catch {
+    return href;
+  }
+}
+
 function normalizeInternalPath(href) {
   if (!href) return '';
   try {
@@ -2164,7 +2174,7 @@ function buildBrandBar(brandDiv) {
       event.stopPropagation();
       if (brandItem.classList.contains('active')) return;
 
-      const destinationUrl = event.currentTarget?.href || brandItem.href || brandItem.getAttribute('href');
+      const destinationUrl = toAbsoluteUrl(event.currentTarget?.href || brandItem.href || brandItem.getAttribute('href'));
       triggerDomainSwitch(destinationUrl);
     });
 
@@ -4099,8 +4109,8 @@ function bindDropdownLinkAnalytics(block) {
       const sectionName = link.dataset.siteSection || '';
       const subsectionNameParent = link.dataset.subSection || '';
       const subsectionName = link.dataset.subSectionTwo || link.textContent?.trim() || '';
-      const redirectionLink = link.getAttribute('href') || '';
-      console.log(sectionName , subsectionNameParent , subsectionName)
+      const redirectionLink = toAbsoluteUrl(link.getAttribute('href'));
+
       trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName, redirectionLink);
       ga4Implementaion({
         event: 'menu_interaction',
@@ -4172,7 +4182,7 @@ function bindMainNavAnalytics(block) {
     if (!navItem || !navLink || !navList.contains(navItem)) return;
 
     const siteSection = getNavSectionName(navItem, navLink);
-    const redirectionLink = navLink.getAttribute('href')?.trim() || '';
+    const redirectionLink = toAbsoluteUrl(navLink.getAttribute('href'));
 
     trackSiteSectionClick(siteSection, redirectionLink);
      ga4Implementaion({
@@ -4192,7 +4202,7 @@ function bindSecondaryNavAnalytics(block) {
 
     const navItem = navLink.closest('li');
     const siteSection = getNavSectionName(navItem, navLink) || navLink.textContent?.trim() || '';
-    const redirectionLink = navLink.getAttribute('href')?.trim() || '';
+    const redirectionLink = toAbsoluteUrl(navLink.getAttribute('href'));
 
     trackSiteSectionClick(siteSection, redirectionLink);
   });
@@ -4491,7 +4501,8 @@ function addInteractions(block) {
         || '';
       const title = rawTitle.replace(/\s+/g, ' ').trim();
       const rawHref = actionBtn.getAttribute('href') || '';
-      const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : rawHref;
+      const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : toAbsoluteUrl(rawHref);
+
       trackEvent('Header icons', { title, param1 });
 
       //Header Icons GA4 Events

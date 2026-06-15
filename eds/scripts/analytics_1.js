@@ -488,6 +488,15 @@ function getEdgeConfigId() {
 // ============================================================
 
 export async function initAnalytics() {
+  // Ensure legacy digitalData context is present on every page load
+  // before any analytics event is dispatched.
+  setDigitalDataContext(window.location.href);
+
+  // Keep values fresh when the page is restored from bfcache.
+  window.addEventListener('pageshow', () => {
+    setDigitalDataContext(window.location.href);
+  });
+
   // Lock in visitor type BEFORE alloy modifies the cookie
   getVisitorType();
 
