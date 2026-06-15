@@ -725,8 +725,8 @@ const EVENT_REGISTRY = {
     eVars: {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
-      redirectionLink: 'eVar86',
-      param1: 'eVar46',
+      redirectionLink: 'eVar86'
+      //param1: 'eVar46',
     },
   },
   // Header icon — legacy titlecase + spec snake_case both map here.
@@ -905,11 +905,11 @@ const EVENT_REGISTRY = {
 
   // Calculator
   calc_start: {
-    events: 'event42', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
+    events: 'event301', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
     eVars: { flowType: 'eVar36' },
   },
   calc_continue: {
-    events: 'event43', // best-guess (Rolls Calculator Submit)
+    events: 'event302', // best-guess (Rolls Calculator Submit)
     eVars: { flowType: 'eVar36', calcType : 'eVar67', filter: 'eVar26' },
   },
 
