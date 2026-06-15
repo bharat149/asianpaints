@@ -23,6 +23,7 @@ import {
   trackImageSearchClose,
   trackImageSearchComplete,
   triggerCTAClickWithLinkAndTitle,
+  ga4Implementaion
 } from '../../scripts/analytics_1.js';
 
 const DESKTOP_BREAKPOINT = 992;
@@ -4099,9 +4100,14 @@ function bindDropdownLinkAnalytics(block) {
       const subsectionNameParent = link.dataset.subSection || '';
       const subsectionName = link.dataset.subSectionTwo || link.textContent?.trim() || '';
       const redirectionLink = link.getAttribute('href') || '';
-
+      console.log(sectionName , subsectionNameParent , subsectionName)
       trackSubsectionTwoClick(sectionName, subsectionNameParent, subsectionName, redirectionLink);
-
+      ga4Implementaion({
+        event: 'menu_interaction',
+        click_text:subsectionName,
+        click_header:subsectionNameParent,
+        click_category:sectionName
+      }) 
       const isModifiedClick = event.defaultPrevented
         || event.button !== 0
         || event.metaKey
@@ -4169,6 +4175,10 @@ function bindMainNavAnalytics(block) {
     const redirectionLink = navLink.getAttribute('href')?.trim() || '';
 
     trackSiteSectionClick(siteSection, redirectionLink);
+     ga4Implementaion({
+        event: 'menu_interaction',
+        click_text:siteSection,
+      })
   });
 }
 
@@ -4454,6 +4464,9 @@ function addInteractions(block) {
       trackEvent('Header Search Icon Click');
       openSearchDialog(block);
     });
+        ga4Implementaion({
+        event: 'search_icon_click',
+      })
     searchBarEl.style.cursor = 'pointer';
     const searchInput = searchBarEl.querySelector('.search-input');
     if (searchInput) searchInput.style.cursor = 'pointer';
@@ -4479,8 +4492,17 @@ function addInteractions(block) {
       const title = rawTitle.replace(/\s+/g, ' ').trim();
       const rawHref = actionBtn.getAttribute('href') || '';
       const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : rawHref;
-
       trackEvent('Header icons', { title, param1 });
+
+      //Header Icons GA4 Events
+      const ga4EventName = 'header_interaction'
+      const clickCategory = 'click_header icons'
+      ga4Implementaion({
+        event: ga4EventName,
+        click_text: title,
+        click_category: clickCategory
+      })
+
     });
   });
 
@@ -4498,6 +4520,14 @@ function addInteractions(block) {
       const ctaLink = ctaBtn.getAttribute('href') || '';
       const btnTitle = ctaBtn.textContent?.trim() || '';
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, 'Header');
+
+      //GA4 -> Exit Intent Button Header 
+
+           ga4Implementaion({
+        event: 'book_free_site_visit',
+        click_text: btnTitle,
+        click_category: 'click_header / content'
+      }) 
     });
   });
 

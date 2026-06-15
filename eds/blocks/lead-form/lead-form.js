@@ -6,7 +6,7 @@
  */
 
 import { submitLeadFromForm, getCampaignIdFromUrl } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
+import { getDigitalData, trackEvent, trackFormError , ga4Implementaion } from '../../scripts/analytics_1.js';
 import { firePixelConversion } from '../../scripts/third-party-pixels.js';
 
 const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
@@ -745,6 +745,11 @@ function trackLeadFormSubmission(form) {
     campaignId: getCampaignId(),
     ...formData,
   });
+  console.log(form)
+      ga4Implementaion({
+          event: 'menu_interaction',
+          click_text:siteSection,
+        })
   // Mirror to marketing pixels (FB Pixel as 'Lead', GA4 as 'form_submit',
   // Google Ads as 'form_submit' conversion). Image beacons — no SDK load.
   firePixelConversion('form_submit', {
