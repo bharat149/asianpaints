@@ -705,11 +705,15 @@ const EVENT_REGISTRY = {
   // are page-level vars set globally in buildPageData() on every hit.
   'Login Icon Click': { events: 'event7' },
   login_icon:         { events: 'event7' },
+  login_successful:   { events: 'event48', eVars: { loginFunction: 'eVar46', loginStatus: 'eVar9' } },
 
   // Cart — spec action name: mini_cart_icon_click; mini_cart_click kept as legacy alias.
   // eVar21 = value of the HybrisCart cookie (auto-read at dispatch time via def.cookies).
   mini_cart_click:      { events: 'event67', cookies: { HybrisCart: 'eVar21' } },
   mini_cart_icon_click: { events: 'event67', cookies: { HybrisCart: 'eVar21' } },
+  mini_cart_item_plus_click:  { events: 'scAdd,event189', eVars: { productSKU: 'eVar59', productName: 'eVar8' } },
+  mini_cart_item_minus_click: { events: 'scRemove,event199', eVars: { productSKU: 'eVar59', productName: 'eVar8' } },
+  remove_product_click:       { events: 'event71,scRemove', eVars: { productSKU: 'eVar59', productName: 'eVar8' } },
 
   // Checkout — titlecase (legacy) + snake_case (spec); eVar6/prop6/eVar54/prop54 are global.
   'Mini_cart_checkout':  { events: 'event97' },
@@ -801,6 +805,8 @@ const EVENT_REGISTRY = {
   // Splash popup
   splash_view: { events: 'event6' }, // best-guess (matches test.csv "Splash Impressions [e6]")
 
+  splash_close: { events: 'event18' }, // best-guess (matches test.csv "Splash Close [e18]")
+  
   // Header domain switch
   domain_swicth: {
     events: 'event331', // best-guess (matches test.csv "Domain Switch Tab Click [e331]")

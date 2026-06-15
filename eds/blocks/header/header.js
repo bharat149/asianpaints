@@ -2598,6 +2598,17 @@ function buildCartModal() {
    * If cart is empty, allow normal navigation to SHOP_URL.
    */
   shopBtn.addEventListener('click', (e) => {
+    const ctaText = shopBtn.textContent?.trim() || '';
+    const isShopNow = ctaText.toLowerCase() === 'shop now';
+    if (isShopNow) {
+      const redirectionLink = shopBtn.getAttribute('href') || getApApi().SHOP_URL;
+      trackEvent('custom_cta_click', {
+        cta_: 'Cta Clicked',
+        parentTitle: 'Title of the Banner',
+        redirectionLink,
+      });
+    }
+
     if (!modal.classList.contains('has-items')) {
       return;
     }
@@ -3158,6 +3169,7 @@ async function submitGuestDeliveryAddress(modal, submitBtn) {
       setCookie('guest_email', userEmail);
 
       setGuestDigitalData('logged in');
+      trackLoginSuccessful('guest login');
 
       trackGuestAnalytics('guest_login_successful', {
         checkoutUserType: window.digitalData?.user?.CheckoutUserType || 'guest',
@@ -3269,6 +3281,23 @@ function setGuestDigitalData(loginStatus, loginErrorName) {
 
 function trackGuestAnalytics(eventName, payload) {
   trackEvent(eventName, payload);
+}
+
+function trackLoginSuccessful(loginFunction = '') {
+  const digitalData = getDigitalData();
+  digitalData.user = digitalData.user || {};
+
+  if (loginFunction) {
+    digitalData.user.loginFunction = loginFunction;
+  }
+  if (!digitalData.user.loginStatus) {
+    digitalData.user.loginStatus = 'logged in';
+  }
+
+  trackEvent('login_successful', {
+    loginFunction: digitalData.user.loginFunction || '',
+    loginStatus: digitalData.user.loginStatus || 'logged in',
+  });
 }
 
 function setCookie(name, value) {
@@ -3877,8 +3906,14 @@ async function refreshCartModal(block) {
         row.className = 'cart-item-row';
         const entryId = (entry.entryNumber !== undefined && entry.entryNumber !== null) ? entry.entryNumber : (entry.entryId || entry.id || '');
         // console.log('Entry ID:', entryId); // Debug log
+        const productId = product.code || product.productSKU || product.hybrisProductId || entry.productCode || entry.sku || '';
+        const productPrice = entry.totalPrice?.value || entry.basePrice?.value || product.price?.value || entry.price || '';
         row.dataset.entryId = entryId;
         row.dataset.quantity = String(entry.quantity || 1);
+        row.dataset.productId = String(productId || '');
+        row.dataset.productSku = String(productId || '');
+        row.dataset.productName = String(product.name || '');
+        row.dataset.productPrice = String(productPrice || '');
 
         const imgSrc =
           product.productImage ||
@@ -3968,6 +4003,88 @@ async function attachCartItemListeners(block, cartModal) {
   const showShade = () => cartModal.classList.add(shadeClass);
   const hideShade = () => cartModal.classList.remove(shadeClass);
 
+  const normalizeQty = (value) => {
+    const qty = Number(value);
+    return Number.isFinite(qty) && qty > 0 ? qty : 1;
+  };
+
+  const getRowProduct = (row) => ({
+    entryId: row?.dataset.entryId || '',
+    productId: row?.dataset.productId || row?.dataset.productSku || '',
+    productSKU: row?.dataset.productSku || row?.dataset.productId || '',
+    productName: row?.dataset.productName || '',
+    productPrice: row?.dataset.productPrice || '',
+    quantity: normalizeQty(row?.dataset.quantity),
+  });
+
+  const buildProductString = (item) => [
+    '',
+    item.productId || item.productSKU || '',
+    item.quantity || '',
+    item.productPrice || '',
+    '',
+    `eVar106=${item.quantity || ''};eVar107=${item.productPrice || ''}`,
+  ].join(';');
+
+  const buildCartItemsFromDom = ({ mutateEntryId = '', mutateQuantity = null } = {}) => {
+    const items = [];
+    cartModal.querySelectorAll('.cart-item-row').forEach((row) => {
+      const item = getRowProduct(row);
+      if (!item.productId && !item.productName) return;
+
+      if (mutateEntryId && item.entryId === mutateEntryId) {
+        if (mutateQuantity === null || mutateQuantity <= 0) {
+          return;
+        }
+        item.quantity = mutateQuantity;
+      }
+
+      items.push(item);
+    });
+    return items;
+  };
+
+  const setMiniCartDigitalData = ({ cartItems = [], product = null } = {}) => {
+    const digitalData = getDigitalData();
+    digitalData.cart = digitalData.cart || {};
+    digitalData.product = digitalData.product || {};
+    digitalData.cart.item = cartItems.map((item) => ({
+      productId: item.productId || item.productSKU || '',
+      quantity: item.quantity,
+      productPrice: item.productPrice || '',
+    }));
+
+    if (product) {
+      digitalData.product.productSKU = product.productSKU || product.productId || '';
+      digitalData.product.productName = product.productName || '';
+      digitalData.product.productPrice = product.productPrice || '';
+      digitalData.product.productQuantity = product.quantity;
+    }
+  };
+
+  const trackMiniCartMutation = ({ eventName, product, mutateQuantity }) => {
+    if (!eventName || !product) return;
+
+    const cartItems = buildCartItemsFromDom({
+      mutateEntryId: product.entryId,
+      mutateQuantity,
+    });
+    setMiniCartDigitalData({ cartItems, product: { ...product, quantity: mutateQuantity || product.quantity } });
+
+    const payload = {
+      productSKU: product.productSKU || product.productId || '',
+      productName: product.productName || '',
+    };
+
+    if (eventName === 'remove_product_click') {
+      payload.products = buildProductString(product);
+    } else {
+      payload.products = cartItems.map(buildProductString).join(',');
+    }
+
+    trackEvent(eventName, payload);
+  };
+
   cartModal.addEventListener('click', async (e) => {
     const button = e.target.closest('button');
     if (!button) return;
@@ -3977,30 +4094,45 @@ async function attachCartItemListeners(block, cartModal) {
 
     const entryId = row.dataset.entryId;
     const currentQuantity = Number(row.dataset.quantity) || 1;
+    const currentProduct = getRowProduct(row);
     let success = false;
+    let analyticsEvent = '';
+    let quantityAfterAction = currentQuantity;
 
     showShade();
     try {
       if (button.classList.contains('cart-item-remove')) {
         button.disabled = true;
         success = await deleteCartEntry(entryId);
+        analyticsEvent = 'remove_product_click';
+        quantityAfterAction = 0;
         button.disabled = false;
       } else if (button.classList.contains('cart-qty-minus')) {
         button.disabled = true;
         const newQuantity = currentQuantity - 1;
         if (newQuantity < 1) {
           success = await deleteCartEntry(entryId);
+          quantityAfterAction = 0;
         } else {
           success = await setCartEntryQuantity(entryId, newQuantity);
+          quantityAfterAction = newQuantity;
         }
+        analyticsEvent = 'mini_cart_item_minus_click';
         button.disabled = false;
       } else if (button.classList.contains('cart-qty-plus')) {
         button.disabled = true;
         success = await setCartEntryQuantity(entryId, currentQuantity + 1);
+        analyticsEvent = 'mini_cart_item_plus_click';
+        quantityAfterAction = currentQuantity + 1;
         button.disabled = false;
       }
 
       if (success) {
+        trackMiniCartMutation({
+          eventName: analyticsEvent,
+          product: currentProduct,
+          mutateQuantity: quantityAfterAction,
+        });
         await refreshCartModal(block);
         const totalCount = await fetchMiniCartCount();
         updateCartBadge(block, totalCount);
@@ -4659,13 +4791,17 @@ export default async function decorate(block) {
   let authUser = getUserFromUrlHash();
   if (authUser) {
     setUser(authUser);
+    trackLoginSuccessful('keycloak login');
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
   }
 
   // 2. Real login: JWT from cookie (live asianpaints.com integration)
   if (!getUser() && !hasSignedOut) {
     authUser = getUserFromAuthCookie();
-    if (authUser) setUser(authUser);
+    if (authUser) {
+      setUser(authUser);
+      trackLoginSuccessful('keycloak login');
+    }
   }
 
   // 3. Auth redirect return: clear flags only (no mock user)
