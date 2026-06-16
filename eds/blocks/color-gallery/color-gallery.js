@@ -8,7 +8,7 @@ Col 5 contains multiple mobile bottom images
 Col 6 contains multiple URLs
 */
 
-import { trackEvent , ga4Implementaion } from '../../scripts/analytics_1.js';
+import { trackEvent, ga4Implementaion, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 function getPicturesFromColumn(col) {
   if (!col) return [];
@@ -42,11 +42,13 @@ function getParentTitle(textCol, block) {
 }
 
 function getCardProductName(topPicture, bottomPicture, index) {
-  const topAlt = topPicture?.querySelector('img')?.alt?.trim();
-  if (topAlt) return topAlt;
-
+  // Bottom image alt holds the actual colour name (e.g. "Moon Light").
+  // Top image alt is the swatch background and may be generic ("Top Image 1").
   const bottomAlt = bottomPicture?.querySelector('img')?.alt?.trim();
   if (bottomAlt) return bottomAlt;
+
+  const topAlt = topPicture?.querySelector('img')?.alt?.trim();
+  if (topAlt) return topAlt;
 
   return `Gallery card ${index + 1}`;
 }
@@ -301,17 +303,32 @@ export default async function decorate(block) {
 
   const ctaLink = textCol.querySelector('a');
   if (ctaLink) {
-  ctaLink.addEventListener('click', () => {
-
-    ga4Implementaion({
-      event: 'catelouge_interaction',
-      click_text: ctaLink.textContent.trim(),
-      click_category: 'Colours of the year 2025',
+    ctaLink.addEventListener('click', () => {
+      ga4Implementaion({
+        event: 'catelouge_interaction',
+        click_text: ctaLink.textContent.trim(),
+        click_category: 'Colours of the year 2025',
+      });
+      triggerCTAClickWithLinkAndTitle(
+        ctaLink.href,
+        ctaLink.textContent.trim(),
+        parentTitle,
+      );
     });
-  });
-}
-  if (ctaLink) {
+
     const mobileLink = ctaLink.cloneNode(true);
+    mobileLink.addEventListener('click', () => {
+      ga4Implementaion({
+        event: 'catelouge_interaction',
+        click_text: mobileLink.textContent.trim(),
+        click_category: 'Colours of the year 2025',
+      });
+      triggerCTAClickWithLinkAndTitle(
+        mobileLink.href,
+        mobileLink.textContent.trim(),
+        parentTitle,
+      );
+    });
     mobileCta.appendChild(mobileLink);
     block.appendChild(mobileCta);
   }
