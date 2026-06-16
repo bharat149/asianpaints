@@ -60,7 +60,7 @@ Important:
 */
 
 import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent } from '../../scripts/analytics_1.js';
+import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
 
 let formName = '';
 let campaignId = '';
@@ -234,11 +234,12 @@ function bindNumericInputFilter(input) {
 }
 
 function trackFormSubmission(form) {
+  const isWhatsappChecked = form.querySelector('[name="updateMeOnWhatsapp"]')?.checked;
   const formData = {
     formName,
     campaignId,
-    pincode: form.querySelector('#enquire-pincode')?.value?.trim() || '',
-    whatsappOptIn: form.querySelector('[name="updateMeOnWhatsapp"]')?.checked ? 'Y' : 'N',
+    whatsappOptIn: isWhatsappChecked ? 'checked' : undefined,
+    dataDestination: form.dataset.dataDestination || 'both',
     contruction: form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
     localpainter: form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
   };
@@ -703,15 +704,20 @@ function bindSubmitHandler(block, row, buttonCell) {
 
     const inputs = row.querySelectorAll('.form-input');
     let isValid = true;
+    const failedFields = [];
 
     inputs.forEach((input) => {
       const validField = validateInputField(input, true);
       if (!validField) {
         isValid = false;
+        failedFields.push(input.name || input.id || 'field');
       }
     });
 
-    if (!isValid) return;
+    if (!isValid) {
+      trackFormError({ campaignId, formName, formError: failedFields });
+      return;
+    }
 
     row.dataset.submitting = 'true';
     submitBtn.disabled = true;

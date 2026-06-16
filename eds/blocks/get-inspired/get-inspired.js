@@ -1,4 +1,4 @@
-import { trackEvent, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
+import { trackCarouselNavigation, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -26,12 +26,7 @@ function trackNavClick(button, navigationAction, testTitle) {
       || button.getAttribute('aria-label')
       || '';
 
-    trackEvent('sitesection_click', {
-      'Navigation Action': resolvedNavigationAction,
-      navigationAction: resolvedNavigationAction,
-      direction: resolvedNavigationAction,
-      testTitle,
-    });
+    trackCarouselNavigation(resolvedNavigationAction, testTitle);
   });
 }
 

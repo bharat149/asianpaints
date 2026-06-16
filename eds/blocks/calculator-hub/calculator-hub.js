@@ -99,8 +99,6 @@ function normalizeStoredValue(value) {
 }
 
 function resolveFlowType(form, values) {
-  if (!values || values.Area === 'Val3') return '';
-
   const inCalculatorHub = !!form.closest('.calculatorhub, .calculator-hub');
   const inBudgetCalculator = !!document.querySelector('.budgetcalculator');
 
@@ -109,8 +107,8 @@ function resolveFlowType(form, values) {
   const isWbc = form.classList.contains('wbc-mini-form')
     || !!document.querySelector('.budgetcalculator .wbcCalculator');
 
-  if ((inCalculatorHub || inBudgetCalculator) && isPbc) return 'SPS_PBC_miniform';
-  if ((inCalculatorHub || inBudgetCalculator) && isWbc) return 'SPS_WPC_miniform';
+  if ((inCalculatorHub || inBudgetCalculator) && isPbc) return 'SPS_PBC_Miniform';
+  if ((inCalculatorHub || inBudgetCalculator) && isWbc) return 'SPS_WBC_Miniform';
   return '';
 }
 

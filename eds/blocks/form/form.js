@@ -830,11 +830,19 @@ function bindSubmitHandler(block, row, buttonCell) {
     let isValid = true;
     const failedFields = [];
 
+    const fieldNameMap = {
+      ENQUIRE_NAME:    'Name',
+      ENQUIRE_EMAIL:   'Email',
+      ENQUIRE_MOBILE:  'MobileNumber',
+      ENQUIRE_PINCODE: 'PINCode',
+    };
+
     inputs.forEach((input) => {
       const validField = validateInputField(input, true);
       if (!validField) {
         isValid = false;
-        failedFields.push(input.name || input.id || input.getAttribute('aria-label') || 'unknown');
+        const label = fieldNameMap[input.name] || input.name || input.id || input.getAttribute('aria-label') || 'unknown';
+        failedFields.push(label);
       }
     });
 

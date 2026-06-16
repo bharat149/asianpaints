@@ -1,4 +1,4 @@
-import { trackEvent } from '../../scripts/analytics_1.js';
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 // Get Swiper instance
 async function getSwiper() {
@@ -109,14 +109,20 @@ export default async function decorate(block) {
       event.preventDefault();
 
       const titleNode = anchor.querySelector('h3');
-      const buttonTitle = titleNode?.textContent?.trim() || anchor.textContent.trim();
+      const cardTitle = titleNode?.textContent?.trim() || '';
+      // CTA button text (e.g. "View Textures") — look for the explicit button/link text
+      // that is separate from the card heading; fall back to anchor text.
+      const ctaEl = anchor.querySelector('.button, .cta, [class*="btn"]');
+      const btnText = ctaEl?.textContent?.trim() || anchor.querySelector('p:last-child')?.textContent?.trim() || anchor.textContent.trim();
       const buttonLink = normalizeButtonLink(anchor.getAttribute('href') || '');
       const targetAttr = anchor.getAttribute('target') || '';
 
-      trackEvent('cta_link_text', {
-        cta_: buttonTitle,
-        param1: buttonLink,
-      });
+      // Section heading = parentTitle (eVar67); card title is the h3 inside the anchor
+      const sectionHeading = block.closest('.section')?.querySelector('h2, h3, h4')?.textContent?.trim()
+        || block.querySelector('h2, h3, h4')?.textContent?.trim()
+        || cardTitle;
+
+      triggerCTAClickWithLinkAndTitle(buttonLink, btnText, sectionHeading);
 
       if (buttonLink) {
         if (targetAttr.indexOf('blank') > -1) {

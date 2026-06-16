@@ -353,7 +353,7 @@ export default async function decorate(block) {
 
     cta.addEventListener("click", function (e) {
       const data = {
-        "Title": title,
+        "Title": titleText,
         "pdfName": pdfHref.split('/').pop().replace(".pdf", "")
       }
       getDigitalData().download = data;

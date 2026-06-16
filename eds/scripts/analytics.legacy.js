@@ -165,7 +165,7 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
       cta_: btnTitle,
     });
   } else if (ctaLink.indexOf('tel:') > -1) {
-    trackEvent('SPSContactClick');
+    trackEvent('SPSContactClick', { cta_: 'Contact Us Component' });
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,

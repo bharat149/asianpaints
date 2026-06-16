@@ -153,13 +153,13 @@ export default function decorate(block) {
 
   block.querySelectorAll('.ql-card--call a').forEach((link) => {
     link.addEventListener('click', () => {
-      trackEvent('SPSContactClick');
+      trackEvent('SPSContactClick', { cta_: 'Contact Us Component' });
     });
   });
 
   block.querySelectorAll('.ql-card--whatsapp .ql-action-row a').forEach((link) => {
     link.addEventListener('click', () => {
-      trackEvent('contact_us_click_whatsapp');
+      trackEvent('contact_us_click_whatsapp', { cta_: 'Contact Us - WhatsApp Component' });
     });
   });
 

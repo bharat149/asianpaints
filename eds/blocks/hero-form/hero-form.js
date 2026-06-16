@@ -262,13 +262,12 @@ function trackInterestCTA(campaignId, formName) {
   });
 }
 
-function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn, extraData = {}) {
+function trackFormSubmission(formName, campaignId, whatsappOptIn, extraData = {}) {
   const formData = {
     formName,
     campaignId,
-    pincode,
-    whatsappOptIn,
-    dataDestination: extraData.dataDestination || '',
+    whatsappOptIn: whatsappOptIn ? 'checked' : undefined,
+    dataDestination: extraData.dataDestination || 'both',
     contruction:     extraData.contruction     || '',
     localpainter:    extraData.localpainter    || '',
   };
@@ -551,8 +550,8 @@ export default function decorate(block) {
 
     const campaignId = currentCampaignId;
 
-    trackFormSubmission(currentFormName, campaignId, pinInput.value.trim(), whatsAppConsent, {
-      dataDestination: cfg.dataDestination || '',
+    trackFormSubmission(currentFormName, campaignId, consentInput?.checked, {
+      dataDestination: cfg.dataDestination || 'both',
       contruction:     cfg.contruction     || '',
       localpainter:    cfg.localpainter    || '',
     });
