@@ -220,11 +220,19 @@ function initCarouselNavigationTracking() {
     const next = e.target.closest('.slick-next, .swiper-button-next, .carousel-next');
     if (!prev && !next) return;
     const btn = prev || next;
+    // Skip blocks that use bindCarouselNavigationTracking — they have
+    // their own handler with the correct explicit title. Firing here too
+    // would cause duplicate Navigation events.
+    const block = btn.closest('.block');
+    if (block?.dataset.navTrackingBound === 'true') return;
     // Walk up to find an explicit title attribute, else nearest heading
     const container = btn.closest('[data-carousel-title], .block, section');
     let title = container?.getAttribute('data-carousel-title') || '';
     if (!title) {
-      const heading = container?.querySelector('h2, h3, h4');
+      // Use the first heading in the section (outside the carousel cards)
+      // to avoid picking up card/tile titles.
+      const section = btn.closest('.section') || container;
+      const heading = section?.querySelector('h2, h3, h4');
       title = heading?.textContent?.trim() || '';
     }
     trackCarouselNavigation(prev ? 'Previous' : 'Next', title);

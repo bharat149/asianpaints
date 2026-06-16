@@ -723,13 +723,12 @@ function trackLeadFormStart(form) {
 }
 
 function trackLeadFormSubmission(form) {
-  const pincodeInput = form.querySelector('input[name*="pin" i], input[name*="zip" i], input[name*="postal" i]');
-  const whatsappConsent = form.querySelector('.whatsAppConsentFormFld')?.classList.contains('whatsAppCheckbox-checked') ? 'Y' : 'N';
+  const isWhatsappChecked = form.querySelector('.whatsAppConsentFormFld')?.classList.contains('whatsAppCheckbox-checked');
+  const whatsappConsent = isWhatsappChecked ? 'checked' : undefined;
 
   const formData = {
     formName: form.dataset.formName || 'lead-form',
     campaignId: getCampaignId(),
-    pincode: pincodeInput?.value?.trim() || '',
     whatsappOptIn: whatsappConsent,
     contruction: normalizeYesNo(getRadioOrCheckboxValue(form, 'renovating_home')),
     localpainter: normalizeYesNo(getRadioOrCheckboxValue(form, 'hired_painter')),
