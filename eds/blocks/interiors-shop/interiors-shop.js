@@ -1,4 +1,4 @@
-import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   // Get heading and description
@@ -54,7 +54,20 @@ export default function decorate(block) {
       if (img) {
         const imgDiv = document.createElement('div');
         imgDiv.className = 'interiors-shop-card-image';
-        imgDiv.appendChild(img.cloneNode(true));
+        const imgClone = img.cloneNode(true);
+        imgDiv.appendChild(imgClone);
+        if (link) {
+          imgDiv.style.cursor = 'pointer';
+          imgDiv.addEventListener('click', () => {
+            const cardTitle = title?.textContent?.trim() || '';
+            trackEvent('cta_link_text', {
+              cta_: link.textContent?.trim() || 'Explore now',
+              parentTitle: cardTitle,
+              param1: link.href,
+            });
+            window.location.href = link.href;
+          });
+        }
         card.appendChild(imgDiv);
       }
 
@@ -81,8 +94,12 @@ export default function decorate(block) {
         const btnText = link.textContent?.trim() || 'Explore now';
         btn.innerHTML = `${btnText} <span class="arrow"></span>`;
         btn.addEventListener('click', () => {
-          const parentTitle = title?.textContent?.trim() || '';
-          triggerCTAClickWithLinkAndTitle(btn.href, btnText, parentTitle);
+          const cardTitle = title?.textContent?.trim() || '';
+          trackEvent('cta_link_text', {
+            cta_: btnText,
+            parentTitle: cardTitle,
+            param1: btn.href,
+          });
         });
         contentDiv.appendChild(btn);
       }

@@ -912,11 +912,11 @@ const EVENT_REGISTRY = {
 
   // Calculator
   calc_start: {
-    events: 'event42', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
+    events: 'event301',
     eVars: { flowType: 'eVar36' },
   },
   calc_continue: {
-    events: 'event43', // best-guess (Rolls Calculator Submit)
+    events: 'event302',
     eVars: { flowType: 'eVar36', calcType : 'eVar67', filter: 'eVar26' },
   },
 
@@ -936,8 +936,8 @@ const EVENT_REGISTRY = {
   },
 
   // Contact CTAs
-  SPSContactClick: { events: 'event280', eVars:{"Contact Us Component": 'eVar45'} }, // best-guess (Footer contact us — tel: links)
-  contact_us_click_whatsapp: { events: 'event280' }, // best-guess (same)
+  SPSContactClick: { events: 'event280', eVars: { cta_: 'eVar45' } },
+  contact_us_click_whatsapp: { events: 'event280', eVars: { cta_: 'eVar45' } },
 
   // ============================================================
   // AMS-fired linkNames our EDS code doesn't yet fire (or fires
@@ -1326,7 +1326,7 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   if (ctaLink.indexOf('javascript:void') > -1) {
     trackEvent('custom_cta_click', { cta_: btnTitle });
   } else if (ctaLink.indexOf('tel:') > -1) {
-    trackEvent('SPSContactClick');
+    trackEvent('SPSContactClick', { cta_: 'Contact Us Component' });
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
