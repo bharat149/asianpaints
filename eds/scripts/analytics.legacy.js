@@ -105,6 +105,10 @@ function getMcidFromCookie() {
   return window._satellite?.getVisitorId?.()?.getMarketingCloudVisitorID?.() || '';
 }
 
+function getGaIdFromCookie() {
+  return (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+}
+
 function setDigitalDataContext(destinationUrl = window.location.href) {
   const currentUrl = toUrl(window.location.href);
   const targetUrl = toUrl(destinationUrl);
@@ -141,6 +145,7 @@ function setDigitalDataContext(destinationUrl = window.location.href) {
   digitalData.user = {
     loginStatus: digitalData.user?.loginStatus || 'not logged in',
     mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    gaID: digitalData.user?.gaID || getGaIdFromCookie(),
     ipAddress: digitalData.user?.ipAddress || '',
     emailId: digitalData.user?.emailId || '',
     mobileNumber: digitalData.user?.mobileNumber || '',

@@ -46,6 +46,10 @@ export function getVisitorId() {
   return m ? m[1] : '';
 }
 
+function getGaIdFromCookie() {
+  return (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+}
+
 export function getCampaignIdFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   return (urlParams.get('utm_campaign') || '').trim();
@@ -231,6 +235,7 @@ function buildBasePayload() {
     datePicker: '',
     customField: '',
     visitorId: '',
+    gaId: '',
     description: '',
     whatsAppConsent: '',
     source: '',
@@ -562,6 +567,7 @@ export default function decorate(block) {
     payload.campaignId = campaignId;
     payload.marketingChannel = 'Direct';
     payload.visitorId = getVisitorId();
+    payload.gaId = getGaIdFromCookie();
     payload.whatsAppConsent = whatsAppConsent;
 
     payload.fName = fNameEnc;
@@ -586,7 +592,12 @@ export default function decorate(block) {
       );
 
       if (dbResp && dbResp.Status === 'SUCCESS' && dbResp.rowID) {
-        const sfPayload = { ...payload, rowId: dbResp.rowID };
+        const sfPayload = {
+          ...payload,
+          visitorId: payload.gaId,
+          rowId: dbResp.rowID,
+        };
+        delete sfPayload.gaId;
         const sfResp = await postFormUrlEncoded(
           `${AMS_BASE}/apcolourcatalogue/ccforms/salesforce.leadstosalesforce.json`,
           sfPayload,

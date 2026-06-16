@@ -97,6 +97,11 @@ function getECID() {
   return m ? m[1] : '';
 }
 
+function getGAID() {
+  const gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  return gaId;
+}
+
 /**
  * 'Repeat' if AMCV cookie existed before alloy ran, else 'New'.
  * Must be evaluated ONCE before alloy touches the cookie.
@@ -442,6 +447,7 @@ function buildCommonAnalyticsContext() {
     eVar54: pageName,
     prop54: pageName,
   };
+  //eVar13: getGAID(), // To check the variable name and set to it.
 }
 
 function buildAnalyticsPayload() {
@@ -1305,6 +1311,7 @@ function setDigitalDataContext(destinationUrl = window.location.href) {
   digitalData.user = {
     loginStatus: digitalData.user?.loginStatus || getLoginStatus(),
     mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    gaID: digitalData.user?.gaID || getGAID(),
     ipAddress: digitalData.user?.ipAddress || '',
     emailId: digitalData.user?.emailId || '',
     mobileNumber: digitalData.user?.mobileNumber || '',
