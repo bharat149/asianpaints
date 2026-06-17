@@ -59,9 +59,34 @@ function getCellText(cell) {
   return cell?.textContent?.trim() || '';
 }
 
+function findNearestFormConfigBlock(block) {
+  const section = block.closest('.section');
+  if (!section) return null;
+
+  const inCurrentSection = section.querySelector('.form-config, .form-configs');
+  if (inCurrentSection) return inCurrentSection;
+
+  // Blue form pages may author form-config in a nearby sibling section.
+  let previous = section.previousElementSibling;
+  while (previous) {
+    const candidate = previous.querySelector?.('.form-config, .form-configs');
+    if (candidate) return candidate;
+    previous = previous.previousElementSibling;
+  }
+
+  let next = section.nextElementSibling;
+  while (next) {
+    const candidate = next.querySelector?.('.form-config, .form-configs');
+    if (candidate) return candidate;
+    next = next.nextElementSibling;
+  }
+
+  return null;
+}
+
 function extractFormConfig(block) {
   const section = block.closest('.section');
-  const formConfigBlock = section?.querySelector('.form-config, .form-configs');
+  const formConfigBlock = findNearestFormConfigBlock(block);
 
   let configuredCampaignId = '';
   let configuredNodePath = '';
