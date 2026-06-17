@@ -98,7 +98,10 @@ function getECID() {
 }
 
 function getGAID() {
-  const gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  let gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  if (gaId) {
+    gaId = decodeURIComponent(gaId).replace(/^GA\d+\.\d+\./, "");
+  }
   return gaId;
 }
 
@@ -739,7 +742,7 @@ const EVENT_REGISTRY = {
     eVars: {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
-      redirectionLink: 'eVar86',
+      redirectionLink: 'eVar86'
     },
   },
   // Header icon — legacy titlecase + spec snake_case both map here.
