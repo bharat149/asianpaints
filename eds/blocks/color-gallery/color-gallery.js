@@ -236,7 +236,8 @@ export default async function decorate(block) {
         ga4Implementaion({
         event:'catelouge_interaction',
         click_text: bottomImageAlt,
-        click_category: 'Colours of the year 2026'
+        click_category: 'Colours of the year',
+        click_header:'Colour of the years'
       })
     })
     const topWrap = document.createElement('div');
@@ -307,7 +308,7 @@ export default async function decorate(block) {
       ga4Implementaion({
         event: 'catelouge_interaction',
         click_text: ctaLink.textContent.trim(),
-        click_category: 'Colours of the year 2025',
+        click_header: 'Colour of the years',
       });
       triggerCTAClickWithLinkAndTitle(
         ctaLink.href,
