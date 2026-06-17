@@ -47,6 +47,16 @@ const AUTH_REDIRECT_URI = `${window.location.origin}/`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
+function persistPostLoginRedirectPath() {
+  try {
+    const redirectPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    localStorage.setItem('redirectPostLoginFlag', 'true');
+    localStorage.setItem('redirectPostLoginPath', redirectPath || '/');
+  } catch (e) {
+    // ignore storage errors
+  }
+}
+
 // Resolve the env-prefixed key (e.g. `api-base-url` -> `beta_api-base-url` /
 // `prod_api-base-url`) so a single DA `site-config` can serve both envs.
 function getEnvKey(name) {
@@ -742,6 +752,7 @@ async function handleProfileClick(e) {
   });
 
   // Production: redirect to OIDC auth URL (auth.asianpaints.com)
+  persistPostLoginRedirectPath();
   // eslint-disable-next-line no-use-before-define
   const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
   window.location.href = url;
@@ -2719,6 +2730,7 @@ function buildLoginGuestPopup() {
   overlay.querySelector('#validate-mobile')?.addEventListener('submit', (e) => {
     e.preventDefault();
     closePopup();
+    persistPostLoginRedirectPath();
     buildProfileAuthUrl(AUTH_REDIRECT_URI)
       .then((url) => {
         window.location.href = url;
@@ -3215,6 +3227,7 @@ async function submitGuestDeliveryAddress(modal, submitBtn) {
       setTimeout(() => {
         closeGuestDeliveryAddressModal();
 
+        persistPostLoginRedirectPath();
         buildProfileAuthUrl(AUTH_REDIRECT_URI)
           .then((url) => {
             window.location.href = url;
@@ -4544,6 +4557,7 @@ function addInteractions(block) {
         try {
           sessionStorage.setItem(AUTH_REDIRECTED_KEY, '1');
         } catch (err) { /* ignore */ }
+        persistPostLoginRedirectPath();
         const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
         ga4Implementaion({
           event: 'header_interaction',
