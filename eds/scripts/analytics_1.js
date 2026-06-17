@@ -98,7 +98,10 @@ function getECID() {
 }
 
 function getGAID() {
-  const gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  let gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  if (gaId) {
+    gaId = decodeURIComponent(gaId).replace(/^GA\d+\.\d+\./, "");
+  }
   return gaId;
 }
 
