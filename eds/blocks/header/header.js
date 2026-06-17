@@ -42,8 +42,8 @@ const HEADER_ICON_PATHS = {
   STORE: '/eds/icons/store-icon-gray-brown.png',
 };
 
-// Redirect URI (whitelisted on betaauth) — use current origin so user lands back on this site
-const AUTH_REDIRECT_URI = `${window.location.origin}/`;
+// Redirect URI — preserve current path/query so auth returns to the same page.
+const AUTH_REDIRECT_URI = `${window.location.origin}${window.location.pathname}${window.location.search}`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 
