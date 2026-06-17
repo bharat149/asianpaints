@@ -190,7 +190,7 @@ export function buildLeadPayload(form, options = {}) {
     localPainterHired,
     encrypted: encryptLeadFields({ fName, lName, email, mobileNo, pinCode }),
     visitorId: getVisitorId(),
-    gaId: "1234",
+    gaId: getGaIdFromCookie(),
     campaignId: options.campaignId ?? getCampaignIdFromUrl(),
   };
 }
