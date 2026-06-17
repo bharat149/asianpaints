@@ -423,10 +423,9 @@ async function loadLazy(doc) {
   });
 
   // Third-party marketing pixels — lightweight PageView image beacons
-  // (~1 KB total, no SDK libraries loaded in lazy phase). Replaces the
-  // GTM container (GTM-MP96GBBF) that was costing ~271 KB of JS in
-  // lazy phase and 10-15 PSI Performance points. Identical PageView
-  // coverage for FB Pixel, GA4, Google Ads, DCM Floodlight.
+  // with optional GTM bridge (GTM-MP96GBBF) loaded by fireGTM().
+  // PageView coverage includes FB Pixel, GA4, Google Ads, DCM Floodlight,
+  // and GTM dataLayer event dispatch.
   //
   // Microsoft Clarity (session replay) loads in the delayed phase via
   // delayed.js — see initThirdPartyPixels() in third-party-pixels.js.

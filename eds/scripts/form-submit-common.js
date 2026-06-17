@@ -113,6 +113,14 @@ export function getVisitorId() {
   return m ? m[1] : '';
 }
 
+export function getGaIdFromCookie() {
+  let gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  if (gaId) {
+    gaId = decodeURIComponent(gaId).replace(/^GA\d+\.\d+\./, "");
+  }
+  return gaId;
+}
+
 export function getCampaignIdFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   return (urlParams.get('utm_campaign') || '').trim();
@@ -176,6 +184,7 @@ export function buildLeadPayload(form, options = {}) {
     whatsAppConsent,
     encrypted: encryptLeadFields({ fName, lName, email, mobileNo, pinCode }),
     visitorId: getVisitorId(),
+    gaId: getGaIdFromCookie(),
     campaignId: options.campaignId ?? getCampaignIdFromUrl(),
   };
 }
@@ -192,6 +201,7 @@ export function saveToDB(lead, options = {}) {
     mobileNo: lead.encrypted.mobileNo,
     fName: lead.encrypted.fName,
     visitorId: lead.visitorId,
+    gaId: lead.gaId,
     whatsAppConsent: lead.whatsAppConsent,
     campaignId: lead.campaignId,
   });
@@ -208,7 +218,7 @@ export function pushToSalesforce(lead, rowId, options = {}) {
     email: lead.encrypted.email,
     mobileNo: lead.encrypted.mobileNo,
     fName: lead.encrypted.fName,
-    visitorId: lead.visitorId,
+    visitorId: lead.gaId,
     whatsAppConsent: lead.whatsAppConsent,
     campaignId: lead.campaignId,
     campaignName: lead.campaignId,

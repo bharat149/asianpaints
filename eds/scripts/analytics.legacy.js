@@ -105,6 +105,14 @@ function getMcidFromCookie() {
   return window._satellite?.getVisitorId?.()?.getMarketingCloudVisitorID?.() || '';
 }
 
+function getGaIdFromCookie() {
+  let gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  if (gaId) {
+    gaId = decodeURIComponent(gaId).replace(/^GA\d+\.\d+\./, "");
+  }
+  return gaId;
+}
+
 function setDigitalDataContext(destinationUrl = window.location.href) {
   const currentUrl = toUrl(window.location.href);
   const targetUrl = toUrl(destinationUrl);
@@ -141,6 +149,7 @@ function setDigitalDataContext(destinationUrl = window.location.href) {
   digitalData.user = {
     loginStatus: digitalData.user?.loginStatus || 'not logged in',
     mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    gaID: digitalData.user?.gaID || getGaIdFromCookie(),
     ipAddress: digitalData.user?.ipAddress || '',
     emailId: digitalData.user?.emailId || '',
     mobileNumber: digitalData.user?.mobileNumber || '',
@@ -165,7 +174,7 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
       cta_: btnTitle,
     });
   } else if (ctaLink.indexOf('tel:') > -1) {
-    trackEvent('SPSContactClick');
+    trackEvent('SPSContactClick', { cta_: 'Contact Us Component' });
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,

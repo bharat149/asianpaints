@@ -768,11 +768,11 @@ function showThankYouScreen(block) {
 }
 
 function trackFormSubmission(form) {
+  const isWhatsappChecked = form.querySelector('[name="updateMeOnWhatsapp"]')?.checked;
   const formData = {
     "formName": formName,
     "campaignId": campaignId,
-    "pincode": form.querySelector("#enquire-pincode")?.value?.trim() || '',
-    "whatsappOptIn": form.querySelector('[name="updateMeOnWhatsapp"]')?.checked ? 'Y' : 'N',
+    "whatsappOptIn": isWhatsappChecked ? 'checked' : undefined,
     "contruction": form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
     "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
     // Spec field — see lead-form.js for rationale. Default 'both'.
@@ -830,11 +830,19 @@ function bindSubmitHandler(block, row, buttonCell) {
     let isValid = true;
     const failedFields = [];
 
+    const fieldNameMap = {
+      ENQUIRE_NAME:    'Name',
+      ENQUIRE_EMAIL:   'Email',
+      ENQUIRE_MOBILE:  'MobileNumber',
+      ENQUIRE_PINCODE: 'PINCode',
+    };
+
     inputs.forEach((input) => {
       const validField = validateInputField(input, true);
       if (!validField) {
         isValid = false;
-        failedFields.push(input.name || input.id || input.getAttribute('aria-label') || 'unknown');
+        const label = fieldNameMap[input.name] || input.name || input.id || input.getAttribute('aria-label') || 'unknown';
+        failedFields.push(label);
       }
     });
 

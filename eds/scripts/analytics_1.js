@@ -97,6 +97,14 @@ function getECID() {
   return m ? m[1] : '';
 }
 
+function getGAID() {
+  let gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  if (gaId) {
+    gaId = decodeURIComponent(gaId).replace(/^GA\d+\.\d+\./, "");
+  }
+  return gaId;
+}
+
 /**
  * 'Repeat' if AMCV cookie existed before alloy ran, else 'New'.
  * Must be evaluated ONCE before alloy touches the cookie.
@@ -220,11 +228,19 @@ function initCarouselNavigationTracking() {
     const next = e.target.closest('.slick-next, .swiper-button-next, .carousel-next');
     if (!prev && !next) return;
     const btn = prev || next;
+    // Skip blocks that use bindCarouselNavigationTracking — they have
+    // their own handler with the correct explicit title. Firing here too
+    // would cause duplicate Navigation events.
+    const block = btn.closest('.block');
+    if (block?.dataset.navTrackingBound === 'true') return;
     // Walk up to find an explicit title attribute, else nearest heading
     const container = btn.closest('[data-carousel-title], .block, section');
     let title = container?.getAttribute('data-carousel-title') || '';
     if (!title) {
-      const heading = container?.querySelector('h2, h3, h4');
+      // Use the first heading in the section (outside the carousel cards)
+      // to avoid picking up card/tile titles.
+      const section = btn.closest('.section') || container;
+      const heading = section?.querySelector('h2, h3, h4');
       title = heading?.textContent?.trim() || '';
     }
     trackCarouselNavigation(prev ? 'Previous' : 'Next', title);
@@ -419,29 +435,40 @@ function buildTargetMboxParams() {
   return params;
 }
 
-function buildAnalyticsPayload() {
+function buildCommonAnalyticsContext() {
   const pageName = getPageName();
+  const timestamp = getDateString();
+
+  return {
+    pageName,
+    eVar5: timestamp,
+    prop5: timestamp,
+    eVar6: location.href,
+    prop6: location.href,
+    eVar9: getLoginStatus(),
+    eVar12: getECID(),
+    eVar54: pageName,
+    prop54: pageName,
+  };
+  //eVar13: getGAID(), // To check the variable name and set to it.
+}
+
+function buildAnalyticsPayload() {
+  const common = buildCommonAnalyticsContext();
+  const { pageName } = common;
   const section = getSection();
   const previousPageName = getPreviousPageName();
 
   const payload = {
-    pageName,
+    ...common,
     server: location.hostname,
     currencyCode: 'INR',
 
     // Confirmed from AMS beacons (Hit 1 & Hit 2 incognito + regular):
     eVar2:  getVisitorType(),                 // 'New' | 'Repeat'
-    prop5:  getDateString(),                  // formatted date string
-    eVar5:  'D=c5',                           // literal — server-side dynamic copy
-    eVar6:  location.href,
-    prop6:  'D=v6',                           // literal
-    eVar9:  getLoginStatus(),
-    eVar12: getECID(),                        // ECID as a reportable dimension
     prop12: previousPageName,                 // PREVIOUS page name (AMS pattern)
     prop13: getScrollDepthString(),
     eVar51: getPageLoadTime(),                // page load time in ms (since navigation start)
-    eVar54: pageName,                         // mirrors pageName
-    prop54: 'D=v54',                          // literal
   };
 
   // prop1 = section, only when not homepage (matches AMS)
@@ -695,11 +722,15 @@ const EVENT_REGISTRY = {
   // are page-level vars set globally in buildPageData() on every hit.
   'Login Icon Click': { events: 'event7' },
   login_icon:         { events: 'event7' },
+  login_successful:   { events: 'event48', eVars: { loginFunction: 'eVar46', loginStatus: 'eVar9' } },
 
   // Cart — spec action name: mini_cart_icon_click; mini_cart_click kept as legacy alias.
   // eVar21 = value of the HybrisCart cookie (auto-read at dispatch time via def.cookies).
   mini_cart_click:      { events: 'event67', cookies: { HybrisCart: 'eVar21' } },
   mini_cart_icon_click: { events: 'event67', cookies: { HybrisCart: 'eVar21' } },
+  mini_cart_item_plus_click:  { events: 'scAdd,event189', eVars: { productSKU: 'eVar59', productName: 'eVar8' } },
+  mini_cart_item_minus_click: { events: 'scRemove,event199', eVars: { productSKU: 'eVar59', productName: 'eVar8' } },
+  remove_product_click:       { events: 'event71,scRemove', eVars: { productSKU: 'eVar59', productName: 'eVar8' } },
 
   // Checkout — titlecase (legacy) + snake_case (spec); eVar6/prop6/eVar54/prop54 are global.
   'Mini_cart_checkout':  { events: 'event97' },
@@ -711,8 +742,7 @@ const EVENT_REGISTRY = {
     eVars: {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
-      redirectionLink: 'eVar86',
-      param1: 'eVar46',
+      redirectionLink: 'eVar86'
     },
   },
   // Header icon — legacy titlecase + spec snake_case both map here.
@@ -791,6 +821,8 @@ const EVENT_REGISTRY = {
   // Splash popup
   splash_view: { events: 'event6' }, // best-guess (matches test.csv "Splash Impressions [e6]")
 
+  splash_close: { events: 'event18' }, // best-guess (matches test.csv "Splash Close [e18]")
+  
   // Header domain switch
   domain_swicth: {
     events: 'event331', // best-guess (matches test.csv "Domain Switch Tab Click [e331]")
@@ -889,11 +921,11 @@ const EVENT_REGISTRY = {
 
   // Calculator
   calc_start: {
-    events: 'event42', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
+    events: 'event301',
     eVars: { flowType: 'eVar36' },
   },
   calc_continue: {
-    events: 'event43', // best-guess (Rolls Calculator Submit)
+    events: 'event302',
     eVars: { flowType: 'eVar36', calcType : 'eVar67', filter: 'eVar26' },
   },
 
@@ -913,8 +945,8 @@ const EVENT_REGISTRY = {
   },
 
   // Contact CTAs
-  SPSContactClick: { events: 'event280', eVars:{"Contact Us Component": 'eVar45'} }, // best-guess (Footer contact us — tel: links)
-  contact_us_click_whatsapp: { events: 'event280' }, // best-guess (same)
+  SPSContactClick: { events: 'event280', eVars: { cta_: 'eVar45' } },
+  contact_us_click_whatsapp: { events: 'event280', eVars: { cta_: 'eVar45' } },
 
   // ============================================================
   // AMS-fired linkNames our EDS code doesn't yet fire (or fires
@@ -1034,17 +1066,9 @@ export function trackEvent(eventName, eventData = {}) {
 
   const def = EVENT_REGISTRY[name] || {};
   const analytics = {
+    ...buildCommonAnalyticsContext(),
     linkName: name,
     linkType: 'o',
-    // Page-context fields (eVar6/prop6/eVar54/prop54) on every event —
-    // matches legacy at.js where link-tracking hits inherited current
-    // page state. Web SDK is stateless per-call so we set them
-    // explicitly. Registry-driven mappings below may override if a
-    // specific event needs a different value here.
-    eVar6:  location.href,
-    prop6:  'D=v6',
-    eVar54: getPageName(),
-    prop54: 'D=v54',
   };
   if (def.events) analytics.events = def.events;
 
@@ -1290,6 +1314,7 @@ function setDigitalDataContext(destinationUrl = window.location.href) {
   digitalData.user = {
     loginStatus: digitalData.user?.loginStatus || getLoginStatus(),
     mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    gaID: digitalData.user?.gaID || getGAID(),
     ipAddress: digitalData.user?.ipAddress || '',
     emailId: digitalData.user?.emailId || '',
     mobileNumber: digitalData.user?.mobileNumber || '',
@@ -1311,13 +1336,12 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   if (ctaLink.indexOf('javascript:void') > -1) {
     trackEvent('custom_cta_click', { cta_: btnTitle });
   } else if (ctaLink.indexOf('tel:') > -1) {
-    trackEvent('SPSContactClick');
+    trackEvent('SPSContactClick', { cta_: 'Contact Us Component' });
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
       redirectionLink: ctaLink,
       parentTitle,
-      param1: ctaLink,
     });
   }
 }

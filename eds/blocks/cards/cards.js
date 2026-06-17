@@ -205,12 +205,14 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(ul);
 
+  const sectionTitle = block.closest('.section')?.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
+
   ul.querySelectorAll('.cards-card-body a').forEach((cta) => {
     cta.addEventListener('click', () => {
       const ctaLink = cta.getAttribute('href') || '';
       const btnTitle = cta.textContent.trim();
       const body = cta.closest('.cards-card-body');
-      const parentTitle = body?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent.trim() || '';
+      const parentTitle = sectionTitle || body?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent.trim() || '';
       const imageAlt = cta
         .closest('li')
         ?.querySelector('.cards-card-image img')

@@ -486,16 +486,12 @@ mobileSwiper.init();
       if (bannerImage && block.contains(bannerImage)) {
         const destinationUrl = bannerImage.getAttribute('href') || '';
         const img = bannerImage.querySelector('img');
-        let bannerTitle = img?.getAttribute('title')?.trim() || '';
-        if (!bannerTitle && img?.getAttribute('alt')?.trim()) {
-          bannerTitle = img.getAttribute('alt').trim();
-        }
+        const imageTitle = img?.getAttribute('title')?.trim()
+          || img?.getAttribute('alt')?.trim()
+          || 'Royale Play';
 
         if (destinationUrl) {
-          trackEvent('carousel_banner_click', {
-            bannerDestinationUrl: destinationUrl,
-            bannerTitle,
-          });
+          triggerCTAClickWithLinkAndTitle(destinationUrl, imageTitle, parentTitle);
         }
       }
 

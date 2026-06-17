@@ -204,24 +204,26 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
 function trackAccordionClick(block, summaryEl) {
   const isFaq = block.classList.contains('faq');
   summaryEl.addEventListener('click', (e) => {
-    setTimeout(() => {
-      const item = e.target.closest('.accordion-item');
-      const isOpen = item?.open;
-      if (isFaq) {
-        const questionText = e.target.textContent?.trim() || '';
-        trackEvent('cta_link_text', {
-          cta_: isOpen ? 'FAQ Open' : 'FAQ close',
-          parentTitle: questionText,
-        });
-      } else if (!isFaq) {
-        const state = isOpen ? 'Open' : 'Close';
-        const questionText = e.target.textContent?.trim() || '';
-        trackEvent('cta_link_text', {
-          cta_: 'Accordion ' + state,
-          parentTitle: questionText,
-        });
-      }
-    }, 200);
+    // Capture state BEFORE animation toggle modifies it.
+    // detailsEl.open is still the pre-click value at this point
+    // because the animation handler calls e.preventDefault() and
+    // defers the actual open/close to the animation callback.
+    const item = e.target.closest('.accordion-item');
+    const wasOpen = item?.open;
+    if (isFaq) {
+      const questionText = summaryEl.textContent?.trim() || '';
+      trackEvent('cta_link_text', {
+        cta_: wasOpen ? 'FAQ close' : 'FAQ Open',
+        parentTitle: questionText,
+      });
+    } else {
+      const state = wasOpen ? 'Close' : 'Open';
+      const questionText = summaryEl.textContent?.trim() || '';
+      trackEvent('cta_link_text', {
+        cta_: 'Accordion ' + state,
+        parentTitle: questionText,
+      });
+    }
   });
 }
 
