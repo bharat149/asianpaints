@@ -455,12 +455,12 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 240px;
+  min-width: 180px;
   background: #fff;
   border: 1px solid var(--header-border);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
-  padding: 16px 0;
+  border-radius: 5px;
+  box-shadow: 0 4px 16px #0000001A;
+  padding: 12px;
   z-index: 1100;
 }
 
@@ -469,19 +469,19 @@
 }
 
 .header .profile-dropdown-greeting {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--header-text-dark);
-  margin: 0 20px 12px;
+  margin:0;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--header-border);
+  /* border-bottom: 1px solid var(--header-border); */
 }
 
 .header .profile-dropdown-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 20px;
+  padding: 12px 18px;
   color: var(--header-text-dark);
   text-decoration: none;
   font-size: 14px;
@@ -489,7 +489,10 @@
 }
 
 .header .profile-dropdown-item:hover {
-  background: rgb(0 0 0 / 4%);
+  cursor: pointer;
+  background: linear-gradient(90.85deg, #f6edff 2.92%, #ffe9ea 61.17%, #fef4e1 98.14%);
+  border: 1px solid #cccccc66;
+  border-radius: 10px;
 }
 
 .header .profile-dropdown-icon {
@@ -519,11 +522,22 @@
   color: var(--header-text-dark);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
+  margin:0;
+  margin-top:8px;
+  border: 1px solid #232426;
+  border-radius:20px;
+  padding:14px 20px;
+  font-width: 700;
+  display:inline-flex;
+  gap:10px;
+  height:38px;
+  align-items:center;
+  justify-content:center;
+  width:100%;
 }
 
 .header .profile-dropdown-signout:hover {
-  background: var(--header-text-dark);
-  color: #fff;
+  background: #fff7e8;
 }
 
 /* Cart badge */
@@ -1505,7 +1519,7 @@ body.nav-open {
 .header .vs-modal {
   background: #fff;
   border-radius: 12px;
-  width: 440px;
+  width: 554px;
   max-width: 90vw;
   position: relative;
   padding: 32px 28px 24px;
