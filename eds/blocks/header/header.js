@@ -735,6 +735,11 @@ async function handleProfileClick(e) {
   }
 
   e.preventDefault();
+  ga4Implementaion({
+    event: 'header_interaction',
+    click_text: 'Profile icon',
+    click_category: 'click_header icons',
+  });
 
   // Production: redirect to OIDC auth URL (auth.asianpaints.com)
   // eslint-disable-next-line no-use-before-define
@@ -4408,6 +4413,11 @@ function addInteractions(block) {
           sessionStorage.setItem(AUTH_REDIRECTED_KEY, '1');
         } catch (err) { /* ignore */ }
         const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
+        ga4Implementaion({
+          event: 'header_interaction',
+          click_text: 'Profile icon',
+          click_category: 'click_header icons',
+        });
         window.location.href = url;
       }
     });
@@ -4472,11 +4482,12 @@ function addInteractions(block) {
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
-      openSearchDialog(block);
-    });
-        ga4Implementaion({
+      ga4Implementaion({
         event: 'search_icon_click',
       })
+      openSearchDialog(block);
+    });
+
     searchBarEl.style.cursor = 'pointer';
     const searchInput = searchBarEl.querySelector('.search-input');
     if (searchInput) searchInput.style.cursor = 'pointer';
@@ -4537,7 +4548,7 @@ function addInteractions(block) {
            ga4Implementaion({
         event: 'book_free_site_visit',
         click_text: btnTitle,
-        click_category: 'click_header / content'
+        click_category: 'click_header'
       }) 
     });
   });
