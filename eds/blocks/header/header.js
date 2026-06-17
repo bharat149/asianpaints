@@ -4891,6 +4891,11 @@ export default async function decorate(block) {
   if (authUser) {
     setUser(authUser);
     trackLoginSuccessful('keycloak login');
+    const postLoginRedirectUrl = consumePostLoginRedirectPath();
+    if (postLoginRedirectUrl && postLoginRedirectUrl !== window.location.href) {
+      window.location.replace(postLoginRedirectUrl);
+      return;
+    }
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
   }
 
