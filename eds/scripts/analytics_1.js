@@ -97,6 +97,11 @@ function getECID() {
   return m ? m[1] : '';
 }
 
+function getGAID() {
+  const gaId = (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+  return gaId;
+}
+
 /**
  * 'Repeat' if AMCV cookie existed before alloy ran, else 'New'.
  * Must be evaluated ONCE before alloy touches the cookie.
@@ -220,11 +225,19 @@ function initCarouselNavigationTracking() {
     const next = e.target.closest('.slick-next, .swiper-button-next, .carousel-next');
     if (!prev && !next) return;
     const btn = prev || next;
+    // Skip blocks that use bindCarouselNavigationTracking — they have
+    // their own handler with the correct explicit title. Firing here too
+    // would cause duplicate Navigation events.
+    const block = btn.closest('.block');
+    if (block?.dataset.navTrackingBound === 'true') return;
     // Walk up to find an explicit title attribute, else nearest heading
     const container = btn.closest('[data-carousel-title], .block, section');
     let title = container?.getAttribute('data-carousel-title') || '';
     if (!title) {
-      const heading = container?.querySelector('h2, h3, h4');
+      // Use the first heading in the section (outside the carousel cards)
+      // to avoid picking up card/tile titles.
+      const section = btn.closest('.section') || container;
+      const heading = section?.querySelector('h2, h3, h4');
       title = heading?.textContent?.trim() || '';
     }
     trackCarouselNavigation(prev ? 'Previous' : 'Next', title);
@@ -434,6 +447,7 @@ function buildCommonAnalyticsContext() {
     eVar54: pageName,
     prop54: pageName,
   };
+  //eVar13: getGAID(), // To check the variable name and set to it.
 }
 
 function buildAnalyticsPayload() {
@@ -725,8 +739,12 @@ const EVENT_REGISTRY = {
     eVars: {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
+<<<<<<< HEAD
       redirectionLink: 'eVar86'
       //param1: 'eVar46',
+=======
+      redirectionLink: 'eVar86',
+>>>>>>> 9f5dd5a0ee76a39a60243f2026fd6d5dad68a0f5
     },
   },
   // Header icon — legacy titlecase + spec snake_case both map here.
@@ -905,11 +923,19 @@ const EVENT_REGISTRY = {
 
   // Calculator
   calc_start: {
+<<<<<<< HEAD
     events: 'event301', // best-guess (Rolls Calculator Start — confirm if used for non-rolls)
     eVars: { flowType: 'eVar36' },
   },
   calc_continue: {
     events: 'event302', // best-guess (Rolls Calculator Submit)
+=======
+    events: 'event301',
+    eVars: { flowType: 'eVar36' },
+  },
+  calc_continue: {
+    events: 'event302',
+>>>>>>> 9f5dd5a0ee76a39a60243f2026fd6d5dad68a0f5
     eVars: { flowType: 'eVar36', calcType : 'eVar67', filter: 'eVar26' },
   },
 
@@ -929,8 +955,8 @@ const EVENT_REGISTRY = {
   },
 
   // Contact CTAs
-  SPSContactClick: { events: 'event280', eVars:{"Contact Us Component": 'eVar45'} }, // best-guess (Footer contact us — tel: links)
-  contact_us_click_whatsapp: { events: 'event280' }, // best-guess (same)
+  SPSContactClick: { events: 'event280', eVars: { cta_: 'eVar45' } },
+  contact_us_click_whatsapp: { events: 'event280', eVars: { cta_: 'eVar45' } },
 
   // ============================================================
   // AMS-fired linkNames our EDS code doesn't yet fire (or fires
@@ -1298,6 +1324,7 @@ function setDigitalDataContext(destinationUrl = window.location.href) {
   digitalData.user = {
     loginStatus: digitalData.user?.loginStatus || getLoginStatus(),
     mcid: digitalData.user?.mcid || getMcidFromCookie(),
+    gaID: digitalData.user?.gaID || getGAID(),
     ipAddress: digitalData.user?.ipAddress || '',
     emailId: digitalData.user?.emailId || '',
     mobileNumber: digitalData.user?.mobileNumber || '',
@@ -1319,13 +1346,12 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   if (ctaLink.indexOf('javascript:void') > -1) {
     trackEvent('custom_cta_click', { cta_: btnTitle });
   } else if (ctaLink.indexOf('tel:') > -1) {
-    trackEvent('SPSContactClick');
+    trackEvent('SPSContactClick', { cta_: 'Contact Us Component' });
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
       redirectionLink: ctaLink,
       parentTitle,
-      param1: ctaLink,
     });
   }
 }
@@ -1430,8 +1456,6 @@ return parts.length > 2 ? parts[2] + '.' + parts[3] : null;
 
 export function ga4Implementaion({
   event = '',
-  click_text = '',
-  click_category = '',
   ...extraFields
 }={}) {
 
@@ -1439,8 +1463,6 @@ export function ga4Implementaion({
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
     event,
-    click_text,
-    click_category,
     userID:getClientID(),
     user_status:getLoginStatus() === 'logged in' ? 'Yes' : 'No',
     ...extraFields

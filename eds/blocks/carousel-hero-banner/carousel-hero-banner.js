@@ -72,6 +72,11 @@ export default async function decorate(block) {
 
   block.classList.add("swiper");
 
+  // Section title for product_tile_click (eVar67)
+  const sectionTitle = block.closest('.section')?.querySelector('h2, h3')?.textContent?.trim()
+    || block.closest('.section')?.previousElementSibling?.querySelector('h2, h3')?.textContent?.trim()
+    || '';
+
   const wrapper = document.createElement("div");
   wrapper.className = "swiper-wrapper";
 
@@ -170,6 +175,18 @@ export default async function decorate(block) {
 
       const bannerTitle = (desktopImg || mobileImg)?.querySelector("img")?.alt?.trim() || ctaText || "carousel-hero-banner";
       bindCtaClickTracking(cta, ctaLink, ctaText, bannerTitle);
+
+      // product_tile_click (event293) for product carousel usage (e.g. Recommended for you)
+      if (sectionTitle) {
+        const productName = (desktopImg || mobileImg)?.querySelector("img")?.alt?.trim() || ctaText || '';
+        cta.addEventListener("click", () => {
+          trackEvent("product_tile_click", {
+            productName,
+            Title: sectionTitle,
+            param1: ctaLink,
+          });
+        });
+      }
 
       mediaWrap.appendChild(cta);
     }

@@ -46,6 +46,10 @@ export function getVisitorId() {
   return m ? m[1] : '';
 }
 
+function getGaIdFromCookie() {
+  return (document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/) || [])[1] || '';
+}
+
 export function getCampaignIdFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   return (urlParams.get('utm_campaign') || '').trim();
@@ -231,6 +235,7 @@ function buildBasePayload() {
     datePicker: '',
     customField: '',
     visitorId: '',
+    gaId: '',
     description: '',
     whatsAppConsent: '',
     source: '',
@@ -262,13 +267,12 @@ function trackInterestCTA(campaignId, formName) {
   });
 }
 
-function trackFormSubmission(formName, campaignId, pincode, whatsappOptIn, extraData = {}) {
+function trackFormSubmission(formName, campaignId, whatsappOptIn, extraData = {}) {
   const formData = {
     formName,
     campaignId,
-    pincode,
-    whatsappOptIn,
-    dataDestination: extraData.dataDestination || '',
+    whatsappOptIn: whatsappOptIn ? 'checked' : undefined,
+    dataDestination: extraData.dataDestination || 'both',
     contruction:     extraData.contruction     || '',
     localpainter:    extraData.localpainter    || '',
   };
@@ -551,8 +555,8 @@ export default function decorate(block) {
 
     const campaignId = currentCampaignId;
 
-    trackFormSubmission(currentFormName, campaignId, pinInput.value.trim(), whatsAppConsent, {
-      dataDestination: cfg.dataDestination || '',
+    trackFormSubmission(currentFormName, campaignId, consentInput?.checked, {
+      dataDestination: cfg.dataDestination || 'both',
       contruction:     cfg.contruction     || '',
       localpainter:    cfg.localpainter    || '',
     });
@@ -563,6 +567,7 @@ export default function decorate(block) {
     payload.campaignId = campaignId;
     payload.marketingChannel = 'Direct';
     payload.visitorId = getVisitorId();
+    payload.gaId = getGaIdFromCookie();
     payload.whatsAppConsent = whatsAppConsent;
 
     payload.fName = fNameEnc;
@@ -587,7 +592,12 @@ export default function decorate(block) {
       );
 
       if (dbResp && dbResp.Status === 'SUCCESS' && dbResp.rowID) {
-        const sfPayload = { ...payload, rowId: dbResp.rowID };
+        const sfPayload = {
+          ...payload,
+          visitorId: payload.gaId,
+          rowId: dbResp.rowID,
+        };
+        delete sfPayload.gaId;
         const sfResp = await postFormUrlEncoded(
           `${AMS_BASE}/apcolourcatalogue/ccforms/salesforce.leadstosalesforce.json`,
           sfPayload,

@@ -6,7 +6,7 @@
  */
 
 import { submitLeadFromForm, getCampaignIdFromUrl } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
+import { getDigitalData, trackEvent, trackFormError , ga4Implementaion } from '../../scripts/analytics_1.js';
 import { firePixelConversion } from '../../scripts/third-party-pixels.js';
 
 const BOOK_FREE_SITE_VISIT_FORM = 'book-free-site-visit';
@@ -723,13 +723,12 @@ function trackLeadFormStart(form) {
 }
 
 function trackLeadFormSubmission(form) {
-  const pincodeInput = form.querySelector('input[name*="pin" i], input[name*="zip" i], input[name*="postal" i]');
-  const whatsappConsent = form.querySelector('.whatsAppConsentFormFld')?.classList.contains('whatsAppCheckbox-checked') ? 'Y' : 'N';
+  const isWhatsappChecked = form.querySelector('.whatsAppConsentFormFld')?.classList.contains('whatsAppCheckbox-checked');
+  const whatsappConsent = isWhatsappChecked ? 'checked' : undefined;
 
   const formData = {
     formName: form.dataset.formName || 'lead-form',
     campaignId: getCampaignId(),
-    pincode: pincodeInput?.value?.trim() || '',
     whatsappOptIn: whatsappConsent,
     contruction: normalizeYesNo(getRadioOrCheckboxValue(form, 'renovating_home')),
     localpainter: normalizeYesNo(getRadioOrCheckboxValue(form, 'hired_painter')),
@@ -745,6 +744,11 @@ function trackLeadFormSubmission(form) {
     campaignId: getCampaignId(),
     ...formData,
   });
+  console.log(form)
+      ga4Implementaion({
+          event: 'menu_interaction',
+          click_text:siteSection,
+        })
   // Mirror to marketing pixels (FB Pixel as 'Lead', GA4 as 'form_submit',
   // Google Ads as 'form_submit' conversion). Image beacons — no SDK load.
   firePixelConversion('form_submit', {
