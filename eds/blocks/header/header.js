@@ -46,14 +46,59 @@ const HEADER_ICON_PATHS = {
 const AUTH_REDIRECT_URI = `${window.location.origin}/`;
 const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
+const POST_LOGIN_REDIRECT_FLAG_KEY = 'redirectPostLoginFlag';
+const POST_LOGIN_REDIRECT_PATH_KEY = 'redirectPostLoginPath';
 
 function persistPostLoginRedirectPath() {
+  const redirectUrl = window.location.href || `${window.location.origin}/`;
   try {
-    const redirectPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    localStorage.setItem('redirectPostLoginFlag', 'true');
-    localStorage.setItem('redirectPostLoginPath', redirectPath || '/');
+    localStorage.setItem(POST_LOGIN_REDIRECT_FLAG_KEY, 'true');
+    localStorage.setItem(POST_LOGIN_REDIRECT_PATH_KEY, redirectUrl);
   } catch (e) {
     // ignore storage errors
+  }
+
+  try {
+    sessionStorage.setItem(POST_LOGIN_REDIRECT_FLAG_KEY, 'true');
+    sessionStorage.setItem(POST_LOGIN_REDIRECT_PATH_KEY, redirectUrl);
+  } catch (e) {
+    // ignore storage errors
+  }
+}
+
+function consumePostLoginRedirectPath() {
+  const read = (storage) => {
+    try {
+      if (storage.getItem(POST_LOGIN_REDIRECT_FLAG_KEY) === 'true') {
+        return storage.getItem(POST_LOGIN_REDIRECT_PATH_KEY) || '';
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+    return '';
+  };
+
+  const clear = (storage) => {
+    try {
+      storage.removeItem(POST_LOGIN_REDIRECT_FLAG_KEY);
+      storage.removeItem(POST_LOGIN_REDIRECT_PATH_KEY);
+    } catch (e) {
+      // ignore storage errors
+    }
+  };
+
+  const redirectPath = read(localStorage) || read(sessionStorage);
+  clear(localStorage);
+  clear(sessionStorage);
+
+  if (!redirectPath) return '';
+
+  try {
+    const targetUrl = new URL(redirectPath, window.location.origin);
+    if (targetUrl.origin !== window.location.origin) return '';
+    return targetUrl.href;
+  } catch (e) {
+    return '';
   }
 }
 
@@ -713,11 +758,9 @@ async function initKeycloak(block) {
       const count = await fetchMiniCartCount();
       updateCartBadge(block, count);
       setTimeout(() => {
-        if (localStorage.getItem('redirectPostLoginFlag') === 'true') {
-          const redirectPath = localStorage.getItem('redirectPostLoginPath');
-          localStorage.removeItem('redirectPostLoginFlag');
-          localStorage.removeItem('redirectPostLoginPath');
-          if (redirectPath) window.location.href = redirectPath;
+        const redirectPath = consumePostLoginRedirectPath();
+        if (redirectPath && redirectPath !== window.location.href) {
+          window.location.href = redirectPath;
         }
       }, 1000);
     }
