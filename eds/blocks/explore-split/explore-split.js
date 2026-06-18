@@ -1,6 +1,19 @@
 import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
-function getNearestHeadingTitle(cta, block) {
+/**
+ * Returns the section-level title (h2 in the .section wrapper) for the
+ * "Explore Beyond Colours" banner, falling back to the nearest h3 inside
+ * the block (i.e. "Textures" / "Wallpapers") when no section h2 exists.
+ */
+function getSectionOrNearestHeadingTitle(cta, block) {
+  // 1. Prefer an h2 in the enclosing .section (e.g. "Explore Beyond Colours")
+  const section = cta.closest('.section');
+  if (section) {
+    const sectionH2 = section.querySelector(':scope > h2, :scope > .default-content-wrapper h2');
+    if (sectionH2?.textContent?.trim()) return sectionH2.textContent.trim();
+  }
+
+  // 2. Walk up to block boundary looking for a direct-child h3
   let scope = cta.parentElement;
   while (scope && scope !== block) {
     const scopedHeading = scope.querySelector(':scope > h3');
@@ -10,38 +23,13 @@ function getNearestHeadingTitle(cta, block) {
     scope = scope.parentElement;
   }
 
+  // 3. Nearest preceding h3 in the block
   const headings = [...block.querySelectorAll('h3')].reverse();
   const nearest = headings.find((heading) => {
     const relation = heading.compareDocumentPosition(cta);
     return (relation & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
   });
   return nearest?.textContent?.trim() || 'Explore Split';
-}
-
-function getNearestHeadingId(cta, block) {
-  let scope = cta.parentElement;
-  while (scope && scope !== block) {
-    const scopedHeading = scope.querySelector(':scope > h3[id]');
-    if (scopedHeading?.id) {
-      return scopedHeading.id.trim();
-    }
-    scope = scope.parentElement;
-  }
-
-  const orderedNodes = [...block.querySelectorAll('h3[id], .button-container a.button')];
-  let nearestHeadingId = '';
-
-  for (let i = 0; i < orderedNodes.length; i += 1) {
-    const node = orderedNodes[i];
-    if (node.matches('h3[id]')) {
-      nearestHeadingId = node.id.trim();
-    }
-    if (node === cta) {
-      return nearestHeadingId;
-    }
-  }
-
-  return nearestHeadingId;
 }
 
 function bindViewAllTracking(block) {
@@ -55,8 +43,10 @@ function bindViewAllTracking(block) {
     cta.dataset.analyticsBound = 'true';
     cta.addEventListener('click', () => {
       const ctaLink = cta.getAttribute('href') || '';
-      const btnTitle = getNearestHeadingId(cta, block) || cta.textContent.trim();
-      const parentTitle = getNearestHeadingTitle(cta, block);
+      // eVar45 (cta_): use the actual button text ("View All"), not the heading id slug
+      const btnTitle = cta.textContent.trim();
+      // eVar67 (parentTitle): section-level h2 first, then sub-section h3
+      const parentTitle = getSectionOrNearestHeadingTitle(cta, block);
 
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });
