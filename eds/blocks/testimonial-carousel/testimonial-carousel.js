@@ -143,17 +143,17 @@ function buildSlide(row, block) {
 
   const columns = [...row.querySelectorAll(':scope > div')];
 
+  // HTML structure: columns[0] = <a href="youtube"><picture></picture></a>
+  //                 columns[1] = quote text
+  //                 columns[2] = name
+  //                 columns[3] = location
   const imageCol = columns[0];
-  const videoCol = columns[1];
-  const quoteCol = columns[2];
-  const nameCol = columns[3];
-  const placeCol = columns[4];
+  const quoteCol = columns[1];
+  const nameCol = columns[2];
+  const placeCol = columns[3];
 
-  const videoLink = (
-    videoCol?.querySelector('a')?.href
-    || videoCol?.textContent?.trim()
-    || ''
-  );
+  // Video link lives in the <a> wrapping the thumbnail image
+  const videoLink = imageCol?.querySelector('a')?.href || '';
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'testimonial-image';
@@ -181,9 +181,7 @@ function buildSlide(row, block) {
       e.preventDefault();
       e.stopPropagation();
       openVideoModal(block, videoLink);
-      trackEvent("Testimonial - Click to expand (Open)", {
-        "videoId": videoLink
-      });
+      trackEvent('test_open');
     });
   }
 

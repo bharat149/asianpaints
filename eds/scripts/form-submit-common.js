@@ -11,6 +11,8 @@ const DEFAULT_SELECTORS = {
   mobile: '#enquire-mobile',
   pincode: '#enquire-pincode',
   whatsappConsent: '.whatsAppConsentFormFld',
+  constructionWorkGoingOn: '[name="constructionWorkGoingOn"]',
+  localPainterHired: '[name="localPainterHired"]',
 };
 
 /**
@@ -171,7 +173,16 @@ export function buildLeadPayload(form, options = {}) {
   const email = form.querySelector(selectors.email)?.value?.trim() || '';
   const mobileNo = form.querySelector(selectors.mobile)?.value?.trim() || '';
   const pinCode = form.querySelector(selectors.pincode)?.value?.trim() || '';
-  const whatsAppConsent = form.querySelector(selectors.whatsappConsent)?.checked ? 'Y' : 'N';
+  // The selector may point to a wrapper div (lead-form pattern) or directly to
+  // the checkbox input (form.js / form-banner.js pattern). Always resolve to the
+  // actual <input type="checkbox"> before reading .checked.
+  const consentEl = form.querySelector(selectors.whatsappConsent);
+  const consentInput = consentEl?.matches('input[type="checkbox"]')
+    ? consentEl
+    : consentEl?.querySelector('input[type="checkbox"]');
+  const whatsAppConsent = consentInput?.checked ? 'Y' : 'N';
+  const constructionWorkGoingOn = form.querySelector(selectors.constructionWorkGoingOn)?.checked ? 'Yes' : 'No';
+  const localPainterHired = form.querySelector(selectors.localPainterHired)?.checked ? 'Yes' : 'No';
 
   return {
     pageUrl: options.pageUrl || window.location.href,
@@ -182,6 +193,8 @@ export function buildLeadPayload(form, options = {}) {
     mobileNo,
     pinCode,
     whatsAppConsent,
+    constructionWorkGoingOn,
+    localPainterHired,
     encrypted: encryptLeadFields({ fName, lName, email, mobileNo, pinCode }),
     visitorId: getVisitorId(),
     gaId: getGaIdFromCookie(),
@@ -203,6 +216,9 @@ export function saveToDB(lead, options = {}) {
     visitorId: lead.visitorId,
     gaId: lead.gaId,
     whatsAppConsent: lead.whatsAppConsent,
+    // Keep legacy API keys while also sending explicit checkbox field names.
+    remarks: lead.constructionWorkGoingOn,
+    answer: lead.localPainterHired,
     campaignId: lead.campaignId,
   });
 }
@@ -220,6 +236,9 @@ export function pushToSalesforce(lead, rowId, options = {}) {
     fName: lead.encrypted.fName,
     visitorId: lead.gaId,
     whatsAppConsent: lead.whatsAppConsent,
+    // Keep legacy API keys while also sending explicit checkbox field names.
+    remarks: lead.constructionWorkGoingOn,
+    answer: lead.localPainterHired,
     campaignId: lead.campaignId,
     campaignName: lead.campaignId,
     rowId,

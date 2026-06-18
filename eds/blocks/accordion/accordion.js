@@ -201,20 +201,33 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
   });
 }
 
+function getFaqSectionTitle(block) {
+  // Prefer an h2 in the enclosing .section (the FAQ banner title,
+  // e.g. "Frequently Asked Questions").
+  const section = block.closest('.section');
+  if (section) {
+    const heading = section.querySelector('h1, h2, h3, h4, h5, h6');
+    if (heading?.textContent?.trim()) return heading.textContent.trim();
+  }
+  return '';
+}
+
 function trackAccordionClick(block, summaryEl) {
   const isFaq = block.classList.contains('faq');
-  summaryEl.addEventListener('click', (e) => {
-    // Capture state BEFORE animation toggle modifies it.
-    // detailsEl.open is still the pre-click value at this point
-    // because the animation handler calls e.preventDefault() and
-    // defers the actual open/close to the animation callback.
-    const item = e.target.closest('.accordion-item');
-    const wasOpen = item?.open;
+  summaryEl.addEventListener('click', () => {
+    // Read open state from the parent <details> element.
+    // summaryEl.closest() is used instead of e.target.closest() to
+    // ensure we always find the details regardless of which child of
+    // the summary (icon, span, etc.) was the actual click target.
+    const detailsEl = summaryEl.closest('.accordion-item');
+    const wasOpen = detailsEl?.open ?? false;
     if (isFaq) {
-      const questionText = summaryEl.textContent?.trim() || '';
+      // eVar45 (cta_): "FAQ close" / "FAQ Open"
+      // eVar67 (parentTitle): FAQ section heading, not the question text
+      const parentTitle = getFaqSectionTitle(block);
       trackEvent('cta_link_text', {
         cta_: wasOpen ? 'FAQ close' : 'FAQ Open',
-        parentTitle: questionText,
+        parentTitle,
       });
     } else {
       const state = wasOpen ? 'Close' : 'Open';

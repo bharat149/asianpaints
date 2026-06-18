@@ -999,7 +999,7 @@
 
 .section.cards-container:has(.cards.grid) {
   background: #ece5d7;
-  padding: 60px 100px 80px;
+  padding: 60px 100px 0px;
 }
 
 .section.cards-container:has(.cards.grid)>.cards-wrapper {
