@@ -744,11 +744,16 @@ function trackLeadFormSubmission(form) {
     campaignId: getCampaignId(),
     ...formData,
   });
-  console.log(form)
-      ga4Implementaion({
-          event: 'menu_interaction',
-          click_text:siteSection,
-        })
+
+  // GA4 tracking only for book-free-site-visit form
+  if (form.dataset.formName === BOOK_FREE_SITE_VISIT_FORM) {
+    ga4Implementaion({
+      event: 'confirm_free_site_visit',
+      click_text: 'Book free site visit',
+      click_category: 'click_header / content'
+    });
+  }
+
   // Mirror to marketing pixels (FB Pixel as 'Lead', GA4 as 'form_submit',
   // Google Ads as 'form_submit' conversion). Image beacons — no SDK load.
   firePixelConversion('form_submit', {
