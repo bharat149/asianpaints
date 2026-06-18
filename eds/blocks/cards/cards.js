@@ -238,6 +238,22 @@ export default function decorate(block) {
     });
   });
 
+  // Image link clicks
+  ul.querySelectorAll('.cards-card-image-link').forEach((imageLink) => {
+    imageLink.addEventListener('click', (e) => {
+      const ctaLink = imageLink.getAttribute('href') || '';
+      const li = imageLink.closest('li');
+      const imageAlt = li?.querySelector('.cards-card-image img')?.alt || '';
+      const btnTitle = li?.querySelector('.cards-card-body a')?.textContent.trim() || '';
+      
+      ga4Implementaion({
+        event: 'product_cards',
+        click_text: btnTitle,
+        click_category: imageAlt
+      });
+    });
+  });
+
   if (isServicesBlock) {
     const initServicesSwiper = async () => {
       const isMobile = window.innerWidth < 768;
