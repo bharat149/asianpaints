@@ -1015,6 +1015,29 @@ const EVENT_REGISTRY = {
 
   // Form file upload
   File_upload_successful: { events: 'event101' }, // best-guess (Registration complete-style — TBD verify)
+
+  nc_pop_click: {
+    events: 'event339',
+    eVars: { Destination_URL: 'eVar86', Title: 'eVar67', PopupNumber: 'eVar13' },
+  },
+
+  nc_pop_impressions : { 
+    events: 'event338', 
+    eVars: { Title: 'eVar67', PopupNumber: 'eVar13' } 
+  },
+
+  nc_pop_close: {
+    events: 'event340',
+    eVars: { Title: 'eVar67', PopupNumber: 'eVar13' },
+  },
+
+  exit_intent_impression : { events: 'event359'},
+
+  form_failure: { 
+    events: 'event354', 
+    eVars: { formName: 'eVar17', campaignId: 'eVar15' },
+  },
+
 };
 
 /**
