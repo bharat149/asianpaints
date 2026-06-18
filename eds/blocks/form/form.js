@@ -70,14 +70,24 @@ function findNearestFormConfigBlock(block) {
   let previous = section.previousElementSibling;
   while (previous) {
     const candidate = previous.querySelector?.('.form-config, .form-configs');
-    if (candidate) return candidate;
+    if (
+      candidate &&
+      !previous.classList.contains('form-banner-container')
+    ) {
+      return candidate;
+    }
     previous = previous.previousElementSibling;
   }
 
   let next = section.nextElementSibling;
   while (next) {
     const candidate = next.querySelector?.('.form-config, .form-configs');
-    if (candidate) return candidate;
+    if (
+      candidate &&
+      !next.classList.contains('form-banner-container')
+    ) {
+      return candidate;
+    } 
     next = next.nextElementSibling;
   }
 
