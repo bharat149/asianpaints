@@ -72,6 +72,14 @@ function setupGlobalClickListener() {
 
 setupGlobalClickListener();
 
+// SaleAssist shoppable-shots tracking — set up page-level listeners so
+// short_video_play (event296) and short_video_shop (event297) fire on
+// ANY page that loads a SaleAssist widget (e.g. IDS page), not just
+// pages that contain a video-shorts block.
+import('../blocks/video-shorts/video-shorts.js')
+  .then(({ initSaleAssistTracking }) => initSaleAssistTracking())
+  .catch(() => { /* video-shorts block not available — skip */ });
+
 // Below is the function with same name in aem code to allow Target to call it directly.
 // window.modalHandler = {
 //   // Triggers the full logic to fetch fragment and create modal
