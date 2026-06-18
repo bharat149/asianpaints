@@ -233,10 +233,20 @@ export default async function decorate(block) {
     /*GA 4 */
 
     cardLink.addEventListener('click', () => {
-        ga4Implementaion({
+      const clickText = bottomImageAlt.includes('-') 
+        ? bottomImageAlt.split('-')[0].trim() 
+        : bottomImageAlt;
+      const extraText = bottomImageAlt.includes('-') 
+        ? bottomImageAlt.split('-')[1].trim() 
+        : '';
+      const category = extraText 
+        ? `Colours of the year ${extraText}` 
+        : 'Colours of the year';
+      
+      ga4Implementaion({
         event:'catelouge_interaction',
-        click_text: bottomImageAlt,
-        click_category: 'Colours of the year',
+        click_text: clickText,
+        click_category: category,
         click_header:'Colour of the years'
       })
     })
