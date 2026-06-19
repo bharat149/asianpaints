@@ -2677,8 +2677,12 @@ function buildCartModal() {
 
     // Optional: close the cart modal before opening login popup.
     overlay.classList.remove('active');
-
-    showLoginGuestPopup();
+    if (keycloakInstance?.authenticated) {
+      if (window.headerMiniCart?.checkoutRedirectLogin) {
+        window.headerMiniCart.checkoutRedirectLogin();
+      }
+      showLoginGuestPopup();
+    }
   });
 
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
