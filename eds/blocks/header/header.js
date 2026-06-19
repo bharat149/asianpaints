@@ -2683,6 +2683,7 @@ function buildCartModal() {
       }
       showLoginGuestPopup();
     }
+    showLoginGuestPopup();
   });
 
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
