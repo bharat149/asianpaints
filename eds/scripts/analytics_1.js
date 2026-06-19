@@ -1131,6 +1131,23 @@ export function trackEvent(eventName, eventData = {}) {
 }
 
 /**
+ * Expose analytics helpers on window so Adobe Target custom code can
+ * trigger EDS analytics events without importing this ES module.
+ */
+function exposeAnalyticsGlobals() {
+  if (typeof window === 'undefined') return;
+
+  window.edsAnalytics = window.edsAnalytics || {};
+  window.edsAnalytics.trackEvent = (eventName, eventData = {}) => {
+    trackEvent(eventName, eventData);
+  };
+}
+
+// Register globals at module-load time so Target custom code can call
+// window.edsAnalytics.trackEvent(...) as soon as this file is loaded.
+exposeAnalyticsGlobals();
+
+/**
  * Fires Mini_cart_checkout (event97) when the user clicks the minicart
  * checkout button. Builds the Adobe Analytics products string from
  * digitalData.productDetails.item if present.
