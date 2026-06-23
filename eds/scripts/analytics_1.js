@@ -91,8 +91,32 @@ function getPageName() {
 // HELPERS — visitor state
 // ============================================================
 
+// Cached Web SDK ECID — populated from alloy('getIdentity') in
+// initAnalytics and reused by every link-tracking beacon (sync).
+let cachedEcid = '';
+
+function getEcidFromIdentityCookie() {
+  // Web SDK stores identity in kndctr_<ORGID>_identity (base64url protobuf).
+  const orgKey = ORG_ID.replace(/@/g, '_');
+  const name = `kndctr_${orgKey}_identity`;
+  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  if (!m) return '';
+  try {
+    const decoded = atob(m[1].replace(/-/g, '+').replace(/_/g, '/'));
+    const idMatch = decoded.match(/\d{38}/); // ECID is a 38-digit value
+    return idMatch ? idMatch[0] : '';
+  } catch (e) {
+    return '';
+  }
+}
+
 function getECID() {
-  // Read MCMID from AMCV cookie (handles both URL-encoded and decoded forms)
+  // 1. Prefer the value resolved from alloy('getIdentity').
+  if (cachedEcid) return cachedEcid;
+  // 2. Web SDK identity cookie.
+  cachedEcid = getEcidFromIdentityCookie();
+  if (cachedEcid) return cachedEcid;
+  // 3. Legacy AppMeasurement AMCV cookie (idMigration scenarios).
   const m = document.cookie.match(/MCMID(?:%7C|\|)(\d+)/);
   return m ? m[1] : '';
 }
@@ -546,6 +570,12 @@ export async function initAnalytics() {
     debugEnabled: location.hostname !== 'www.asianpaints.com',
   });
 
+  // Resolve the Web SDK ECID once and cache it so subsequent link-tracking
+  // beacons can populate eVar12 synchronously (getECID()).
+  window.alloy('getIdentity')
+    .then((res) => { if (res?.identity?.ECID) cachedEcid = res.identity.ECID; })
+    .catch(() => { /* ignore — falls back to identity cookie parsing */ });
+
   try {
     // Two-phase Target apply (renderDecisions: false + applyPropositions):
     //
@@ -722,7 +752,7 @@ const EVENT_REGISTRY = {
   // are page-level vars set globally in buildPageData() on every hit.
   'Login Icon Click': { events: 'event7' },
   login_icon:         { events: 'event7' },
-  login_successful:   { events: 'event48', eVars: { loginFunction: 'eVar46', loginStatus: 'eVar9' } },
+  login_successful:   { events: 'event48', eVars: { loginStatus: 'eVar9' } },
 
   // Cart — spec action name: mini_cart_icon_click; mini_cart_click kept as legacy alias.
   // eVar21 = value of the HybrisCart cookie (auto-read at dispatch time via def.cookies).
@@ -1380,7 +1410,8 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
-      redirectionLink: ctaLink,
+      // redirectionLink (eVar86) must be a fully-qualified absolute URL.
+      redirectionLink: toUrl(ctaLink).href,
       parentTitle,
     });
   }

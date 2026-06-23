@@ -788,6 +788,8 @@ async function handleProfileClick(e) {
   }
 
   e.preventDefault();
+  // e7 - Login Icon Click (must fire on header icon click)
+  trackEvent('login_icon');
   ga4Implementaion({
     event: 'header_interaction',
     click_text: 'Profile icon',
@@ -798,6 +800,8 @@ async function handleProfileClick(e) {
   persistPostLoginRedirectPath();
   // eslint-disable-next-line no-use-before-define
   const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
+  // Give the analytics beacon a brief moment before navigation.
+  await new Promise((resolve) => setTimeout(resolve, 150));
   window.location.href = url;
 }
 
@@ -1767,8 +1771,6 @@ function buildLoginModal() {
   });
 
   loginBtn.addEventListener('click', () => {
-    // e7 - Login Icon Click (fires on the "Login" button inside the profile modal)
-    trackEvent('Login Icon Click');
     close();
     window.location.href = getApApi().KEYCLOAK_PAGE_URL;
   });
@@ -1929,7 +1931,6 @@ function buildSearchDialog() {
   let locationRequestToken = 0;
 
   // Interactions
-  let searchStartFired = false;
   const closeDialog = () => {
     locationRequestToken += 1;
     overlay.classList.remove('active');
@@ -1937,7 +1938,6 @@ function buildSearchDialog() {
     input.value = '';
     toggleSearchDialogQueryMode(dialog, false);
     trackEvent('Search Bar Close');
-    searchStartFired = false;
   };
 
   closeBtn.addEventListener('click', closeDialog);
@@ -1957,10 +1957,8 @@ function buildSearchDialog() {
     const currentLocationToken = locationRequestToken;
     const rawQuery = input.value;
     const query = rawQuery.trim();
-    if (!searchStartFired && rawQuery.length > 0) {
-      trackEvent('Search Start');
-      searchStartFired = true;
-    }
+    // Note: e54 Search Start fires on the magnifying glass icon click
+    // (openSearchDialog), not here — avoids double-counting event54.
     dialogDebounce = setTimeout(() => {
       handleSearchDialogQuery(dialog, rawQuery);
       seeAll.href = query
@@ -3362,7 +3360,6 @@ function trackLoginSuccessful(loginFunction = '') {
   }
 
   trackEvent('login_successful', {
-    loginFunction: digitalData.user.loginFunction || '',
     loginStatus: digitalData.user.loginStatus || 'logged in',
   });
 }
@@ -4553,7 +4550,7 @@ function addInteractions(block) {
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
       // e67 - Mini Cart Icon Click
-      trackEvent('mini_cart_click');
+      trackEvent('mini_cart_icon_click');
       refreshCartModal(block);
       positionCartModal();
       cartModalOverlay.classList.add('active');
@@ -4601,6 +4598,8 @@ function addInteractions(block) {
       if (user) {
         openDropdown();
       } else {
+        // e7 - Login Icon Click (must fire on header icon click)
+        trackEvent('login_icon');
         // Production: redirect to OIDC auth URL (auth.asianpaints.com)
         try {
           sessionStorage.setItem(AUTH_REDIRECTED_KEY, '1');
@@ -4612,6 +4611,8 @@ function addInteractions(block) {
           click_text: 'Profile icon',
           click_category: 'click_header icons',
         });
+        // Give the analytics beacon a brief moment before navigation.
+        await new Promise((resolve) => setTimeout(resolve, 150));
         window.location.href = url;
       }
     });
@@ -4676,6 +4677,8 @@ function addInteractions(block) {
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
+      // e54 - Search Start (fires on magnifying glass icon click)
+      trackEvent('search_start', { flowType: 'Search' });
       ga4Implementaion({
         event: 'search_icon_click',
       })
@@ -4698,8 +4701,20 @@ function addInteractions(block) {
     });
   }
 
+  // Home icon (mobile) — e132 Custom CTA Click
+  // cta_ = 'Home', parentTitle = 'Menu Header', redirectionLink = href
+  const mobileHomeBtnEl = block.querySelector('.mobile-home-btn');
+  if (mobileHomeBtnEl) {
+    mobileHomeBtnEl.addEventListener('click', () => {
+      const ctaLink = mobileHomeBtnEl.getAttribute('href') || '';
+      triggerCTAClickWithLinkAndTitle(ctaLink, 'Home', 'Menu Header');
+    });
+  }
+
   block.querySelectorAll('.action-btn').forEach((actionBtn) => {
     actionBtn.addEventListener('click', () => {
+      if (actionBtn.classList.contains('cart-btn')) return;
+
       const rawTitle = actionBtn.getAttribute('aria-label')
         || actionBtn.querySelector('.icon-tooltip-text')?.textContent
         || actionBtn.textContent
@@ -4727,6 +4742,8 @@ function addInteractions(block) {
   if (mobileSearchBtn) {
     mobileSearchBtn.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
+      // e54 - Search Start (fires on magnifying glass icon click)
+      trackEvent('search_start', { flowType: 'Search' });
       openSearchDialog(block);
     });
   }
