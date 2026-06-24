@@ -462,8 +462,9 @@ function buildTargetMboxParams() {
 function buildCommonAnalyticsContext() {
   const pageName = getPageName();
   const timestamp = getDateString();
+  const clientId = getClientID();
 
-  return {
+  const ctx = {
     pageName,
     eVar5: timestamp,
     prop5: timestamp,
@@ -474,6 +475,11 @@ function buildCommonAnalyticsContext() {
     eVar54: pageName,
     prop54: pageName,
   };
+  // eVar120 = GA client ID (the _ga cookie's <random>.<timestamp> part,
+  // identical to GA's `cid`). Global on every AMS hit (v120), so include
+  // it on every beacon. Omitted when the _ga cookie isn't set yet.
+  if (clientId) ctx.eVar120 = clientId;
+  return ctx;
   //eVar13: getGAID(), // To check the variable name and set to it.
 }
 

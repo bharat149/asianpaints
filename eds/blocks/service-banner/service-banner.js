@@ -15,8 +15,14 @@ export default function decorate(block) {
   banner.appendChild(img);
 
   content.querySelectorAll('.button-container a.button').forEach((cta) => {
+    // The global bindButtonContainerTracking() (decorateMain) already binds
+    // a click handler to every .button-container a.button and sets
+    // dataset.analyticsBound. Respect that shared flag so we don't fire a
+    // duplicate cta_link_text/custom_cta_click for the same click.
+    if (cta.dataset.analyticsBound === 'true') return;
     if (cta.dataset.serviceBannerAnalyticsBound === 'true') return;
 
+    cta.dataset.analyticsBound = 'true';
     cta.dataset.serviceBannerAnalyticsBound = 'true';
     cta.addEventListener('click', () => {
       const ctaLink = cta.getAttribute('href') || '';
