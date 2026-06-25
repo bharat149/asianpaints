@@ -2659,10 +2659,10 @@ function buildCartModal() {
     const ctaText = shopBtn.textContent?.trim() || '';
     const isShopNow = ctaText.toLowerCase() === 'shop now';
     if (isShopNow) {
-      const redirectionLink = shopBtn.getAttribute('href') || getApApi().SHOP_URL;
+      const redirectionLink = toAbsoluteUrl(shopBtn.getAttribute('href') || getApApi().SHOP_URL);
       trackEvent('custom_cta_click', {
-        cta_: 'Cta Clicked',
-        parentTitle: 'Title of the Banner',
+        cta_: ctaText,
+        parentTitle: 'minicart',
         redirectionLink,
       });
     }
@@ -4944,7 +4944,11 @@ function addInteractions(block) {
     ctaBtn.addEventListener('click', () => {
       const ctaLink = ctaBtn.getAttribute('href') || '';
       const btnTitle = ctaBtn.textContent?.trim() || '';
-      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, 'Header');
+      trackEvent('Sticky Form CTA Click', {
+        cta_: btnTitle,
+        parentTitle: 'Header',
+        redirectionLink: ctaLink,
+      });
 
       //GA4 -> Exit Intent Button Header 
 
