@@ -320,16 +320,21 @@ if (window.innerWidth < 768) {
         const colourCode = slide.swatchNumber || '';
 
         if (btn.closest('.popular-shades__swatch-item')?.classList.contains('track_paint_colour')) {
+          // Spec: eVar8 (productName) must carry the shade name AND code,
+          // e.g. "Chutney Green 8013". Combine name + number so the shade
+          // code isn't dropped (productSKU isn't mapped to an eVar here).
+          const productName = [colourName, colourCode].filter(Boolean).join(' ').trim();
+
           const dd = getDigitalData();
           dd.title = colourTitle;
           dd.data = {
-            productName: colourName,
+            productName,
             productSKU: colourCode,
           };
 
           trackEvent('natural_wood_shade_click', {
             title: colourTitle,
-            productName: colourName,
+            productName,
             productSKU: colourCode,
           });
         }

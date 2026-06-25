@@ -490,6 +490,15 @@ function buildFormUI(config) {
     toggleCTA();
   });
 
+  // Spec: fire calc_start on the first click anywhere on the calculator
+  // (e.g. clicking an option icon/image that does not change a form field).
+  root.addEventListener('click', () => {
+    if (!state.started) {
+      calculatorStart(form, storageKey);
+      state.started = true;
+    }
+  });
+
   areaInput.addEventListener('blur', updateError);
   areaInput.addEventListener('keyup', () => {
     updateError();
