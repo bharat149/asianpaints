@@ -3368,6 +3368,198 @@ function setCookie(name, value) {
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
 }
 
+function detectBrowser() {
+  const ua = navigator.userAgent || '';
+  if (/edg/i.test(ua)) return 'Edge';
+  if (/chrome|crios/i.test(ua)) return 'Chrome';
+  if (/safari/i.test(ua) && !/chrome|crios|android/i.test(ua)) return 'Safari';
+  if (/firefox|fxios/i.test(ua)) return 'Firefox';
+  if (/trident|msie/i.test(ua)) return 'IE';
+  return 'Unknown';
+}
+
+function hideLegacyCheckoutLoadingState() {
+  document.querySelectorAll('.js-rotatingMiniCartCheckout').forEach((el) => {
+    el.classList.remove('saving-progress-status-buy-now');
+  });
+  document.querySelectorAll('.checkoutloading').forEach((el) => {
+    el.style.display = 'none';
+  });
+}
+
+function ensureViewCartForm() {
+  let form = document.getElementById('viewCartFormId');
+  if (form) return form;
+
+  form = document.createElement('form');
+  form.id = 'viewCartFormId';
+  form.method = 'post';
+  form.style.display = 'none';
+
+  [
+    'cartId',
+    'baseSiteID',
+    'accessToken',
+    'guestUid',
+    'guestEmail',
+    'userId',
+    'storefront',
+    'CSRFToken',
+    'jSessionId',
+    'aemRedirectUrl',
+    'referrer',
+    'eVar38',
+    'eVar39',
+    'eVar87',
+    'Campaign',
+  ].forEach((id) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.id = id;
+    input.name = id;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  return form;
+}
+
+function setViewCartField(form, fieldId, value) {
+  const input = form.querySelector(`#${fieldId}`);
+  if (input) input.value = value == null ? '' : String(value);
+}
+
+async function postTrackRedirect(payload) {
+  try {
+    const body = new URLSearchParams();
+    Object.entries(payload).forEach(([key, value]) => {
+      body.append(key, value == null ? '' : String(value));
+    });
+    await fetch('/apcolourcatalogue/trackredirect.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      },
+      credentials: 'include',
+      body,
+    });
+  } catch (e) {
+    // Best-effort tracking.
+  }
+}
+
+async function checkoutRedirectLogin() {
+  const userCsrfToken = '';
+  const form = ensureViewCartForm();
+
+  try {
+    const miniCartResp = await fetchFromAp('/apcolourcatalogue/commerce/miniCart.json?viewCart=viewCart', {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    if (!miniCartResp) {
+      hideLegacyCheckoutLoadingState();
+      return;
+    }
+
+    const response = await miniCartResp.json();
+    if (response?.status !== 'success') {
+      console.log('View Cart Redirection Failed.');
+      hideLegacyCheckoutLoadingState();
+      return;
+    }
+
+    const hybrisCartCookie = getCookieValue('HybrisCart');
+    const hostUrl = window.location.href;
+    const browser = detectBrowser();
+
+    await postTrackRedirect({
+      baseSiteID: response.baseSiteID,
+      accessToken: response.loginToken,
+      CSRFToken: userCsrfToken,
+      userId: response.userId,
+      storefront: response.storefront,
+      cartId: response.cartId,
+      jSessionId: response.jSessionId,
+      aemRedirectUrl: response.aemRedirectUrl,
+      action: response.hybrisUrl,
+      hybrisCart: hybrisCartCookie,
+      hostUrl,
+      browser,
+      referrer: getCookieValue('referrer'),
+      eVar38: getCookieValue('eVar39'),
+      eVar87: getCookieValue('eVar87'),
+      Campaign: getCookieValue('Campaign'),
+    });
+
+    const guestEmail = getCookieValue('guest_email');
+    const guestUid = getCookieValue('guest_UID');
+    const gigyaUID = getCookieValue('gigyaUID');
+
+    if (gigyaUID) {
+      setViewCartField(form, 'baseSiteID', response.baseSiteID);
+      setViewCartField(form, 'accessToken', response.loginToken);
+      setViewCartField(form, 'CSRFToken', userCsrfToken);
+      setViewCartField(form, 'userId', response.userId);
+      setViewCartField(form, 'storefront', response.storefront);
+      setViewCartField(form, 'cartId', response.cartId);
+      setViewCartField(form, 'jSessionId', response.jSessionId);
+      setViewCartField(form, 'aemRedirectUrl', response.aemRedirectUrl);
+      setViewCartField(form, 'referrer', getCookieValue('referrer'));
+      setViewCartField(form, 'eVar38', getCookieValue('eVar38'));
+      setViewCartField(form, 'eVar39', getCookieValue('eVar39'));
+      setViewCartField(form, 'eVar87', getCookieValue('eVar87'));
+      setViewCartField(form, 'Campaign', getCookieValue('Campaign'));
+      form.action = response.hybrisUrl || '';
+    } else if (guestEmail && guestUid) {
+      setViewCartField(form, 'baseSiteID', response.baseSiteID);
+      setViewCartField(form, 'userId', 'anonymous');
+      setViewCartField(form, 'guestUid', guestUid);
+      setViewCartField(form, 'guestEmail', guestEmail);
+      setViewCartField(form, 'storefront', response.storefront);
+      setViewCartField(form, 'cartId', response.cartId);
+      setViewCartField(form, 'jSessionId', response.jSessionId);
+      setViewCartField(form, 'aemRedirectUrl', response.aemRedirectUrl);
+      setViewCartField(form, 'referrer', getCookieValue('referrer'));
+      setViewCartField(form, 'eVar38', getCookieValue('eVar38'));
+      setViewCartField(form, 'eVar39', getCookieValue('eVar39'));
+      setViewCartField(form, 'eVar87', getCookieValue('eVar87'));
+      setViewCartField(form, 'Campaign', getCookieValue('Campaign'));
+      form.action = response.hybrisUrl || '';
+    }
+
+    const cookVal = getCookieValue('HybrisCart');
+    if (response.cartId && cookVal && cookVal.length > 5) {
+      form.submit();
+    } else {
+      let retries = 0;
+      const interval = setInterval(() => {
+        retries += 1;
+        const cookie = getCookieValue('HybrisCart');
+        if (cookie && cookie !== 'Code=' && cookie.toLowerCase().indexOf('guid') === -1 && cookie.length > 5) {
+          const cookieCartId = cookie.replace(/^Code=/, '');
+          setViewCartField(form, 'cartId', cookieCartId);
+          form.submit();
+          clearInterval(interval);
+        }
+        if (retries >= 20) {
+          clearInterval(interval);
+          hideLegacyCheckoutLoadingState();
+        }
+      }, 1000);
+    }
+
+    hideLegacyCheckoutLoadingState();
+  } catch (error) {
+    const status = error?.status || 0;
+    const exception = error?.message || String(error);
+    const errorValue = `status code: ${status}-&-exception: ${exception}`;
+    await postTrackRedirect({ csrf: errorValue });
+    hideLegacyCheckoutLoadingState();
+  }
+}
+
 
 
 function buildMegamenuPanel(submenuUl, parentLabel = '') {
@@ -4987,6 +5179,9 @@ export default async function decorate(block) {
 
   // Search dialog (full-screen overlay)
   block.appendChild(buildSearchDialog());
+
+  window.headerMiniCart = window.headerMiniCart || {};
+  window.headerMiniCart.checkoutRedirectLogin = checkoutRedirectLogin;
 
   // Wire up all UI interactions
   addInteractions(block);
