@@ -788,6 +788,8 @@ async function handleProfileClick(e) {
   }
 
   e.preventDefault();
+  // e7 - Login Icon Click (must fire on header icon click)
+  trackEvent('login_icon');
   ga4Implementaion({
     event: 'header_interaction',
     click_text: 'Profile icon',
@@ -798,6 +800,8 @@ async function handleProfileClick(e) {
   persistPostLoginRedirectPath();
   // eslint-disable-next-line no-use-before-define
   const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
+  // Give the analytics beacon a brief moment before navigation.
+  await new Promise((resolve) => setTimeout(resolve, 150));
   window.location.href = url;
 }
 
@@ -1767,8 +1771,6 @@ function buildLoginModal() {
   });
 
   loginBtn.addEventListener('click', () => {
-    // e7 - Login Icon Click (fires on the "Login" button inside the profile modal)
-    trackEvent('Login Icon Click');
     close();
     window.location.href = getApApi().KEYCLOAK_PAGE_URL;
   });
@@ -1929,7 +1931,6 @@ function buildSearchDialog() {
   let locationRequestToken = 0;
 
   // Interactions
-  let searchStartFired = false;
   const closeDialog = () => {
     locationRequestToken += 1;
     overlay.classList.remove('active');
@@ -1937,7 +1938,6 @@ function buildSearchDialog() {
     input.value = '';
     toggleSearchDialogQueryMode(dialog, false);
     trackEvent('Search Bar Close');
-    searchStartFired = false;
   };
 
   closeBtn.addEventListener('click', closeDialog);
@@ -1957,10 +1957,8 @@ function buildSearchDialog() {
     const currentLocationToken = locationRequestToken;
     const rawQuery = input.value;
     const query = rawQuery.trim();
-    if (!searchStartFired && rawQuery.length > 0) {
-      trackEvent('Search Start');
-      searchStartFired = true;
-    }
+    // Note: e54 Search Start fires on the magnifying glass icon click
+    // (openSearchDialog), not here — avoids double-counting event54.
     dialogDebounce = setTimeout(() => {
       handleSearchDialogQuery(dialog, rawQuery);
       seeAll.href = query
@@ -2661,10 +2659,10 @@ function buildCartModal() {
     const ctaText = shopBtn.textContent?.trim() || '';
     const isShopNow = ctaText.toLowerCase() === 'shop now';
     if (isShopNow) {
-      const redirectionLink = shopBtn.getAttribute('href') || getApApi().SHOP_URL;
+      const redirectionLink = toAbsoluteUrl(shopBtn.getAttribute('href') || getApApi().SHOP_URL);
       trackEvent('custom_cta_click', {
-        cta_: 'Cta Clicked',
-        parentTitle: 'Title of the Banner',
+        cta_: ctaText,
+        parentTitle: 'minicart',
         redirectionLink,
       });
     }
@@ -2677,8 +2675,13 @@ function buildCartModal() {
 
     // Optional: close the cart modal before opening login popup.
     overlay.classList.remove('active');
-
-    showLoginGuestPopup();
+    if (keycloakInstance?.authenticated) {
+      if (window.headerMiniCart?.checkoutRedirectLogin) {
+        window.headerMiniCart.checkoutRedirectLogin();
+      }
+    }else {
+      showLoginGuestPopup();
+    }
   });
 
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
@@ -3357,13 +3360,191 @@ function trackLoginSuccessful(loginFunction = '') {
   }
 
   trackEvent('login_successful', {
-    loginFunction: digitalData.user.loginFunction || '',
     loginStatus: digitalData.user.loginStatus || 'logged in',
   });
 }
 
 function setCookie(name, value) {
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
+}
+
+function detectBrowser() {
+  const ua = navigator.userAgent || '';
+  if (/edg/i.test(ua)) return 'Edge';
+  if (/chrome|crios/i.test(ua)) return 'Chrome';
+  if (/safari/i.test(ua) && !/chrome|crios|android/i.test(ua)) return 'Safari';
+  if (/firefox|fxios/i.test(ua)) return 'Firefox';
+  if (/trident|msie/i.test(ua)) return 'IE';
+  return 'Unknown';
+}
+
+function hideLegacyCheckoutLoadingState() {
+  document.querySelectorAll('.js-rotatingMiniCartCheckout').forEach((el) => {
+    el.classList.remove('saving-progress-status-buy-now');
+  });
+  document.querySelectorAll('.checkoutloading').forEach((el) => {
+    el.style.display = 'none';
+  });
+}
+
+function ensureViewCartForm() {
+  let form = document.getElementById('viewCartFormId');
+  if (form) return form;
+
+  form = document.createElement('form');
+  form.id = 'viewCartFormId';
+  form.method = 'POST';
+  form.style.display = 'none';
+  form.innerHTML = `
+    <input type="hidden" name="cartId" id="cartId" value="">
+    <input type="hidden" name="baseSiteID" id="baseSiteID" value="">
+    <input type="hidden" name="accessToken" id="accessToken" value="">
+    <input type="hidden" name="guestUid" id="guestUid" value="">
+    <input type="hidden" name="guestEmail" id="guestEmail" value="">
+    <input type="hidden" name="userId" id="userId" value="">
+    <input type="hidden" name="storefront" id="storefront" value="">
+    <input type="hidden" name="CSRFToken" id="CSRFToken" value="">
+    <input type="hidden" name="JSESSIONID" id="jSessionId" value="">
+    <input type="hidden" name="aemRedirectUrl" id="aemRedirectUrl" value="">
+    <input type="hidden" name="referrer" id="referrer" value="">
+    <input type="hidden" name="eVar6" id="eVar6" value="">
+    <input type="hidden" name="eVar38" id="eVar38" value="">
+    <input type="hidden" name="eVar39" id="eVar39" value="">
+    <input type="hidden" name="eVar87" id="eVar87" value="">
+    <input type="hidden" name="Campaign" id="Campaign" value="">
+  `;
+
+  document.body.appendChild(form);
+  return form;
+}
+
+function setViewCartField(form, fieldId, value) {
+  const input = form.querySelector(`#${fieldId}`);
+  if (input) input.value = value == null ? '' : String(value);
+}
+
+async function postTrackRedirect(payload) {
+  try {
+    const body = new URLSearchParams();
+    Object.entries(payload).forEach(([key, value]) => {
+      body.append(key, value == null ? '' : String(value));
+    });
+    await fetch('/apcolourcatalogue/trackredirect.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      },
+      credentials: 'include',
+      body,
+    });
+  } catch (e) {
+    // Best-effort tracking.
+  }
+}
+
+async function checkoutRedirectLogin() {
+  const userCsrfToken = '';
+  const form = ensureViewCartForm();
+
+  try {
+    const miniCartResp = await fetchFromAp('/apcolourcatalogue/commerce/miniCart.json?viewCart=viewCart', {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    if (!miniCartResp) {
+      hideLegacyCheckoutLoadingState();
+      return;
+    }
+
+    const response = await miniCartResp.json();
+    if (response?.status !== 'success') {
+      console.log('View Cart Redirection Failed.');
+      hideLegacyCheckoutLoadingState();
+      return;
+    }
+
+    const checkoutAction = response?.hybrisUrl || response?.aemRedirectUrl || '';
+    if (checkoutAction) form.action = new URL(checkoutAction, window.location.origin).toString();
+
+    const hybrisCartCookie = getCookieValue('HybrisCart');
+    const hostUrl = window.location.href;
+    const browser = detectBrowser();
+
+    await postTrackRedirect({
+      baseSiteID: response.baseSiteID,
+      accessToken: response.loginToken,
+      CSRFToken: userCsrfToken,
+      userId: response.userId,
+      storefront: response.storefront,
+      cartId: response.cartId,
+      jSessionId: response.jSessionId,
+      aemRedirectUrl: response.aemRedirectUrl,
+      action: response.hybrisUrl,
+      hybrisCart: hybrisCartCookie,
+      hostUrl,
+      browser,
+      referrer: getCookieValue('referrer'),
+      eVar38: getCookieValue('eVar39'),
+      eVar87: getCookieValue('eVar87'),
+      Campaign: getCookieValue('Campaign'),
+    });
+
+    const guestEmail = getCookieValue('guest_email');
+    const guestUid = getCookieValue('guest_UID');
+    const gigyaUID = getCookieValue('gigyaUID');
+    const referrer = getCookieValue('referrer');
+    const eVar38 = getCookieValue('eVar38');
+    const eVar39 = getCookieValue('eVar39');
+    const eVar87 = getCookieValue('eVar87');
+    const campaign = getCookieValue('Campaign');
+
+    // Always set common payload fields so form submit isn't empty when no guest/gigya cookie exists.
+    setViewCartField(form, 'baseSiteID', response.baseSiteID);
+    setViewCartField(form, 'accessToken', response.loginToken);
+    setViewCartField(form, 'CSRFToken', userCsrfToken);
+    setViewCartField(form, 'userId', response.userId);
+    setViewCartField(form, 'storefront', response.storefront);
+    setViewCartField(form, 'cartId', response.cartId);
+    setViewCartField(form, 'jSessionId', response.jSessionId);
+    setViewCartField(form, 'aemRedirectUrl', response.aemRedirectUrl);
+    setViewCartField(form, 'referrer', referrer);
+    setViewCartField(form, 'eVar38', eVar38);
+    setViewCartField(form, 'eVar39', eVar39);
+    setViewCartField(form, 'eVar87', eVar87);
+    setViewCartField(form, 'Campaign', campaign);
+
+    if (gigyaUID) {
+      // Common fields are already set above.
+    } else if (guestEmail && guestUid) {
+      setViewCartField(form, 'userId', 'anonymous');
+      setViewCartField(form, 'guestUid', guestUid);
+      setViewCartField(form, 'guestEmail', guestEmail);
+    }
+
+    const cookVal = getCookieValue('HybrisCart');
+    if (response.cartId && cookVal && cookVal.length > 5) {
+      form.submit();
+    } else {
+      const interval = setInterval(() => {
+        const cookie = getCookieValue('HybrisCart');
+        if (cookie && cookie !== 'Code=' && cookie.toLowerCase().indexOf('guid') === -1 && cookie.length > 5) {
+          const cookieCartId = cookie.replace(/^Code=/, '');
+          setViewCartField(form, 'cartId', cookieCartId);
+          form.submit();
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+
+    hideLegacyCheckoutLoadingState();
+  } catch (error) {
+    const status = error?.status || 0;
+    const exception = error?.message || String(error);
+    const errorValue = `status code: ${status}-&-exception: ${exception}`;
+    await postTrackRedirect({ csrf: errorValue });
+    hideLegacyCheckoutLoadingState();
+  }
 }
 
 
@@ -4548,7 +4729,7 @@ function addInteractions(block) {
     cartBtn.addEventListener('click', (e) => {
       e.preventDefault();
       // e67 - Mini Cart Icon Click
-      trackEvent('mini_cart_click');
+      trackEvent('mini_cart_icon_click');
       refreshCartModal(block);
       positionCartModal();
       cartModalOverlay.classList.add('active');
@@ -4596,6 +4777,8 @@ function addInteractions(block) {
       if (user) {
         openDropdown();
       } else {
+        // e7 - Login Icon Click (must fire on header icon click)
+        trackEvent('login_icon');
         // Production: redirect to OIDC auth URL (auth.asianpaints.com)
         try {
           sessionStorage.setItem(AUTH_REDIRECTED_KEY, '1');
@@ -4607,6 +4790,8 @@ function addInteractions(block) {
           click_text: 'Profile icon',
           click_category: 'click_header icons',
         });
+        // Give the analytics beacon a brief moment before navigation.
+        await new Promise((resolve) => setTimeout(resolve, 150));
         window.location.href = url;
       }
     });
@@ -4671,6 +4856,8 @@ function addInteractions(block) {
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
+      // e54 - Search Start (fires on magnifying glass icon click)
+      trackEvent('search_start', { flowType: 'Search' });
       ga4Implementaion({
         event: 'search_icon_click',
       })
@@ -4690,6 +4877,16 @@ function addInteractions(block) {
       const btnTitle = isHomeIcon ? 'Home' : 'Home logo';
       const parentTitle = isHomeIcon ? 'Menu Header' : 'Header';
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  }
+
+  // Home icon (mobile) — e132 Custom CTA Click
+  // cta_ = 'Home', parentTitle = 'Menu Header', redirectionLink = href
+  const mobileHomeBtnEl = block.querySelector('.mobile-home-btn');
+  if (mobileHomeBtnEl) {
+    mobileHomeBtnEl.addEventListener('click', () => {
+      const ctaLink = mobileHomeBtnEl.getAttribute('href') || '';
+      triggerCTAClickWithLinkAndTitle(ctaLink, 'Home', 'Menu Header');
     });
   }
 
@@ -4735,6 +4932,8 @@ function addInteractions(block) {
   if (mobileSearchBtn) {
     mobileSearchBtn.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
+      // e54 - Search Start (fires on magnifying glass icon click)
+      trackEvent('search_start', { flowType: 'Search' });
       openSearchDialog(block);
     });
   }
@@ -4743,7 +4942,11 @@ function addInteractions(block) {
     ctaBtn.addEventListener('click', (e) => {
       const ctaLink = ctaBtn.getAttribute('href') || '';
       const btnTitle = ctaBtn.textContent?.trim() || '';
-      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, 'Header');
+      trackEvent('Sticky Form CTA Click', {
+        cta_: btnTitle,
+        parentTitle: 'Header',
+        redirectionLink: ctaLink,
+      });
 
       // GA4 -> Exit Intent Button Header
       // Defer navigation so dataLayer.push is processed before page unload
@@ -4988,6 +5191,9 @@ export default async function decorate(block) {
 
   // Search dialog (full-screen overlay)
   block.appendChild(buildSearchDialog());
+
+  window.headerMiniCart = window.headerMiniCart || {};
+  window.headerMiniCart.checkoutRedirectLogin = checkoutRedirectLogin;
 
   // Wire up all UI interactions
   addInteractions(block);

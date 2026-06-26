@@ -91,8 +91,32 @@ function getPageName() {
 // HELPERS — visitor state
 // ============================================================
 
+// Cached Web SDK ECID — populated from alloy('getIdentity') in
+// initAnalytics and reused by every link-tracking beacon (sync).
+let cachedEcid = '';
+
+function getEcidFromIdentityCookie() {
+  // Web SDK stores identity in kndctr_<ORGID>_identity (base64url protobuf).
+  const orgKey = ORG_ID.replace(/@/g, '_');
+  const name = `kndctr_${orgKey}_identity`;
+  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  if (!m) return '';
+  try {
+    const decoded = atob(m[1].replace(/-/g, '+').replace(/_/g, '/'));
+    const idMatch = decoded.match(/\d{38}/); // ECID is a 38-digit value
+    return idMatch ? idMatch[0] : '';
+  } catch (e) {
+    return '';
+  }
+}
+
 function getECID() {
-  // Read MCMID from AMCV cookie (handles both URL-encoded and decoded forms)
+  // 1. Prefer the value resolved from alloy('getIdentity').
+  if (cachedEcid) return cachedEcid;
+  // 2. Web SDK identity cookie.
+  cachedEcid = getEcidFromIdentityCookie();
+  if (cachedEcid) return cachedEcid;
+  // 3. Legacy AppMeasurement AMCV cookie (idMigration scenarios).
   const m = document.cookie.match(/MCMID(?:%7C|\|)(\d+)/);
   return m ? m[1] : '';
 }
@@ -438,8 +462,9 @@ function buildTargetMboxParams() {
 function buildCommonAnalyticsContext() {
   const pageName = getPageName();
   const timestamp = getDateString();
+  const clientId = getClientID();
 
-  return {
+  const ctx = {
     pageName,
     eVar5: timestamp,
     prop5: timestamp,
@@ -450,6 +475,11 @@ function buildCommonAnalyticsContext() {
     eVar54: pageName,
     prop54: pageName,
   };
+  // eVar120 = GA client ID (the _ga cookie's <random>.<timestamp> part,
+  // identical to GA's `cid`). Global on every AMS hit (v120), so include
+  // it on every beacon. Omitted when the _ga cookie isn't set yet.
+  if (clientId) ctx.eVar120 = clientId;
+  return ctx;
   //eVar13: getGAID(), // To check the variable name and set to it.
 }
 
@@ -545,6 +575,12 @@ export async function initAnalytics() {
     personalizationStorageEnabled: true,
     debugEnabled: location.hostname !== 'www.asianpaints.com',
   });
+
+  // Resolve the Web SDK ECID once and cache it so subsequent link-tracking
+  // beacons can populate eVar12 synchronously (getECID()).
+  window.alloy('getIdentity')
+    .then((res) => { if (res?.identity?.ECID) cachedEcid = res.identity.ECID; })
+    .catch(() => { /* ignore — falls back to identity cookie parsing */ });
 
   try {
     // Two-phase Target apply (renderDecisions: false + applyPropositions):
@@ -722,7 +758,7 @@ const EVENT_REGISTRY = {
   // are page-level vars set globally in buildPageData() on every hit.
   'Login Icon Click': { events: 'event7' },
   login_icon:         { events: 'event7' },
-  login_successful:   { events: 'event48', eVars: { loginFunction: 'eVar46', loginStatus: 'eVar9' } },
+  login_successful:   { events: 'event48', eVars: { loginStatus: 'eVar9' } },
 
   // Cart — spec action name: mini_cart_icon_click; mini_cart_click kept as legacy alias.
   // eVar21 = value of the HybrisCart cookie (auto-read at dispatch time via def.cookies).
@@ -739,6 +775,16 @@ const EVENT_REGISTRY = {
   // CTAs / navigation
   custom_cta_click: {
     events: 'event132',
+    eVars: {
+      cta_: 'eVar45',
+      parentTitle: 'eVar67',
+      redirectionLink: 'eVar86'
+    },
+  },
+  // Header sticky CTA (e.g. "Book Free Site Visit") — distinct linkName +
+  // event278 mapping (vs custom_cta_click/event132). Header CTA only.
+  'Sticky Form CTA Click': {
+    events: 'event278',
     eVars: {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
@@ -1055,6 +1101,35 @@ export function getDigitalData() {
 }
 
 /**
+ * Resolves the visible form heading for form analytics events.
+ *
+ * The form block (blocks/form/form.js) passes the authored small title
+ * as `formName`, but reporting standardises on the visible main heading.
+ * Reads it from the DOM, preferring a form inside an open modal dialog
+ * (e.g. the exit-intent "Let our experts help you!" popup) and falling
+ * back to the first form on the page. Returns the large (main) title,
+ * falling back to the small title.
+ *
+ * @returns {string} the resolved form title, or '' if none found
+ */
+function resolveActiveFormTitle() {
+  const scopes = [
+    document.querySelector('dialog[open] .form-description-cell'),
+    document.querySelector('.form-description-cell'),
+  ].filter(Boolean);
+
+  let title = '';
+  scopes.some((scope) => {
+    const large = scope.querySelector('.form-title-large')?.textContent?.trim();
+    const small = scope.querySelector('.form-title-small')?.textContent?.trim();
+    title = large || small || '';
+    return Boolean(title);
+  });
+
+  return title;
+}
+
+/**
  * Tracks a custom event by sending an Alloy beacon.
  *
  * Looks up `eventName` in EVENT_REGISTRY:
@@ -1106,8 +1181,20 @@ export function trackEvent(eventName, eventData = {}) {
   // Split eventData keys: known → eVarN/propN (may be array of dests);
   // unknown → contextData
   const eVarMap = def.eVars || {};
+
+  // Form events: the form block passes the authored small title as
+  // formName (e.g. "book-free-site-visit"), but reporting standardises on
+  // the visible main heading (e.g. "Let our experts help you!"). Resolve
+  // that from the DOM here so the correction lives entirely on the
+  // analytics side.
+  let data = eventData;
+  if (eVarMap.formName && data.formName !== undefined) {
+    const formTitle = resolveActiveFormTitle();
+    if (formTitle) data = { ...data, formName: formTitle };
+  }
+
   const contextData = {};
-  Object.entries(eventData).forEach(([k, v]) => {
+  Object.entries(data).forEach(([k, v]) => {
     if (v === undefined || v === null || v === '') return;
     const target = eVarMap[k];
     if (target) {
@@ -1120,7 +1207,7 @@ export function trackEvent(eventName, eventData = {}) {
   if (Object.keys(contextData).length) analytics.contextData = contextData;
 
   // Pass through reserved Adobe Analytics variables set directly by the caller.
-  if (eventData.products) analytics.products = String(eventData.products);
+  if (data.products) analytics.products = String(data.products);
 
   try {
     window.alloy('sendEvent', { data: { __adobe: { analytics } } });
@@ -1129,6 +1216,23 @@ export function trackEvent(eventName, eventData = {}) {
     console.error('[analytics] trackEvent failed', err);
   }
 }
+
+/**
+ * Expose analytics helpers on window so Adobe Target custom code can
+ * trigger EDS analytics events without importing this ES module.
+ */
+function exposeAnalyticsGlobals() {
+  if (typeof window === 'undefined') return;
+
+  window.edsAnalytics = window.edsAnalytics || {};
+  window.edsAnalytics.trackEvent = (eventName, eventData = {}) => {
+    trackEvent(eventName, eventData);
+  };
+}
+
+// Register globals at module-load time so Target custom code can call
+// window.edsAnalytics.trackEvent(...) as soon as this file is loaded.
+exposeAnalyticsGlobals();
 
 /**
  * Fires Mini_cart_checkout (event97) when the user clicks the minicart
@@ -1363,7 +1467,8 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
-      redirectionLink: ctaLink,
+      // redirectionLink (eVar86) must be a fully-qualified absolute URL.
+      redirectionLink: toUrl(ctaLink).href,
       parentTitle,
     });
   }

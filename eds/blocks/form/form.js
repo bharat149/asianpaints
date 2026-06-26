@@ -70,14 +70,24 @@ function findNearestFormConfigBlock(block) {
   let previous = section.previousElementSibling;
   while (previous) {
     const candidate = previous.querySelector?.('.form-config, .form-configs');
-    if (candidate) return candidate;
+    if (
+      candidate &&
+      !previous.classList.contains('form-banner-container')
+    ) {
+      return candidate;
+    }
     previous = previous.previousElementSibling;
   }
 
   let next = section.nextElementSibling;
   while (next) {
     const candidate = next.querySelector?.('.form-config, .form-configs');
-    if (candidate) return candidate;
+    if (
+      candidate &&
+      !next.classList.contains('form-banner-container')
+    ) {
+      return candidate;
+    } 
     next = next.nextElementSibling;
   }
 
@@ -1047,6 +1057,23 @@ function renderForm(block) {
         "campaignId": campaignId
       });
       // Mirror to marketing pixels via image beacons — no SDK library load
+      firePixelConversion('form_start', {
+        event_category: formName,
+        campaign: campaignId,
+      });
+    }
+  });
+
+  // Spec: form_start must fire when the user clicks ANYWHERE on the form
+  // to start (not only when an input gains focus). Guarded by the same
+  // formStarted flag so it never double-fires with the focusin handler.
+  formRow.addEventListener('click', function () {
+    if (!formStarted) {
+      formStarted = true;
+      trackEvent("Form start", {
+        "formName": formName,
+        "campaignId": campaignId
+      });
       firePixelConversion('form_start', {
         event_category: formName,
         campaign: campaignId,

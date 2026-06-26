@@ -225,9 +225,11 @@ export default function decorate(block) {
       if (isRoomBlock && btnTitle.toLowerCase() === 'explore now') {
         const roomTitle = body?.querySelector('.cards-card-title')?.textContent.trim() || parentTitle;
 
-        trackEvent('custom_link_text', {
+        // cta_link_text (event143): cta_->eVar45, parentTitle->eVar67,
+        // param1->eVar86. Using cta_link_text (not custom_link_text) so
+        // parentTitle/param1 map to eVars instead of landing in contextData.
+        trackEvent('cta_link_text', {
           cta_: btnTitle,
-          redirectionLink: ctaLink,
           parentTitle: roomTitle,
           param1: ctaLink,
         });
@@ -245,12 +247,35 @@ export default function decorate(block) {
       const li = imageLink.closest('li');
       const imageAlt = li?.querySelector('.cards-card-image img')?.alt || '';
       const btnTitle = li?.querySelector('.cards-card-body a')?.textContent.trim() || '';
-      
+
       ga4Implementaion({
         event: 'product_cards',
         click_text: btnTitle,
         click_category: imageAlt
       });
+
+      // Room cards have a redirect on the image too — fire the same
+      // cta_link_text (event143) so image clicks aren't lost in Adobe.
+      if (isRoomBlock) {
+        const body = li?.querySelector('.cards-card-body');
+        const roomTitle = body?.querySelector('.cards-card-title')?.textContent.trim() || sectionTitle;
+        trackEvent('cta_link_text', {
+          cta_: btnTitle || 'Explore Now',
+          parentTitle: roomTitle,
+          param1: ctaLink,
+        });
+        return;
+      }
+
+      // Other card variants (e.g. grid) also have a redirect on the image.
+      // Mirror the body CTA so the image click fires custom_cta_click
+      // (event132) instead of being lost in Adobe.
+      if (ctaLink) {
+        const body = li?.querySelector('.cards-card-body');
+        const parentTitle = sectionTitle
+          || body?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent.trim() || '';
+        triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+      }
     });
   });
 
