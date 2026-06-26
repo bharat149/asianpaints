@@ -462,8 +462,9 @@ function buildTargetMboxParams() {
 function buildCommonAnalyticsContext() {
   const pageName = getPageName();
   const timestamp = getDateString();
+  const clientId = getClientID();
 
-  return {
+  const ctx = {
     pageName,
     eVar5: timestamp,
     prop5: timestamp,
@@ -474,6 +475,11 @@ function buildCommonAnalyticsContext() {
     eVar54: pageName,
     prop54: pageName,
   };
+  // eVar120 = GA client ID (the _ga cookie's <random>.<timestamp> part,
+  // identical to GA's `cid`). Global on every AMS hit (v120), so include
+  // it on every beacon. Omitted when the _ga cookie isn't set yet.
+  if (clientId) ctx.eVar120 = clientId;
+  return ctx;
   //eVar13: getGAID(), // To check the variable name and set to it.
 }
 
@@ -769,6 +775,16 @@ const EVENT_REGISTRY = {
   // CTAs / navigation
   custom_cta_click: {
     events: 'event132',
+    eVars: {
+      cta_: 'eVar45',
+      parentTitle: 'eVar67',
+      redirectionLink: 'eVar86'
+    },
+  },
+  // Header sticky CTA (e.g. "Book Free Site Visit") — distinct linkName +
+  // event278 mapping (vs custom_cta_click/event132). Header CTA only.
+  'Sticky Form CTA Click': {
+    events: 'event278',
     eVars: {
       cta_: 'eVar45',
       parentTitle: 'eVar67',
@@ -1085,6 +1101,35 @@ export function getDigitalData() {
 }
 
 /**
+ * Resolves the visible form heading for form analytics events.
+ *
+ * The form block (blocks/form/form.js) passes the authored small title
+ * as `formName`, but reporting standardises on the visible main heading.
+ * Reads it from the DOM, preferring a form inside an open modal dialog
+ * (e.g. the exit-intent "Let our experts help you!" popup) and falling
+ * back to the first form on the page. Returns the large (main) title,
+ * falling back to the small title.
+ *
+ * @returns {string} the resolved form title, or '' if none found
+ */
+function resolveActiveFormTitle() {
+  const scopes = [
+    document.querySelector('dialog[open] .form-description-cell'),
+    document.querySelector('.form-description-cell'),
+  ].filter(Boolean);
+
+  let title = '';
+  scopes.some((scope) => {
+    const large = scope.querySelector('.form-title-large')?.textContent?.trim();
+    const small = scope.querySelector('.form-title-small')?.textContent?.trim();
+    title = large || small || '';
+    return Boolean(title);
+  });
+
+  return title;
+}
+
+/**
  * Tracks a custom event by sending an Alloy beacon.
  *
  * Looks up `eventName` in EVENT_REGISTRY:
@@ -1136,8 +1181,20 @@ export function trackEvent(eventName, eventData = {}) {
   // Split eventData keys: known → eVarN/propN (may be array of dests);
   // unknown → contextData
   const eVarMap = def.eVars || {};
+
+  // Form events: the form block passes the authored small title as
+  // formName (e.g. "book-free-site-visit"), but reporting standardises on
+  // the visible main heading (e.g. "Let our experts help you!"). Resolve
+  // that from the DOM here so the correction lives entirely on the
+  // analytics side.
+  let data = eventData;
+  if (eVarMap.formName && data.formName !== undefined) {
+    const formTitle = resolveActiveFormTitle();
+    if (formTitle) data = { ...data, formName: formTitle };
+  }
+
   const contextData = {};
-  Object.entries(eventData).forEach(([k, v]) => {
+  Object.entries(data).forEach(([k, v]) => {
     if (v === undefined || v === null || v === '') return;
     const target = eVarMap[k];
     if (target) {
@@ -1150,7 +1207,7 @@ export function trackEvent(eventName, eventData = {}) {
   if (Object.keys(contextData).length) analytics.contextData = contextData;
 
   // Pass through reserved Adobe Analytics variables set directly by the caller.
-  if (eventData.products) analytics.products = String(eventData.products);
+  if (data.products) analytics.products = String(data.products);
 
   try {
     window.alloy('sendEvent', { data: { __adobe: { analytics } } });

@@ -1064,6 +1064,23 @@ function renderForm(block) {
     }
   });
 
+  // Spec: form_start must fire when the user clicks ANYWHERE on the form
+  // to start (not only when an input gains focus). Guarded by the same
+  // formStarted flag so it never double-fires with the focusin handler.
+  formRow.addEventListener('click', function () {
+    if (!formStarted) {
+      formStarted = true;
+      trackEvent("Form start", {
+        "formName": formName,
+        "campaignId": campaignId
+      });
+      firePixelConversion('form_start', {
+        event_category: formName,
+        campaign: campaignId,
+      });
+    }
+  });
+
   block.appendChild(formRow);
 
   if (buttonCell.children.length) {

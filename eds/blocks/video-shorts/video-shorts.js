@@ -80,8 +80,11 @@ function trackEvents() {
 
 export function initSaleAssistTracking() {
   // Guard: only attach once per page even if called from multiple blocks/delayed.js.
-  if (document.dataset.videoShortsTrackingBound === 'true') return;
-  document.dataset.videoShortsTrackingBound = 'true';
+  // NOTE: `document` has no `dataset` (only Elements do) — using it throws a
+  // TypeError that aborts this function before any listener is bound, so use
+  // the documentElement (<html>) dataset instead.
+  if (document.documentElement.dataset.videoShortsTrackingBound === 'true') return;
+  document.documentElement.dataset.videoShortsTrackingBound = 'true';
 
   const exploreSel = '.cta-link';
 

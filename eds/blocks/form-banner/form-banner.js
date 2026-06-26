@@ -60,7 +60,9 @@ Important:
 */
 
 import { submitLeadFromForm, checkCookieValues, setFormFieldsToCookie } from '../../scripts/form-submit-common.js';
-import { getDigitalData, trackEvent, trackFormError } from '../../scripts/analytics_1.js';
+import {
+  getDigitalData, trackEvent, trackFormError, triggerCTAClickWithLinkAndTitle,
+} from '../../scripts/analytics_1.js';
 
 let formName = '';
 let campaignId = '';
@@ -645,7 +647,21 @@ function createPopupScreen(block, type = 'success') {
       const btnTitle = trackCtaLink.textContent.trim();
       const ctaLink = trackCtaLink.getAttribute('href') || '';
       const bannerTitle = block.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
-      triggerCtaLinkText(btnTitle, ctaLink, bannerTitle);
+      // e132 custom_cta_click: cta_->eVar45, parentTitle->eVar67,
+      // redirectionLink->eVar86 (per Thank You Popup spec).
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, bannerTitle);
+    });
+  }
+
+  // e137 download_form_pdf: pdfName->eVar96. The thank-you/error popup
+  // download link had no analytics handler, so downloads weren't tracked.
+  const downloadLink = overlay.querySelector('.form-error-popup__download');
+  if (downloadLink) {
+    downloadLink.addEventListener('click', () => {
+      const href = downloadLink.getAttribute('href') || '';
+      const fileBase = href.split('/').pop().replace(/\.[^.]+$/, '');
+      const pdfName = fileBase || downloadLink.textContent.trim();
+      trackEvent('download_form_pdf', { pdfName });
     });
   }
 
