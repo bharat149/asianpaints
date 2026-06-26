@@ -2679,9 +2679,9 @@ function buildCartModal() {
       if (window.headerMiniCart?.checkoutRedirectLogin) {
         window.headerMiniCart.checkoutRedirectLogin();
       }
+    }else {
       showLoginGuestPopup();
     }
-    showLoginGuestPopup();
   });
 
   modal.append(closeBtn, iconWrap, cartTitle, cartItems, totalRow, shopBtn);
