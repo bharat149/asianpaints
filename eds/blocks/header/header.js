@@ -3493,35 +3493,33 @@ async function checkoutRedirectLogin() {
     const guestEmail = getCookieValue('guest_email');
     const guestUid = getCookieValue('guest_UID');
     const gigyaUID = getCookieValue('gigyaUID');
+    const referrer = getCookieValue('referrer');
+    const eVar38 = getCookieValue('eVar38');
+    const eVar39 = getCookieValue('eVar39');
+    const eVar87 = getCookieValue('eVar87');
+    const campaign = getCookieValue('Campaign');
+
+    // Always set common payload fields so form submit isn't empty when no guest/gigya cookie exists.
+    setViewCartField(form, 'baseSiteID', response.baseSiteID);
+    setViewCartField(form, 'accessToken', response.loginToken);
+    setViewCartField(form, 'CSRFToken', userCsrfToken);
+    setViewCartField(form, 'userId', response.userId);
+    setViewCartField(form, 'storefront', response.storefront);
+    setViewCartField(form, 'cartId', response.cartId);
+    setViewCartField(form, 'jSessionId', response.jSessionId);
+    setViewCartField(form, 'aemRedirectUrl', response.aemRedirectUrl);
+    setViewCartField(form, 'referrer', referrer);
+    setViewCartField(form, 'eVar38', eVar38);
+    setViewCartField(form, 'eVar39', eVar39);
+    setViewCartField(form, 'eVar87', eVar87);
+    setViewCartField(form, 'Campaign', campaign);
 
     if (gigyaUID) {
-      setViewCartField(form, 'baseSiteID', response.baseSiteID);
-      setViewCartField(form, 'accessToken', response.loginToken);
-      setViewCartField(form, 'CSRFToken', userCsrfToken);
-      setViewCartField(form, 'userId', response.userId);
-      setViewCartField(form, 'storefront', response.storefront);
-      setViewCartField(form, 'cartId', response.cartId);
-      setViewCartField(form, 'jSessionId', response.jSessionId);
-      setViewCartField(form, 'aemRedirectUrl', response.aemRedirectUrl);
-      setViewCartField(form, 'referrer', getCookieValue('referrer'));
-      setViewCartField(form, 'eVar38', getCookieValue('eVar38'));
-      setViewCartField(form, 'eVar39', getCookieValue('eVar39'));
-      setViewCartField(form, 'eVar87', getCookieValue('eVar87'));
-      setViewCartField(form, 'Campaign', getCookieValue('Campaign'));
+      // Common fields are already set above.
     } else if (guestEmail && guestUid) {
-      setViewCartField(form, 'baseSiteID', response.baseSiteID);
       setViewCartField(form, 'userId', 'anonymous');
       setViewCartField(form, 'guestUid', guestUid);
       setViewCartField(form, 'guestEmail', guestEmail);
-      setViewCartField(form, 'storefront', response.storefront);
-      setViewCartField(form, 'cartId', response.cartId);
-      setViewCartField(form, 'jSessionId', response.jSessionId);
-      setViewCartField(form, 'aemRedirectUrl', response.aemRedirectUrl);
-      setViewCartField(form, 'referrer', getCookieValue('referrer'));
-      setViewCartField(form, 'eVar38', getCookieValue('eVar38'));
-      setViewCartField(form, 'eVar39', getCookieValue('eVar39'));
-      setViewCartField(form, 'eVar87', getCookieValue('eVar87'));
-      setViewCartField(form, 'Campaign', getCookieValue('Campaign'));
     }
 
     const cookVal = getCookieValue('HybrisCart');
