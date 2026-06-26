@@ -3442,6 +3442,40 @@ async function postTrackRedirect(payload) {
   }
 }
 
+function buildCheckoutActionUrl(response) {
+  const rawAction = String(response?.hybrisUrl || '').trim();
+  const redirectPath = String(response?.aemRedirectUrl || '').trim();
+
+  if (!rawAction && !redirectPath) return '';
+
+  const normalizeOriginLikeValue = (value) => {
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    if (value.startsWith('//')) return `${window.location.protocol}${value}`;
+    if (value.startsWith('/')) return `${window.location.origin}${value}`;
+    if (/^[\w.-]+(?::\d+)?(?:\/.*)?$/i.test(value)) return `https://${value}`;
+    return '';
+  };
+
+  const absoluteAction = normalizeOriginLikeValue(rawAction);
+  if (!absoluteAction) {
+    return normalizeOriginLikeValue(redirectPath);
+  }
+
+  try {
+    const actionUrl = new URL(absoluteAction);
+    if (redirectPath && !/^https?:\/\//i.test(redirectPath)
+      && (actionUrl.pathname === '/' || actionUrl.pathname === '')) {
+      const [pathOnly, query = ''] = redirectPath.split('?');
+      if (pathOnly) actionUrl.pathname = pathOnly;
+      if (query) actionUrl.search = `?${query}`;
+    }
+    return actionUrl.toString();
+  } catch {
+    return absoluteAction;
+  }
+}
+
 async function checkoutRedirectLogin() {
   const userCsrfToken = '';
   const form = ensureViewCartForm();
@@ -3463,6 +3497,9 @@ async function checkoutRedirectLogin() {
       hideLegacyCheckoutLoadingState();
       return;
     }
+
+    const checkoutActionUrl = buildCheckoutActionUrl(response);
+    if (checkoutActionUrl) form.action = checkoutActionUrl;
 
     const hybrisCartCookie = getCookieValue('HybrisCart');
     const hostUrl = window.location.href;
@@ -3505,7 +3542,6 @@ async function checkoutRedirectLogin() {
       setViewCartField(form, 'eVar39', getCookieValue('eVar39'));
       setViewCartField(form, 'eVar87', getCookieValue('eVar87'));
       setViewCartField(form, 'Campaign', getCookieValue('Campaign'));
-      form.action = response.hybrisUrl || '';
     } else if (guestEmail && guestUid) {
       setViewCartField(form, 'baseSiteID', response.baseSiteID);
       setViewCartField(form, 'userId', 'anonymous');
@@ -3520,7 +3556,6 @@ async function checkoutRedirectLogin() {
       setViewCartField(form, 'eVar39', getCookieValue('eVar39'));
       setViewCartField(form, 'eVar87', getCookieValue('eVar87'));
       setViewCartField(form, 'Campaign', getCookieValue('Campaign'));
-      form.action = response.hybrisUrl || '';
     }
 
     const cookVal = getCookieValue('HybrisCart');
