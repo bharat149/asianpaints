@@ -680,17 +680,34 @@ function getLeadInputSelectors(form) {
     return match ? toAttrSelector(match.name) : undefined;
   };
 
+  const campaignId = form.getAttribute('data-campaign-id') || form.dataset.campaignId || 'SPS_ORGANIC';
+  const node = form.getAttribute('data-node') || form.dataset.node || '';
+
   return {
     name: selectorByMatcher((el) => /name/i.test(el.name)),
     email: selectorByMatcher((el) => el.type === 'email' || /email/i.test(el.name)),
     mobile: selectorByMatcher((el) => el.type === 'tel' || /mobile|phone|contact/i.test(el.name)),
     pincode: selectorByMatcher((el) => /pin|zip|postal/i.test(el.name)),
     whatsappConsent: '.whatsAppConsentFormFld',
+    constructionWorkGoingOn: selectorByMatcher((el) => /renovating_home/i.test(el.name)),
+    localPainterHired: selectorByMatcher((el) => /hired_painter/i.test(el.name)),
+    campaignId,
+    node,
   };
 }
 
-function getCampaignId() {
-  return getCampaignIdFromUrl();
+function getCampaignId(form = null) {
+  return form?.getAttribute('data-campaign-id')
+    || form?.dataset?.campaignId
+    || getCampaignIdFromUrl();
+}
+
+function getFormCampaignId(form) {
+  return getCampaignId(form);
+}
+
+function getFormNode(form) {
+  return form.getAttribute('data-node') || form.dataset.node || form.dataset.action || window.location.pathname || '';
 }
 
 function getRadioOrCheckboxValue(form, name) {
@@ -715,7 +732,7 @@ function trackLeadFormStart(form) {
 
   form.dataset.formStarted = 'true';
   const formName = form.dataset.formName || 'lead-form';
-  const campaignId = getCampaignId();
+  const campaignId = getCampaignId(form);
   trackEvent('Form start', { formName, campaignId });
   // Mirror to marketing pixels (FB, GA4, Google Ads) via image beacons.
   // No SDK library load required — the beacon URL carries the event.
@@ -728,7 +745,7 @@ function trackLeadFormSubmission(form) {
 
   const formData = {
     formName: form.dataset.formName || 'lead-form',
-    campaignId: getCampaignId(),
+    campaignId: getCampaignId(form),
     whatsappOptIn: whatsappConsent,
     contruction: normalizeYesNo(getRadioOrCheckboxValue(form, 'renovating_home')),
     localpainter: normalizeYesNo(getRadioOrCheckboxValue(form, 'hired_painter')),
@@ -741,7 +758,7 @@ function trackLeadFormSubmission(form) {
   getDigitalData().form = formData;
   trackEvent('Form Submit', {
     formName: form.dataset.formName || 'lead-form',
-    campaignId: getCampaignId(),
+    campaignId: getCampaignId(form),
     ...formData,
   });
 
@@ -897,7 +914,7 @@ async function handleSubmit(event) {
 
   if (!isValid) {
     trackFormError({
-      campaignId: getCampaignId(),
+      campaignId: getCampaignId(form),
       formName:   form.dataset.formName || 'lead-form',
       formError:  failedFields,
     });
@@ -911,8 +928,8 @@ async function handleSubmit(event) {
 
   try {
     await submitLeadFromForm(form, {
-      resourcePath: form.dataset.action || window.location.pathname || '',
-      campaignId: getCampaignId(),
+      resourcePath: getFormNode(form),
+      campaignId: getFormCampaignId(form),
       selectors: getLeadInputSelectors(form),
     });
 
@@ -1059,6 +1076,8 @@ export default async function decorate(block) {
   form.noValidate = true;
   form.dataset.action = actionPath;
   form.dataset.formName = formName;
+  form.dataset.node = actionPath;
+  form.dataset.campaignId = "SPS_ORGANIC";
 
   if (formName === BOOK_FREE_SITE_VISIT_FORM) {
     renderBookFreeSiteVisitForm(form, fields);
