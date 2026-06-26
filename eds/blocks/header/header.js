@@ -4730,6 +4730,11 @@ function addInteractions(block) {
       e.preventDefault();
       // e67 - Mini Cart Icon Click
       trackEvent('mini_cart_icon_click');
+      ga4Implementaion({
+        event: 'header_interaction',
+        click_text: 'Cart',
+        click_category: 'click_header icons',
+      });
       refreshCartModal(block);
       positionCartModal();
       cartModalOverlay.classList.add('active');
