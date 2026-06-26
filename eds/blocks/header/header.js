@@ -3393,32 +3393,26 @@ function ensureViewCartForm() {
 
   form = document.createElement('form');
   form.id = 'viewCartFormId';
-  form.method = 'post';
+  form.method = 'POST';
   form.style.display = 'none';
-
-  [
-    'cartId',
-    'baseSiteID',
-    'accessToken',
-    'guestUid',
-    'guestEmail',
-    'userId',
-    'storefront',
-    'CSRFToken',
-    'jSessionId',
-    'aemRedirectUrl',
-    'referrer',
-    'eVar38',
-    'eVar39',
-    'eVar87',
-    'Campaign',
-  ].forEach((id) => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.id = id;
-    input.name = id;
-    form.appendChild(input);
-  });
+  form.innerHTML = `
+    <input type="hidden" name="cartId" id="cartId" value="">
+    <input type="hidden" name="baseSiteID" id="baseSiteID" value="">
+    <input type="hidden" name="accessToken" id="accessToken" value="">
+    <input type="hidden" name="guestUid" id="guestUid" value="">
+    <input type="hidden" name="guestEmail" id="guestEmail" value="">
+    <input type="hidden" name="userId" id="userId" value="">
+    <input type="hidden" name="storefront" id="storefront" value="">
+    <input type="hidden" name="CSRFToken" id="CSRFToken" value="">
+    <input type="hidden" name="JSESSIONID" id="jSessionId" value="">
+    <input type="hidden" name="aemRedirectUrl" id="aemRedirectUrl" value="">
+    <input type="hidden" name="referrer" id="referrer" value="">
+    <input type="hidden" name="eVar6" id="eVar6" value="">
+    <input type="hidden" name="eVar38" id="eVar38" value="">
+    <input type="hidden" name="eVar39" id="eVar39" value="">
+    <input type="hidden" name="eVar87" id="eVar87" value="">
+    <input type="hidden" name="Campaign" id="Campaign" value="">
+  `;
 
   document.body.appendChild(form);
   return form;
@@ -3533,19 +3527,13 @@ async function checkoutRedirectLogin() {
     if (response.cartId && cookVal && cookVal.length > 5) {
       form.submit();
     } else {
-      let retries = 0;
       const interval = setInterval(() => {
-        retries += 1;
         const cookie = getCookieValue('HybrisCart');
         if (cookie && cookie !== 'Code=' && cookie.toLowerCase().indexOf('guid') === -1 && cookie.length > 5) {
           const cookieCartId = cookie.replace(/^Code=/, '');
           setViewCartField(form, 'cartId', cookieCartId);
           form.submit();
           clearInterval(interval);
-        }
-        if (retries >= 20) {
-          clearInterval(interval);
-          hideLegacyCheckoutLoadingState();
         }
       }, 1000);
     }
