@@ -972,3 +972,8 @@ body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .
 body.hideExitIntentCTA .header-main .header-main-inner .header-cta {
   display: none;
 }
+
+
+.zoomout{
+    zoom:0.8;
+}
