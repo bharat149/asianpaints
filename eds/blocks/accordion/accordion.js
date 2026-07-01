@@ -201,17 +201,6 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
   });
 }
 
-function getFaqSectionTitle(block) {
-  // Prefer an h2 in the enclosing .section (the FAQ banner title,
-  // e.g. "Frequently Asked Questions").
-  const section = block.closest('.section');
-  if (section) {
-    const heading = section.querySelector('h1, h2, h3, h4, h5, h6');
-    if (heading?.textContent?.trim()) return heading.textContent.trim();
-  }
-  return '';
-}
-
 function trackAccordionClick(block, summaryEl) {
   const isFaq = block.classList.contains('faq');
   summaryEl.addEventListener('click', () => {
