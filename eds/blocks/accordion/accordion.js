@@ -210,18 +210,15 @@ function trackAccordionClick(block, summaryEl) {
     // the summary (icon, span, etc.) was the actual click target.
     const detailsEl = summaryEl.closest('.accordion-item');
     const wasOpen = detailsEl?.open ?? false;
+    const questionText = summaryEl.textContent?.trim() || '';
+    const parentTitle = getFaqSectionTitle(block);
     if (isFaq) {
-      // eVar45 (cta_): "FAQ close" / "FAQ Open"
-      // eVar67 (parentTitle): the specific FAQ question that was clicked,
-      // so each accordion item reports its own text (not the section heading).
-      const questionText = summaryEl.textContent?.trim() || '';
       trackEvent('cta_link_text', {
         cta_: wasOpen ? 'FAQ close' : 'FAQ Open',
         parentTitle: questionText,
       });
     } else {
       const state = wasOpen ? 'Close' : 'Open';
-      const questionText = summaryEl.textContent?.trim() || '';
       trackEvent('cta_link_text', {
         cta_: 'Accordion ' + state,
         parentTitle: questionText,

@@ -48,6 +48,9 @@ function getVideoTitle(wrapper, videoEl) {
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
+  if (videoEl.dataset.playTrackingBound === 'true') return;
+  videoEl.dataset.playTrackingBound = 'true';
+  
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
     videoTitle,
@@ -55,6 +58,9 @@ function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
 }
 
 function triggerVideoShopAnalyticsEvt(anchorEl) {
+  if (anchorEl.dataset.shopTrackingBound === 'true') return;
+  anchorEl.dataset.shopTrackingBound = 'true';
+  
   const wrapper = getShortsWrapper(anchorEl);
   const videoTitle = wrapper ? getVideoTitle(wrapper) : '';
 
@@ -65,6 +71,9 @@ function triggerVideoShopAnalyticsEvt(anchorEl) {
 }
 
 function triggerVideoClickAnalyticsEvt(wrapper) {
+  if (wrapper.dataset.clickTrackingBound === 'true') return;
+  wrapper.dataset.clickTrackingBound = 'true';
+  
   const redirectionUrl = wrapper.querySelector('.cta-link')?.href
     || wrapper.querySelector('a[href]')?.href
     || '';
@@ -72,10 +81,6 @@ function triggerVideoClickAnalyticsEvt(wrapper) {
   trackEvent('short_video_shop', {
     param1: redirectionUrl,
   });
-}
-
-function trackEvents() {
-  initSaleAssistTracking();
 }
 
 export function initSaleAssistTracking() {
@@ -98,6 +103,17 @@ export function initSaleAssistTracking() {
       triggerVideoShopAnalyticsEvt(cta);
       return;
     }
+    
+    // Track video play on click
+    const video = e.target.closest('video');
+    if (video) {
+      const wrapper = getShortsWrapper(video);
+      if (wrapper) {
+        triggerVideoPlayAnalyticsEvt(wrapper, video);
+      }
+      return;
+    }
+    
     // Use broadened wrapper detection so Royal Play and IDS SaleAssist
     // variants (different class names) are also caught.
     const wrapper = getShortsWrapper(e.target);
@@ -105,19 +121,6 @@ export function initSaleAssistTracking() {
       triggerVideoClickAnalyticsEvt(wrapper);
     }
   });
-
-  // short_video_play (event296): the native 'play' event does not bubble,
-  // so use capture phase on document to catch it from any SaleAssist video
-  // element (tile or modal). Covers all pages that load SaleAssist —
-  // including the IDS page — regardless of which block initialised the widget.
-  document.addEventListener('play', (e) => {
-    if (!(e.target instanceof HTMLVideoElement)) return;
-    // Use broadened wrapper detection to cover IDS and other SaleAssist
-    // widget variants that may use different class names.
-    const wrapper = getShortsWrapper(e.target);
-    if (!wrapper) return;
-    triggerVideoPlayAnalyticsEvt(wrapper, e.target);
-  }, { capture: true });
 }
 
 export default function decorate(block) {
@@ -179,11 +182,6 @@ export default function decorate(block) {
             type: "tile",
             alterMobileDimensions: true,
           });
-
-          // Track events from the rendered widget container
-          setTimeout(() => {
-            trackEvents();
-          }, 2000);
         } else {
           // eslint-disable-next-line no-console
           console.error("SaleAssist script loaded, but saleassistVideoTiles is undefined.");
@@ -203,3 +201,6 @@ export default function decorate(block) {
     document.body.appendChild(div);
   }
 }
+
+// Initialize tracking once when module loads
+initSaleAssistTracking();

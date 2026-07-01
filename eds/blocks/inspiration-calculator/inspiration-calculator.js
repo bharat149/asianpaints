@@ -11,7 +11,14 @@ calculatorBlocks.forEach((block) => {
     if (!cta || !block.contains(cta)) return;
 
     const ctaLink = cta.getAttribute('href') || '';
-    const btnTitle = cta.textContent.trim();
+    
+    // Extract button text from direct text nodes or image alt
+    let btnTitle = Array.from(cta.childNodes)
+      .filter(node => node.nodeType === Node.TEXT_NODE)
+      .map(node => node.textContent)
+      .join('')
+      .trim() || cta.querySelector('img')?.alt?.trim() || 'CTA';
+    
     const parentCard = cta.closest('.image-wrapper, .content-wrapper')?.parentElement;
     const parentTitle = parentCard?.querySelector('h1, h2, h3, h4, h5, h6, p')?.textContent?.trim()
       || parentCard?.querySelector('.image-wrapper img, img')?.alt?.trim()

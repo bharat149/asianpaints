@@ -518,9 +518,34 @@ export default function decorate(block) {
     container.style.display = '';
   }
 
-  closeBtn?.addEventListener('click', resetFromThankYou);
+  closeBtn?.addEventListener('click', () => {
+    trackEvent('close', {
+      campaignId: currentCampaignId,
+      formName: currentFormName,
+    });
+    resetFromThankYou();
+  });
   closeBtn?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') resetFromThankYou();
+    if (e.key === 'Enter') {
+      trackEvent('close', {
+        campaignId: currentCampaignId,
+        formName: currentFormName,
+      });
+      resetFromThankYou();
+    }
+  });
+
+  // Track custom CTA clicks for animated-btn-yellow-onhover-black buttons
+  block.addEventListener('click', (e) => {
+    const ctaBtn = e.target.closest('.animated-btn-yellow-onhover-black');
+    if (ctaBtn) {
+      const ctaText = ctaBtn.querySelector('.animated-arrow-button')?.textContent?.trim() || 'CTA Button';
+      trackEvent('custom_cta_click', {
+        ctaText,
+        campaignId: currentCampaignId,
+        formName: currentFormName,
+      });
+    }
   });
 
   // Thank-you "Explore" CTA — fire cta_link_text (event143), matching the
