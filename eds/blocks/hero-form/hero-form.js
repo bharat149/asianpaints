@@ -523,6 +523,20 @@ export default function decorate(block) {
     if (e.key === 'Enter') resetFromThankYou();
   });
 
+  // Thank-you "Explore" CTA — fire cta_link_text (event143), matching the
+  // Explore-CTA tracking in the popup lead-form/form blocks. Without this the
+  // link navigates but reports no analytics.
+  const exploreCta = thankyou?.querySelector('.explore-painting-btn');
+  exploreCta?.addEventListener('click', () => {
+    const ctaLink = exploreCta.getAttribute('href') || '';
+    trackEvent('cta_link_text', {
+      cta_: exploreCta.textContent?.trim() || 'Explore now',
+      parentTitle: 'Form Thank you pop-up',
+      param1: ctaLink,
+      redirectionLink: ctaLink,
+    });
+  });
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!isFormValid()) {
