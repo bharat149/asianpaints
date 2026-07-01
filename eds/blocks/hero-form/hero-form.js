@@ -264,13 +264,6 @@ function getTextFromHtml(html = '') {
   return temp.textContent?.trim() || '';
 }
 
-function trackInterestCTA(campaignId, formName) {
-  trackEvent('Form_thank_you_pop_up', {
-    cid: campaignId,
-    formName,
-  });
-}
-
 function trackFormSubmission(formName, campaignId, whatsappOptIn, extraData = {}) {
   const formData = {
     formName,
@@ -506,7 +499,14 @@ export default function decorate(block) {
 
     if (success && !thankYouTracked) {
       thankYouTracked = true;
-      trackInterestCTA(currentCampaignId, currentFormName);
+      // Direct/inline hero-form → fire "Form Submit" (event9) on success.
+      // "Form_thank_you_pop_up" (event38) belongs to the popup lead-form
+      // block only, so it is intentionally not fired here.
+      trackFormSubmission(currentFormName, currentCampaignId, consentInput?.checked, {
+        dataDestination: cfg.dataDestination || 'both',
+        contruction:     cfg.contruction     || '',
+        localpainter:    cfg.localpainter    || '',
+      });
     }
   }
 
@@ -558,12 +558,6 @@ export default function decorate(block) {
     const email = `${mobileInput.value.trim()}na@asianpaints.com`;
 
     const campaignId = currentCampaignId;
-
-    trackFormSubmission(currentFormName, campaignId, consentInput?.checked, {
-      dataDestination: cfg.dataDestination || 'both',
-      contruction:     cfg.contruction     || '',
-      localpainter:    cfg.localpainter    || '',
-    });
 
     const payload = buildBasePayload();
     payload.pageUrl = window.location.href;
