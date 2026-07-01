@@ -201,17 +201,6 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
   });
 }
 
-function getFaqSectionTitle(block) {
-  // Prefer an h2 in the enclosing .section (the FAQ banner title,
-  // e.g. "Frequently Asked Questions").
-  const section = block.closest('.section');
-  if (section) {
-    const heading = section.querySelector('h1, h2, h3, h4, h5, h6');
-    if (heading?.textContent?.trim()) return heading.textContent.trim();
-  }
-  return '';
-}
-
 function trackAccordionClick(block, summaryEl) {
   const isFaq = block.classList.contains('faq');
   summaryEl.addEventListener('click', () => {
@@ -223,11 +212,12 @@ function trackAccordionClick(block, summaryEl) {
     const wasOpen = detailsEl?.open ?? false;
     if (isFaq) {
       // eVar45 (cta_): "FAQ close" / "FAQ Open"
-      // eVar67 (parentTitle): FAQ section heading, not the question text
-      const parentTitle = getFaqSectionTitle(block);
+      // eVar67 (parentTitle): the specific FAQ question that was clicked,
+      // so each accordion item reports its own text (not the section heading).
+      const questionText = summaryEl.textContent?.trim() || '';
       trackEvent('cta_link_text', {
         cta_: wasOpen ? 'FAQ close' : 'FAQ Open',
-        parentTitle,
+        parentTitle: questionText,
       });
     } else {
       const state = wasOpen ? 'Close' : 'Open';
