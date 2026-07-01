@@ -19,6 +19,9 @@ export default function decorate(block) {
   block.addEventListener('click', (event) => {
     const cta = event.target.closest('.inspiration-popular-read-more a');
     if (!cta || !block.contains(cta)) return;
+    if (cta.dataset.analyticsBound === 'true') return;
+
+    cta.dataset.analyticsBound = 'true';
 
     const ctaLink = cta.getAttribute('href') || '';
     const btnTitle = cta.textContent.trim() || 'Read more';

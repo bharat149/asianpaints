@@ -1,4 +1,4 @@
-import { trackCarouselNavigation, triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
+import { trackCarouselNavigation, triggerCTAClickWithLinkAndTitle, trackEvent } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
