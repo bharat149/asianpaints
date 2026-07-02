@@ -4906,6 +4906,12 @@ function addInteractions(block) {
   block.querySelectorAll('.action-btn').forEach((actionBtn) => {
     actionBtn.addEventListener('click', () => {
       if (actionBtn.classList.contains('cart-btn')) return;
+      // Profile button fires its own Login Icon Click (event7) via
+      // handleProfileClick / the profile-dropdown auth link. The live
+      // site (asianpaints.com) fires ONLY event7 on the profile icon —
+      // NOT Header icons (event335). Skip it here so the click doesn't
+      // double-fire two beacons with two different events.
+      if (actionBtn.classList.contains('profile-btn')) return;
 
       const rawTitle = actionBtn.getAttribute('aria-label')
         || actionBtn.querySelector('.icon-tooltip-text')?.textContent
