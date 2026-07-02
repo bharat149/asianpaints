@@ -29,10 +29,15 @@ export default function decorate(block) {
     anchor.href = link;
     anchor.target = '_blank';
     anchor.innerHTML = 'Explore inspirations <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">';
+    
+    // Extract image alt text for tracking
+    const imageAltText = pictures[0].querySelector('img')?.alt || 'Designer Collection';
+    
     anchor.addEventListener('click', () => {
       const downloadPdfName = anchor.textContent?.trim() || '';
       trackEvent('download_multiple_pdf', {
         pdfName: downloadPdfName,
+        Title: imageAltText,
       });
     });
 

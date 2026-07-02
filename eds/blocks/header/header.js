@@ -4730,6 +4730,11 @@ function addInteractions(block) {
       e.preventDefault();
       // e67 - Mini Cart Icon Click
       trackEvent('mini_cart_icon_click');
+      ga4Implementaion({
+        event: 'header_interaction',
+        click_text: 'Cart',
+        click_category: 'click_header icons',
+      });
       refreshCartModal(block);
       positionCartModal();
       cartModalOverlay.classList.add('active');
@@ -4891,7 +4896,7 @@ function addInteractions(block) {
   }
 
   block.querySelectorAll('.action-btn').forEach((actionBtn) => {
-    actionBtn.addEventListener('click', () => {
+    actionBtn.addEventListener('click', (e) => {
       if (actionBtn.classList.contains('cart-btn')) return;
 
       const rawTitle = actionBtn.getAttribute('aria-label')
@@ -4900,18 +4905,29 @@ function addInteractions(block) {
         || '';
       const title = rawTitle.replace(/\s+/g, ' ').trim();
       const rawHref = actionBtn.getAttribute('href') || '';
-      const param1 = rawHref === '#' || rawHref.startsWith('javascript:void') ? '' : toAbsoluteUrl(rawHref);
+      const isRealLink = rawHref && rawHref !== '#' && !rawHref.startsWith('javascript:void');
+      const param1 = isRealLink ? toAbsoluteUrl(rawHref) : '';
 
       trackEvent('Header icons', { title, param1 });
 
       //Header Icons GA4 Events
       const ga4EventName = 'header_interaction'
       const clickCategory = 'click_header icons'
-      ga4Implementaion({
-        event: ga4EventName,
-        click_text: title,
-        click_category: clickCategory
-      })
+      if (isRealLink) {
+        e.preventDefault();
+        ga4Implementaion({
+          event: ga4EventName,
+          click_text: title,
+          click_category: clickCategory
+        });
+        setTimeout(() => { window.location.assign(rawHref); }, 300);
+      } else {
+        ga4Implementaion({
+          event: ga4EventName,
+          click_text: title,
+          click_category: clickCategory
+        });
+      }
 
     });
   });
@@ -4928,7 +4944,7 @@ function addInteractions(block) {
   }
 
   block.querySelectorAll('.header-cta .cta-btn').forEach((ctaBtn) => {
-    ctaBtn.addEventListener('click', () => {
+    ctaBtn.addEventListener('click', (e) => {
       const ctaLink = ctaBtn.getAttribute('href') || '';
       const btnTitle = ctaBtn.textContent?.trim() || '';
       trackEvent('Sticky Form CTA Click', {
@@ -4937,13 +4953,23 @@ function addInteractions(block) {
         redirectionLink: ctaLink,
       });
 
-      //GA4 -> Exit Intent Button Header 
-
-           ga4Implementaion({
-        event: 'book_free_site_visit',
-        click_text: btnTitle,
-        click_category: 'click_header'
-      }) 
+      // GA4 -> Exit Intent Button Header
+      // Defer navigation so dataLayer.push is processed before page unload
+      if (ctaLink && !ctaBtn.classList.contains('trigger-book-free-site-visit-modal')) {
+        e.preventDefault();
+        ga4Implementaion({
+          event: 'book_free_site_visit',
+          click_text: btnTitle || ctaLink,
+          click_category: 'click_header',
+        });
+        setTimeout(() => { window.location.assign(ctaLink); }, 300);
+      } else {
+        ga4Implementaion({
+          event: 'book_free_site_visit',
+          click_text: btnTitle || ctaLink,
+          click_category: 'click_header',
+        });
+      }
     });
   });
 

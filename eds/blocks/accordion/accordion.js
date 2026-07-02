@@ -201,17 +201,6 @@ function addDetailsAnimation(detailsEl, summaryEl, bodyEl, {
   });
 }
 
-function getFaqSectionTitle(block) {
-  // Prefer an h2 in the enclosing .section (the FAQ banner title,
-  // e.g. "Frequently Asked Questions").
-  const section = block.closest('.section');
-  if (section) {
-    const heading = section.querySelector('h1, h2, h3, h4, h5, h6');
-    if (heading?.textContent?.trim()) return heading.textContent.trim();
-  }
-  return '';
-}
-
 function trackAccordionClick(block, summaryEl) {
   const isFaq = block.classList.contains('faq');
   summaryEl.addEventListener('click', () => {
@@ -221,17 +210,15 @@ function trackAccordionClick(block, summaryEl) {
     // the summary (icon, span, etc.) was the actual click target.
     const detailsEl = summaryEl.closest('.accordion-item');
     const wasOpen = detailsEl?.open ?? false;
+    const questionText = summaryEl.textContent?.trim() || '';
+    const parentTitle = getFaqSectionTitle(block);
     if (isFaq) {
-      // eVar45 (cta_): "FAQ close" / "FAQ Open"
-      // eVar67 (parentTitle): FAQ section heading, not the question text
-      const parentTitle = getFaqSectionTitle(block);
       trackEvent('cta_link_text', {
         cta_: wasOpen ? 'FAQ close' : 'FAQ Open',
-        parentTitle,
+        parentTitle: questionText,
       });
     } else {
       const state = wasOpen ? 'Close' : 'Open';
-      const questionText = summaryEl.textContent?.trim() || '';
       trackEvent('cta_link_text', {
         cta_: 'Accordion ' + state,
         parentTitle: questionText,
