@@ -361,6 +361,12 @@ const TARGET_MBOX_PARAM_META = Object.freeze({
   // Enabled on legacy — actively used by audiences
   'user.categoryId':         'target-category-id',
   'user.colorCategoryId':    'target-color-category-id',
+  // Target Recommendations — entity.id identifies the current item so
+  // the recommendation algorithm (e.g. "viewed this / viewed that",
+  // "recently viewed") receives the seed key. Read from a
+  // <meta name="target-entity-id"> tag on product/detail pages; omitted
+  // on pages without the tag (buildTargetMboxParams drops empty values).
+  'entity.id':               'target-entity-id',
   // Disabled on legacy, sent with empty default for parity
   'mbox3rdPartyId':          'target-3rdparty-id',
   'profile.BHSdropoff':      'target-profile-bhsdropoff',
@@ -418,6 +424,25 @@ function deriveCategoryIdFromUrl() {
   return id;
 }
 
+/**
+ * Derives the Target Recommendations entity.id (the seed key the
+ * recommendation algorithm keys off) from the current URL.
+ *
+ * EDS pages don't author a <meta name="target-entity-id"> reliably, so
+ * — like deriveCategoryIdFromUrl() for the category — we fall back to a
+ * stable per-page identifier: the last non-empty path segment with any
+ * file extension (.html) and query/hash stripped. For a category page
+ * such as /interior-wall-paints this yields 'interior-wall-paints',
+ * giving Recommendations a consistent key per page. A
+ * <meta name="target-entity-id"> tag (product SKU on PDPs) always
+ * overrides this in buildTargetMboxParams().
+ */
+function deriveEntityIdFromUrl() {
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  const last = segments[segments.length - 1] || '';
+  return last.replace(/\.[^.]+$/, '');
+}
+
 function buildTargetMboxParams() {
   const params = {};
   Object.entries(TARGET_MBOX_PARAM_META).forEach(([paramKey, metaName]) => {
@@ -440,6 +465,14 @@ function buildTargetMboxParams() {
   if (!params['user.categoryId']) {
     const derived = deriveCategoryIdFromUrl();
     if (derived) params['user.categoryId'] = derived;
+  }
+  // entity.id: meta tag (product SKU on PDPs) overrides the URL-derived
+  // value. Falling back to URL derivation ensures the Target
+  // Recommendations request always carries a seed key even on EDS pages
+  // that don't author a target-entity-id meta tag.
+  if (!params['entity.id']) {
+    const derivedEntityId = deriveEntityIdFromUrl();
+    if (derivedEntityId) params['entity.id'] = derivedEntityId;
   }
   // Mirror user.categoryId into mbox.categoryId so Adobe Target's
   // BUILT-IN Category Affinity feature receives the signal too. The
