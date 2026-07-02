@@ -4869,8 +4869,11 @@ function addInteractions(block) {
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
-      // e54 - Search Start (fires on magnifying glass icon click)
-      trackEvent('search_start', { flowType: 'Search' });
+      // e54 (search_start) intentionally NOT fired here. The live site
+      // (asianpaints.com) fires ONLY Header Search Icon Click (e330) on
+      // the search-icon click; Search Start (e54) belongs to the actual
+      // search-initiation step, not opening the dialog. Firing both here
+      // produced two beacons per click.
       ga4Implementaion({
         event: 'search_icon_click',
       })
@@ -4934,8 +4937,8 @@ function addInteractions(block) {
   if (mobileSearchBtn) {
     mobileSearchBtn.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
-      // e54 - Search Start (fires on magnifying glass icon click)
-      trackEvent('search_start', { flowType: 'Search' });
+      // e54 (search_start) intentionally NOT fired here — see desktop
+      // search handler above. Matches live: only e330 on icon click.
       openSearchDialog(block);
     });
   }
