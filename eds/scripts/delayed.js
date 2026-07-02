@@ -33,19 +33,23 @@ import { trackEvent } from './analytics_1.js';
 
 const EXIT_INTENT_PATH = '/eds/forms/book-free-site-visit';
 
-window.triggerExitIntentModal = async function triggerExitIntentModal(modalPath = EXIT_INTENT_PATH) {
+window.triggerExitIntentModal = async function triggerExitIntentModal(modalPath = EXIT_INTENT_PATH, options = {}) {
   try {
     // eslint-disable-next-line import/no-cycle
     const { openModal } = await import('../blocks/modal/modal.js');
-    await openModal(modalPath);
+    await openModal(modalPath, options);
   } catch (e) {
     console.error('Failed to trigger exit-intent modal:', e);
   }
 };
 
-// Expose this globally too, so it can be called from DevTools if needed
+// Expose this globally too, so it can be called from DevTools if needed.
+// This is the GENUINE exit-intent entry point (invoked by Adobe Target
+// exit-intent activities / data-attribute triggers), so it fires the
+// Exit Intent Pop-up Impression (event359). CTA-initiated opens (sticky
+// CTA, header CTA) go through openModal without this flag.
 window.triggerExitIntentPopupForm = function triggerExitIntentPopupForm() {
-  window.triggerExitIntentModal();
+  window.triggerExitIntentModal(EXIT_INTENT_PATH, { trackExitIntentImpression: true });
 };
 
 // Global click listener for all trigger buttons

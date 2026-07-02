@@ -284,14 +284,21 @@ const setLeadFieldValue = (container, selector, value) => {
 
   return {
     block,
-    showModal: () => {
+    showModal: (options = {}) => {
       // Apply again when modal opens, in case button text got reset
       if (isBookFreeSiteVisitModal) {
         updateExitIntentSubmitText();
         updateExitIntentCallUsContent();
         prefillLeadFormFromCookies();
-        // e359 - Exit Intent pop-up impression
-        trackEvent('Exit Intent Pop-up Impression');
+        // e359 - Exit Intent pop-up impression. Only fire when the modal
+        // is opened by a GENUINE exit-intent trigger. When the same modal
+        // is opened via a CTA (e.g. the sticky "Book Free Site Visit"
+        // button, which already fires sticky_cta_click / event278), this
+        // impression must NOT fire — otherwise the click produces two
+        // events. The caller signals intent via trackExitIntentImpression.
+        if (options.trackExitIntentImpression) {
+          trackEvent('Exit Intent Pop-up Impression');
+        }
       }
 
       dialog.show();
@@ -307,12 +314,12 @@ const setLeadFieldValue = (container, selector, value) => {
   };
 }
 
-export async function openModal(fragmentUrl) {
+export async function openModal(fragmentUrl, options = {}) {
   const path = fragmentUrl.startsWith('http')
     ? new URL(fragmentUrl, window.location).pathname
     : fragmentUrl;
 
   const fragment = await loadFragment(path);
   const { showModal } = await createModal(fragment.childNodes);
-  showModal();
+  showModal(options);
 }
