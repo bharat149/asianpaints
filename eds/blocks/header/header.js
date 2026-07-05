@@ -783,6 +783,12 @@ async function initKeycloak(block) {
 
 async function handleProfileClick(e) {
   if (keycloakInstance?.authenticated) {
+    // e7 - Profile icon click must fire on every header icon click,
+    // logged in or not (matches the live site). Use the 'Login Icon Click'
+    // alias so the beacon Link name matches production exactly. Give the
+    // beacon a brief moment before navigating to the profile page.
+    trackEvent('Login Icon Click');
+    await new Promise((resolve) => setTimeout(resolve, 150));
     window.location.href = getApApi().PROFILE_PAGE;
     return;
   }
@@ -4795,6 +4801,11 @@ function addInteractions(block) {
       e.preventDefault();
       const user = getUser();
       if (user) {
+        // e7 - Profile icon click must fire on every header icon click,
+        // logged in or not (matches the live site). Use the 'Login Icon
+        // Click' alias so the beacon Link name matches production exactly.
+        // Logged-in click opens the dropdown, but the event still fires.
+        trackEvent('Login Icon Click');
         openDropdown();
       } else {
         // e7 - Login Icon Click (must fire on header icon click)
