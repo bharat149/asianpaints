@@ -438,9 +438,16 @@ function trackInterestCTA(currentCampaignId, currentFormName) {
 function trackExploreNowCTA(ctaLink) {
   if (!ctaLink) return;
 
+  // eVar67 (parentTitle) must carry the real banner/form title, not a
+  // fixed label. This popup lives inside the open modal, so read its
+  // heading (e.g. "Let our experts help you!"). Fall back to the old
+  // literal if no heading is found.
+  const bannerTitle = document.querySelector('dialog[open] h1, dialog[open] h2, dialog[open] h3, dialog[open] h4')
+    ?.textContent?.trim() || 'Form Thank you pop-up';
+
   trackEvent('cta_link_text', {
     cta_: 'Explore now',
-    parentTitle: 'Form Thank you pop-up',
+    parentTitle: bannerTitle,
     param1: ctaLink,
     redirectionLink: ctaLink,
   });

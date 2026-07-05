@@ -211,7 +211,6 @@ function trackAccordionClick(block, summaryEl) {
     const detailsEl = summaryEl.closest('.accordion-item');
     const wasOpen = detailsEl?.open ?? false;
     const questionText = summaryEl.textContent?.trim() || '';
-    const parentTitle = getFaqSectionTitle(block);
     if (isFaq) {
       trackEvent('cta_link_text', {
         cta_: wasOpen ? 'FAQ close' : 'FAQ Open',

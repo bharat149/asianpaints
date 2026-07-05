@@ -156,6 +156,10 @@ export default function decorate(block) {
   cardLinks.forEach((linkEl) => {
     linkEl.addEventListener('click', () => {
       const exploreLink = linkEl.getAttribute('href') || '';
+      // Analytics param2 (eVar86) must be the COMPLETE redirection URL.
+      // The href attribute may be relative, so use the resolved absolute
+      // .href property for reporting.
+      const exploreAbsoluteLink = linkEl.href || exploreLink;
       const exploreTitle = (linkEl.querySelector('.text-explore-stores')?.textContent || '').trim();
       const exploreMainTitle = (linkEl.querySelector('.square-image-cross-links__title')?.textContent || '').trim();
 
@@ -163,7 +167,7 @@ export default function decorate(block) {
         window.digitalData.data = {
           cta_: exploreTitle,
           param1: exploreMainTitle,
-          param2: exploreLink,
+          param2: exploreAbsoluteLink,
         };
       }
 
@@ -171,7 +175,7 @@ export default function decorate(block) {
         trackEvent('squarecross_click', {
           cta_: exploreTitle,
           param1: exploreMainTitle,
-          param2: exploreLink,
+          param2: exploreAbsoluteLink,
         });
       }
     });

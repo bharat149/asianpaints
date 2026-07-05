@@ -1146,20 +1146,28 @@ export function getDigitalData() {
  * @returns {string} the resolved form title, or '' if none found
  */
 function resolveActiveFormTitle() {
-  const scopes = [
-    document.querySelector('dialog[open] .form-description-cell'),
-    document.querySelector('.form-description-cell'),
-  ].filter(Boolean);
+  // Only resolve a title when a modal form is open. Inline form blocks
+  // (form-banner, form) already pass their own visible heading as
+  // formName, so overriding them is both unnecessary and harmful:
+  // scoping to `.form-description-cell` page-wide leaked the FIRST
+  // on-page form's sub-description text into every form's eVar17/prop17.
+  const dialog = document.querySelector('dialog[open]');
+  if (!dialog) return '';
 
-  let title = '';
-  scopes.some((scope) => {
-    const large = scope.querySelector('.form-title-large')?.textContent?.trim();
-    const small = scope.querySelector('.form-title-small')?.textContent?.trim();
-    title = large || small || '';
-    return Boolean(title);
-  });
+  // Modal forms (e.g. Book Free Site Visit) pass a slug as formName and
+  // rely on this to surface the visible heading. Prefer an explicit
+  // description-cell title inside the dialog — the "small" title is the
+  // actual heading, the "large" title is a sub-description — then fall
+  // back to the dialog's first visible heading.
+  const cell = dialog.querySelector('.form-description-cell');
+  if (cell) {
+    const small = cell.querySelector('.form-title-small')?.textContent?.trim();
+    const large = cell.querySelector('.form-title-large')?.textContent?.trim();
+    if (small || large) return small || large;
+  }
 
-  return title;
+  const heading = dialog.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim();
+  return heading || '';
 }
 
 /**
