@@ -538,7 +538,13 @@ export default function decorate(block) {
   // Track custom CTA clicks for animated-btn-yellow-onhover-black buttons
   block.addEventListener('click', (e) => {
     const ctaBtn = e.target.closest('.animated-btn-yellow-onhover-black');
-    if (ctaBtn) {
+    // Two buttons here share the animated-btn styling class but own their
+    // own analytics, so exclude them to avoid double-firing custom_cta_click:
+    //  - the form submit button (.hero-form-submit) fires form_submit/form_error
+    //  - the thank-you Explore CTA (.explore-painting-btn) fires cta_link_text
+    if (ctaBtn
+      && !e.target.closest('.hero-form-submit')
+      && !e.target.closest('.explore-painting-btn')) {
       const ctaText = ctaBtn.querySelector('.animated-arrow-button')?.textContent?.trim() || 'CTA Button';
       trackEvent('custom_cta_click', {
         ctaText,

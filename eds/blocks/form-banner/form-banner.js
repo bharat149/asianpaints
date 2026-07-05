@@ -235,15 +235,29 @@ function bindNumericInputFilter(input) {
   });
 }
 
+function yesNo(checked) {
+  return checked ? 'Yes' : 'No';
+}
+
 function trackFormSubmission(form) {
   const isWhatsappChecked = form.querySelector('[name="updateMeOnWhatsapp"]')?.checked;
+
+  // Only include contruction/localpainter when the corresponding
+  // question actually exists on this form. Previously `?.checked ? 'Yes'
+  // : 'No'` collapsed a missing field (undefined) to 'No', leaking a
+  // phantom eVar73="No"/eVar110="No" on forms (like this inline banner)
+  // that have no renovating/painter questions. undefined values are
+  // skipped by trackEvent, so absent questions send nothing.
+  const constructionField = form.querySelector('[name="constructionWorkGoingOn"]');
+  const localPainterField = form.querySelector('[name="localPainterHired"]');
+
   const formData = {
     formName,
     campaignId,
     whatsappOptIn: isWhatsappChecked ? 'checked' : undefined,
     dataDestination: form.dataset.dataDestination || 'both',
-    contruction: form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
-    localpainter: form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
+    contruction: constructionField ? yesNo(constructionField.checked) : undefined,
+    localpainter: localPainterField ? yesNo(localPainterField.checked) : undefined,
   };
 
   getDigitalData().form = formData;

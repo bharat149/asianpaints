@@ -163,6 +163,11 @@ export default async function decorate(block) {
 
     linkEl.addEventListener('click', () => {
       const exploreLink = linkEl.getAttribute('href') || '';
+      // Analytics param2 (eVar86) must be the COMPLETE redirection URL.
+      // The href attribute is intentionally relative (for in-domain
+      // redirection, see "Fix CTA redirection for relative paths"), so
+      // use the resolved absolute .href property for reporting.
+      const exploreAbsoluteLink = linkEl.href || exploreLink;
       const exploreTitle = (linkEl.querySelector('.text-explore-stores')?.textContent || '').trim()
         || (linkEl.querySelector('.fourimageinrow-imgtitle')?.textContent || '').trim();
       const exploreMainTitle = (linkEl.querySelector('.track-main-title')?.textContent || '').trim()
@@ -173,13 +178,13 @@ export default async function decorate(block) {
       getDigitalData().data = {
         cta_: exploreTitle,
         param1: exploreMainTitle,
-        param2: exploreLink,
+        param2: exploreAbsoluteLink,
       };
 
       trackEvent('squarecross_click', {
         cta_: exploreTitle,
         param1: exploreMainTitle,
-        param2: exploreLink,
+        param2: exploreAbsoluteLink,
       });
     });
   });

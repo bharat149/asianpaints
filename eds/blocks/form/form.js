@@ -627,9 +627,15 @@ function trackInterestCTA(currentCampaignId, currentFormName) {
 function trackExploreNowCTA(ctaLink) {
   if (!ctaLink) return;
 
+  // eVar67 (parentTitle) must carry the real banner/form title, not a
+  // fixed label. This inline form already resolves its visible heading
+  // into the module-level `formName` (e.g. "Looking For Expert Guidance
+  // To Design Your Dream Home?"). Fall back to the old literal if empty.
+  const bannerTitle = formName || 'Form Thank you pop-up';
+
   trackEvent('cta_link_text', {
     cta_: 'Explore now',
-    parentTitle: 'Form Thank you pop-up',
+    parentTitle: bannerTitle,
     param1: ctaLink,
     redirectionLink: ctaLink,
   });
