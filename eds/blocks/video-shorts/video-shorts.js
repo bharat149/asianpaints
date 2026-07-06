@@ -48,9 +48,13 @@ function getVideoTitle(wrapper, videoEl) {
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  if (videoEl.dataset.playTrackingBound === 'true') return;
-  videoEl.dataset.playTrackingBound = 'true';
-  
+  // Dedup per video tile. The <video> element may not exist yet (SaleAssist
+  // overlays a poster/thumbnail before the video loads), so guard on the
+  // wrapper which is always present when a tile is clicked.
+  const guardEl = videoEl || wrapper;
+  if (!guardEl || guardEl.dataset.playTrackingBound === 'true') return;
+  guardEl.dataset.playTrackingBound = 'true';
+
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
     videoTitle,
@@ -70,19 +74,6 @@ function triggerVideoShopAnalyticsEvt(anchorEl) {
   });
 }
 
-function triggerVideoClickAnalyticsEvt(wrapper) {
-  if (wrapper.dataset.clickTrackingBound === 'true') return;
-  wrapper.dataset.clickTrackingBound = 'true';
-  
-  const redirectionUrl = wrapper.querySelector('.cta-link')?.href
-    || wrapper.querySelector('a[href]')?.href
-    || '';
-
-  trackEvent('short_video_shop', {
-    param1: redirectionUrl,
-  });
-}
-
 export function initSaleAssistTracking() {
   // Guard: only attach once per page even if called from multiple blocks/delayed.js.
   // NOTE: `document` has no `dataset` (only Elements do) — using it throws a
@@ -98,27 +89,23 @@ export function initSaleAssistTracking() {
   // (#sa_shorts_modal-wrapper) is created lazily on first video click, so
   // a direct querySelector at setup time always returns null.
   document.addEventListener('click', (e) => {
+    // 1. Explicit shop CTA ("Explore shade") -> short_video_shop (event297).
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
       return;
     }
-    
-    // Track video play on click
-    const video = e.target.closest('video');
-    if (video) {
-      const wrapper = getShortsWrapper(video);
-      if (wrapper) {
-        triggerVideoPlayAnalyticsEvt(wrapper, video);
-      }
-      return;
-    }
-    
-    // Use broadened wrapper detection so Royal Play and IDS SaleAssist
-    // variants (different class names) are also caught.
+
+    // 2. Any other click inside a SaleAssist shorts wrapper opens/plays the
+    //    video -> short_video_play (event296). The click target is usually a
+    //    poster image or overlay div rather than the <video> element itself,
+    //    so match on the wrapper instead of requiring closest('video').
+    //    Broadened wrapper detection also catches Royal Play and IDS
+    //    SaleAssist variants (different class names).
     const wrapper = getShortsWrapper(e.target);
     if (wrapper) {
-      triggerVideoClickAnalyticsEvt(wrapper);
+      const video = e.target.closest('video') || wrapper.querySelector('video');
+      triggerVideoPlayAnalyticsEvt(wrapper, video);
     }
   });
 }
