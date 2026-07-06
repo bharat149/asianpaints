@@ -138,7 +138,10 @@ function buildPanel(side, content, mobileBgUrl) {
   cta.addEventListener('click', () => {
     trackEvent('custom_cta_click', {
       cta_: content.ctaText,
-      param1: content.ctaHref,
+      parentTitle: content.heading || 'splash',
+      // redirectionLink maps to eVar86; passing it as param1 would land in
+      // contextData instead of the mapped eVar.
+      redirectionLink: content.ctaHref,
     });
   });
 
@@ -214,6 +217,8 @@ async function showSplashDialog(leftContent, rightContent, mobileBgUrl) {
     markShown();
     dialog.remove();
     document.body.classList.remove('splash-open');
+    // e18 - Splash Close
+    trackEvent('splash_close');
   });
 
   document.body.classList.add('splash-open');

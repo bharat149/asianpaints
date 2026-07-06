@@ -3367,6 +3367,7 @@ function trackLoginSuccessful(loginFunction = '') {
 
   trackEvent('login_successful', {
     loginStatus: digitalData.user.loginStatus || 'logged in',
+    loginFunction: digitalData.user.loginFunction || loginFunction || '',
   });
 }
 
