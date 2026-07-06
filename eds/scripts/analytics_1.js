@@ -791,7 +791,7 @@ const EVENT_REGISTRY = {
   // are page-level vars set globally in buildPageData() on every hit.
   'Login Icon Click': { events: 'event7' },
   login_icon:         { events: 'event7' },
-  login_successful:   { events: 'event48', eVars: { loginStatus: 'eVar9' } },
+  login_successful:   { events: 'event48', eVars: { loginStatus: 'eVar9', loginFunction: 'eVar46' } },
 
   // Cart — spec action name: mini_cart_icon_click; mini_cart_click kept as legacy alias.
   // eVar21 = value of the HybrisCart cookie (auto-read at dispatch time via def.cookies).
