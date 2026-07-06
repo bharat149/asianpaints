@@ -48,13 +48,10 @@ function getVideoTitle(wrapper, videoEl) {
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  // Dedup per video tile. The <video> element may not exist yet (SaleAssist
-  // overlays a poster/thumbnail before the video loads), so guard on the
-  // wrapper which is always present when a tile is clicked.
-  const guardEl = videoEl || wrapper;
-  if (!guardEl || guardEl.dataset.playTrackingBound === 'true') return;
-  guardEl.dataset.playTrackingBound = 'true';
-
+  // Fire on every click (matches live). A single capture-phase document
+  // listener guarantees one handler invocation per physical click, so no
+  // per-element dedup is needed — and dedup would wrongly suppress repeat
+  // plays of the same tile.
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
     videoTitle,
@@ -62,9 +59,8 @@ function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
 }
 
 function triggerVideoShopAnalyticsEvt(anchorEl) {
-  if (anchorEl.dataset.shopTrackingBound === 'true') return;
-  anchorEl.dataset.shopTrackingBound = 'true';
-  
+  // Fire on every click (matches live). See note in
+  // triggerVideoPlayAnalyticsEvt — no per-element dedup.
   const wrapper = getShortsWrapper(anchorEl);
   const videoTitle = wrapper ? getVideoTitle(wrapper) : '';
 
@@ -88,6 +84,11 @@ export function initSaleAssistTracking() {
   // injects its DOM (widget tiles or dynamically-created modal). The modal
   // (#sa_shorts_modal-wrapper) is created lazily on first video click, so
   // a direct querySelector at setup time always returns null.
+  //
+  // Use CAPTURE phase (3rd arg `true`): SaleAssist's own handler on the
+  // "Explore shade" anchor calls stopPropagation(), so a bubble-phase
+  // listener never sees the CTA click and short_video_shop (event297) would
+  // never fire. Capturing runs this handler before propagation is stopped.
   document.addEventListener('click', (e) => {
     // 1. Explicit shop CTA ("Explore shade") -> short_video_shop (event297).
     const cta = e.target.closest(exploreSel);
@@ -107,7 +108,7 @@ export function initSaleAssistTracking() {
       const video = e.target.closest('video') || wrapper.querySelector('video');
       triggerVideoPlayAnalyticsEvt(wrapper, video);
     }
-  });
+  }, true);
 }
 
 export default function decorate(block) {
