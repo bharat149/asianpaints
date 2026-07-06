@@ -1234,9 +1234,15 @@ export function trackEvent(eventName, eventData = {}) {
     if (formTitle) data = { ...data, formName: formTitle };
   }
 
+  // Reserved Adobe Analytics variables are mapped to top-level analytics
+  // properties below (not contextData), so exclude them from the loop —
+  // otherwise `products` also leaks into contextData ("product syntax
+  // passed as context data").
+  const RESERVED_KEYS = new Set(['products']);
   const contextData = {};
   Object.entries(data).forEach(([k, v]) => {
     if (v === undefined || v === null || v === '') return;
+    if (RESERVED_KEYS.has(k)) return;
     const target = eVarMap[k];
     if (target) {
       const dests = Array.isArray(target) ? target : [target];

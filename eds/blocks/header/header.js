@@ -2679,6 +2679,17 @@ function buildCartModal() {
 
     e.preventDefault();
 
+    // event97 - Mini_cart_checkout. Fires when the user proceeds to checkout
+    // from the mini cart (cart has items). Build the Adobe products string
+    // from the rendered cart rows (matches buildProductString format).
+    const products = [...modal.querySelectorAll('.cart-item-row')].map((row) => {
+      const sku = row.dataset.productSku || row.dataset.productId || '';
+      const qty = Number(row.dataset.quantity) || '';
+      const price = row.dataset.productPrice || '';
+      return ['', sku, qty, price, '', `eVar106=${qty};eVar107=${price}`].join(';');
+    }).join(',');
+    trackEvent('Mini_cart_checkout', products ? { products } : {});
+
     // Optional: close the cart modal before opening login popup.
     overlay.classList.remove('active');
     if (keycloakInstance?.authenticated) {
