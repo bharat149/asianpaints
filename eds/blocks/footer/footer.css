@@ -629,7 +629,7 @@
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 2px;
-  color: #999;
+  color: #666;
   margin: 0;
   white-space: nowrap;
 }
@@ -749,7 +749,7 @@
 /* Copyright — centered */
 .footer .bottom-copyright {
   font-size: 13px;
-  color: #888;
+  color: #9a9a9a;
   text-align: center;
 }
 

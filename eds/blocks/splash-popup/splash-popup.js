@@ -122,6 +122,8 @@ function buildPanel(side, content, mobileBgUrl) {
       src: content.backgroundImage.src,
       alt: content.backgroundImage.alt || '',
       'aria-hidden': 'true',
+      width: '400',
+      height: '400',
     });
     panel.append(circleImg);
   }
