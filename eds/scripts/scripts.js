@@ -443,8 +443,11 @@ async function loadLazy(doc) {
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);
 
-  /* Load Bootstrap CSS — fire-and-forget to avoid blocking */
-  window.loadBootstrap?.({ withJS: false });
+  /* Bootstrap CSS (32 KiB CDN, ~97% unused) is NOT loaded in the lazy
+     phase — it only styles hidden cart/checkout/address inputs that
+     appear on interaction. It is preloaded in the delayed phase (see
+     loadDelayed) so it is cached before the cart is ever opened, while
+     staying out of the critical/LCP window. */
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
