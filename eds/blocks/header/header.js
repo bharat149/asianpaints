@@ -196,8 +196,8 @@ function getApApi() {
     WISHLIST_PAGE: apUrl('/content/ap/en/home/my-wishlist.html'),
     SHOP_URL: apUrl('/paint-products.html'),
     VISUAL_SEARCH_UPLOAD: apUrl(AP_PATHS.VISUAL_SEARCH_UPLOAD),
-    UNBXD_API_KEY: 'decd8e031bd76ff9fa152afeadcb1773',
-    UNBXD_SITE_KEY: 'ss-unbxd-prod-asianpaints46541696944854',
+    UNBXD_API_KEY: '9cec79cb1e6a986bf237d8d42d54456d',
+    UNBXD_SITE_KEY: 'ss-unbxd-dev-asianpaints46541692795440',
     UNBXD_BASE: 'https://search.unbxd.io',
   };
 }
