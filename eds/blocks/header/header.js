@@ -4338,7 +4338,24 @@ async function attachCartItemListeners(block, cartModal) {
     };
 
     if (eventName === 'remove_product_click') {
+      // Full delete (link "Mini-cart-Removal", event71,scRemove) reports the
+      // ENTIRE line being removed: full quantity + line-total price. Matches
+      // prod: ;SKU;4;1000;;eVar106=4;eVar107=1000 (4 units @ 250 = 1000).
       payload.products = buildProductString(product);
+    } else if (eventName === 'mini_cart_item_plus_click'
+      || eventName === 'mini_cart_item_minus_click') {
+      // scAdd (+1) / scRemove (-1) report only the DELTA for the clicked
+      // product: quantity 1 at the UNIT price — not the cumulative cart
+      // quantity/line-total and not the full cart list. `productPrice` holds
+      // the line total (entry.totalPrice), so derive the unit price.
+      const origQty = Number(product.quantity) || 1;
+      const lineTotal = Number(product.productPrice) || 0;
+      const unitPrice = origQty > 0 ? lineTotal / origQty : lineTotal;
+      payload.products = buildProductString({
+        ...product,
+        quantity: 1,
+        productPrice: String(unitPrice),
+      });
     } else {
       payload.products = cartItems.map(buildProductString).join(',');
     }

@@ -48,10 +48,9 @@ function getVideoTitle(wrapper, videoEl) {
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  // Fire on every click (matches live). A single capture-phase document
-  // listener guarantees one handler invocation per physical click, so no
-  // per-element dedup is needed — and dedup would wrongly suppress repeat
-  // plays of the same tile.
+  // Fired from the video element's real `play` event (see initSaleAssistTracking)
+  // so it reflects an actual playback start, not merely a click on the tile
+  // (mute/share/poster/scroll interactions no longer count as a "play").
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
     videoTitle,
@@ -90,22 +89,24 @@ export function initSaleAssistTracking() {
   // listener never sees the CTA click and short_video_shop (event297) would
   // never fire. Capturing runs this handler before propagation is stopped.
   document.addEventListener('click', (e) => {
-    // 1. Explicit shop CTA ("Explore shade") -> short_video_shop (event297).
+    // Explicit shop CTA ("Explore shade") -> short_video_shop (event297).
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
-      return;
     }
+  }, true);
 
-    // 2. Any other click inside a SaleAssist shorts wrapper opens/plays the
-    //    video -> short_video_play (event296). The click target is usually a
-    //    poster image or overlay div rather than the <video> element itself,
-    //    so match on the wrapper instead of requiring closest('video').
-    //    Broadened wrapper detection also catches Royal Play and IDS
-    //    SaleAssist variants (different class names).
-    const wrapper = getShortsWrapper(e.target);
+  // short_video_play (event296) must reflect an ACTUAL playback start, not
+  // any click on the tile. Clicks on the poster/overlay, mute, share, or
+  // carousel navigation previously all fired the play event. Listen instead
+  // to the media element's native `play` event. `play` does not bubble, so
+  // a capture-phase document listener is required to observe it on the
+  // lazily-created SaleAssist <video> elements.
+  document.addEventListener('play', (e) => {
+    const video = e.target;
+    if (!video || video.tagName !== 'VIDEO') return;
+    const wrapper = getShortsWrapper(video);
     if (wrapper) {
-      const video = e.target.closest('video') || wrapper.querySelector('video');
       triggerVideoPlayAnalyticsEvt(wrapper, video);
     }
   }, true);

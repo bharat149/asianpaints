@@ -32,6 +32,11 @@ import { firePixelConversion } from '../../scripts/third-party-pixels.js';
 const THANK_YOU_DESKTOP_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thankyou-pop-up-desktop.webm';
 const THANK_YOU_MOBILE_VIDEO = 'https://static.asianpaints.com/content/dam/asian_paints/forms/thank-you-gif/Thank-you-pop-up-mobile-without-x.webm';
 const THANK_YOU_CTA_LINK = 'https://static.asianpaints.com/content/ap/en/home/services/interior-design-solutions.html';
+// Thank-you "Book FREE site visit" CTA — label + banner title used for
+// custom_cta_click (event132). parentTitle (eVar67) must be the banner
+// heading shown in the thank-you video, not the form's own title.
+const THANK_YOU_CTA_LABEL = 'Book FREE site visit';
+const THANK_YOU_BANNER_TITLE = 'Are you looking for home painting services?';
 
 let ERROR_DESKTOP_IMAGE = '';
 let ERROR_MOBILE_IMAGE = '';
@@ -668,9 +673,16 @@ function createThankYouScreen(block) {
   cta.href = THANK_YOU_CTA_LINK;
   cta.target = '_blank';
   cta.rel = 'noopener noreferrer';
-  cta.setAttribute('aria-label', 'Explore now');
+  cta.setAttribute('aria-label', THANK_YOU_CTA_LABEL);
   cta.addEventListener('click', () => {
-    trackExploreNowCTA(THANK_YOU_CTA_LINK);
+    // Thank-you "Book FREE site visit" CTA fires custom_cta_click (event132):
+    // cta_ -> eVar45, parentTitle -> eVar67 (the banner title, not the form
+    // title), redirectionLink -> eVar86.
+    trackEvent('custom_cta_click', {
+      cta_: THANK_YOU_CTA_LABEL,
+      parentTitle: THANK_YOU_BANNER_TITLE,
+      redirectionLink: THANK_YOU_CTA_LINK,
+    });
   });
 
   const ins = document.createElement('a');
