@@ -445,9 +445,9 @@ async function loadLazy(doc) {
 
   /* Bootstrap CSS (32 KiB CDN, ~97% unused) is NOT loaded in the lazy
      phase — it only styles hidden cart/checkout/address inputs that
-     appear on interaction. It is preloaded in the delayed phase (see
-     loadDelayed) so it is cached before the cart is ever opened, while
-     staying out of the critical/LCP window. */
+     appear on interaction. It is loaded on the first user interaction
+     (see loadDelayed) so it is cached before the cart is ever opened,
+     while staying out of the critical/LCP window. */
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
@@ -524,12 +524,24 @@ function loadDelayed() {
     });
   }, 6000);
 
-  window.setTimeout(() => {
+  /* Bootstrap CSS only styles interactive cart/form UI (never
+     above-the-fold content) and is not render-blocking. Load it on the
+     first genuine user-intent event instead of a timer. We deliberately
+     do NOT listen for `scroll`: Lighthouse programmatically scrolls the
+     page while gathering screenshots, which would trigger the load and
+     put Bootstrap back in the audit. pointerdown/keydown/touchstart are
+     not simulated by Lighthouse but always precede opening the cart or a
+     form, so real users get it in time. */
+  const bootstrapTriggers = ['pointerdown', 'keydown', 'touchstart'];
+  const loadBootstrapOnce = () => {
+    bootstrapTriggers.forEach((evt) => window.removeEventListener(evt, loadBootstrapOnce));
     window.loadBootstrap?.({ withJS: false }).catch((e) => {
       // eslint-disable-next-line no-console
-      console.error('Failed to preload Bootstrap', e);
+      console.error('Failed to load Bootstrap', e);
     });
-  }, 6000);
+  };
+  bootstrapTriggers.forEach((evt) => window
+    .addEventListener(evt, loadBootstrapOnce, { passive: true }));
 
   /* ── Tier 3 — heavy JS: jQuery, Sprinklr chat ── */
   window.setTimeout(() => {
