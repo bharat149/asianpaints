@@ -440,6 +440,13 @@ function deriveCategoryIdFromUrl() {
 function deriveEntityIdFromUrl() {
   const segments = window.location.pathname.split('/').filter(Boolean);
   const last = segments[segments.length - 1] || '';
+  // Royale Play is a category landing page whose URL slug ('royale-play')
+  // is not a key in the interior-textures Recommendations feed (the feed
+  // is keyed by texture SKUs, e.g. TXT1006CMB1022). Seed the item-based
+  // criteria with a sample feed SKU so the Recommendations request carries
+  // a valid entity.id on this page. Sample value pending confirmation of
+  // the correct seed strategy for landing pages from the Target team.
+  if (last === 'royale-play') return 'TXT1006CMB1022';
   return last.replace(/\.[^.]+$/, '');
 }
 
