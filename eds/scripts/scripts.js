@@ -298,7 +298,7 @@ export function decorateMain(main) {
  * Append a <link rel="preload" as="image" fetchpriority="high"> for an
  * image URL. Idempotent — no-op if the same href is already preloaded.
  */
-function appendImagePreload(href, srcset, sizes) {
+function appendImagePreload(href, srcset, sizes, media) {
   if (!href) return;
   if (document.querySelector(`link[rel="preload"][as="image"][href="${CSS.escape(href)}"]`)) return;
 
@@ -309,7 +309,42 @@ function appendImagePreload(href, srcset, sizes) {
   link.setAttribute('fetchpriority', 'high');
   if (srcset) link.setAttribute('imagesrcset', srcset);
   if (sizes) link.setAttribute('imagesizes', sizes);
+  // A `media` attribute makes the browser preload only when it matches the
+  // viewport — essential for responsive heroes with separate desktop/mobile
+  // images, so a phone never wastes bandwidth on the hidden desktop image.
+  if (media) link.media = media;
   document.head.appendChild(link);
+}
+
+/**
+ * Preload for the carousel-hero-banner, which authors the LCP slide as a
+ * desktop image (cell 0) and a separate mobile image (cell 1), toggled at
+ * 768px in the block JS. The generic first-<img> logic below always picks
+ * cell 0 (desktop), leaving the mobile LCP image unpreloaded on phones —
+ * exactly where LCP was swinging. Emit viewport-scoped preloads for both so
+ * each device fetches only the image it will actually render.
+ * @returns {boolean} true if it handled the preload (caller should stop)
+ */
+function preloadHeroBannerLcp(firstSection) {
+  const heroBanner = firstSection.querySelector('.carousel-hero-banner');
+  if (!heroBanner) return false;
+
+  const firstSlide = heroBanner.firstElementChild;
+  const cells = firstSlide ? [...firstSlide.children] : [];
+
+  const preloadCell = (cell, media) => {
+    const picture = cell?.querySelector('picture');
+    const src = picture?.querySelector('img')?.getAttribute('src');
+    if (!src) return false;
+    const source = picture.querySelector('source[srcset]');
+    appendImagePreload(src, source?.getAttribute('srcset') || '', source?.getAttribute('sizes') || '', media);
+    return true;
+  };
+
+  // Breakpoint mirrors carousel-hero-banner.js (window.innerWidth < 768).
+  const desktopDone = preloadCell(cells[0], '(min-width: 768px)');
+  const mobileDone = preloadCell(cells[1], '(max-width: 767px)');
+  return desktopDone || mobileDone;
 }
 
 /**
@@ -346,7 +381,10 @@ function preloadLcpImage(doc) {
   const firstSection = doc.querySelector('main > div:first-child');
   if (!firstSection) return;
 
-  // 2. Auto-detect: first <img> in first section of <main>.
+  // 2. Responsive carousel-hero-banner (desktop + mobile variants).
+  if (preloadHeroBannerLcp(firstSection)) return;
+
+  // 3. Auto-detect: first <img> in first section of <main>.
   const firstImg = firstSection.querySelector('img');
   if (firstImg) {
     const src = firstImg.getAttribute('src');
@@ -362,7 +400,7 @@ function preloadLcpImage(doc) {
     }
   }
 
-  // 3. Fallback: hero-form / hero blocks may store the background image
+  // 4. Fallback: hero-form / hero blocks may store the background image
   //    URL as plain text in a config row rather than as an <img> tag.
   //    Scan config rows for a recognisable background-image key.
   const heroBlock = firstSection.querySelector('.hero-form, .hero');
