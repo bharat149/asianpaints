@@ -158,43 +158,65 @@ export default async function decorate(block) {
 
   if (wrapper.children.length <= 1) return;
 
-  try {
-    const Swiper = await getSwiperClass();
-    if (!Swiper) return;
+  const initSwiper = async () => {
+    if (block.dataset.swiperInitialized === 'true') return;
+    block.dataset.swiperInitialized = 'true';
 
-    const swiper = new Swiper(swiperEl, {
-      slidesPerView: 1,
-      speed: 600,
-      loop: true,
-      watchOverflow: true,
-      autoplay: {
-        delay: 4000,
-        disableOnInteraction: false,
-        pauseOnMouseEnter: true,
-      },
-      navigation: {
-        prevEl: prevBtn,
-        nextEl: nextBtn,
-      },
-      pagination: {
-        el: paginationEl,
-        clickable: false,
-      },
-      on: {
-        init() {
-          removeInjectedSwiperIcons(prevBtn, nextBtn);
-        },
-        resize() {
-          removeInjectedSwiperIcons(prevBtn, nextBtn);
-        },
-      },
-    });
+    try {
+      const Swiper = await getSwiperClass();
+      if (!Swiper) return;
 
-    removeInjectedSwiperIcons(prevBtn, nextBtn);
-    block.featuredProductsSwiper = swiper;
-    bindCarouselNavigationTracking(block, titleText);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to initialize Swiper', error);
+      const swiper = new Swiper(swiperEl, {
+        slidesPerView: 1,
+        speed: 600,
+        loop: true,
+        watchOverflow: true,
+        autoplay: {
+          delay: 4000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
+        navigation: {
+          prevEl: prevBtn,
+          nextEl: nextBtn,
+        },
+        pagination: {
+          el: paginationEl,
+          clickable: false,
+        },
+        on: {
+          init() {
+            removeInjectedSwiperIcons(prevBtn, nextBtn);
+          },
+          resize() {
+            removeInjectedSwiperIcons(prevBtn, nextBtn);
+          },
+        },
+      });
+
+      removeInjectedSwiperIcons(prevBtn, nextBtn);
+      block.featuredProductsSwiper = swiper;
+      bindCarouselNavigationTracking(block, titleText);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize Swiper', error);
+    }
+  };
+
+  /* Defer Swiper load + init until this below-the-fold carousel nears the
+     viewport, so its ~150 KB download and ~465 ms parse/init stay off the
+     main thread during the hero's LCP window (Swiper was loading ~1s in and
+     delaying paint). The first slide is already visible as static markup;
+     scrollers get Swiper ready via the 300px rootMargin. Mirrors the
+     testimonial-carousel / designer-collections pattern. */
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      initSwiper();
+    }, { rootMargin: '300px 0px' });
+    observer.observe(block);
+  } else {
+    initSwiper();
   }
 }

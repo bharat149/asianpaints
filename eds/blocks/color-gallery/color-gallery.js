@@ -348,47 +348,69 @@ export default async function decorate(block) {
 
   if (totalSlides <= 1) return;
 
-  try {
-    const Swiper = await getSwiperClass();
-    if (!Swiper) return;
+  const initSwiper = async () => {
+    if (block.dataset.swiperInitialized === 'true') return;
+    block.dataset.swiperInitialized = 'true';
 
-    const swiper = new Swiper(swiperEl, {
-      slidesPerView: 1.3,
-      spaceBetween: 12,
-      speed: 500,
-      loop: false,
-      watchOverflow: true,
-    
-      navigation: {
-        prevEl: prevButton,
-        nextEl: nextButton,
-      },
-    
-      pagination: {
-        el: paginationEl,
-        clickable: true,
-        enabled: true,
-      },
-    
-      breakpoints: {
-        768: {
-          slidesPerView: 1.3,
-          spaceBetween: 10,
-        },
-        992: {
-          slidesPerView: 3,
-          spaceBetween: 16,
-        },
-        1200: {
-          slidesPerView: 3,
-          spaceBetween: 16,
-        },
-      },
-    });
+    try {
+      const Swiper = await getSwiperClass();
+      if (!Swiper) return;
 
-    block.colorGallerySwiper = swiper;
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to initialize color-gallery Swiper', error);
+      const swiper = new Swiper(swiperEl, {
+        slidesPerView: 1.3,
+        spaceBetween: 12,
+        speed: 500,
+        loop: false,
+        watchOverflow: true,
+
+        navigation: {
+          prevEl: prevButton,
+          nextEl: nextButton,
+        },
+
+        pagination: {
+          el: paginationEl,
+          clickable: true,
+          enabled: true,
+        },
+
+        breakpoints: {
+          768: {
+            slidesPerView: 1.3,
+            spaceBetween: 10,
+          },
+          992: {
+            slidesPerView: 3,
+            spaceBetween: 16,
+          },
+          1200: {
+            slidesPerView: 3,
+            spaceBetween: 16,
+          },
+        },
+      });
+
+      block.colorGallerySwiper = swiper;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize color-gallery Swiper', error);
+    }
+  };
+
+  /* Defer Swiper load + init until this below-the-fold carousel nears the
+     viewport, so its ~150 KB download and ~465 ms parse/init stay off the
+     main thread during the hero's LCP window (Swiper was loading ~1s in and
+     delaying paint). The first cards are already visible as static markup;
+     scrollers get Swiper ready via the 300px rootMargin. Mirrors the
+     testimonial-carousel / designer-collections pattern. */
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      initSwiper();
+    }, { rootMargin: '300px 0px' });
+    observer.observe(block);
+  } else {
+    initSwiper();
   }
 }
