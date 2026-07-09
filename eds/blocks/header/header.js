@@ -4555,8 +4555,23 @@ function bindMainNavAnalytics(block) {
     const navLink = event.target.closest('.nav-link');
     if (!navItem || !navLink || !navList.contains(navItem)) return;
 
-    const siteSection = getNavSectionName(navItem, navLink);
     const redirectionLink = toAbsoluteUrl(navLink.getAttribute('href'));
+
+    // Home icon is rendered as a nav item (.nav-home) inside the main
+    // nav list, but on the live site it fires Custom CTA Click (e132),
+    // NOT Sitesection Click (e46). Match that — same event the mobile
+    // home button and header logo fire (cta_ = 'Home',
+    // parentTitle = 'Menu Header').
+    if (navItem.classList.contains('nav-home')) {
+      triggerCTAClickWithLinkAndTitle(redirectionLink, 'Home', 'Menu Header');
+      ga4Implementaion({
+        event: 'menu_interaction',
+        click_text: 'Home',
+      });
+      return;
+    }
+
+    const siteSection = getNavSectionName(navItem, navLink);
 
     trackSiteSectionClick(siteSection, redirectionLink);
      ga4Implementaion({
