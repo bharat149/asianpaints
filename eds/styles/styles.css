@@ -888,17 +888,41 @@ main>.section:has(.embed-wrapper)>.default-content-wrapper:last-of-type a:hover 
   text-align: center;
 }
 
-@media (min-width: 1280px) and (max-width: 1365px) {
-  body {
-    zoom: .85;
-  }
+@media (min-width: 992px) and (max-width:1099px) {
+    body {
+        zoom:.7
+    }
 }
 
-@media (min-width: 1280px) and (max-width: 1365px) {
-  body {
-    zoom: .85;
-  }
+@media (min-width: 1100px) and (max-width:1199px) {
+    body {
+        zoom:.75
+    }
 }
+
+@media (min-width: 1200px) and (max-width:1279px) {
+    body {
+        zoom:.8
+    }
+}
+
+@media (min-width: 1280px) and (max-width:1365px) {
+    body {
+        zoom:.85
+    }
+}
+
+@media (min-width: 1366px) and (max-width:1439px) {
+    body {
+        zoom:.9
+    }
+}
+
+@media (min-width: 1440px) {
+    body {
+        zoom:1
+    }
+  }
 
 @media (width <=600px) {
   main .section.no-padding-mob {
