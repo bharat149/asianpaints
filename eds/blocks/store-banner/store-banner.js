@@ -131,6 +131,11 @@ export default function decorate(block) {
       btnTitle: "Let's get started",
       parentTitle: 'Find your perfect interior texture',
     },
+    {
+      match: 'home-colour-guide',
+      btnTitle: 'home-colour-guide-banner',
+      parentTitle: 'Home Colour Guide',
+    },
   ];
 
   bannerLink.addEventListener('click', () => {
@@ -139,8 +144,11 @@ export default function decorate(block) {
     const override = ANALYTICS_OVERRIDES.find((o) => ctaLink.includes(o.match));
 
     // eVar45 (CTA label): override → image `title` → alt → default
+    // Ignore title values that are URLs/paths (authoring mistake) — fall through to alt.
+    const rawTitle = img.getAttribute('title')?.trim() || '';
+    const titleIsUrl = rawTitle.startsWith('/') || rawTitle.startsWith('http');
     const btnTitle = override?.btnTitle
-      || img.getAttribute('title')?.trim()
+      || (!titleIsUrl ? rawTitle : '')
       || img.alt?.trim()
       || 'Store Banner';
 
