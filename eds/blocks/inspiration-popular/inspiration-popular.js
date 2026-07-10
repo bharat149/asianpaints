@@ -19,14 +19,12 @@ export default function decorate(block) {
   block.addEventListener('click', (event) => {
     const cta = event.target.closest('.inspiration-popular-read-more a');
     if (!cta || !block.contains(cta)) return;
-    if (cta.dataset.analyticsBound === 'true') return;
-
-    cta.dataset.analyticsBound = 'true';
 
     const ctaLink = cta.getAttribute('href') || '';
-    const btnTitle = cta.textContent.trim() || 'Read more';
-    const readMoreWrap = cta.closest('.inspiration-popular-read-more');
-    const card = readMoreWrap?.parentElement;
+    const btnTitle = 'Read more';
+    // Walk up to the individual card (parent of .inspiration-popular-read-more),
+    // then find its title. Works after the block-1/2/3 restructure.
+    const card = cta.closest('.inspiration-popular-read-more')?.parentElement;
     const parentTitle = card?.querySelector('.inspiration-popular-title')?.textContent?.trim() || '';
 
     triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
