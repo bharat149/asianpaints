@@ -825,7 +825,10 @@ function trackFormSubmission(form) {
   const formData = {
     "formName": formName,
     "campaignId": campaignId,
-    "whatsappOptIn": isWhatsappChecked ? 'checked' : undefined,
+    // Send explicit 'unchecked' (not undefined) so eVar108 always reflects the
+    // real opt-in state on the beacon instead of being dropped by trackEvent's
+    // undefined-filter. QA relies on the presence of the value for reporting.
+    "whatsappOptIn": isWhatsappChecked ? 'checked' : 'unchecked',
     "contruction": form.querySelector('[name="constructionWorkGoingOn"]')?.checked ? 'Yes' : 'No',
     "localpainter": form.querySelector('[name="localPainterHired"]')?.checked ? 'Yes' : 'No',
     // Spec field — see lead-form.js for rationale. Default 'both'.

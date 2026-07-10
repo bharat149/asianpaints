@@ -268,7 +268,10 @@ function trackFormSubmission(formName, campaignId, whatsappOptIn, extraData = {}
   const formData = {
     formName,
     campaignId,
-    whatsappOptIn: whatsappOptIn ? 'checked' : undefined,
+    // Send explicit 'unchecked' (not undefined) so eVar108 always reflects the
+    // real opt-in state on the beacon instead of being dropped by trackEvent's
+    // undefined-filter. QA relies on the presence of the value for reporting.
+    whatsappOptIn: whatsappOptIn ? 'checked' : 'unchecked',
     dataDestination: extraData.dataDestination || 'both',
     contruction:     extraData.contruction     || '',
     localpainter:    extraData.localpainter    || '',
