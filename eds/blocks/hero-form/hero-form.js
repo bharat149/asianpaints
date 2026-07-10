@@ -521,19 +521,15 @@ export default function decorate(block) {
     container.style.display = '';
   }
 
+  // Closing the thank-you popup must NOT fire an analytics event —
+  // matches prod behaviour on painting-contractors. Previously we fired
+  // a 'close' link event on both click and Enter, which QA flagged as
+  // an extra beacon that does not exist on the legacy AMS page.
   closeBtn?.addEventListener('click', () => {
-    trackEvent('close', {
-      campaignId: currentCampaignId,
-      formName: currentFormName,
-    });
     resetFromThankYou();
   });
   closeBtn?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      trackEvent('close', {
-        campaignId: currentCampaignId,
-        formName: currentFormName,
-      });
       resetFromThankYou();
     }
   });
