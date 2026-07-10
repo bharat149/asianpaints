@@ -12,12 +12,15 @@ export default function decorate(block) {
   });
 
   // scope links inside block
-  block.querySelectorAll('a').forEach((a) => {
+  // Note: by the time decorate() runs, decorateMain() has already called
+  // bindButtonContainerTracking() which attached a click listener to every
+  // .button-container a.button. Cloning each anchor strips that pre-attached
+  // listener so our own handler below is the sole source of custom_cta_click.
+  block.querySelectorAll('a').forEach((originalA) => {
+    const a = originalA.cloneNode(false);
     a.innerHTML = `Read more <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">`;
-    // Prevent the global .button-container tracker in analytics_1.js
-    // (bindButtonContainerTracking) from also firing custom_cta_click for
-    // this link — our own click handler below is the source of truth.
     a.dataset.analyticsBound = 'true';
+    originalA.replaceWith(a);
   });
 
   block.addEventListener('click', (event) => {
