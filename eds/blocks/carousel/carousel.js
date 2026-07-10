@@ -140,9 +140,14 @@ function buildVariant2(block) {
     h4.textContent = it.cityTitle;
 
     a.addEventListener('click', () => {
+      // eVar86 (param1) must be an absolute URL, not a relative path.
+      let absoluteHref = '';
+      try {
+        absoluteHref = new URL(it.href, window.location.origin).href;
+      } catch (e) { absoluteHref = it.href || ''; }
       trackEvent('product_tile_click', {
         productName: it.cityTitle || '',
-        param1: it.href || '',
+        param1: absoluteHref,
         Title: title || '',
       });
     });
