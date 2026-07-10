@@ -48,10 +48,9 @@ function getVideoTitle(wrapper, videoEl) {
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  // Fire on every click (matches live). A single capture-phase document
-  // listener guarantees one handler invocation per physical click, so no
-  // per-element dedup is needed — and dedup would wrongly suppress repeat
-  // plays of the same tile.
+  if (videoEl.dataset.playTrackingBound === 'true') return;
+  videoEl.dataset.playTrackingBound = 'true';
+  
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
     videoTitle,
@@ -59,14 +58,28 @@ function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
 }
 
 function triggerVideoShopAnalyticsEvt(anchorEl) {
-  // Fire on every click (matches live). See note in
-  // triggerVideoPlayAnalyticsEvt — no per-element dedup.
+  if (anchorEl.dataset.shopTrackingBound === 'true') return;
+  anchorEl.dataset.shopTrackingBound = 'true';
+  
   const wrapper = getShortsWrapper(anchorEl);
   const videoTitle = wrapper ? getVideoTitle(wrapper) : '';
 
   trackEvent("short_video_shop", {
     param1: anchorEl.href,
     ...(videoTitle && { videoTitle }),
+  });
+}
+
+function triggerVideoClickAnalyticsEvt(wrapper) {
+  if (wrapper.dataset.clickTrackingBound === 'true') return;
+  wrapper.dataset.clickTrackingBound = 'true';
+  
+  const redirectionUrl = wrapper.querySelector('.cta-link')?.href
+    || wrapper.querySelector('a[href]')?.href
+    || '';
+
+  trackEvent('short_video_shop', {
+    param1: redirectionUrl,
   });
 }
 
@@ -84,31 +97,30 @@ export function initSaleAssistTracking() {
   // injects its DOM (widget tiles or dynamically-created modal). The modal
   // (#sa_shorts_modal-wrapper) is created lazily on first video click, so
   // a direct querySelector at setup time always returns null.
-  //
-  // Use CAPTURE phase (3rd arg `true`): SaleAssist's own handler on the
-  // "Explore shade" anchor calls stopPropagation(), so a bubble-phase
-  // listener never sees the CTA click and short_video_shop (event297) would
-  // never fire. Capturing runs this handler before propagation is stopped.
   document.addEventListener('click', (e) => {
-    // 1. Explicit shop CTA ("Explore shade") -> short_video_shop (event297).
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
       return;
     }
-
-    // 2. Any other click inside a SaleAssist shorts wrapper opens/plays the
-    //    video -> short_video_play (event296). The click target is usually a
-    //    poster image or overlay div rather than the <video> element itself,
-    //    so match on the wrapper instead of requiring closest('video').
-    //    Broadened wrapper detection also catches Royal Play and IDS
-    //    SaleAssist variants (different class names).
+    
+    // Track video play on click
+    const video = e.target.closest('video');
+    if (video) {
+      const wrapper = getShortsWrapper(video);
+      if (wrapper) {
+        triggerVideoPlayAnalyticsEvt(wrapper, video);
+      }
+      return;
+    }
+    
+    // Use broadened wrapper detection so Royal Play and IDS SaleAssist
+    // variants (different class names) are also caught.
     const wrapper = getShortsWrapper(e.target);
     if (wrapper) {
-      const video = e.target.closest('video') || wrapper.querySelector('video');
-      triggerVideoPlayAnalyticsEvt(wrapper, video);
+      triggerVideoClickAnalyticsEvt(wrapper);
     }
-  }, true);
+  });
 }
 
 export default function decorate(block) {
