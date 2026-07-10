@@ -393,7 +393,9 @@ export default function decorate(block) {
   const pinWrap = block.querySelector('.pincode-input-section');
   const mobileInput = block.querySelector('#mobile-number');
   const pinInput = block.querySelector('#pincode');
+  const consentSection = block.querySelector('.whatsapp-update-consent-section');
   const consentInput = block.querySelector('#whatsapp-consent-input');
+  const checkmark = block.querySelector('.whatsapp-consent-checkmark');
   const spinner = block.querySelector('.get-contractor-progress-status');
   const thankyou = block.querySelector('.mf-thankyou-revamp-container');
   const closeBtn = thankyou?.querySelector('.mf__dismissible-container--head');
@@ -445,11 +447,22 @@ export default function decorate(block) {
     } else setError(pinWrap, '');
   });
 
-  const checkmark = block.querySelector('.whatsapp-consent-checkmark');
+  function syncWhatsappConsentState() {
+    if (!consentInput || !checkmark || !consentSection) return;
+
+    consentSection.classList.toggle('is-checked', consentInput.checked);
+    checkmark.setAttribute('aria-checked', consentInput.checked ? 'true' : 'false');
+  }
+
   checkmark?.addEventListener('click', () => consentInput?.click());
   checkmark?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') consentInput?.click();
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      consentInput?.click();
+    }
   });
+  consentInput?.addEventListener('change', syncWhatsappConsentState);
+  syncWhatsappConsentState();
 
   form?.addEventListener('focusin', (evt) => {
     if (formStarted || evt.target.tagName !== 'INPUT') return;

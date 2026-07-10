@@ -261,9 +261,27 @@
     border: 1px solid #292929;
 }
 
+.hero-form .whatsapp-update-consent-section.is-checked .whatsapp-consent-checkmark {
+    background: #2BA45B;
+    border: none;
+}
+
 .hero-form .whatsapp-update-consent-section:has(input:checked) .whatsapp-consent-checkmark {
     background: #2BA45B;
     border: none;
+}
+
+.hero-form .whatsapp-update-consent-section.is-checked .whatsapp-consent-checkmark::after {
+    content: "";
+    width: 4px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    position: absolute;
+    top: 18%;
+    left: 40%;
+    transform: rotate(45deg);
+    display: block;
 }
 
 .hero-form .whatsapp-update-consent-section:has(input:checked) .whatsapp-consent-checkmark::after {
