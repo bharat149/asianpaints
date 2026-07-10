@@ -14,6 +14,10 @@ export default function decorate(block) {
   // scope links inside block
   block.querySelectorAll('a').forEach((a) => {
     a.innerHTML = `Read more <img src="/eds/icons/arrow-icon-new.svg" alt="arrow icon" class="link-icon">`;
+    // Prevent the global .button-container tracker in analytics_1.js
+    // (bindButtonContainerTracking) from also firing custom_cta_click for
+    // this link — our own click handler below is the source of truth.
+    a.dataset.analyticsBound = 'true';
   });
 
   block.addEventListener('click', (event) => {
