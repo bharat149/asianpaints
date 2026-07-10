@@ -31,6 +31,11 @@ function trackNavClick(button, navigationAction, testTitle) {
 }
 
 export default function decorate(block) {
+  // This block binds its own carousel Previous/Next tracking (trackNavClick).
+  // Flag it so the global carousel-navigation tracker skips it and we don't
+  // fire duplicate Navigation events.
+  block.dataset.navTrackingBound = 'true';
+
   const sections = [...block.children];
   let blockInView = false;
 
