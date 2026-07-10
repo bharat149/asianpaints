@@ -124,6 +124,13 @@ let ERROR_MOBILE_IMAGE = '';
 const SUCCESS_CTA_LINK = 'https://www.asianpaints.com/services/interior-design-solutions.html';
 const ERROR_CTA_LINK = 'https://www.asianpaints.com/services/interior-design-solutions.html';
 const ERROR_DOWNLOAD_LINK = 'https://www.asianpaints.com/content/dam/asian_paints/restricted/the-colour-book-asian-paints.pdf';
+// Popup content title (rendered as a <p>, not a heading) — used as
+// parentTitle (eVar67) for the popup's CTA click. Must NOT be resolved via
+// block.querySelector('h1..h6'): the original form heading (e.g. "Let our
+// experts help you!") stays in the DOM (just visually hidden) after the
+// popup is shown, so that query was wrongly matching the form's own title
+// instead of this popup's banner text.
+const POPUP_BANNER_TITLE = 'Are you looking for home painting services?';
 
 function getPicturesFromCell(cell) {
   if (!cell) return [];
@@ -660,10 +667,9 @@ function createPopupScreen(block, type = 'success') {
     trackCtaLink.addEventListener('click', () => {
       const btnTitle = trackCtaLink.textContent.trim();
       const ctaLink = trackCtaLink.getAttribute('href') || '';
-      const bannerTitle = block.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim() || '';
       // e132 custom_cta_click: cta_->eVar45, parentTitle->eVar67,
       // redirectionLink->eVar86 (per Thank You Popup spec).
-      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, bannerTitle);
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, POPUP_BANNER_TITLE);
     });
   }
 
