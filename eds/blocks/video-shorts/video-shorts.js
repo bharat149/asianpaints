@@ -48,9 +48,15 @@ function getVideoTitle(wrapper, videoEl) {
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
+<<<<<<< HEAD
   if (videoEl.dataset.playTrackingBound === 'true') return;
   videoEl.dataset.playTrackingBound = 'true';
   
+=======
+  // Fired from the video element's real `play` event (see initSaleAssistTracking)
+  // so it reflects an actual playback start, not merely a click on the tile
+  // (mute/share/poster/scroll interactions no longer count as a "play").
+>>>>>>> cf090b1931cd2386539ee6aa41e5e48b0a412377
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
     videoTitle,
@@ -98,11 +104,15 @@ export function initSaleAssistTracking() {
   // (#sa_shorts_modal-wrapper) is created lazily on first video click, so
   // a direct querySelector at setup time always returns null.
   document.addEventListener('click', (e) => {
+<<<<<<< HEAD
+=======
+    // Explicit shop CTA ("Explore shade") -> short_video_shop (event297).
+>>>>>>> cf090b1931cd2386539ee6aa41e5e48b0a412377
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
-      return;
     }
+<<<<<<< HEAD
     
     // Track video play on click
     const video = e.target.closest('video');
@@ -119,6 +129,22 @@ export function initSaleAssistTracking() {
     const wrapper = getShortsWrapper(e.target);
     if (wrapper) {
       triggerVideoClickAnalyticsEvt(wrapper);
+=======
+  }, true);
+
+  // short_video_play (event296) must reflect an ACTUAL playback start, not
+  // any click on the tile. Clicks on the poster/overlay, mute, share, or
+  // carousel navigation previously all fired the play event. Listen instead
+  // to the media element's native `play` event. `play` does not bubble, so
+  // a capture-phase document listener is required to observe it on the
+  // lazily-created SaleAssist <video> elements.
+  document.addEventListener('play', (e) => {
+    const video = e.target;
+    if (!video || video.tagName !== 'VIDEO') return;
+    const wrapper = getShortsWrapper(video);
+    if (wrapper) {
+      triggerVideoPlayAnalyticsEvt(wrapper, video);
+>>>>>>> cf090b1931cd2386539ee6aa41e5e48b0a412377
     }
   });
 }
