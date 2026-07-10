@@ -162,6 +162,8 @@ function createFirstSlideDesktop(row) {
 
   const slide = document.createElement('div');
   slide.className = 'swiper-slide royal-play-banner__slide royal-play-banner__slide--hero';
+  // Stamp the slide title so click handler can read per-slide parentTitle (eVar67)
+  slide.dataset.parentTitle = [line1, line2].filter(Boolean).join(' ').trim();
 
   const media = document.createElement('div');
   media.className = 'royal-play-banner__media';
@@ -239,14 +241,19 @@ function createFirstSlideDesktop(row) {
 function createFirstSlideMobile(row) {
   const cols = [...row.children];
 
+  const cols = [...row.children];
+
   const logo = updateImageAttributes(getPicture(cols[0]), true);
   const mobileImage = updateImageAttributes(getPicture(cols[2]), true);
   const ctaSourceLink = getLink(cols[5]);
   const buttonType = getTextContent(cols[6]);
   const cta = createCTA(cols[5], buttonType);
+  const { line1: heroLine1, line2: heroLine2 } = getTitleLines(cols[3]);
 
   const slide = document.createElement('div');
   slide.className = 'swiper-slide royal-play-banner__slide';
+  // Stamp same text title as desktop hero so click handler reads it dynamically
+  slide.dataset.parentTitle = [heroLine1, heroLine2].filter(Boolean).join(' ').trim();
 
   const wrap = document.createElement('div');
   wrap.className = 'royal-play-banner__mobile-image-wrap';
@@ -298,6 +305,8 @@ function createRegularSlide(row, isMobile = false) {
 
   const slide = document.createElement('div');
   slide.className = 'swiper-slide royal-play-banner__slide';
+  // Stamp the title image alt as parentTitle so click handler reads per-slide eVar67
+  slide.dataset.parentTitle = getBannerImageTitle(titleImage) || '';
 
   const inner = document.createElement('div');
   inner.className = 'royal-play-banner__slide-inner';
@@ -489,9 +498,10 @@ mobileSwiper.init();
         const imageTitle = img?.getAttribute('title')?.trim()
           || img?.getAttribute('alt')?.trim()
           || 'Royale Play';
+        const activeParentTitleForImg = bannerImage.closest('.swiper-slide')?.dataset?.parentTitle || parentTitle;
 
         if (destinationUrl) {
-          triggerCTAClickWithLinkAndTitle(destinationUrl, imageTitle, parentTitle);
+          triggerCTAClickWithLinkAndTitle(destinationUrl, imageTitle, activeParentTitleForImg);
         }
       }
 
@@ -500,8 +510,11 @@ mobileSwiper.init();
 
       const ctaLink = cta.getAttribute('href') || '';
       const btnTitle = cta.textContent.trim();
+      // Read title from the active slide (stamped as data-parent-title during build)
+      // so eVar67 reflects the currently visible slide, not always slide 1.
+      const activeParentTitle = cta.closest('.swiper-slide')?.dataset?.parentTitle || parentTitle;
 
-      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, activeParentTitle);
     });
   }
 }
