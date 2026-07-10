@@ -5185,7 +5185,7 @@ export default async function decorate(block) {
   let authUser = getUserFromUrlHash();
   if (authUser) {
     setUser(authUser);
-    trackLoginSuccessful('keycloak login');
+    trackLoginSuccessful('login successful');
     const postLoginRedirectUrl = consumePostLoginRedirectPath();
     if (postLoginRedirectUrl && postLoginRedirectUrl !== window.location.href) {
       window.location.replace(postLoginRedirectUrl);
@@ -5199,7 +5199,7 @@ export default async function decorate(block) {
     authUser = getUserFromAuthCookie();
     if (authUser) {
       setUser(authUser);
-      trackLoginSuccessful('keycloak login');
+      trackLoginSuccessful('login successful');
     }
   }
 
