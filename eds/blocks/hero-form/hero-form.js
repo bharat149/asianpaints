@@ -532,6 +532,9 @@ export default function decorate(block) {
     thankyou.style.display = 'none';
     bgContainer.style.display = '';
     container.style.display = '';
+    // Allow the Form Submit event to fire again on subsequent successful
+    // submissions after the user has closed the thank-you popup.
+    thankYouTracked = false;
   }
 
   // Closing the thank-you popup must NOT fire an analytics event —
