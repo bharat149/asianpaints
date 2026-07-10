@@ -485,13 +485,12 @@ function createConsentArea() {
 
   consentArea.innerHTML = `
     <div class="form-consent-options d-flex flex-wrap align-items-center">
-      <label class="form-consent-item form-consent-item--toggle whatsAppConsentFormFld whatsAppCheckbox-checked">
+      <label class="form-consent-item form-consent-item--toggle">
         <input
           type="checkbox"
-          class="form-consent-input"
+          class="form-consent-input whatsAppConsentFormFld"
           name="updateMeOnWhatsapp"
           value="true"
-          checked
         />
         <span class="form-consent-toggle" aria-hidden="true"></span>
         <span class="form-consent-text">Update me on WhatsApp</span>
@@ -855,16 +854,14 @@ function buildFormCard(block, labelsRow, inputsRow) {
 
   // Keep toggle ON by default on page load
   const whatsappToggle = consentArea.querySelector('[name="updateMeOnWhatsapp"]');
-  const whatsappToggleWrapper = whatsappToggle?.closest('.whatsAppConsentFormFld');
-  if (whatsappToggle && whatsappToggleWrapper) {
+  if (whatsappToggle) {
     whatsappToggle.checked = true;
-    whatsappToggle.defaultChecked = true;
-    whatsappToggleWrapper.classList.add('whatsAppCheckbox-checked');
+    whatsappToggle.classList.add('whatsAppCheckbox-checked');
 
     whatsappToggle.addEventListener('change', () => {
-      whatsappToggleWrapper.classList.toggle(
+      whatsappToggle.classList.toggle(
         'whatsAppCheckbox-checked',
-        whatsappToggle.checked,
+        whatsappToggle.checked
       );
     });
   }
