@@ -91,6 +91,9 @@ export default function decorate(block) {
   const img = document.createElement('img');
   img.src = desktopImg.currentSrc || desktopImg.src;
   img.alt = desktopImg.alt || mobileImg.alt || 'Banner';
+  // Preserve authored `title` (used by analytics as the CTA label / eVar45).
+  const authoredTitle = desktopImg.getAttribute('title') || mobileImg.getAttribute('title') || linkEl.getAttribute('title') || '';
+  if (authoredTitle) img.title = authoredTitle;
 
   // LCP-critical settings
   img.loading = 'lazy';
@@ -119,12 +122,36 @@ export default function decorate(block) {
   bannerLink.setAttribute('aria-label', img.alt);
   bannerLink.appendChild(picture);
 
+  // Per-banner analytics overrides keyed by a substring of the destination URL.
+  // Used when the banner is image-only (no visible text in the DOM) so QA gets
+  // meaningful eVar45 / eVar67 values without depending on the author's `alt`.
+  const ANALYTICS_OVERRIDES = [
+    {
+      match: 'interior-texture-finder-tool',
+      btnTitle: "Let's get started",
+      parentTitle: 'Find your perfect interior texture',
+    },
+  ];
+
   bannerLink.addEventListener('click', () => {
     const ctaLink = bannerLink.getAttribute('href') || '';
-    const btnTitle = img.alt || 'Store Banner';
-    const parentTitle = block.closest('.section')
+
+    const override = ANALYTICS_OVERRIDES.find((o) => ctaLink.includes(o.match));
+
+    // eVar45 (CTA label): override → image `title` → alt → default
+    const btnTitle = override?.btnTitle
+      || img.getAttribute('title')?.trim()
+      || img.alt?.trim()
+      || 'Store Banner';
+
+    // eVar67 (parent title): override → section heading → alt → btnTitle
+    const sectionHeading = block.closest('.section')
       ?.querySelector('h1, h2, h3, h4, h5, h6')
-      ?.textContent.trim() || btnTitle;
+      ?.textContent.trim();
+    const parentTitle = override?.parentTitle
+      || sectionHeading
+      || img.alt?.trim()
+      || btnTitle;
 
     triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
   });
