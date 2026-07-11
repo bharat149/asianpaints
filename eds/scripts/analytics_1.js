@@ -1390,8 +1390,8 @@ export function bindCarouselNavigationTracking(rootEl, title) {
   root.dataset.navTrackingBound = 'true';
 
   root.addEventListener('click', (e) => {
-    const prev = e.target.closest('.slick-prev, [aria-label="Previous"], .swiper-button-prev, .carousel-prev');
-    const next = e.target.closest('.slick-next, [aria-label="Next"], .swiper-button-next, .carousel-next');
+    const prev = e.target.closest('.slick-prev, [aria-label="Previous"], [aria-label^="Previous"], .swiper-button-prev, .carousel-prev, .testimonial-prev');
+    const next = e.target.closest('.slick-next, [aria-label="Next"], [aria-label^="Next"], .swiper-button-next, .carousel-next, .testimonial-next');
     if (prev) trackCarouselNavigation('Previous', title);
     else if (next) trackCarouselNavigation('Next', title);
   });

@@ -32,6 +32,24 @@ function getSectionOrNearestHeadingTitle(cta, block) {
   return nearest?.textContent?.trim() || 'Explore Split';
 }
 
+function getExploreSplitParentTitle(cta, block) {
+  const splitColumn = cta.closest('.textures-desktop, .textures-mobile, .wallpapers-desktop, .wallpapers-mobile');
+  if (splitColumn) {
+    const columnHeading = splitColumn.querySelector(':scope > h3');
+    const headingId = (columnHeading?.id || '').trim().toLowerCase();
+    const headingText = (columnHeading?.textContent || '').trim().toLowerCase();
+
+    if (headingId.includes('texture') || headingText.includes('texture')) return 'textures';
+    if (headingId.includes('wallpaper') || headingText.includes('wallpaper')) return 'wallpapers';
+  }
+
+  const fallbackTitle = getSectionOrNearestHeadingTitle(cta, block);
+  const normalized = fallbackTitle.toLowerCase();
+  if (normalized.includes('texture')) return 'textures';
+  if (normalized.includes('wallpaper')) return 'wallpapers';
+  return fallbackTitle;
+}
+
 function bindViewAllTracking(block) {
   block.querySelectorAll('.button-container a.button').forEach((cta) => {
     if (cta.dataset.exploreSplitAnalyticsBound === 'true') return;
@@ -45,8 +63,8 @@ function bindViewAllTracking(block) {
       const ctaLink = cta.getAttribute('href') || '';
       // eVar45 (cta_): use the actual button text ("View All"), not the heading id slug
       const btnTitle = cta.textContent.trim();
-      // eVar67 (parentTitle): section-level h2 first, then sub-section h3
-      const parentTitle = getSectionOrNearestHeadingTitle(cta, block);
+      // eVar67 (parentTitle): derive from the clicked split column context.
+      const parentTitle = getExploreSplitParentTitle(cta, block);
 
       triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
     });

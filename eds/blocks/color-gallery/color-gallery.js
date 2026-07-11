@@ -320,11 +320,15 @@ export default async function decorate(block) {
         click_text: ctaLink.textContent.trim(),
         click_header: 'Colour of the years',
       });
-      triggerCTAClickWithLinkAndTitle(
-        ctaLink.href,
-        ctaLink.textContent.trim(),
-        parentTitle,
-      );
+      // Desktop CTA can already be tracked by the shared
+      // bindButtonContainerTracking() handler. Avoid double-firing.
+      if (ctaLink.dataset.analyticsBound !== 'true') {
+        triggerCTAClickWithLinkAndTitle(
+          ctaLink.href,
+          ctaLink.textContent.trim(),
+          parentTitle,
+        );
+      }
     });
 
     const mobileLink = ctaLink.cloneNode(true);

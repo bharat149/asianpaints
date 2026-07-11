@@ -50,32 +50,42 @@ function getVideo(url) {
 function bindCtaClickTracking(linkEl, ctaLink, btnTitle, parentTitle) {
   if (!linkEl || !ctaLink) return;
 
-  linkEl.addEventListener("click", () => {
-    triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
-  });
+  linkEl.dataset.ctaLink = ctaLink;
+  linkEl.dataset.btnTitle = btnTitle || "";
+  linkEl.dataset.parentTitle = parentTitle || "";
 }
 
 function bindMediaClickTracking(linkEl, ctaLink, bannerTitle) {
   if (!linkEl || !ctaLink) return;
 
-  linkEl.addEventListener("click", () => {
+  linkEl.onclick = () => {
     trackEvent("carousel_banner_click", {
       parentTitle:     bannerTitle,   // eVar67 = "Title of the Banner"
       redirectionLink: ctaLink,        // eVar86 = "redirection url"
     });
-  });
+  };
+}
+
+function shouldTrackProductTileClick(block) {
+  return block?.dataset?.trackProductTileClick === "true"
+    || block?.classList?.contains("track-product-tile-click");
 }
 
 export default async function decorate(block) {
+  if (block.dataset.carouselHeroBannerDecorated === "true") return;
+  block.dataset.carouselHeroBannerDecorated = "true";
+
   const rows = [...block.children];
   if (!rows.length) return;
 
   block.classList.add("swiper");
 
-  // Section title for product_tile_click (eVar67)
-  const sectionTitle = block.closest('.section')?.querySelector('h2, h3')?.textContent?.trim()
-    || block.closest('.section')?.previousElementSibling?.querySelector('h2, h3')?.textContent?.trim()
-    || '';
+  const enableProductTileClick = shouldTrackProductTileClick(block);
+  const sectionTitle = enableProductTileClick
+    ? (block.closest('.section')?.querySelector('h2, h3')?.textContent?.trim()
+      || block.closest('.section')?.previousElementSibling?.querySelector('h2, h3')?.textContent?.trim()
+      || '')
+    : '';
 
   const wrapper = document.createElement("div");
   wrapper.className = "swiper-wrapper";
@@ -176,8 +186,7 @@ export default async function decorate(block) {
       const bannerTitle = (desktopImg || mobileImg)?.querySelector("img")?.alt?.trim() || ctaText || "carousel-hero-banner";
       bindCtaClickTracking(cta, ctaLink, ctaText, bannerTitle);
 
-      // product_tile_click (event293) for product carousel usage (e.g. Recommended for you)
-      if (sectionTitle) {
+      if (enableProductTileClick && sectionTitle) {
         const productName = (desktopImg || mobileImg)?.querySelector("img")?.alt?.trim() || ctaText || '';
         cta.addEventListener("click", () => {
           trackEvent("product_tile_click", {
@@ -197,6 +206,26 @@ export default async function decorate(block) {
 
   block.innerHTML = "";
   block.appendChild(wrapper);
+
+  if (block.dataset.heroCtaTrackingBound !== "true") {
+    block.dataset.heroCtaTrackingBound = "true";
+    block.addEventListener("click", (event) => {
+      const cta = event.target.closest(".hero-cta");
+      if (!cta || !block.contains(cta)) return;
+
+      // After swiper init, only the active slide CTA should be tracked.
+      const slide = cta.closest(".swiper-slide");
+      if (block.heroSwiper && slide && !slide.classList.contains("swiper-slide-active")) return;
+
+      event.stopPropagation();
+
+      const ctaLink = cta.dataset.ctaLink;
+      const btnTitle = cta.dataset.btnTitle || cta.textContent?.trim() || "";
+      const parentTitle = cta.dataset.parentTitle || "carousel-hero-banner";
+
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+    });
+  }
 
   // Pagination container
   const paginationEl = document.createElement("div");
