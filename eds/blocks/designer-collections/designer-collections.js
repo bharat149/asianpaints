@@ -135,10 +135,10 @@ function trackNavClick(button, sectionTitle) {
       direction = 'Previous';
     }
 
-    trackEvent('sitesection_click', {
-      direction,
-      testTitle: sectionTitle,
-    });
+    // trackEvent('sitesection_click', {
+    //   direction,
+    //   testTitle: sectionTitle,
+    // });
     trackEvent('Navigation', {
       direction,
       testTitle: sectionTitle,
@@ -189,6 +189,11 @@ function bindHoverPlayback(target, mediaEl) {
 }
 
 export default async function decorate(block) {
+  // This block tracks Previous/Next locally via trackNavClick.
+  // Mark as already bound so analytics_1's document-level delegated
+  // carousel tracker skips it and does not double-fire Navigation.
+  block.dataset.navTrackingBound = 'true';
+
   const section = block.closest('.section');
   const sectionTitle = section?.querySelector('h2');
   const titleText = sectionTitle?.textContent?.trim() || 'Designer Collections';
