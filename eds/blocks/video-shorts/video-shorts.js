@@ -47,31 +47,8 @@ function getVideoTitle(wrapper, videoEl) {
   return '';
 }
 
-// Fired-once guards keyed by a stable identifier (video src / URL / title)
-// rather than the DOM element. The SaleAssist widget uses Swiper `loop: true`,
-// which clones every slide — so the same visible tile has multiple wrapper
-// elements. Element-level flags would let each duplicate fire the event once,
-// producing repeat beacons for the same underlying video.
-const firedVideoPlay = new Set();
-const firedVideoShop = new Set();
-
-function getVideoKey(videoEl) {
-  return (videoEl?.currentSrc || videoEl?.src || videoEl?.getAttribute('src') || '').trim();
-}
-
-function getWrapperKey(wrapper) {
-  const video = wrapper?.querySelector('video');
-  const videoKey = getVideoKey(video);
-  if (videoKey) return videoKey;
-  const cta = wrapper?.querySelector('.cta-link') || wrapper?.querySelector('a[href]');
-  return (cta?.href || '').trim();
-}
-
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  const key = getVideoKey(videoEl) || wrapper?.dataset?.playFallbackKey;
-  if (key && firedVideoPlay.has(key)) return;
-  if (key) firedVideoPlay.add(key);
-  // Keep element-level flag for backwards compatibility with any external check.
+  if (videoEl.dataset.playTrackingBound === 'true') return;
   videoEl.dataset.playTrackingBound = 'true';
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
@@ -80,9 +57,7 @@ function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
 }
 
 function triggerVideoShopAnalyticsEvt(anchorEl) {
-  const key = (anchorEl.href || '').trim();
-  if (key && firedVideoShop.has(key)) return;
-  if (key) firedVideoShop.add(key);
+  if (anchorEl.dataset.shopTrackingBound === 'true') return;
   anchorEl.dataset.shopTrackingBound = 'true';
   
   const wrapper = getShortsWrapper(anchorEl);
@@ -95,13 +70,12 @@ function triggerVideoShopAnalyticsEvt(anchorEl) {
 }
 
 function triggerVideoClickAnalyticsEvt(wrapper) {
+  if (wrapper.dataset.clickTrackingBound === 'true') return;
+  wrapper.dataset.clickTrackingBound = 'true';
+  
   const redirectionUrl = wrapper.querySelector('.cta-link')?.href
     || wrapper.querySelector('a[href]')?.href
     || '';
-  const key = getWrapperKey(wrapper) || redirectionUrl;
-  if (key && firedVideoShop.has(key)) return;
-  if (key) firedVideoShop.add(key);
-  wrapper.dataset.clickTrackingBound = 'true';
 
   trackEvent('short_video_shop', {
     param1: redirectionUrl,
@@ -126,9 +100,6 @@ export function initSaleAssistTracking() {
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
-      // Return so the generic wrapper fallback below does not also fire
-      // short_video_shop for the same click (duplicate beacon).
-      return;
     }
     
     // Track video play on click
