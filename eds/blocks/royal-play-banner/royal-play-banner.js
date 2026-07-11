@@ -162,6 +162,7 @@ function createFirstSlideDesktop(row) {
 
   const slide = document.createElement('div');
   slide.className = 'swiper-slide royal-play-banner__slide royal-play-banner__slide--hero';
+  slide.dataset.parentTitle = [line1, line2].filter(Boolean).join(' ').trim();
 
   const media = document.createElement('div');
   media.className = 'royal-play-banner__media';
@@ -242,11 +243,13 @@ function createFirstSlideMobile(row) {
   const logo = updateImageAttributes(getPicture(cols[0]), true);
   const mobileImage = updateImageAttributes(getPicture(cols[2]), true);
   const ctaSourceLink = getLink(cols[5]);
+  const { line1, line2 } = getTitleLines(cols[3]);
   const buttonType = getTextContent(cols[6]);
   const cta = createCTA(cols[5], buttonType);
 
   const slide = document.createElement('div');
   slide.className = 'swiper-slide royal-play-banner__slide';
+  slide.dataset.parentTitle = [line1, line2].filter(Boolean).join(' ').trim();
 
   const wrap = document.createElement('div');
   wrap.className = 'royal-play-banner__mobile-image-wrap';
@@ -296,8 +299,24 @@ function createRegularSlide(row, isMobile = false) {
   const buttonType = getTextContent(cols[6]);
   const cta = createCTA(cols[5], buttonType);
 
+  const titleImg = titleImage?.querySelector('img');
+  // Per-slide analytics overrides keyed by a substring of the CTA destination.
+  // The title image on beta is EDS-optimized (media_<hash>, empty alt), so the
+  // human-readable slide title is not derivable from the DOM. Hard-code here,
+  // same pattern as store-banner.js ANALYTICS_OVERRIDES.
+  const ROYAL_PLAY_SLIDE_OVERRIDES = [
+    { match: 'lux-imprints', parentTitle: 'A Tactile Celebration Of Textures' },
+  ];
+  const ctaHref = ctaSourceLink?.getAttribute('href') || '';
+  const override = ROYAL_PLAY_SLIDE_OVERRIDES.find((o) => ctaHref.includes(o.match));
+  const slideTitle = override?.parentTitle
+    || titleImg?.getAttribute('title')?.trim()
+    || titleImg?.getAttribute('alt')?.trim()
+    || '';
+
   const slide = document.createElement('div');
   slide.className = 'swiper-slide royal-play-banner__slide';
+  slide.dataset.parentTitle = slideTitle;
 
   const inner = document.createElement('div');
   inner.className = 'royal-play-banner__slide-inner';
@@ -482,6 +501,9 @@ mobileSwiper.init();
     block.dataset.royalPlayAnalyticsBound = 'true';
 
     block.addEventListener('click', (event) => {
+      const slideEl = event.target.closest('.swiper-slide');
+      const slideParentTitle = slideEl?.dataset?.parentTitle?.trim() || parentTitle;
+
       const bannerImage = event.target.closest('.track-banner-image');
       if (bannerImage && block.contains(bannerImage)) {
         const destinationUrl = bannerImage.getAttribute('href') || '';
@@ -491,7 +513,7 @@ mobileSwiper.init();
           || 'Royale Play';
 
         if (destinationUrl) {
-          triggerCTAClickWithLinkAndTitle(destinationUrl, imageTitle, parentTitle);
+          triggerCTAClickWithLinkAndTitle(destinationUrl, imageTitle, slideParentTitle);
         }
       }
 
@@ -501,7 +523,7 @@ mobileSwiper.init();
       const ctaLink = cta.getAttribute('href') || '';
       const btnTitle = cta.textContent.trim();
 
-      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, slideParentTitle);
     });
   }
 }

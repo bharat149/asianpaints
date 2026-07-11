@@ -1,4 +1,4 @@
-import { trackEvent } from '../../scripts/analytics_1.js';
+import { triggerCTAClickWithLinkAndTitle } from '../../scripts/analytics_1.js';
 
 const calculatorBlocks = document.querySelectorAll('.inspiration-calculator');
 
@@ -24,12 +24,7 @@ calculatorBlocks.forEach((block) => {
       || parentCard?.querySelector('.image-wrapper img, img')?.alt?.trim()
       || '';
 
-    trackEvent('custom_cta_click', {
-      cta_: btnTitle,
-      redirectionLink: ctaLink,
-      parentTitle,
-      param1: ctaLink,
-    });
+    triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle);
   });
 });
 

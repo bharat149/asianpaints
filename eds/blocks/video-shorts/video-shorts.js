@@ -47,8 +47,32 @@ function getVideoTitle(wrapper, videoEl) {
   return '';
 }
 
+// Fired-once guards keyed by a stable identifier that persists across
+// SaleAssist's parallel DOM copies (grid tile, Swiper loop clones, and the
+// pre-mounted modal). Grid and modal use DIFFERENT video src URLs for the
+// same underlying content, but their CTA href is identical — so key by the
+// CTA href (with video src as fallback).
+const firedVideoPlay = new Set();
+const firedVideoShop = new Set();
+
+function getVideoKey(videoEl) {
+  return (videoEl?.currentSrc || videoEl?.src || videoEl?.getAttribute('src') || '').trim();
+}
+
+function getWrapperCtaKey(wrapper) {
+  const cta = wrapper?.querySelector('.cta-link') || wrapper?.querySelector('a[href]');
+  return (cta?.getAttribute('href') || cta?.href || '').trim();
+}
+
+function getPlayKey(wrapper, videoEl) {
+  return getWrapperCtaKey(wrapper) || getVideoKey(videoEl);
+}
+
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  if (videoEl.dataset.playTrackingBound === 'true') return;
+  const key = getPlayKey(wrapper, videoEl);
+  if (key && firedVideoPlay.has(key)) return;
+  if (key) firedVideoPlay.add(key);
+  // Keep element-level flag for backwards compatibility with any external check.
   videoEl.dataset.playTrackingBound = 'true';
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
@@ -57,7 +81,9 @@ function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
 }
 
 function triggerVideoShopAnalyticsEvt(anchorEl) {
-  if (anchorEl.dataset.shopTrackingBound === 'true') return;
+  const key = (anchorEl.getAttribute('href') || anchorEl.href || '').trim();
+  if (key && firedVideoShop.has(key)) return;
+  if (key) firedVideoShop.add(key);
   anchorEl.dataset.shopTrackingBound = 'true';
   
   const wrapper = getShortsWrapper(anchorEl);
@@ -69,17 +95,21 @@ function triggerVideoShopAnalyticsEvt(anchorEl) {
   });
 }
 
-function triggerVideoClickAnalyticsEvt(wrapper) {
-  if (wrapper.dataset.clickTrackingBound === 'true') return;
-  wrapper.dataset.clickTrackingBound = 'true';
-  
-  const redirectionUrl = wrapper.querySelector('.cta-link')?.href
-    || wrapper.querySelector('a[href]')?.href
-    || '';
-
-  trackEvent('short_video_shop', {
-    param1: redirectionUrl,
-  });
+// Clear dedup Sets when the SaleAssist modal is closed, so the same video
+// clicked again in a fresh viewing session correctly fires the event again.
+function resetDedupOnModalClose() {
+  document.addEventListener('click', (e) => {
+    // SaleAssist's modal close button — matches multiple potential class/id
+    // names used across widget variants.
+    const closeBtn = e.target.closest(
+      '[class*="sa_shorts_close"], [class*="sa_shorts_modal_close"], [aria-label="Close"], .sa-shorts-modal-close, [class*="close-btn"]'
+    );
+    if (!closeBtn) return;
+    // Only act if the close button is inside the SaleAssist modal.
+    if (!closeBtn.closest('[id*="sa_shorts_modal"], [class*="sa_shorts_modal"]')) return;
+    firedVideoPlay.clear();
+    firedVideoShop.clear();
+  }, true);
 }
 
 export function initSaleAssistTracking() {
@@ -92,32 +122,30 @@ export function initSaleAssistTracking() {
 
   const exploreSel = '.cta-link';
 
+  resetDedupOnModalClose();
+
   // Delegate on document so clicks are caught regardless of where SaleAssist
   // injects its DOM (widget tiles or dynamically-created modal). The modal
   // (#sa_shorts_modal-wrapper) is created lazily on first video click, so
   // a direct querySelector at setup time always returns null.
   document.addEventListener('click', (e) => {
+    // CTA click -> short_video_shop
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
+      return;
     }
-    
-    // Track video play on click
+
+    // Video click -> short_video_play
     const video = e.target.closest('video');
     if (video) {
       const wrapper = getShortsWrapper(video);
       if (wrapper) {
         triggerVideoPlayAnalyticsEvt(wrapper, video);
       }
-      return;
     }
-    
-    // Use broadened wrapper detection so Royal Play and IDS SaleAssist
-    // variants (different class names) are also caught.
-    const wrapper = getShortsWrapper(e.target);
-    if (wrapper) {
-      triggerVideoClickAnalyticsEvt(wrapper);
-    }
+    // Tile / wrapper background clicks intentionally fire NOTHING —
+    // short_video_shop must only come from an explicit CTA click.
   });
 }
 

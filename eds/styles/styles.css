@@ -10,6 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   /* colors - Asian Paints brand */
   --background-color: #fff;
@@ -260,8 +266,30 @@ main>div {
 input,
 textarea,
 select,
-button {
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
   font: inherit;
+}
+
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  line-height: inherit;
+}
+
+button::-moz-focus-inner {
+  border: 0;
 }
 
 /* links */

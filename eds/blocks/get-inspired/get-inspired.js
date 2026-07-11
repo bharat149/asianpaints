@@ -16,6 +16,41 @@ function runWhenIdle(callback) {
   window.setTimeout(callback, 0);
 }
 
+// Category keywords that follow the room name in an inspiration card's URL
+// slug (e.g. living-room-texture-designs). Used to isolate the room name.
+const CARD_CATEGORY_WORDS = new Set([
+  'colour', 'color', 'colours', 'colors',
+  'texture', 'textures', 'wallpaper', 'wallpapers',
+  'wood', 'combination', 'combinations',
+  'design', 'designs', 'work', 'works', 'idea', 'ideas',
+]);
+
+/**
+ * Derive the card's room name (eVar67) from its destination URL slug.
+ * The room is the leading part of the slug before the first category word,
+ * formatted as sentence case. Examples:
+ *   /inspiration/living-room-texture-designs.html -> 'Living room'
+ *   /inspiration/kids-room-colour-combination.html -> 'Kids room'
+ */
+function getCardTitleFromHref(href) {
+  const slug = (href || '')
+    .split('?')[0]
+    .split('#')[0]
+    .replace(/\.html?$/i, '')
+    .split('/')
+    .filter(Boolean)
+    .pop() || '';
+  if (!slug) return '';
+
+  const tokens = slug.split('-');
+  const stop = tokens.findIndex((t) => CARD_CATEGORY_WORDS.has(t.toLowerCase()));
+  const roomTokens = stop === -1 ? tokens : tokens.slice(0, stop);
+  if (!roomTokens.length) return '';
+
+  const phrase = roomTokens.join(' ');
+  return phrase.charAt(0).toUpperCase() + phrase.slice(1).toLowerCase();
+}
+
 function trackNavClick(button, navigationAction, testTitle) {
   if (!button) return;
 
@@ -31,6 +66,11 @@ function trackNavClick(button, navigationAction, testTitle) {
 }
 
 export default function decorate(block) {
+  // This block binds its own carousel Previous/Next tracking (trackNavClick).
+  // Flag it so the global carousel-navigation tracker skips it and we don't
+  // fire duplicate Navigation events.
+  block.dataset.navTrackingBound = 'true';
+
   const sections = [...block.children];
   let blockInView = false;
 
@@ -153,7 +193,11 @@ export default function decorate(block) {
 
       const ctaLink = anchor.getAttribute('href') || '';
       const btnTitle = anchor.getAttribute('title') || anchor.textContent.trim();
-      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, title);
+      // eVar67 must be the clicked card's own room name (e.g. 'Living room'),
+      // not the active tab title. Fall back to the tab title if the URL slug
+      // doesn't yield a room name.
+      const cardTitle = getCardTitleFromHref(ctaLink) || title;
+      triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, cardTitle);
     });
 
     const anchors = [...contentEl.querySelectorAll('a')];
@@ -209,8 +253,10 @@ export default function decorate(block) {
     btn.addEventListener('click', () => {
       const currentTabName = btn.textContent.trim();
 
+      // Registry key for eVar67 is `title` — passing `categories` would
+      // fall through to contextData.categories instead of the eVar.
       trackEvent('waterproofing_categories', {
-        categories: currentTabName,
+        title: currentTabName,
       });
 
       tabsContainer.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
