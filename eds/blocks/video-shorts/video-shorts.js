@@ -47,8 +47,32 @@ function getVideoTitle(wrapper, videoEl) {
   return '';
 }
 
+// Fired-once guards keyed by a stable identifier that persists across
+// SaleAssist's parallel DOM copies (grid tile, Swiper loop clones, and the
+// pre-mounted modal). Grid and modal use DIFFERENT video src URLs for the
+// same underlying content, but their CTA href is identical — so key by the
+// CTA href (with video src as fallback).
+const firedVideoPlay = new Set();
+const firedVideoShop = new Set();
+
+function getVideoKey(videoEl) {
+  return (videoEl?.currentSrc || videoEl?.src || videoEl?.getAttribute('src') || '').trim();
+}
+
+function getWrapperCtaKey(wrapper) {
+  const cta = wrapper?.querySelector('.cta-link') || wrapper?.querySelector('a[href]');
+  return (cta?.getAttribute('href') || cta?.href || '').trim();
+}
+
+function getPlayKey(wrapper, videoEl) {
+  return getWrapperCtaKey(wrapper) || getVideoKey(videoEl);
+}
+
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  if (videoEl.dataset.playTrackingBound === 'true') return;
+  const key = getPlayKey(wrapper, videoEl);
+  if (key && firedVideoPlay.has(key)) return;
+  if (key) firedVideoPlay.add(key);
+  // Keep element-level flag for backwards compatibility with any external check.
   videoEl.dataset.playTrackingBound = 'true';
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
@@ -57,7 +81,9 @@ function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
 }
 
 function triggerVideoShopAnalyticsEvt(anchorEl) {
-  if (anchorEl.dataset.shopTrackingBound === 'true') return;
+  const key = (anchorEl.getAttribute('href') || anchorEl.href || '').trim();
+  if (key && firedVideoShop.has(key)) return;
+  if (key) firedVideoShop.add(key);
   anchorEl.dataset.shopTrackingBound = 'true';
   
   const wrapper = getShortsWrapper(anchorEl);
@@ -70,12 +96,13 @@ function triggerVideoShopAnalyticsEvt(anchorEl) {
 }
 
 function triggerVideoClickAnalyticsEvt(wrapper) {
-  if (wrapper.dataset.clickTrackingBound === 'true') return;
-  wrapper.dataset.clickTrackingBound = 'true';
-  
   const redirectionUrl = wrapper.querySelector('.cta-link')?.href
     || wrapper.querySelector('a[href]')?.href
     || '';
+  const key = getWrapperCtaKey(wrapper) || redirectionUrl;
+  if (key && firedVideoShop.has(key)) return;
+  if (key) firedVideoShop.add(key);
+  wrapper.dataset.clickTrackingBound = 'true';
 
   trackEvent('short_video_shop', {
     param1: redirectionUrl,
