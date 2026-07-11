@@ -100,6 +100,9 @@ export function initSaleAssistTracking() {
     const cta = e.target.closest(exploreSel);
     if (cta) {
       triggerVideoShopAnalyticsEvt(cta);
+      // Return so the generic wrapper fallback below does not also fire
+      // short_video_shop for the same click (duplicate beacon).
+      return;
     }
     
     // Track video play on click
