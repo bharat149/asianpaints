@@ -300,7 +300,17 @@ function createRegularSlide(row, isMobile = false) {
   const cta = createCTA(cols[5], buttonType);
 
   const titleImg = titleImage?.querySelector('img');
-  const slideTitle = titleImg?.getAttribute('title')?.trim()
+  // Per-slide analytics overrides keyed by a substring of the CTA destination.
+  // The title image on beta is EDS-optimized (media_<hash>, empty alt), so the
+  // human-readable slide title is not derivable from the DOM. Hard-code here,
+  // same pattern as store-banner.js ANALYTICS_OVERRIDES.
+  const ROYAL_PLAY_SLIDE_OVERRIDES = [
+    { match: 'lux-imprints', parentTitle: 'A Tactile Celebration Of Textures' },
+  ];
+  const ctaHref = ctaSourceLink?.getAttribute('href') || '';
+  const override = ROYAL_PLAY_SLIDE_OVERRIDES.find((o) => ctaHref.includes(o.match));
+  const slideTitle = override?.parentTitle
+    || titleImg?.getAttribute('title')?.trim()
     || titleImg?.getAttribute('alt')?.trim()
     || '';
 
