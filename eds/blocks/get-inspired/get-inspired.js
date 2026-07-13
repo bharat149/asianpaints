@@ -1,4 +1,4 @@
-import { trackCarouselNavigation, triggerCTAClickWithLinkAndTitle, trackEvent } from '../../scripts/analytics_1.js';
+import { triggerCTAClickWithLinkAndTitle, trackEvent } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -51,26 +51,7 @@ function getCardTitleFromHref(href) {
   return phrase.charAt(0).toUpperCase() + phrase.slice(1).toLowerCase();
 }
 
-function trackNavClick(button, navigationAction, testTitle) {
-  if (!button) return;
-
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-
-    const resolvedNavigationAction = navigationAction
-      || button.getAttribute('aria-label')
-      || '';
-
-    trackCarouselNavigation(resolvedNavigationAction, testTitle);
-  });
-}
-
 export default function decorate(block) {
-  // This block binds its own carousel Previous/Next tracking (trackNavClick).
-  // Flag it so the global carousel-navigation tracker skips it and we don't
-  // fire duplicate Navigation events.
-  block.dataset.navTrackingBound = 'true';
-
   const sections = [...block.children];
   let blockInView = false;
 
@@ -163,8 +144,11 @@ export default function decorate(block) {
     nextEl.type = 'button';
     nextEl.setAttribute('aria-label', 'Next');
 
-    trackNavClick(prevEl, 'Previous', title);
-    trackNavClick(nextEl, 'Next', title);
+    // Prev/Next Navigation event is fired by the global
+    // initCarouselNavigationTracking() in analytics_1.js, which resolves
+    // eVar67 from the section heading ("Get inspired") — matching prod
+    // behaviour. Do not attach a block-level tracker here, or the event
+    // will send the tab title (e.g. "Colours") and duplicate the beacon.
 
     const swiperContainerWrapper = document.createElement('div');
     swiperContainerWrapper.className = 'swiper-container-wrapper';
