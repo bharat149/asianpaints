@@ -147,13 +147,15 @@ function buildSlide(row, block) {
   //                 columns[1] = quote text
   //                 columns[2] = name
   //                 columns[3] = location
-  const imageCol = columns[0];
-  const quoteCol = columns[1];
-  const nameCol = columns[2];
-  const placeCol = columns[3];
+const imageCol = columns[0];
+const videoCol = columns[1];
+const descriptionCol = columns[2];
+const nameCol = columns[3];
+const placeCol = columns[4];
 
   // Video link lives in the <a> wrapping the thumbnail image
-  const videoLink = imageCol?.querySelector('a')?.href || '';
+  // const videoLink = imageCol?.querySelector('a')?.href || '';
+  const videoLink = columns[1]?.textContent.trim() || '';
 
   const imageWrapper = document.createElement('div');
   imageWrapper.className = 'testimonial-image';
@@ -191,9 +193,9 @@ function buildSlide(row, block) {
   contentWrapper.className = 'testimonial-content';
   contentWrapper.appendChild(createQuoteIcon());
 
-  const quoteText = quoteCol?.textContent?.trim() || '';
-  const nameText = nameCol?.textContent?.trim() || '';
-  const placeText = placeCol?.textContent?.trim() || '';
+  const quoteText = descriptionCol?.textContent?.trim() || '';
+const nameText = nameCol?.textContent?.trim() || '';
+const placeText = placeCol?.textContent?.trim() || '';
 
   if (quoteText) {
     const quoteDiv = document.createElement('div');
