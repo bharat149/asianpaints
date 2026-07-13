@@ -466,14 +466,10 @@ main .section.rte-section .default-content-wrapper a[href*="contractors/painting
   text-decoration: underline !important;
 }
 
-main .section .default-content-wrapper a[href*="colour-catalogue.html"] {
-  color: #00e !important;
-  text-decoration: underline !important;
-}
 
-main .section .default-content-wrapper a[href*="services/asian-paints-safe-painting-service.html"] {
-  color: #00e !important;
-  text-decoration: underline !important;
+main .section .default-content-wrapper a[href*="https://www.asianpaints.com/"] {
+    color: #00e !important;
+    text-decoration: underline !important;
 }
 
 main .section.zero-margin {
@@ -777,7 +773,7 @@ main .section.contractors-rte-live>.default-content-wrapper h2 {
   line-height: 24px;
   letter-spacing: normal;
   color: #222;
-  margin: 0 0 16px;
+  margin: 40px 0 18px;
 }
 
 main .section.contractors-rte-live>.default-content-wrapper h3 {
@@ -806,13 +802,22 @@ main .section.contractors-rte-live>.default-content-wrapper li {
 
 /* stylelint-disable-next-line no-descending-specificity */
 main .section.contractors-rte-live>.default-content-wrapper p {
-  margin: 0 0 12px;
+  margin: 0 0 18px;
 }
 
 main .section.contractors-rte-live>.default-content-wrapper ol,
 main .section.contractors-rte-live>.default-content-wrapper ul {
   padding-left: 24px;
   margin: 0 0 16px;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper ol {
+  list-style-type: disc;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper #step-by-step-home-painting-process~ol {
+  list-style-type: decimal;
+  padding-left: 40px;
 }
 
 main .section.contractors-rte-live>.default-content-wrapper li {
@@ -844,6 +849,10 @@ main .section.contractors-rte-live>.default-content-wrapper ol>h3>li::marker {
   color: #222;
 }
 
+main .section.contractors-rte-live>.default-content-wrapper #step-by-step-home-painting-process~ol>li::marker {
+  font-weight: 400;
+}
+
 main .section.contractors-rte-live>.default-content-wrapper ol>h3+p,
 main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
   margin-top: 0;
@@ -868,6 +877,7 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
   main .section.contractors-rte-live>.default-content-wrapper h2 {
     font-size: 30px;
     line-height: 34px;
+    margin: 40px 0 18px;
   }
 
   main .section.contractors-rte-live>.default-content-wrapper h3 {
