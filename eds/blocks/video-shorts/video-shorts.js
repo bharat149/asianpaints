@@ -47,12 +47,17 @@ function getVideoTitle(wrapper, videoEl) {
   return '';
 }
 
-// Fired-once guards keyed by a stable identifier that persists across
-// SaleAssist's parallel DOM copies (grid tile, Swiper loop clones, and the
-// pre-mounted modal). Grid and modal use DIFFERENT video src URLs for the
-// same underlying content, but their CTA href is identical — so key by the
-// CTA href (with video src as fallback).
-const firedVideoPlay = new Set();
+// Track only the CURRENTLY-playing video (single value, not a Set). Rule:
+//   - Click any video -> if it's a different video than the one currently
+//     playing, fire short_video_play and mark it as current.
+//   - Click the same currently-playing video (pause/resume) -> no event.
+//   - Modal close -> clear current, so re-opening + clicking the same video
+//     fires again (that's a new viewing session).
+// Key uses aria-label ("N / M") when available — it's identical across
+// SaleAssist's parallel DOM copies (grid tile + Swiper loop clones + modal)
+// for the SAME tile, but UNIQUE across different tiles (even when they share
+// the same CTA href). Falls back to video src / CTA href.
+let currentPlayKey = null;
 const firedVideoShop = new Set();
 
 function getVideoKey(videoEl) {
@@ -65,14 +70,19 @@ function getWrapperCtaKey(wrapper) {
 }
 
 function getPlayKey(wrapper, videoEl) {
-  return getWrapperCtaKey(wrapper) || getVideoKey(videoEl);
+  // aria-label is set by SaleAssist as "1 / 17", "2 / 17" etc. It is stable
+  // per underlying tile across grid/modal/clones, and unique across tiles
+  // even when multiple tiles share the same CTA.
+  const aria = wrapper?.getAttribute('aria-label')?.trim();
+  if (aria) return `aria:${aria}`;
+  return getVideoKey(videoEl) || getWrapperCtaKey(wrapper);
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
   const key = getPlayKey(wrapper, videoEl);
-  if (key && firedVideoPlay.has(key)) return;
-  if (key) firedVideoPlay.add(key);
-  // Keep element-level flag for backwards compatibility with any external check.
+  // Same currently-playing video (pause/resume click) — do not re-fire.
+  if (key && key === currentPlayKey) return;
+  currentPlayKey = key || currentPlayKey;
   videoEl.dataset.playTrackingBound = 'true';
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
@@ -95,8 +105,8 @@ function triggerVideoShopAnalyticsEvt(anchorEl) {
   });
 }
 
-// Clear dedup Sets when the SaleAssist modal is closed, so the same video
-// clicked again in a fresh viewing session correctly fires the event again.
+// Reset play/shop tracking when the SaleAssist modal is closed so a fresh
+// viewing session (reopen + click same video) fires the event again.
 function resetDedupOnModalClose() {
   document.addEventListener('click', (e) => {
     // SaleAssist's modal close button — matches multiple potential class/id
@@ -107,7 +117,7 @@ function resetDedupOnModalClose() {
     if (!closeBtn) return;
     // Only act if the close button is inside the SaleAssist modal.
     if (!closeBtn.closest('[id*="sa_shorts_modal"], [class*="sa_shorts_modal"]')) return;
-    firedVideoPlay.clear();
+    currentPlayKey = null;
     firedVideoShop.clear();
   }, true);
 }
