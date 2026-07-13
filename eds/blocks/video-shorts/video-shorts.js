@@ -47,42 +47,31 @@ function getVideoTitle(wrapper, videoEl) {
   return '';
 }
 
-// Track only the CURRENTLY-playing video (single value, not a Set). Rule:
-//   - Click any video -> if it's a different video than the one currently
-//     playing, fire short_video_play and mark it as current.
-//   - Click the same currently-playing video (pause/resume) -> no event.
-//   - Modal close -> clear current, so re-opening + clicking the same video
-//     fires again (that's a new viewing session).
-// Key uses aria-label ("N / M") when available — it's identical across
-// SaleAssist's parallel DOM copies (grid tile + Swiper loop clones + modal)
-// for the SAME tile, but UNIQUE across different tiles (even when they share
-// the same CTA href). Falls back to video src / CTA href.
-let currentPlayKey = null;
+// Video play dedup rule (simple):
+//   Fire only when the user selects a DIFFERENT tile than the currently
+//   selected one. Clicking the same tile again (pause/resume, or same tile
+//   from a swiper clone / modal duplicate) does not fire.
+//   Modal close resets the tracker so replay after reopen fires again.
+// Tile identity: SaleAssist sets aria-label="N / M" on each wrapper.
+// The value is stable per underlying tile across grid/modal/Swiper clones,
+// and unique across different tiles even when they share the same CTA.
+let currentTileKey = null;
 const firedVideoShop = new Set();
 
-function getVideoKey(videoEl) {
-  return (videoEl?.currentSrc || videoEl?.src || videoEl?.getAttribute('src') || '').trim();
-}
-
-function getWrapperCtaKey(wrapper) {
-  const cta = wrapper?.querySelector('.cta-link') || wrapper?.querySelector('a[href]');
-  return (cta?.getAttribute('href') || cta?.href || '').trim();
-}
-
-function getPlayKey(wrapper, videoEl) {
-  // aria-label is set by SaleAssist as "1 / 17", "2 / 17" etc. It is stable
-  // per underlying tile across grid/modal/clones, and unique across tiles
-  // even when multiple tiles share the same CTA.
+function getTileKey(wrapper, videoEl) {
   const aria = wrapper?.getAttribute('aria-label')?.trim();
   if (aria) return `aria:${aria}`;
-  return getVideoKey(videoEl) || getWrapperCtaKey(wrapper);
+  const src = (videoEl?.currentSrc || videoEl?.src || '').trim();
+  if (src) return `src:${src}`;
+  const cta = wrapper?.querySelector('.cta-link')?.getAttribute('href') || '';
+  return cta ? `cta:${cta}` : '';
 }
 
 function triggerVideoPlayAnalyticsEvt(wrapper, videoEl) {
-  const key = getPlayKey(wrapper, videoEl);
-  // Same currently-playing video (pause/resume click) — do not re-fire.
-  if (key && key === currentPlayKey) return;
-  currentPlayKey = key || currentPlayKey;
+  const key = getTileKey(wrapper, videoEl);
+  // Same tile as currently selected — skip.
+  if (key && key === currentTileKey) return;
+  if (key) currentTileKey = key;
   videoEl.dataset.playTrackingBound = 'true';
   const videoTitle = getVideoTitle(wrapper, videoEl);
   trackEvent('short_video_play', {
@@ -117,7 +106,7 @@ function resetDedupOnModalClose() {
     if (!closeBtn) return;
     // Only act if the close button is inside the SaleAssist modal.
     if (!closeBtn.closest('[id*="sa_shorts_modal"], [class*="sa_shorts_modal"]')) return;
-    currentPlayKey = null;
+    currentTileKey = null;
     firedVideoShop.clear();
   }, true);
 }
@@ -133,6 +122,7 @@ export function initSaleAssistTracking() {
   const exploreSel = '.cta-link';
 
   resetDedupOnModalClose();
+  observeModalSlideChange();
 
   // Delegate on document so clicks are caught regardless of where SaleAssist
   // injects its DOM (widget tiles or dynamically-created modal). The modal
@@ -157,6 +147,39 @@ export function initSaleAssistTracking() {
     // Tile / wrapper background clicks intentionally fire NOTHING —
     // short_video_shop must only come from an explicit CTA click.
   });
+}
+
+// Watch the SaleAssist modal for slide changes. When the user navigates
+// via the modal's Previous / Next arrows (or swipes), the currently-active
+// slide (.swiper-slide-active) changes — no <video> click event fires,
+// so the document click listener above cannot detect it. A MutationObserver
+// on the modal detects the class change and fires short_video_play for the
+// newly-active video, with the same currentPlayKey dedup.
+function observeModalSlideChange() {
+  const attach = (modal) => {
+    if (modal.dataset.slideObserverBound === 'true') return;
+    modal.dataset.slideObserverBound = 'true';
+    const mo = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
+        const el = m.target;
+        if (!el.classList?.contains('sa_shorts_video-wrapper')) continue;
+        if (!el.classList.contains('swiper-slide-active')) continue;
+        const video = el.querySelector('video');
+        if (video) triggerVideoPlayAnalyticsEvt(el, video);
+      }
+    });
+    mo.observe(modal, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  };
+
+  // Modal is created lazily on first click, so watch for it.
+  const existing = document.querySelector('[id*="sa_shorts_modal"], [class*="sa_shorts_modal"]');
+  if (existing) attach(existing);
+  const bodyObserver = new MutationObserver(() => {
+    const modal = document.querySelector('[id*="sa_shorts_modal"], [class*="sa_shorts_modal"]');
+    if (modal) attach(modal);
+  });
+  bodyObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 export default function decorate(block) {
