@@ -802,7 +802,7 @@ main .section.contractors-rte-live>.default-content-wrapper li {
 
 /* stylelint-disable-next-line no-descending-specificity */
 main .section.contractors-rte-live>.default-content-wrapper p {
-  margin: 0 0 28px;
+  margin: 0 0 18px;
 }
 
 main .section.contractors-rte-live>.default-content-wrapper ol,
@@ -813,6 +813,11 @@ main .section.contractors-rte-live>.default-content-wrapper ul {
 
 main .section.contractors-rte-live>.default-content-wrapper ol {
   list-style-type: disc;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper #step-by-step-home-painting-process~ol {
+  list-style-type: decimal;
+  padding-left: 40px;
 }
 
 main .section.contractors-rte-live>.default-content-wrapper li {
@@ -842,6 +847,10 @@ main .section.contractors-rte-live>.default-content-wrapper ol>li::marker {
 main .section.contractors-rte-live>.default-content-wrapper ol>h3>li::marker {
   font-weight: 700;
   color: #222;
+}
+
+main .section.contractors-rte-live>.default-content-wrapper #step-by-step-home-painting-process~ol>li::marker {
+  font-weight: 400;
 }
 
 main .section.contractors-rte-live>.default-content-wrapper ol>h3+p,
