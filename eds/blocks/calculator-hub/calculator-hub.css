@@ -314,6 +314,22 @@
         font-size: 14px;
         font-weight: 700;
     }
+    .calculator-hub .form-actions .animated-arrow-button .arrow {
+        display:flex;
+    }
+    .calculator-hub .form-actions .animated-arrow-button:hover {
+        color: #000 !important;
+    background: transparent !important;
+    outline: 1px solid !important;
+    }
+    .calculator-hub .form-actions .animated-arrow-button:hover .arrow {
+        transition: all .2s ease-in;
+    -webkit-transform: translateX(6px);
+    -moz-transform: translateX(6px);
+    -ms-transform: translateX(6px);
+    -o-transform: translateX(6px);
+    transform: translateX(6px);
+    }
 
     @media (min-width: 991px) and (max-width: 1200px) {
         .calculator-hub .form-actions .animated-arrow-button {
@@ -324,11 +340,15 @@
 
 
     .calculator-hub .form-actions .arrow::after {
-        content: "🡢";
+        content: "";
+        background: url(./resources/images/arrow-icon.svg) no-repeat center;
         display: inline-block;
         font-size: 16px;
         line-height: 1;
         transform: translateY(1px); /* align optically */
+        width: 17px;
+    height: 20px;
+    filter: contrast(1000%) invert(100%) sepia(100%) saturate(10000%) hue-rotate(90deg);
 
         /* ✅ fake bold */
         text-shadow:
@@ -344,6 +364,9 @@
         background: #EEEEEF !important;
         color: #9b9b9b !important;
         pointer-events: none;
+        .arrow {
+            opacity:0.2
+        }
     }
 
     /* optional spinner */

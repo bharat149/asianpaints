@@ -237,6 +237,36 @@
     max-width: 95%;
 }
 }
+@media (min-width: 992px) and (max-width: 1099px) { 
+     .royal-play-banner,
+.royal-play-banner__carousel,
+.royal-play-banner__swiper,
+.royal-play-banner .swiper-wrapper,
+.royal-play-banner .swiper-slide {
+min-height: calc(142.857vh - 140px) !important;
+        height: calc(142.857vh - 140px) !important;
+}
+}
+@media (min-width: 1100px) and (max-width: 1199px) { 
+     .royal-play-banner,
+.royal-play-banner__carousel,
+.royal-play-banner__swiper,
+.royal-play-banner .swiper-wrapper,
+.royal-play-banner .swiper-slide {
+min-height: calc(133.333vh - 140px) !important;
+        height: calc(133.333vh - 140px) !important;
+}
+}
+@media (min-width: 1200px) and (max-width: 1279px) { 
+     .royal-play-banner,
+.royal-play-banner__carousel,
+.royal-play-banner__swiper,
+.royal-play-banner .swiper-wrapper,
+.royal-play-banner .swiper-slide {
+min-height: calc(125vh - 140px) !important;
+        height: calc(125vh - 140px) !important;
+}
+}
 @media (min-width: 1280px) and (max-width: 1365px) {
          .royal-play-banner,
 .royal-play-banner__carousel,
@@ -245,6 +275,16 @@
 .royal-play-banner .swiper-slide {
             min-height: calc(117.647vh - 140px) !important;
         height: calc(117.647vh - 140px) !important;
+}
+}
+@media (min-width: 1366px) and (max-width: 1439px) {
+         .royal-play-banner,
+.royal-play-banner__carousel,
+.royal-play-banner__swiper,
+.royal-play-banner .swiper-wrapper,
+.royal-play-banner .swiper-slide {
+            min-height: calc(111.111vh - 140px) !important;
+        height: calc(111.111vh - 140px) !important;
 }
 }
 @media (max-width: 901px) {
