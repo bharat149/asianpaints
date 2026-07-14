@@ -94,7 +94,7 @@
 .quick-links .ql-title {
     font-family: var(--heading-font-family, Manrope, sans-serif);
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.15;
     margin: 0;
     padding: 0;
@@ -239,7 +239,9 @@
 .quick-links .ql-card--estimate .ql-btn:hover {
     background: var(--ql-estimate-hover);
 }
+.quick-links p {  margin-top: 0 !important;    margin-bottom: 1rem !important;}
 
+.quick-links .ql-secondary p {margin-top: 8px !important; margin-bottom: 0.6rem !important;}
 /* =========================================================
    CALL CARD LINK
    ========================================================= */
@@ -351,6 +353,8 @@
         display: block;
         margin-top: 4px;
     }
+
+
 
     .quick-links .ql-card--whatsapp { order: 1; }
     .quick-links .ql-card--call { order: 2; }
