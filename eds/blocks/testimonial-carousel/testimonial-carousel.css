@@ -301,16 +301,16 @@ body.testimonial-video-open {
 }
 
 @media (width <=1200px) {
-    .testimonial-carousel .testimonial-heading {
+    /* .testimonial-carousel .testimonial-heading {
         flex: 0 0 250px;
         width: 250px;
-    }
+    } */
 
-    .testimonial-carousel .testimonial-heading h2,
+    /* .testimonial-carousel .testimonial-heading h2,
     .testimonial-carousel .testimonial-heading h3 {
         font-size: 40px;
         line-height: 48px;
-    }
+    } */
 
     .testimonial-carousel .testimonial-image {
         height: 220px;
