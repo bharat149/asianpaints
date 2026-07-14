@@ -6,7 +6,7 @@ col 3 = multiple titles
 col 4 = multiple URLs
 */
 
-import { trackEvent, bindCarouselNavigationTracking } from '../../scripts/analytics_1.js';
+import { trackEvent } from '../../scripts/analytics_1.js';
 
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
@@ -80,30 +80,6 @@ function getHrefFromItem(item) {
 
   const text = item.textContent?.trim();
   return text || '#';
-}
-
-function trackNavClick(button, parentTitle) {
-  if (!button) return;
-
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-
-    let direction = '';
-    if (button.classList.contains('tools-carousel-next') || button.classList.contains('swiper-button-next')) {
-      direction = 'Next';
-    } else if (button.classList.contains('tools-carousel-prev') || button.classList.contains('swiper-button-prev')) {
-      direction = 'Previous';
-    }
-
-    trackEvent('sitesection_click', {
-      direction,
-      testTitle: parentTitle,
-    });
-    trackEvent('Navigation', {
-      direction,
-      testTitle: parentTitle,
-    });
-  });
 }
 
 export default async function decorate(block) {
@@ -203,8 +179,12 @@ export default async function decorate(block) {
     nextButton.type = 'button';
     nextButton.setAttribute('aria-label', 'Next');
 
-    trackNavClick(prevButton, parentTitle);
-    trackNavClick(nextButton, parentTitle);
+    // Prev/Next Navigation event is fired by the global
+    // initCarouselNavigationTracking() in analytics_1.js, which resolves
+    // eVar67 from the section heading ("Colour Tools") — matching prod
+    // behaviour. Do not attach a block-level tracker here, or three
+    // separate beacons (block Navigation + block sitesection_click + global
+    // Navigation) will fire per click.
 
     navContainer.appendChild(prevButton);
     navContainer.appendChild(nextButton);

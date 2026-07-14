@@ -1797,7 +1797,10 @@
   .cards.cta .cards-card-body .button-container {
     right: 24px;
   }
-    .cards.stats .cards-card-body p:last-child {
+}
+
+@media (min-width: 901px) {
+    .section.stats-nowrap .cards.stats .cards-card-body p:last-child {
         white-space: nowrap;
     }
 }
