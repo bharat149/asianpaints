@@ -1315,8 +1315,9 @@ export function trackMiniCartCheckout() {
  * @param {string} ctaLink The CTA URL
  */
 export function triggerCtaLinkText(btnTitle, ctaLink, parentTitle = '') {
-  // eVar86 (param1) must be a fully-qualified absolute URL, not a relative path.
-  const absoluteCtaLink = ctaLink ? toUrl(ctaLink).href : '';
+  // eVar86 (param1) must be a fully-qualified absolute URL, and must not
+  // leak AEM authoring content paths (/content/ap/en/home/...).
+  const absoluteCtaLink = cleanRedirectionUrl(ctaLink);
   trackEvent('cta_link_text', {
     cta_: btnTitle,
     parentTitle,
@@ -1447,6 +1448,23 @@ function toUrl(urlLike) {
   }
 }
 
+// Strip AEM authoring content-root prefixes from a URL's pathname so eVar86
+// carries the clean public URL (e.g. /waterproofing-products/cracks-and-joints
+// .html) instead of the raw AEM path (/content/ap/en/home/waterproofing-
+// products/cracks-and-joints.html) that an author may have pasted into the
+// href. Applied to every analytics URL to prevent this leaking regardless of
+// which block or code path fires the event.
+function cleanRedirectionUrl(urlLike) {
+  if (!urlLike) return '';
+  try {
+    const u = toUrl(urlLike);
+    u.pathname = u.pathname.replace(/^\/content\/ap\/en\/home(\/|$)/i, '/');
+    return u.href;
+  } catch (e) {
+    return String(urlLike);
+  }
+}
+
 function buildPageData(urlObj) {
   const parts = urlObj.pathname.split('/').filter(Boolean);
   return {
@@ -1523,8 +1541,9 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
   } else {
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
-      // redirectionLink (eVar86) must be a fully-qualified absolute URL.
-      redirectionLink: toUrl(ctaLink).href,
+      // redirectionLink (eVar86) must be a fully-qualified absolute URL, and
+      // must not leak AEM authoring content paths (/content/ap/en/home/...).
+      redirectionLink: cleanRedirectionUrl(ctaLink),
       parentTitle,
     });
   }
