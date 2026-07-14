@@ -198,42 +198,67 @@ footer {
   }
 }
 
+/* Heading values mirror Bootstrap 5.3 reboot exactly. Bootstrap CSS is
+   deferred until first user interaction (see loadDelayed in scripts.js)
+   and its <link> lands after this one, so its reboot rules win these
+   equal-specificity ties anyway — using the same values here means
+   nothing shifts when it arrives. font-family and scroll-margin are
+   ours; reboot does not set them. */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  margin-top: 0.8em;
-  margin-bottom: 0.25em;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
   font-family: var(--heading-font-family);
-  font-weight: 600;
-  line-height: 1.25;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--bs-heading-color, inherit);
   scroll-margin: 40px;
 }
 
 h1 {
-  font-size: var(--heading-font-size-xxl);
+  font-size: calc(1.375rem + 1.5vw);
 }
 
 h2 {
-  font-size: var(--heading-font-size-xl);
+  font-size: calc(1.325rem + 0.9vw);
 }
 
 h3 {
-  font-size: var(--heading-font-size-l);
+  font-size: calc(1.3rem + 0.6vw);
 }
 
 h4 {
-  font-size: var(--heading-font-size-m);
+  font-size: calc(1.275rem + 0.3vw);
 }
 
 h5 {
-  font-size: var(--heading-font-size-s);
+  font-size: 1.25rem;
 }
 
 h6 {
-  font-size: var(--heading-font-size-xs);
+  font-size: 1rem;
+}
+
+@media (width >= 1200px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  h3 {
+    font-size: 1.75rem;
+  }
+
+  h4 {
+    font-size: 1.5rem;
+  }
 }
 
 p,
@@ -1068,3 +1093,7 @@ body.hideExitIntentCTA .header-main .header-main-inner .header-cta {
 .mb-3 { margin-bottom: 1rem !important; }
 .mb-4 { margin-bottom: 1.5rem !important; }
 .mb-5 { margin-bottom: 3rem !important; }
+
+img, svg {
+    vertical-align: middle;
+}

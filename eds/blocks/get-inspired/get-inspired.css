@@ -55,6 +55,7 @@
     .get-inspired {
         padding: 16px;
         padding-top: 0;
+        min-height: unset;
     }
 }
 
