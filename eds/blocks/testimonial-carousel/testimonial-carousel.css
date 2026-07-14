@@ -504,41 +504,11 @@ body.testimonial-video-open {
     }
 }
 
-@media (min-width: 992px) and (max-width: 1099px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.7;
-    }
-}
 
-@media (min-width: 1100px) and (max-width: 1199px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.75;
-    }
-}
 
-@media (min-width: 1200px) and (max-width: 1279px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.8;
-    }
-}
 
-@media (min-width: 1280px) and (max-width: 1365px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.85;
-    }
-}
 
-@media (min-width: 1366px) and (max-width: 1439px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.9;
-    }
-}
 
-@media (min-width: 1440px) {
-    .section.testimonial-carousel-container {
-        zoom: 1;
-    }
-}
 
 /* Pre-Swiper placeholder — Swiper is initialized lazily via IntersectionObserver
  * (see testimonial-carousel.js). Until block.classList contains 'swiper-ready',

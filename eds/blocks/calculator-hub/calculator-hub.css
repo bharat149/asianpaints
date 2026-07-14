@@ -563,6 +563,36 @@
 
     @media (max-width: 991px) {
         .calculator-hub .mini-pbc.wbc-variant .space-field-inputs .area-field { margin-bottom: 20px; }
+         .calculator-hub .mini-pbc.wbc-variant .tool-description .heading {
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 28.8px;
+            margin-bottom: 5px;
+         }
+        .calculator-hub .mini-pbc.wbc-variant .tool-description .sub-heading {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 34.6px;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions .animated-arrow-button {
+            width: fit-content !important;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 12px 18px;
+            color: #1e1e1e !important;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions a[disabled="disabled"].animated-arrow-button {
+            color: #1e1e1e !important;
+            opacity: 0.6;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions a[disabled="disabled"].animated-arrow-button .arrow{
+            opacity: unset !important;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions a[disabled="disabled"].animated-arrow-button .arrow::after {
+            filter: invert(1) !important;
+        }
+    
     }
 
     /* AMS hides error msg in WBC */
