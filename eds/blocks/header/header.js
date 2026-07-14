@@ -792,7 +792,7 @@ async function handleProfileClick(e) {
   trackEvent('login_icon');
   ga4Implementaion({
     event: 'header_interaction',
-    click_text: 'Profile icon',
+    click_text: 'Profile Icon',
     click_category: 'click_header icons',
   });
 
@@ -4792,7 +4792,7 @@ function addInteractions(block) {
         const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
         ga4Implementaion({
           event: 'header_interaction',
-          click_text: 'Profile icon',
+          click_text: 'Profile Icon',
           click_category: 'click_header icons',
         });
         // Give the analytics beacon a brief moment before navigation.
