@@ -1315,10 +1315,12 @@ export function trackMiniCartCheckout() {
  * @param {string} ctaLink The CTA URL
  */
 export function triggerCtaLinkText(btnTitle, ctaLink, parentTitle = '') {
+  // eVar86 (param1) must be a fully-qualified absolute URL, not a relative path.
+  const absoluteCtaLink = ctaLink ? toUrl(ctaLink).href : '';
   trackEvent('cta_link_text', {
     cta_: btnTitle,
     parentTitle,
-    param1: ctaLink,
+    param1: absoluteCtaLink,
   });
 }
 
