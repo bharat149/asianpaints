@@ -349,7 +349,7 @@
    ============================================ */
 
 .cards.stats {
-  background-color: #fff5eb;
+  background-color: #fdf3e4;
   padding: 65px 42px 90px;
   border-radius: 10px;
 }
@@ -358,7 +358,7 @@
   display: block;
   list-style: none;
   padding: 0;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -403,7 +403,7 @@
 
 .cards.stats .cards-card-body p:last-child {
   font-size: 20px;
-  font-weight: 300;
+  font-weight: 400;
   font-family: Manrope, sans-serif;
   color: #5d4f43;
   line-height: 28px;
@@ -1511,7 +1511,7 @@
 
 .cards.features>ul {
   list-style: none;
-  margin: 0 auto;
+  /*margin: 0 auto;*/
   padding: 0;
   display: flex;
   flex-wrap: wrap;
@@ -1520,7 +1520,7 @@
   gap: 35px 20px;
   justify-content: space-between;
 
-  max-width: 1200px;
+  /*max-width: 1200px;*/
 }
 
 .cards.features>ul>li {
@@ -1543,7 +1543,7 @@
 
   /* Match icon sizing/alignment from AEM */
   width: 54px;
-  margin-right: 16px;
+  margin-right: 25px;
   padding-top: 7px;
 
   line-height: 0;
@@ -1581,8 +1581,8 @@
   display: block;
   margin: 0 0 6px;
 
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
   line-height: 27.32px;
 
   color: #3b3d40;
@@ -1816,4 +1816,7 @@
   .cards.cta .cards-card-body .button-container a.button::after {
     font-size: 20px;
   }
+}
+.cards.stats .cards-card-body p:last-child {
+    white-space: nowrap;
 }
