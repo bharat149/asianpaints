@@ -503,7 +503,7 @@ body.testimonial-video-open {
 }
 @media (min-width: 1201px) and (max-width: 1400px) {
     .testimonial-carousel .testimonial-heading {
-        width: 27%;
+        width: 30%;
     }
 
     .testimonial-carousel .testimonial-carousel-inner-wrapper {
