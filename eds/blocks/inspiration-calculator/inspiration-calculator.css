@@ -11,10 +11,15 @@
 .inspiration-calculator h3 {
     font-size: 40px;
     font-weight: 700;
-
+    margin-bottom: 8px;
+    margin-top: 0;
     @media (max-width: 900px) {
         font-size: 16px;
     }
+}
+.inspiration-calculator p {
+        margin-top: 0;
+    margin-bottom: 1rem;
 }
 
 .inspiration-calculator > div {
@@ -39,7 +44,7 @@
     display: inline-block;
     margin-top: 40px;
     font-weight: 700;
-
+              font-size: 14px;
     @media (max-width: 900px) {
         margin-top: 0;
     }
