@@ -3725,12 +3725,22 @@ function buildNavBar(navDiv, secondaryDiv) {
       navItem.classList.add(`nav-item-${index + 1}`);
 
       const anchor = li.querySelector(':scope > a, :scope > p > a');
-      if (!anchor) return;
+
+      let labelText;
+      if (anchor) {
+        labelText = anchor.textContent;
+      } else {
+        const clone = li.cloneNode(true);
+        clone.querySelectorAll('ul').forEach((ul) => ul.remove());
+        labelText = clone.textContent;
+      }
+      if (!labelText.trim()) return;
 
       const link = document.createElement('a');
       link.className = 'nav-link';
-      link.href = anchor.getAttribute('href');
-      link.textContent = getDisplayNavLabel(anchor.textContent);
+      const href = anchor ? anchor.getAttribute('href') : null;
+      if (href) link.href = href;
+      link.textContent = getDisplayNavLabel(labelText);
 
       if (link.textContent === 'Home') {
         navItem.classList.add('nav-home');
@@ -3749,7 +3759,7 @@ function buildNavBar(navDiv, secondaryDiv) {
       navItem.appendChild(link);
 
       if (submenuUl) {
-        navItem.appendChild(buildMegamenuPanel(submenuUl, normalizeNavLabel(anchor.textContent)));
+        navItem.appendChild(buildMegamenuPanel(submenuUl, normalizeNavLabel(labelText)));
       }
 
       navList.appendChild(navItem);
