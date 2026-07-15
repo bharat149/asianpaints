@@ -748,9 +748,23 @@ async function initKeycloak(block) {
     updateProfileUI(block, authenticated);
 
     if (typeof authenticated !== 'undefined' && authenticated) {
+      const returnedFromAuth = (() => {
+        try {
+          return localStorage.getItem(POST_LOGIN_REDIRECT_FLAG_KEY) === 'true'
+            || sessionStorage.getItem(POST_LOGIN_REDIRECT_FLAG_KEY) === 'true';
+        } catch (err) {
+          return false;
+        }
+      })();
       /* Persist tokens right after init so the id_token (when keycloak-js
        * provides one) is stored for future page loads. */
       persistKeycloakTokens();
+      if (returnedFromAuth) {
+        trackLoginSuccessful('login successful');
+        try {
+          localStorage.removeItem(SIGNED_OUT_KEY);
+        } catch (err) { /* ignore */ }
+      }
       window.dispatchEvent(new CustomEvent('keycloakLoginReady', {
         detail: { token: keycloakInstance.token, userId: keycloakInstance.subject },
       }));
@@ -4840,9 +4854,6 @@ function addInteractions(block) {
         // e7 - Login Icon Click (must fire on header icon click)
         trackEvent('login_icon');
         // Production: redirect to OIDC auth URL (auth.asianpaints.com)
-        try {
-          sessionStorage.setItem(AUTH_REDIRECTED_KEY, '1');
-        } catch (err) { /* ignore */ }
         persistPostLoginRedirectPath();
         const url = await buildProfileAuthUrl(AUTH_REDIRECT_URI);
         ga4Implementaion({
@@ -4916,11 +4927,7 @@ function addInteractions(block) {
   if (searchBarEl) {
     searchBarEl.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
-      // e54 (search_start) intentionally NOT fired here. The live site
-      // (asianpaints.com) fires ONLY Header Search Icon Click (e330) on
-      // the search-icon click; Search Start (e54) belongs to the actual
-      // search-initiation step, not opening the dialog. Firing both here
-      // produced two beacons per click.
+      trackEvent('search_start');
       ga4Implementaion({
         event: 'search_icon_click',
       })
@@ -5001,8 +5008,7 @@ function addInteractions(block) {
   if (mobileSearchBtn) {
     mobileSearchBtn.addEventListener('click', () => {
       trackEvent('Header Search Icon Click');
-      // e54 (search_start) intentionally NOT fired here — see desktop
-      // search handler above. Matches live: only e330 on icon click.
+      trackEvent('search_start');
       openSearchDialog(block);
     });
   }
