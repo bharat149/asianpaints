@@ -7,6 +7,7 @@ import {
   decorateSections,
   decorateBlocks,
   decorateTemplateAndTheme,
+  getMetadata,
   waitForFirstImage,
   loadSection,
   loadSections,
@@ -275,6 +276,77 @@ function buildAutoBlocks(main) {
 }
 
 /**
+ * Replaces a heading element with the requested heading tag while preserving
+ * attributes and child nodes.
+ * @param {HTMLHeadingElement} heading Existing heading element
+ * @param {number} level Heading level (1-6)
+ * @returns {HTMLHeadingElement} The replacement heading element
+ */
+function replaceHeadingLevel(heading, level) {
+  const targetTag = `H${level}`;
+  if (!heading || heading.tagName === targetTag) return heading;
+
+  const replacement = document.createElement(targetTag.toLowerCase());
+  [...heading.attributes].forEach(({ name, value }) => {
+    replacement.setAttribute(name, value);
+  });
+  replacement.append(...heading.childNodes);
+  heading.replaceWith(replacement);
+
+  return replacement;
+}
+
+/**
+ * Reads a metadata value from the page metadata table when present.
+ * @param {Element} main The main element
+ * @param {string} key Metadata key to read
+ * @returns {string} Metadata value
+ */
+function readPageMetadata(main, key) {
+  const rows = [...main.querySelectorAll('.metadata > div')];
+  const match = rows.find((row) => row.children[0]?.textContent?.trim()?.toLowerCase() === key.toLowerCase());
+  return match?.children[1]?.textContent?.trim() || '';
+}
+
+/**
+ * Ensures the first heading on the page is a single SEO H1 placed before any
+ * header or modal headings injected by other blocks.
+ * @param {Document} doc The document
+ * @param {Element} main The main element
+ */
+function ensureDocumentPrimaryHeading(doc, main) {
+  if (!main || doc.querySelector('body > h1[data-seo-primary-heading="true"]')) return;
+
+  const firstContentHeading = main.querySelector('h1, h2, h3, h4, h5, h6');
+  const metadataH1 = getMetadata('h1')
+    || readPageMetadata(main, 'h1')
+    || readPageMetadata(main, 'seo h1')
+    || readPageMetadata(main, 'seo-h1');
+  const metadataTitle = getMetadata('og:title')
+    || getMetadata('title')
+    || readPageMetadata(main, 'title');
+  const primaryText = metadataH1 || firstContentHeading?.textContent?.trim() || metadataTitle.trim();
+
+  if (!primaryText) return;
+
+  const h1 = doc.createElement('h1');
+  h1.dataset.seoPrimaryHeading = 'true';
+  h1.textContent = primaryText;
+  h1.setAttribute(
+    'style',
+    'position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;',
+  );
+
+  doc.body.prepend(h1);
+
+  [...doc.querySelectorAll('h1')]
+    .filter((heading) => heading !== h1)
+    .forEach((heading) => {
+      replaceHeadingLevel(heading, 2);
+    });
+}
+
+/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
@@ -436,6 +508,7 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     decorateMain(main);
+    ensureDocumentPrimaryHeading(doc, main);
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), waitForFirstImage);
   }
