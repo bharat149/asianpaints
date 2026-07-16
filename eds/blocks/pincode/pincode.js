@@ -147,6 +147,7 @@ function decorateSearch(block) {
   const rows = [...block.children];
   let heading = '';
   let description = '';
+  let mobileDescription = '';
   let cardTitle = 'Find a contractor near you!';
   let placeholder = 'Enter pincode';
   let redirectUrl = '';
@@ -160,13 +161,16 @@ function decorateSearch(block) {
     description = descEl ? descEl.textContent.trim() : rows[1].textContent.trim();
   }
   if (rows.length >= 3) {
-    const cols = [...rows[2].children];
-    if (cols.length >= 1) cardTitle = cols[0].textContent.trim();
-    if (cols.length >= 2) placeholder = cols[1].textContent.trim();
+    mobileDescription = rows[2].innerHTML.trim();
   }
   if (rows.length >= 4) {
     const cols = [...rows[3].children];
-    const linkCell = cols.length >= 2 ? cols[1] : rows[3];
+    if (cols.length >= 1) cardTitle = cols[0].textContent.trim();
+    if (cols.length >= 2) placeholder = cols[1].textContent.trim();
+  }
+  if (rows.length >= 5) {
+    const cols = [...rows[4].children];
+    const linkCell = cols.length >= 2 ? cols[1] : rows[4];
     redirectUrl = getCellLink(linkCell);
   }
 
@@ -180,6 +184,25 @@ function decorateSearch(block) {
     const p = document.createElement('p');
     p.textContent = description;
     block.appendChild(p);
+  }
+  if (mobileDescription) {
+    const mobileDiv = document.createElement('div');
+    mobileDiv.className = 'pincode-mobile-description';
+    const temp = document.createElement('div');
+    temp.innerHTML = mobileDescription;
+    const cell = temp.firstElementChild;
+    if (cell) {
+      const parts = cell.innerHTML.trim().split(/(?:<br\s*\/?>\s*)+/).filter((p) => p.trim());
+      parts.forEach((part) => {
+        const p = document.createElement('p');
+        p.innerHTML = part.trim();
+        mobileDiv.appendChild(p);
+      });
+    } else {
+      mobileDiv.innerHTML = mobileDescription;
+    }
+    block.appendChild(mobileDiv);
+    block.classList.add('has-mobile-desc');
   }
 
   const card = document.createElement('div');
