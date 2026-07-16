@@ -100,8 +100,6 @@ export default function decorate(block) {
       const ctaLink = link.href;
       const btnTitle = link.textContent.trim();
 
-      card.style.cursor = 'pointer';
-
       btn?.addEventListener('click', (e) => {
         e.stopPropagation();
 
@@ -130,13 +128,7 @@ export default function decorate(block) {
 
           // Toggle only clicked card
           clickedCard.classList.toggle('child-open', !isExpanded);
-
-          return;
         }
-
-        // Desktop: full card redirects
-        triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, name);
-        window.location.href = ctaLink;
       });
     }
   });

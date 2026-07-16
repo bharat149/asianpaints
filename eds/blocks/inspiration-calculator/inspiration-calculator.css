@@ -14,12 +14,20 @@
     margin-bottom: 8px;
     margin-top: 0;
     @media (max-width: 900px) {
-        font-size: 16px;
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 5px;
     }
 }
 .inspiration-calculator p {
         margin-top: 0;
     margin-bottom: 1rem;
+    @media (max-width: 900px) {
+        margin-bottom: 0;
+        font-size: 12px;
+        font-weight: 700;
+                line-height: 16.39px;
+    }
 }
 
 .inspiration-calculator > div {
@@ -34,6 +42,9 @@
     width: 100%;
     color: #fff;
     top: 10%;
+    @media (max-width: 991px) {
+        top: 18%
+    }
 }
 
 .inspiration-calculator .content-wrapper a {
@@ -50,6 +61,11 @@
     }
      @media(min-width: 1200px) and (max-width: 1360px){
         margin-top: 10px;
+    }
+    img {
+        @media (max-width: 900px) {
+            margin-left: 5px;
+        }
     }
 
 }
