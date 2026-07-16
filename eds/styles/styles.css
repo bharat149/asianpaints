@@ -744,6 +744,37 @@ main>.section>.default-content-wrapper p {
   margin-bottom: 0;
 }
 
+/* Why Choose Us section - desktop center, mobile left */
+@media (width >=992px) {
+  #why-choose-us {
+    text-align: center;
+  }
+
+  #why-choose-us + p {
+    text-align: center;
+  }
+}
+
+@media (width <=991px) {
+  #why-choose-us {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 27.32px;
+    text-align: start;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    color: #000;
+  }
+
+  #why-choose-us + p {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 21px;
+    text-align: start;
+    margin-bottom: 20px;
+  }
+}
+
 main>.section>.default-content-wrapper ul,
 main>.section>.default-content-wrapper ol {
   font-size: 14px;
