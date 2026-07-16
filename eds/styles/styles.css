@@ -706,12 +706,12 @@ main>.section:has(> .default-content-wrapper:only-child > picture:only-child)>.d
 
 /* SEO/Default content typography - match Asian Paints original */
 main>.section>.default-content-wrapper h2 {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   line-height: normal;
   color: #222;
   margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  margin-bottom: 1.5em;
 }
 
 /*
@@ -930,7 +930,6 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
 }
 
 main>.section:has(.embed-wrapper) {
-  padding: 40px 20px 60px;
   max-width: 100%;
   text-align: center;
 }
