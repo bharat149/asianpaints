@@ -170,15 +170,36 @@ export default async function decorate(block) {
   function createVariant($contentCell, $imageCell, variantClass) {
     const $section = $(`<section class="discover-collections__variant ${variantClass}"></section>`);
     const $collage = $('<div class="discover-collections__collage"></div>');
+    const $primaryGroup = $('<div class="discover-collections__group discover-collections__group--primary"></div>');
+    const $secondaryGroup = $('<div class="discover-collections__group discover-collections__group--secondary"></div>');
 
-    $collage.append(createTextBlock($contentCell));
+    const $oneToThree = $('<div class="one-to-three"></div>');
+    const $oneToThreeColOne = $('<div class="column-one"></div>');
+    const $oneToThreeColTwo = $('<div class="column-two"></div>');
+    const $secondaryColOne = $('<div class="column-one"></div>');
+    const $secondaryColTwo = $('<div class="column-two"></div>');
+
+    $oneToThree.append($oneToThreeColOne, $oneToThreeColTwo);
+    $primaryGroup.append(createTextBlock($contentCell), $oneToThree);
+    $secondaryGroup.append($secondaryColOne, $secondaryColTwo);
 
     const pictures = getPictures($imageCell).slice(0, 8);
 
     pictures.forEach((pic, i) => {
-      $collage.append(createImageCard(pic, i));
+      const $card = createImageCard(pic, i);
+
+      if (i === 0) {
+        $oneToThreeColOne.append($card);
+      } else if (i < 3) {
+        $oneToThreeColTwo.append($card);
+      } else if (i < 6) {
+        $secondaryColOne.append($card);
+      } else {
+        $secondaryColTwo.append($card);
+      }
     });
 
+    $collage.append($primaryGroup, $secondaryGroup);
     $section.append($collage);
     return $section;
   }
@@ -201,7 +222,8 @@ export default async function decorate(block) {
       obs.unobserve(entry.target);
     });
   }, {
-    threshold: 0.2,
+    threshold: 0,
+    rootMargin: '0px 0px -10% 0px',
   });
 
   observer.observe($block[0]);
