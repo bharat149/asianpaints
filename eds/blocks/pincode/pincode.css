@@ -328,9 +328,8 @@ Variant: cta — Pincode (cta)
     display: flex;
     flex-direction: row;
     align-items: center;
-    background-color: #e6f3fa;
+    background-color: #e0ecf9;
     overflow: hidden;
-    border-radius: 10px;
     margin-top: 7%;
 }
 
@@ -345,7 +344,7 @@ Variant: cta — Pincode (cta)
     flex-direction: row;
     align-items: center;
     width: 100%;
-    background-color: #e6f3fa;
+    background-color: #e0ecf9;
 }
 
 @media (width <= 991px) {
@@ -358,6 +357,7 @@ Variant: cta — Pincode (cta)
     height: auto;
     width: auto;
     display: flex;
+    overflow: hidden;
 }
 
 @media (width >= 768px) and (width <= 991px) {
@@ -389,16 +389,12 @@ Variant: cta — Pincode (cta)
     width: 100%;
     height: 100%;
     display: block;
-}
-
-.pincode.cta .swapimagewithcta.imageWithRightTextComp .img-wrapper.img-left img {
-    float: left;
-    margin: 1px;
+    object-fit: cover;
+    transform: scale(1.08);
 }
 
 .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
     padding: 50px;
-    background-color: transparent;
     width: 40%;
     box-sizing: border-box;
 }
@@ -408,12 +404,6 @@ Variant: cta — Pincode (cta)
         padding: 22px 20px 30px;
         margin: 0;
         width: 100%;
-    }
-}
-
-@media (width >= 992px) {
-    .pincode.cta .swapimagewithcta.imageWithRightTextComp .righttext-wrapper.text-align-right {
-        width: 50%;
     }
 }
 
