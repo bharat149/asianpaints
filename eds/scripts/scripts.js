@@ -275,6 +275,49 @@ function buildAutoBlocks(main) {
 }
 
 /**
+ * Replaces a heading element with the requested heading tag while preserving
+ * attributes and child nodes.
+ * @param {HTMLHeadingElement} heading Existing heading element
+ * @param {number} level Heading level (1-6)
+ * @returns {HTMLHeadingElement} The replacement heading element
+ */
+function replaceHeadingLevel(heading, level) {
+  const targetTag = `H${level}`;
+  if (!heading || heading.tagName === targetTag) return heading;
+
+  const replacement = document.createElement(targetTag.toLowerCase());
+  [...heading.attributes].forEach(({ name, value }) => {
+    replacement.setAttribute(name, value);
+  });
+  replacement.append(...heading.childNodes);
+  heading.replaceWith(replacement);
+
+  return replacement;
+}
+
+/**
+ * Ensures the first heading in main content is an H1. If another H1 already
+ * exists later in the DOM, it is demoted to H2 to keep a single primary H1.
+ * @param {Element} main The main element
+ */
+function normalizePrimaryHeading(main) {
+  const headings = [...main.querySelectorAll('h1, h2, h3, h4, h5, h6')];
+  if (!headings.length) return;
+
+  const firstHeading = headings[0];
+  if (firstHeading.tagName === 'H1') return;
+
+  headings
+    .slice(1)
+    .filter((heading) => heading.tagName === 'H1')
+    .forEach((heading) => {
+      replaceHeadingLevel(heading, 2);
+    });
+
+  replaceHeadingLevel(firstHeading, 1);
+}
+
+/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
@@ -289,6 +332,7 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
+  normalizePrimaryHeading(main);
 }
 
 
