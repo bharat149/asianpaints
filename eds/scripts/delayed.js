@@ -64,10 +64,12 @@ function setupGlobalClickListener() {
 
     // e278 - Sticky Form CTA Clicks (.trigger-book-free-site-visit-modal isn't
     // a .button-container child, so bindButtonContainerTracking misses it).
-    trackEvent('sticky_cta_click', {
-      cta_: trigger.textContent.trim(),
-      param1: trigger.getAttribute('href') || '',
-    });
+    if (e.isTrusted) {
+      trackEvent('sticky_cta_click', {
+        cta_: trigger.textContent.trim(),
+        param1: trigger.getAttribute('href') || '',
+      });
+    }
 
     const modalPath = trigger.dataset.modalPath || trigger.getAttribute('href') || EXIT_INTENT_PATH;
     window.triggerExitIntentModal(modalPath);
