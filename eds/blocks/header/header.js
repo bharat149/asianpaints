@@ -777,6 +777,10 @@ async function initKeycloak(block) {
           window.location.href = redirectPath;
         }
       }, 1000);
+      if (localStorage.getItem('userCheckoutAction')=='true'){
+          localStorage.removeItem('userCheckoutAction');
+          window.headerMiniCart.checkoutRedirectLogin();
+      }
     }
 
     keycloakInstance.onTokenExpired = () => {
@@ -2711,6 +2715,7 @@ function buildCartModal() {
         window.headerMiniCart.checkoutRedirectLogin();
       }
     }else {
+      localStorage.setItem("userCheckoutAction", true);
       showLoginGuestPopup();
     }
   });
