@@ -731,12 +731,12 @@ main>.section:has(> .default-content-wrapper:only-child > picture:only-child)>.d
 
 /* SEO/Default content typography - match Asian Paints original */
 main>.section>.default-content-wrapper h2 {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   line-height: normal;
   color: #222;
   margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  margin-bottom: 1.5em;
 }
 
 /*
@@ -767,6 +767,37 @@ main>.section>.default-content-wrapper p {
   line-height: 1.57;
   color: #222;
   margin-bottom: 0;
+}
+
+/* Why Choose Us section - desktop center, mobile left */
+@media (width >=992px) {
+  #why-choose-us {
+    text-align: center;
+  }
+
+  #why-choose-us + p {
+    text-align: center;
+  }
+}
+
+@media (width <=991px) {
+  #why-choose-us {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 27.32px;
+    text-align: start;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    color: #000;
+  }
+
+  #why-choose-us + p {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 21px;
+    text-align: start;
+    margin-bottom: 20px;
+  }
 }
 
 main>.section>.default-content-wrapper ul,
@@ -924,7 +955,6 @@ main .section.contractors-rte-live>.default-content-wrapper li>h3+p {
 }
 
 main>.section:has(.embed-wrapper) {
-  padding: 40px 20px 60px;
   max-width: 100%;
   text-align: center;
 }
