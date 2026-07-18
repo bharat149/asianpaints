@@ -576,11 +576,10 @@
   border-radius: 45px;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 21px;
   white-space: nowrap;
   transition: background-color 0.25s ease;
-  width: 169.14px;
   box-sizing: border-box;
   cursor: pointer;
 }
