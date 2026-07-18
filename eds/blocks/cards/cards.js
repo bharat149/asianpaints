@@ -321,7 +321,7 @@ export default function decorate(block) {
       if (!Swiper) return;
 
       ul.servicesSwiper = new Swiper(ul, {
-        slidesPerView: 1.2,
+        slidesPerView: 1.1,
         spaceBetween: 16,
         loop: false,
         pagination: {
