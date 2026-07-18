@@ -774,7 +774,7 @@ function trackLeadFormSubmission(form) {
     ga4Implementaion({
       event: 'confirm_free_site_visit',
       click_text: 'Book free site visit',
-      click_category: 'click_header / content'
+      click_category: 'click_header'
     });
   }
 

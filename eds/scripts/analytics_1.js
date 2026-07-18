@@ -1251,11 +1251,13 @@ export function trackEvent(eventName, eventData = {}) {
     if (v === undefined || v === null || v === '') return;
     if (RESERVED_KEYS.has(k)) return;
     const target = eVarMap[k];
+    const stringValue = String(v);
     if (target) {
       const dests = Array.isArray(target) ? target : [target];
-      dests.forEach((t) => { analytics[t] = String(v); });
+      const mappedValue = dests.includes('eVar86') ? normalizeTrackedUrl(stringValue) : stringValue;
+      dests.forEach((t) => { analytics[t] = mappedValue; });
     } else {
-      contextData[k] = String(v);
+      contextData[k] = stringValue;
     }
   });
   if (Object.keys(contextData).length) analytics.contextData = contextData;
@@ -1315,12 +1317,10 @@ export function trackMiniCartCheckout() {
  * @param {string} ctaLink The CTA URL
  */
 export function triggerCtaLinkText(btnTitle, ctaLink, parentTitle = '') {
-  // eVar86 (param1) must be a fully-qualified absolute URL, not a relative path.
-  const absoluteCtaLink = ctaLink ? toUrl(ctaLink).href : '';
   trackEvent('cta_link_text', {
     cta_: btnTitle,
     parentTitle,
-    param1: absoluteCtaLink,
+    param1: normalizeTrackedUrl(ctaLink),
   });
 }
 
@@ -1447,6 +1447,16 @@ function toUrl(urlLike) {
   }
 }
 
+function normalizeTrackedUrl(urlLike) {
+  const value = typeof urlLike === 'string' ? urlLike.trim() : '';
+  if (!value) return '';
+
+  // Keep non-http link targets as authored.
+  if (/^(?:javascript:|tel:|mailto:|#)/i.test(value)) return value;
+
+  return toUrl(value).href;
+}
+
 function buildPageData(urlObj) {
   const parts = urlObj.pathname.split('/').filter(Boolean);
   return {
@@ -1514,7 +1524,8 @@ function setDigitalDataContext(destinationUrl = window.location.href) {
  */
 export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) {
   if (!ctaLink) return;
-  setDigitalDataContext(ctaLink);
+  const normalizedLink = normalizeTrackedUrl(ctaLink);
+  setDigitalDataContext(normalizedLink || ctaLink);
 
   if (ctaLink.indexOf('javascript:void') > -1) {
     trackEvent('custom_cta_click', { cta_: btnTitle });
@@ -1524,8 +1535,8 @@ export function triggerCTAClickWithLinkAndTitle(ctaLink, btnTitle, parentTitle) 
     trackEvent('custom_cta_click', {
       cta_: btnTitle,
       // redirectionLink (eVar86) must be a fully-qualified absolute URL.
-      redirectionLink: toUrl(ctaLink).href,
-      parentTitle,
+      redirectionLink: normalizedLink,
+      parentTitle: parentTitle,
     });
   }
 }
