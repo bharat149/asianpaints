@@ -212,6 +212,12 @@
 }
 
 @media (width >=900px) {
+  #interior-design-solutions-by-room {
+    line-height: 40px;
+    font-size: 30px;
+    margin-bottom: 55px;
+    font-weight: 700;
+  }
   .section.cards-container:has(.cards.blog) {
     padding: 80px 40px;
   }
@@ -545,6 +551,11 @@
     grid-template-columns: 1fr;
   }
 
+  /* fixed peek: 10px gap + 10px of the next slide visible on the right */
+  .cards.services > ul .swiper-slide {
+    width: calc(100% - 20px);
+  }
+
   .cards.services .swiper-pagination {
     position: relative;
     margin-top: 10px;
@@ -575,6 +586,22 @@
   /* position: absolute; */
   inset: 0;
   z-index: 0;
+}
+
+/* second image column is the mobile image — desktop hides it */
+.cards.services .cards-card-image.mob-view {
+  display: none;
+}
+
+/* swap to the authored mobile image (only when the row has one) */
+@media (width <=899px) {
+  .cards.services li:has(.cards-card-image.mob-view) .cards-card-image:not(.mob-view) {
+    display: none;
+  }
+
+  .cards.services .cards-card-image.mob-view {
+    display: block;
+  }
 }
 
 .cards.services .cards-card-image picture,
@@ -658,6 +685,7 @@
     font-size: 14px;
     font-weight: 700;
     max-width: 80%;
+    line-height: 26px;
   }
 }
 
@@ -704,7 +732,8 @@
   font-size: 14px;
   line-height: 1.71;
   letter-spacing: .54px;
-  color: #000;
+  color: #222;
+  font-weight: 400;
 }
 
 @media screen and (max-width:992px) {
@@ -756,7 +785,7 @@
 @media (width >=768px) {
   .cards.room>ul {
     grid-template-columns: repeat(2, 1fr);
-    gap: 50px 40px;
+    gap: 50px 55px;
   }
 }
 
@@ -1827,3 +1856,29 @@
     font-size: 20px;
   }
 }
+
+@media (width <=990px) {
+ .cards.services .cards-card-body {
+      max-width: 100%;
+      width: 100%;
+ }
+  .cards.services .cards-card-body p:nth-child(1)  {
+      max-width: 50%;
+      margin-bottom: 0px;
+  }
+   .cards.services .cards-card-body p:nth-child(1) strong {
+    margin-bottom: 5px;
+   }
+    .cards.services .cards-card-body p:nth-child(2)   {
+      max-width: 80%;
+      line-height: 26px;
+  }
+  .cards.services .cards-card-body p:nth-child(3)  {
+     max-width: 90%;
+      line-height: 26px;
+  }
+  .cards.services ul li:nth-child(2) .cards-card-body p:nth-of-type(2)  {
+      max-width: 90%;
+  }
+}
+
