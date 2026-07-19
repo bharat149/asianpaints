@@ -39,9 +39,10 @@
     letter-spacing: .5px;
 
     @media (max-width: 991px) {
-        font-size: 12px;
+        font-size: 14px;
         line-height: 1.57;
         letter-spacing: .5px;
+        font-weight: 400;
     }
 }
 .seo-content.block p a {
@@ -121,7 +122,7 @@
 
     .seo-content.block h2 {
         font-size: 22px;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .seo-content.block ul li strong {
