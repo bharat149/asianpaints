@@ -505,7 +505,8 @@
     @media (max-width: 991px) {
         .calculator-hub .mini-pbc.wbc-variant .project-field-inputs .option-icon {
             width: 22px;
-            height: 22px;
+            height: auto;
+            margin-left: 10px;
             transform: none;
         }
     }
