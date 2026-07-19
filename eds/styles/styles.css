@@ -498,7 +498,7 @@ main .section .default-content-wrapper a[href*="https://www.asianpaints.com/"] {
 }
 
 main .section.zero-margin {
-  margin: 0;
+  margin: 0 !important;
 }
 
 
@@ -528,7 +528,8 @@ main .section.read-tc-cta .button-container>a.button:visited {
   align-items: center;
   justify-content: center;
   width: 270px;
-
+  color: #ffffff !important;
+  text-decoration: none !important;
   background-color: #431a80;
   border: 1px solid #431a80;
   color: #fff;
@@ -1126,4 +1127,18 @@ body.hideExitIntentCTA .header-main .header-main-inner .header-cta {
 
 img, svg {
     vertical-align: middle;
+}
+
+@media (max-width: 990px) {
+    .section.justify-left {
+        justify-self: left;
+    }
+}
+
+#faqs{
+    margin-top: 0px;
+}
+
+#waterproofing-solutions{
+    margin-bottom: 15px;
 }
