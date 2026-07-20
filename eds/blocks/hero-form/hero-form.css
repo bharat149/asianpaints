@@ -139,6 +139,53 @@
     border: none !important;
     outline: none !important;
     color: #1e1e1e !important;
+    transform: scale(1.03);
+    box-shadow: 0 6px 18px rgba(255, 153, 0, 0.45);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background 0.2s ease-in-out;
+}
+
+/* Hover tooltip for the CTA button (test change) */
+.hero-form .cta.animated-btn-yellow-onhover-black.round-corner-radius-button {
+    position: relative;
+}
+
+.hero-form .cta.animated-btn-yellow-onhover-black.round-corner-radius-button::after {
+    content: "We'll match you with a nearby expert!";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%) translateY(6px);
+    background: #1e1e1e;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.hero-form .cta.animated-btn-yellow-onhover-black.round-corner-radius-button::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 4px);
+    transform: translateX(-50%) translateY(6px);
+    border: 6px solid transparent;
+    border-top-color: #1e1e1e;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.hero-form .cta.animated-btn-yellow-onhover-black.round-corner-radius-button:hover::after,
+.hero-form .cta.animated-btn-yellow-onhover-black.round-corner-radius-button:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 .hero-form .arrow {
