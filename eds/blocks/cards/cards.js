@@ -1,6 +1,6 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
-import { trackEvent, triggerCTAClickWithLinkAndTitle , ga4Implementaion } from '../../scripts/analytics_1.js';
+import { trackEvent, triggerCTAClickWithLinkAndTitle, ga4Implementaion } from '../../scripts/analytics_1.js';
 
 export default function decorate(block) {
   const isCta = block.classList.contains('cta');
@@ -163,7 +163,12 @@ export default function decorate(block) {
   const imgWidth = '750';
   ul.querySelectorAll('picture > img').forEach((img) => {
     const isLCPCandidate = img === firstGridImg;
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, isLCPCandidate, [{ width: imgWidth }]);
+    const optimizedPic = createOptimizedPicture(
+      img.src,
+      img.alt,
+      isLCPCandidate,
+      [{ width: imgWidth }],
+    );
     const optimizedImg = optimizedPic.querySelector('img');
 
     moveInstrumentation(img, optimizedImg);
@@ -220,8 +225,8 @@ export default function decorate(block) {
       ga4Implementaion({
         event: 'product_cards',
         click_text: btnTitle,
-        click_category: imageAlt
-      })
+        click_category: imageAlt,
+      });
       if (isRoomBlock && btnTitle.toLowerCase() === 'explore now') {
         const roomTitle = body?.querySelector('.cards-card-title')?.textContent.trim() || parentTitle;
 
@@ -242,7 +247,7 @@ export default function decorate(block) {
 
   // Image link clicks
   ul.querySelectorAll('.cards-card-image-link').forEach((imageLink) => {
-    imageLink.addEventListener('click', (e) => {
+    imageLink.addEventListener('click', () => {
       const ctaLink = imageLink.getAttribute('href') || '';
       const li = imageLink.closest('li');
       const imageAlt = li?.querySelector('.cards-card-image img')?.alt || '';
@@ -251,7 +256,7 @@ export default function decorate(block) {
       ga4Implementaion({
         event: 'product_cards',
         click_text: btnTitle,
-        click_category: imageAlt
+        click_category: imageAlt,
       });
 
       // Room cards have a redirect on the image too — fire the same
@@ -281,27 +286,39 @@ export default function decorate(block) {
 
   if (isServicesBlock) {
     const initServicesSwiper = async () => {
-      const isMobile = window.innerWidth < 768;
+      // match the CSS slider breakpoint (width <= 899px)
+      const isMobile = window.innerWidth < 900;
+
+      // Mobile browsers fire resize when the URL bar collapses on scroll;
+      // only rebuild when the breakpoint is actually crossed.
+      if (ul.swiperInitInProgress || isMobile === !!ul.servicesSwiper) return;
+      ul.swiperInitInProgress = true;
 
       if (ul.servicesSwiper) {
         ul.servicesSwiper.destroy(true, true);
         ul.servicesSwiper = null;
       }
 
+      // slides may be nested inside a previous swiper-wrapper
+      const slides = [...ul.querySelectorAll(':scope li')];
+
       ul.classList.remove('swiper');
-      ul.classList.remove('swiper-wrapper');
-      [...ul.children].forEach((li) => {
+      ul.querySelectorAll(':scope > .swiper-wrapper').forEach((w) => w.remove());
+      slides.forEach((li) => {
         li.classList.remove('swiper-slide');
+        li.removeAttribute('style');
+        ul.appendChild(li);
       });
 
-      if (!isMobile) return;
+      if (!isMobile) {
+        ul.swiperInitInProgress = false;
+        return;
+      }
 
       ul.classList.add('swiper');
 
       const wrapper = document.createElement('div');
       wrapper.className = 'swiper-wrapper';
-
-      const slides = [...ul.children];
 
       slides.forEach((li) => {
         li.classList.add('swiper-slide');
@@ -318,7 +335,10 @@ export default function decorate(block) {
       }
 
       const Swiper = window.Swiper || (window.loadSwiper && await window.loadSwiper());
-      if (!Swiper) return;
+      if (!Swiper) {
+        ul.swiperInitInProgress = false;
+        return;
+      }
 
       ul.servicesSwiper = new Swiper(ul, {
         slidesPerView: 'auto',
@@ -329,6 +349,7 @@ export default function decorate(block) {
           clickable: true,
         },
       });
+      ul.swiperInitInProgress = false;
     };
 
     initServicesSwiper();

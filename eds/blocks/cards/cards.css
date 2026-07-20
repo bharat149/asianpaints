@@ -1081,9 +1081,9 @@
   padding: 8px 20px;
   border: 1px solid #232426;
   border-radius: 45px;
-  color: #1a1a1a;
+  color: #1a1a1a !important;
   background-color: transparent;
-  text-decoration: none;
+  text-decoration: none !important;
   font-weight: 700;
   font-size: 14px;
   transition: all 0.2s ease;

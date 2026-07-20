@@ -134,6 +134,12 @@
    Variant: Table Style
    ============================================ */
 
+   @media screen and (max-width: 992px) {
+        .seo-content.block.table-style {
+
+    padding: 0 0 !important;
+}
+   }
 .seo-content.block.table-style {
     overflow-x: auto;
     padding: 0 30px;

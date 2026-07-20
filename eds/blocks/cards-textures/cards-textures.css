@@ -493,3 +493,22 @@ main>.section.cards-textures-container>.default-content-wrapper p strong a:hover
   left: 10px;
 }
 }
+
+@media(min-width:992px){
+  .texture-wrapper {
+    padding: 80px 4% !important;
+  }
+  .texture-wrapper .default-content-wrapper {
+    max-width: unset !important;
+    margin: unset !important;
+    padding: unset !important;
+  }
+   .texture-wrapper .default-content-wrapper #explore-textures {
+    font-weight: 800;
+    margin-bottom: 14px;
+   }
+  .texture-wrapper .default-content-wrapper p:not(.button-container) {
+    padding: 0 15%;
+    color:#222222 !important;
+  }
+}
