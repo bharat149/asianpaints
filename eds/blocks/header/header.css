@@ -570,24 +570,22 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #eea81a;
-  color: #000;
+  background: #fcaf17;
+  color: #232426;
   padding: 5.5px 20px;
   border-radius: 45px;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 700;
   line-height: 21px;
   white-space: nowrap;
   transition: background-color 0.25s ease;
-  width: 169.14px;
   box-sizing: border-box;
   cursor: pointer;
 }
 
 .header .cta-btn:hover {
-  background: #d69515;
+  background: #fdbf45;
 }
 
 .header .cta-btn.trigger-exit-intent-popup-form {

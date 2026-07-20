@@ -98,7 +98,11 @@ function extractFormConfig(block) {
     if (formConfigWrapper) {
       formConfigWrapper.style.display = 'none';
     }
-    if (formConfigSection && formConfigSection !== section) {
+    if (
+      formConfigSection
+      && formConfigSection !== section
+      && !formConfigSection.querySelector('.form, .form-banner')
+    ) {
       formConfigSection.style.display = 'none';
     }
   }

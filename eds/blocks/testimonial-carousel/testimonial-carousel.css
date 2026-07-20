@@ -129,6 +129,12 @@
     width: 81px;
     height: 70px;
     object-fit: contain;
+
+}
+@media(max-width:991px){
+    .testimonial-carousel .testimonial-logo-bg img {
+        transform: translateY(-9px);
+    }
 }
 
 .testimonial-carousel .testimonial-content::before {
@@ -301,16 +307,16 @@ body.testimonial-video-open {
 }
 
 @media (width <=1200px) {
-    .testimonial-carousel .testimonial-heading {
+    /* .testimonial-carousel .testimonial-heading {
         flex: 0 0 250px;
         width: 250px;
-    }
+    } */
 
-    .testimonial-carousel .testimonial-heading h2,
+    /* .testimonial-carousel .testimonial-heading h2,
     .testimonial-carousel .testimonial-heading h3 {
         font-size: 40px;
         line-height: 48px;
-    }
+    } */
 
     .testimonial-carousel .testimonial-image {
         height: 220px;
@@ -396,7 +402,7 @@ body.testimonial-video-open {
     }
 
     .testimonial-carousel .testimonial-content {
-        padding: 30px 20px 24px;
+        padding: 0 30px 20px 24px;
         min-height: 220px;
     }
 
@@ -465,7 +471,7 @@ body.testimonial-video-open {
     }
 
     .testimonial-carousel .testimonial-slide {
-        width: 390px !important;
+        width: 325px !important;
     }
 
     .testimonial-prev,
@@ -493,52 +499,37 @@ body.testimonial-video-open {
         height: 44px;
     }
 }
-
+@media (min-width: 992px) and (max-width: 1200px) {
+      .testimonial-carousel .testimonial-heading {
+        width: 32%;
+    }
+     .testimonial-carousel .testimonial-carousel-inner-wrapper {
+        width: 68%;
+    }
+}
 @media (min-width: 1201px) and (max-width: 1400px) {
     .testimonial-carousel .testimonial-heading {
-        width: 27%;
+        width: 30%;
     }
 
     .testimonial-carousel .testimonial-carousel-inner-wrapper {
         width: 70%;
     }
 }
-
-@media (min-width: 992px) and (max-width: 1099px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.7;
+@media (min-width: 1400px) and (max-width: 1500px) {
+      .testimonial-carousel .testimonial-heading {
+        width: 30%;
+    }
+     .testimonial-carousel .testimonial-carousel-inner-wrapper {
+        width: 70%;
     }
 }
 
-@media (min-width: 1100px) and (max-width: 1199px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.75;
-    }
-}
 
-@media (min-width: 1200px) and (max-width: 1279px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.8;
-    }
-}
 
-@media (min-width: 1280px) and (max-width: 1365px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.85;
-    }
-}
 
-@media (min-width: 1366px) and (max-width: 1439px) {
-    .section.testimonial-carousel-container {
-        zoom: 0.9;
-    }
-}
 
-@media (min-width: 1440px) {
-    .section.testimonial-carousel-container {
-        zoom: 1;
-    }
-}
+
 
 /* Pre-Swiper placeholder — Swiper is initialized lazily via IntersectionObserver
  * (see testimonial-carousel.js). Until block.classList contains 'swiper-ready',

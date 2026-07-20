@@ -935,6 +935,11 @@
     font-size: 10px;
     line-height: 1.5;
   }
+  .form.block.blue-form .form-consent-note {
+    font-size: 11px;
+    line-height: 15.03px;
+    font-weight: 400;
+  }
 
   .form.block .form-button-cell {
     width: 100%;
@@ -1279,5 +1284,15 @@
   .form.block.white-form .form-row .form-description-cell {
     align-self: flex-start;
   }
+
+}
+
+@media (max-width:992px) {
+.fitcontent.form-container .form.block .form-submit, .form.block .btn.form-submit {
+  width:fit-content !important
+}
+.fitcontent.form-container .form.block {
+  padding:20px !important;
+}
 
 }

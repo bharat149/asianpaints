@@ -97,7 +97,7 @@
     }
     @media (min-width: 1366px) {
         .calculator-hub .tool-description .sub-heading{
-            font-size: 52px;
+            font-size: 64px;
             line-height: 58px
         }
     }
@@ -122,12 +122,17 @@
     /* ---------------------------------------
        Right panel
     ---------------------------------------- */
-    .calculator-hub .tool-fields { flex: 0 0 60%; }
+    .calculator-hub .tool-fields { flex: 0 0 67%; }
 
     @media (min-width: 1280px) and (max-width: 1366px) {
-        .calculator-hub .tool-fields { flex: 0 0 57%; }
+        .calculator-hub .tool-fields { flex: 0 0 62%; }
     }
 
+    @media (min-width: 1600px) and (max-width: 1920px) {
+        .calculator-hub .tool-fields { flex: 0 0 60%; }
+    }
+
+    @media (min-width: 1800px) {    .calculator-hub .mini-pbc.wbc-variant .project-field-inputs {        grid-template-columns: repeat(4, max-content);   }}
     .calculator-hub .mini-tools-form {
         background: #fff;
         padding: 30px 40px 10px 40px;
@@ -314,22 +319,6 @@
         font-size: 14px;
         font-weight: 700;
     }
-    .calculator-hub .form-actions .animated-arrow-button .arrow {
-        display:flex;
-    }
-    .calculator-hub .form-actions .animated-arrow-button:hover {
-        color: #000 !important;
-    background: transparent !important;
-    outline: 1px solid !important;
-    }
-    .calculator-hub .form-actions .animated-arrow-button:hover .arrow {
-        transition: all .2s ease-in;
-    -webkit-transform: translateX(6px);
-    -moz-transform: translateX(6px);
-    -ms-transform: translateX(6px);
-    -o-transform: translateX(6px);
-    transform: translateX(6px);
-    }
 
     @media (min-width: 991px) and (max-width: 1200px) {
         .calculator-hub .form-actions .animated-arrow-button {
@@ -340,22 +329,18 @@
 
 
     .calculator-hub .form-actions .arrow::after {
-        content: "";
-        background: url(./resources/images/arrow-icon.svg) no-repeat center;
+        content: " ";
+        background: url(./resources/images/arrow-icon.svg);
+        background-repeat: no-repeat;
+        background-size: cover;
+            width: 17px;
+    height: 20px;
         display: inline-block;
         font-size: 16px;
         line-height: 1;
-        transform: translateY(1px); /* align optically */
-        width: 17px;
-    height: 20px;
-    filter: contrast(1000%) invert(100%) sepia(100%) saturate(10000%) hue-rotate(90deg);
-
-        /* ✅ fake bold */
-        text-shadow:
-            0.4px 0 0 currentColor,
-            -0.4px 0 0 currentColor,
-            0 0.4px 0 currentColor,
-            0 -0.4px 0 currentColor;
+               align-self: center;
+        display: flex;
+        filter: invert(1);
     }
 
 
@@ -364,9 +349,6 @@
         background: #EEEEEF !important;
         color: #9b9b9b !important;
         pointer-events: none;
-        .arrow {
-            opacity:0.2
-        }
     }
 
     /* optional spinner */
@@ -443,7 +425,7 @@
     @media (min-width: 992px) {
         .calculator-hub .mini-pbc.wbc-variant .project-field-inputs {
             display: grid;
-            grid-template-columns: repeat(3, max-content);
+            grid-template-columns: repeat(4, max-content);
             gap: 16px;
             align-content: start;
         }
@@ -523,7 +505,8 @@
     @media (max-width: 991px) {
         .calculator-hub .mini-pbc.wbc-variant .project-field-inputs .option-icon {
             width: 22px;
-            height: 22px;
+            height: auto;
+            margin-left: 10px;
             transform: none;
         }
     }
@@ -578,9 +561,36 @@
     .calculator-hub .mini-pbc.wbc-variant .space-field-inputs .area-field {
         margin-top: 10px;
     }
-
     @media (max-width: 991px) {
         .calculator-hub .mini-pbc.wbc-variant .space-field-inputs .area-field { margin-bottom: 20px; }
+         .calculator-hub .mini-pbc.wbc-variant .tool-description .heading {
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 28.8px;
+            margin-bottom: 5px;
+         }
+        .calculator-hub .mini-pbc.wbc-variant .tool-description .sub-heading {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 34.6px;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions .animated-arrow-button {
+            width: fit-content !important;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 12px 18px;
+            color: #1e1e1e !important;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions a[disabled="disabled"].animated-arrow-button {
+            color: #1e1e1e !important;
+            opacity: 0.6;
+        }
+        .calculator-hub .mini-pbc.wbc-variant .form-actions a[disabled="disabled"].animated-arrow-button .arrow{
+            opacity: unset !important;
+        }
+
+    
     }
 
     /* AMS hides error msg in WBC */

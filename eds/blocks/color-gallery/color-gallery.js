@@ -113,25 +113,6 @@ function updateNavState(swiper, prevButton, nextButton) {
   nextButton.style.opacity = swiper.isEnd ? '0.4' : '1';
 }
 
-function trackNavClick(button, navigationAction, testTitle) {
-  if (!button) return;
-
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-
-    const resolvedNavigationAction = navigationAction
-      || button.getAttribute('aria-label')
-      || '';
-
-    trackEvent('sitesection_click', {
-      'Navigation Action': resolvedNavigationAction,
-      navigationAction: resolvedNavigationAction,
-      direction: resolvedNavigationAction,
-      testTitle,
-    });
-  });
-}
-
 async function getSwiperClass() {
   if (window.Swiper) return window.Swiper;
   if (window.loadSwiper) return window.loadSwiper();
@@ -290,8 +271,11 @@ export default async function decorate(block) {
     nextButton.type = 'button';
     nextButton.setAttribute('aria-label', 'Next');
 
-    trackNavClick(prevButton, 'Previous', parentTitle);
-    trackNavClick(nextButton, 'Next', parentTitle);
+    // Prev/Next Navigation event is fired by the global
+    // initCarouselNavigationTracking() in analytics_1.js, which sends
+    // eVar67 from the section heading ("Colour of the years") — matching
+    // prod. Do not attach a block-level sitesection_click tracker here;
+    // prod does not fire that event on carousel nav.
 
     navContainer.appendChild(prevButton);
     navContainer.appendChild(nextButton);

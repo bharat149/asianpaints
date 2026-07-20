@@ -75,6 +75,11 @@ export default async function decorate(block) {
   if (block.dataset.carouselHeroBannerDecorated === "true") return;
   block.dataset.carouselHeroBannerDecorated = "true";
 
+  // Skip the global carousel-navigation tracker in analytics_1.js
+  // (initCarouselNavigationTracking). The homepage hero banner's Prev/Next
+  // arrows must NOT fire a Navigation event — prod does not fire it.
+  block.dataset.navTrackingBound = 'true';
+
   const rows = [...block.children];
   if (!rows.length) return;
 

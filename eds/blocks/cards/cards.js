@@ -28,7 +28,7 @@ export default function decorate(block) {
       }
     });
 
-    if (isGrid && li.children.length === 3 && li.children[1].classList.contains('cards-card-image')) {
+    if ((isGrid || isServicesBlock) && li.children.length === 3 && li.children[1].classList.contains('cards-card-image')) {
       li.children[1].classList.add('mob-view');
     }
 
@@ -321,8 +321,8 @@ export default function decorate(block) {
       if (!Swiper) return;
 
       ul.servicesSwiper = new Swiper(ul, {
-        slidesPerView: 1.2,
-        spaceBetween: 16,
+        slidesPerView: 'auto',
+        spaceBetween: 10,
         loop: false,
         pagination: {
           el: pagination,
