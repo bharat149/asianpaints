@@ -286,6 +286,15 @@ main .section.sectionpadding.accordion-container {
     }
 }
 
+@media (max-width:991px){
+    .royal-play-faq{
+        margin-top: 0 !important;
+        padding-left: 8% !important;
+        padding-right: 8% !important;
+}
+}
+
+
 
 /* .section.ids-faq #faqs {
     font-weight: 800;
