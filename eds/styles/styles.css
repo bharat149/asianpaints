@@ -774,10 +774,18 @@ main>.section>.default-content-wrapper p {
 @media (width >=992px) {
   #why-choose-us {
     text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 35.2px;
+    color: #000;
+    margin-bottom: 10px;
   }
 
   #why-choose-us + p {
     text-align: center;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 35.2px;
   }
 }
 

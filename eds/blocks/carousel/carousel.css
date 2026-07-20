@@ -598,7 +598,7 @@
 }
 
 .apCityCarousel .contractors-in-your-city {
-    margin-left: 28px;
+    margin-left: 40px;
     position: relative;
     overflow: visible;
 }
@@ -612,7 +612,7 @@
 
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-title {
     font-size: 32px;
-    font-weight: 600;
+    font-weight: 800;
     line-height: 41.6px;
     color: #000;
     margin-bottom: 30px;
@@ -695,9 +695,18 @@
     transform: scale(1.1);
 }
 
+.apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-arrow {
+    top: -47px;
+    bottom: 2px;
+    width: 44px;
+    height: 44px;
+    z-index: 2;
+}
+
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-prev,
 .apCityCarousel .contractors-in-your-city .contractors-in-your-city-cards .slick-next {
-    top: -62px;
+    top: -47px;
+    bottom: 2px;
     width: 44px;
     height: 44px;
     z-index: 2;
@@ -786,7 +795,7 @@
 
 #find-trusted-contractors-in-your-city {
     font-size: 32px;
-    font-weight: 600;
+    font-weight: 800;
     line-height: 41.6px;
     color: #000;
     margin-bottom: 30px;
