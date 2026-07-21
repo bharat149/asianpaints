@@ -31,8 +31,7 @@
  *   P2 (defer):        Consent/CMP, prop12 intent, AppMeasurement bump
  */
 import {
-  markAuthCallbackSuppressionFromUrlHash,
-  readAuthCallbackSuppressFlag,
+  SUPPRESS_ANALYTICS_FOR_THIS_PAGE,
 } from './auth-callback-suppression.js';
 
 // ============================================================
@@ -54,12 +53,7 @@ const DATASTREAM_UUIDS = {
 //const FALLBACK_UUID = 'STAGING_DATASTREAM_UUID_TO_BE_CREATED';
 
 const ALLOY_SRC = '/eds/scripts/vendor/alloy.min.js';
-
-const SUPPRESS_ANALYTICS_FOR_THIS_PAGE = (() => {
-  const hasHashCallback = markAuthCallbackSuppressionFromUrlHash();
-  const hasStoredCallback = readAuthCallbackSuppressFlag();
-  return hasHashCallback || hasStoredCallback;
-})();
+const LOGIN_SUCCESS_PENDING_KEY = 'ap_login_success_pending';
 
 // ============================================================
 // HELPERS — page identity
@@ -173,6 +167,33 @@ function getLoginStatus() {
   } catch { /* localStorage blocked — fall through to cookie check */ }
   if (/(^|;\s*)keycloak_authToken=[^;]+/.test(document.cookie)) return 'logged in';
   return 'not logged in';
+}
+
+function queuePendingLoginSuccess(eventData = {}) {
+  try {
+    const payload = {
+      loginStatus: eventData.loginStatus || getLoginStatus() || 'logged in',
+      loginFunction: eventData.loginFunction || 'login successful',
+    };
+    sessionStorage.setItem(LOGIN_SUCCESS_PENDING_KEY, JSON.stringify(payload));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function consumePendingLoginSuccess() {
+  try {
+    const raw = sessionStorage.getItem(LOGIN_SUCCESS_PENDING_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(LOGIN_SUCCESS_PENDING_KEY);
+    const parsed = JSON.parse(raw);
+    return {
+      loginStatus: parsed?.loginStatus || getLoginStatus() || 'logged in',
+      loginFunction: parsed?.loginFunction || 'login successful',
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ============================================================
@@ -627,6 +648,13 @@ export async function initAnalytics() {
     personalizationStorageEnabled: true,
     debugEnabled: location.hostname !== 'www.asianpaints.com',
   });
+
+  // Replay deferred login_successful from auth-callback URLs where
+  // analytics was intentionally suppressed.
+  const pendingLoginSuccess = consumePendingLoginSuccess();
+  if (pendingLoginSuccess) {
+    trackEvent('login_successful', pendingLoginSuccess);
+  }
 
   // Resolve the Web SDK ECID once and cache it so subsequent link-tracking
   // beacons can populate eVar12 synchronously (getECID()).
@@ -1217,8 +1245,11 @@ function resolveActiveFormTitle() {
  * @param {Object} [eventData]
  */
 export function trackEvent(eventName, eventData = {}) {
-  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) return;
   const name = typeof eventName === 'string' ? eventName.trim() : '';
+  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) {
+    if (name === 'login_successful') queuePendingLoginSuccess(eventData);
+    return;
+  }
   if (!name) return;
   if (typeof window.alloy !== 'function') return;
 

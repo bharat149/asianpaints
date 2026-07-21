@@ -20,13 +20,8 @@ import {
 } from './analytics_1.js';
 import { DOMAIN_ENV, getDomainEnvironment } from './environment.js';
 import {
-  markAuthCallbackSuppressionFromUrlHash,
-  readAuthCallbackSuppressFlag,
-  clearAuthCallbackSuppressFlag,
+  SUPPRESS_ANALYTICS_FOR_THIS_PAGE,
 } from './auth-callback-suppression.js';
-
-const SUPPRESS_ANALYTICS_FOR_THIS_PAGE = markAuthCallbackSuppressionFromUrlHash()
-  || readAuthCallbackSuppressFlag();
 
 const SPRINKLR_APP_IDS = Object.freeze({
   [DOMAIN_ENV.BETA]: '65d88620e479600565c07099_app_600025303',
@@ -562,9 +557,6 @@ async function loadLazy(doc) {
       // eslint-disable-next-line no-console
       console.error('[scripts] third-party-pixels PageView beacons failed:', e);
     });
-  } else {
-    // One-shot consume so future same-tab navigations are not suppressed.
-    clearAuthCallbackSuppressFlag();
   }
 
   const headerLoaded = loadHeader(doc.querySelector('header'));
