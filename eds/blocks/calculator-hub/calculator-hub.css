@@ -64,6 +64,19 @@
 
     @media (min-width: 1280px) and (max-width: 1366px) {
         .calculator-hub .tool-description { flex: 0 0 43%; }
+        .calculator-hub .mini-pbc .tool-description .sub-heading {
+            font-size: 64px;
+            font-weight: 800;
+            line-height: 70.4px;
+            letter-spacing: -0.02em;
+            text-align: left;
+        }
+
+    }
+    @media (min-width: 1200px) and (max-width: 1403px) {
+        .calculator-hub .mini-pbc.wbc-variant .tool-fields .mini-tools-form {
+            padding: 30px 28px 10px;
+        }
     }
 
     .calculator-hub .tool-description .heading {
