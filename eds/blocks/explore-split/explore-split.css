@@ -367,8 +367,10 @@ main>.section .explore-split-wrapper {
    }
   .textures-desktop #textures,
 .wallpapers-desktop #wallpapers {
-  margin-bottom: 0;
+  margin-bottom: 10px;
   margin-top: 0;
+  font-size: 60px;
+  line-height: 66px;
 }
 .textures-desktop p:nth-child(3n) {
   top: unset;
@@ -382,10 +384,4 @@ p.img-5 picture {
 .img-6 {
   height: 240px;
 }
-}
-@media (min-width: 1025px) and (max-width: 1365px) {
-  .textures-desktop #textures, .wallpapers-desktop #wallpapers { 
-    font-size: 40px;
-        line-height: 44px;
-  }
 }

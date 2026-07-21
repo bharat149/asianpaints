@@ -634,6 +634,41 @@
   white-space: nowrap;
 }
 
+@media(min-width:992px) {
+  .footer .section-title {
+    color: #feeecf;
+  }
+  .footer .footer-divisions-inner {
+    max-width: unset !important;
+    padding: unset !important;
+    width: max-content !important;
+  }
+  .footer .division-logo img {
+    width: auto !important;
+    height: auto !important;
+    max-width: 116px !important;
+    max-height: 57px !important;
+    filter:unset !important;
+  }
+  .footer .division-logos {
+    gap:30px
+  }
+  .footer .footer-global-inner {
+    max-width: unset !important;
+    padding: unset;
+    width: max-content;
+  }
+  .footer .footer-global {
+    padding: 40px 0 0;
+  }
+  .footer .country-list {
+    gap: 10px !important;
+  }
+  .footer .country-item {
+        padding: 10px;
+  }
+}
+
 /* Country list — Fix #8 */
 .footer .country-list {
   display: flex;

@@ -39,6 +39,7 @@
 @media(min-width: 992px) {
   .collage-slideshow__right {
     align-self: flex-start;
+    margin-top: 35px;
   }
 }
 .collage-slideshow__swiper {

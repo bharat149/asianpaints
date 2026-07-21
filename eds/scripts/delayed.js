@@ -1,6 +1,6 @@
 // add delayed functionality here
 
-import { trackEvent } from './analytics_1.js';
+import { trackEvent, ga4Implementaion } from './analytics_1.js';
 
 // Third-party marketing pixels (Facebook Pixel and friends).
 // Loaded via requestIdleCallback so the pixel scripts never compete
@@ -77,6 +77,45 @@ function setupGlobalClickListener() {
 }
 
 setupGlobalClickListener();
+
+// Header CTA clicks (.header-cta .cta-btn) — event-delegated on document so
+// this works regardless of when/if the header block has finished decorating.
+// Moved here from header.js's decorate() so it isn't tied to the block's
+// local querySelectorAll pass.
+function setupHeaderCtaClickListener() {
+  document.addEventListener('click', (e) => {
+    const ctaBtn = e.target.closest('.header-cta .cta-btn');
+    if (!ctaBtn) return;
+
+    const ctaLink = ctaBtn.getAttribute('href') || '';
+    const btnTitle = ctaBtn.textContent?.trim() || '';
+    trackEvent('Sticky Form CTA Click', {
+      cta_: btnTitle,
+      parentTitle: 'Header',
+      redirectionLink: ctaLink,
+    });
+
+    // GA4 -> Exit Intent Button Header
+    // Defer navigation so dataLayer.push is processed before page unload
+    if (ctaLink && !ctaBtn.classList.contains('trigger-book-free-site-visit-modal')) {
+      e.preventDefault();
+      ga4Implementaion({
+        event: 'book_free_site_visit',
+        click_text: btnTitle || ctaLink,
+        click_category: 'click_header',
+      });
+      setTimeout(() => { window.location.assign(ctaLink); }, 300);
+    } else {
+      ga4Implementaion({
+        event: 'book_free_site_visit',
+        click_text: btnTitle || ctaLink,
+        click_category: 'click_header',
+      });
+    }
+  });
+}
+
+setupHeaderCtaClickListener();
 
 // SaleAssist shoppable-shots tracking — set up page-level listeners so
 // short_video_play (event296) and short_video_shop (event297) fire on
