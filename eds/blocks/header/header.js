@@ -75,9 +75,53 @@ const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 const POST_LOGIN_REDIRECT_FLAG_KEY = 'redirectPostLoginFlag';
 const POST_LOGIN_REDIRECT_PATH_KEY = 'redirectPostLoginPath';
+const LOGIN_SUCCESS_TRACKED_KEY = 'ap_login_success_tracked';
+
+function hasAuthCallbackHashParams() {
+  try {
+    const hash = window.location.hash;
+    if (!hash || hash.length <= 1) return false;
+    const params = new URLSearchParams(hash.slice(1));
+    return ['state', 'session_state', 'iss', 'code', 'id_token']
+      .some((key) => params.has(key));
+  } catch {
+    return false;
+  }
+}
+
+function wasLoginSuccessTracked() {
+  try {
+    return sessionStorage.getItem(LOGIN_SUCCESS_TRACKED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markLoginSuccessTracked() {
+  try {
+    sessionStorage.setItem(LOGIN_SUCCESS_TRACKED_KEY, '1');
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function clearLoginSuccessTrackedFlag() {
+  try {
+    sessionStorage.removeItem(LOGIN_SUCCESS_TRACKED_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function trackLoginSuccessfulOnce(loginFunction = 'login successful') {
+  if (wasLoginSuccessTracked()) return;
+  markLoginSuccessTracked();
+  trackLoginSuccessful(loginFunction);
+}
 
 function persistPostLoginRedirectPath() {
   const redirectUrl = window.location.href || `${window.location.origin}/`;
+  clearLoginSuccessTrackedFlag();
   try {
     localStorage.setItem(POST_LOGIN_REDIRECT_FLAG_KEY, 'true');
     localStorage.setItem(POST_LOGIN_REDIRECT_PATH_KEY, redirectUrl);
@@ -828,7 +872,7 @@ async function initKeycloak(block) {
        * provides one) is stored for future page loads. */
       persistKeycloakTokens();
       if (returnedFromAuth) {
-        trackLoginSuccessful('login successful');
+        trackLoginSuccessfulOnce('login successful');
         try {
           localStorage.removeItem(SIGNED_OUT_KEY);
         } catch (err) { /* ignore */ }
@@ -2240,6 +2284,7 @@ function clearUser() {
   try {
     localStorage.setItem(SIGNED_OUT_KEY, '1');
     clearKeycloakTokens();
+    clearLoginSuccessTrackedFlag();
   } catch (e) { /* ignore */ }
 }
 
@@ -5278,7 +5323,7 @@ export default async function decorate(block) {
   let authUser = getUserFromUrlHash();
   if (authUser) {
     setUser(authUser);
-    trackLoginSuccessful('login successful');
+    trackLoginSuccessfulOnce('login successful');
     const postLoginRedirectUrl = consumePostLoginRedirectPath();
     if (postLoginRedirectUrl && postLoginRedirectUrl !== window.location.href) {
       window.location.replace(postLoginRedirectUrl);
@@ -5292,7 +5337,9 @@ export default async function decorate(block) {
     authUser = getUserFromAuthCookie();
     if (authUser) {
       setUser(authUser);
-      trackLoginSuccessful('login successful');
+      // Avoid duplicate login_successful beacons on auth callback pages.
+      if (hasAuthCallbackHashParams()) trackLoginSuccessfulOnce('login successful');
+      else trackLoginSuccessful('login successful');
     }
   }
 
