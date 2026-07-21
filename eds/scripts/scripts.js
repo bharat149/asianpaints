@@ -19,6 +19,14 @@ import {
   royalePlayAnimatedImageTracking,
 } from './analytics_1.js';
 import { DOMAIN_ENV, getDomainEnvironment } from './environment.js';
+import {
+  markAuthCallbackSuppressionFromUrlHash,
+  readAuthCallbackSuppressFlag,
+  clearAuthCallbackSuppressFlag,
+} from './auth-callback-suppression.js';
+
+const SUPPRESS_ANALYTICS_FOR_THIS_PAGE = markAuthCallbackSuppressionFromUrlHash()
+  || readAuthCallbackSuppressFlag();
 
 const SPRINKLR_APP_IDS = Object.freeze({
   [DOMAIN_ENV.BETA]: '65d88620e479600565c07099_app_600025303',
@@ -523,15 +531,18 @@ async function loadEager(doc) {
  */
 async function loadLazy(doc) {
   const main = doc.querySelector('main');
+  const suppressAnalyticsForAuthCallback = SUPPRESS_ANALYTICS_FOR_THIS_PAGE;
 
   /* Fire analytics init as early as possible in the lazy phase so the
    * Alloy beacon doesn't wait for header/sections/footer to finish.
    * Runs in parallel with the awaits below — typically fires within
    * 1–2 s of LCP instead of 10–15 s. */
-  import('./analytics_1.js').then(({ initAnalytics }) => initAnalytics()).catch((e) => {
-    // eslint-disable-next-line no-console
-    console.error('Failed to initialize analytics', e);
-  });
+  if (!suppressAnalyticsForAuthCallback) {
+    import('./analytics_1.js').then(({ initAnalytics }) => initAnalytics()).catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize analytics', e);
+    });
+  }
 
   // Third-party marketing pixels — lightweight PageView image beacons
   // with optional GTM bridge (GTM-MP96GBBF) loaded by fireGTM().
@@ -544,12 +555,17 @@ async function loadLazy(doc) {
   // Conversion events (form_submit, form_start, etc.) fire as additional
   // beacons via firePixelConversion() — wired from form handlers
   // alongside the existing trackEvent() calls.
-  import('./third-party-pixels.js').then(({ firePixelPageView }) => {
-    firePixelPageView();
-  }).catch((e) => {
-    // eslint-disable-next-line no-console
-    console.error('[scripts] third-party-pixels PageView beacons failed:', e);
-  });
+  if (!suppressAnalyticsForAuthCallback) {
+    import('./third-party-pixels.js').then(({ firePixelPageView }) => {
+      firePixelPageView();
+    }).catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('[scripts] third-party-pixels PageView beacons failed:', e);
+    });
+  } else {
+    // One-shot consume so future same-tab navigations are not suppressed.
+    clearAuthCallbackSuppressFlag();
+  }
 
   const headerLoaded = loadHeader(doc.querySelector('header'));
   await loadSections(main);

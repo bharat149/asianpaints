@@ -30,6 +30,10 @@
  *                      initialPercentViewed calculation
  *   P2 (defer):        Consent/CMP, prop12 intent, AppMeasurement bump
  */
+import {
+  markAuthCallbackSuppressionFromUrlHash,
+  readAuthCallbackSuppressFlag,
+} from './auth-callback-suppression.js';
 
 // ============================================================
 // CONFIGURATION
@@ -50,6 +54,12 @@ const DATASTREAM_UUIDS = {
 //const FALLBACK_UUID = 'STAGING_DATASTREAM_UUID_TO_BE_CREATED';
 
 const ALLOY_SRC = '/eds/scripts/vendor/alloy.min.js';
+
+const SUPPRESS_ANALYTICS_FOR_THIS_PAGE = (() => {
+  const hasHashCallback = markAuthCallbackSuppressionFromUrlHash();
+  const hasStoredCallback = readAuthCallbackSuppressFlag();
+  return hasHashCallback || hasStoredCallback;
+})();
 
 // ============================================================
 // HELPERS — page identity
@@ -585,6 +595,8 @@ function getEdgeConfigId() {
 // ============================================================
 
 export async function initAnalytics() {
+  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) return;
+
   // Ensure legacy digitalData context is present on every page load
   // before any analytics event is dispatched.
   setDigitalDataContext(window.location.href);
@@ -678,6 +690,7 @@ export async function initAnalytics() {
  * Not used by initial pageview path.
  */
 export function trackVirtualPageview() {
+  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) return;
   window.alloy('sendEvent', {
     data: { __adobe: { analytics: buildAnalyticsPayload() } },
   });
@@ -700,6 +713,7 @@ export function trackVirtualPageview() {
  * read them.
  */
 export function setTargetProfile(attrs) {
+  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) return;
   if (!attrs || typeof attrs !== 'object') return;
   const entries = Object.entries(attrs).filter(([, v]) => v !== undefined && v !== null && v !== '');
   if (!entries.length) return;
@@ -1203,6 +1217,7 @@ function resolveActiveFormTitle() {
  * @param {Object} [eventData]
  */
 export function trackEvent(eventName, eventData = {}) {
+  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) return;
   const name = typeof eventName === 'string' ? eventName.trim() : '';
   if (!name) return;
   if (typeof window.alloy !== 'function') return;
@@ -1643,6 +1658,7 @@ export function ga4Implementaion({
   event = '',
   ...extraFields
 }={}) {
+  if (SUPPRESS_ANALYTICS_FOR_THIS_PAGE) return;
 
   if(!event) return ;
   window.dataLayer = window.dataLayer || [];
