@@ -651,7 +651,7 @@
     filter:unset !important;
   }
   .footer .division-logos {
-    gap:30px
+    gap:30px !important;
   }
   .footer .footer-global-inner {
     max-width: unset !important;
