@@ -72,24 +72,13 @@ function setupGlobalClickListener() {
         cta_: btnTitle,
         param1: ctaLink,
       });
-    }
-
-    // Header CTA (.header-cta .cta-btn) always carries this same trigger
-    // class, so this capture-phase listener is the only one that ever sees
-    // its click (it wins the race against any bubble-phase handler, since
-    // it stops propagation above). Fire the header-specific analytics pair
-    // here rather than in a bubble listener that would never run.
-    if (trigger.closest('.header-cta')) {
-      trackEvent('Sticky Form CTA Click', {
-        cta_: btnTitle,
-        parentTitle: 'Header',
-        redirectionLink: ctaLink,
-      });
-      ga4Implementaion({
-        event: 'book_free_site_visit',
-        click_text: btnTitle || ctaLink,
-        click_category: 'click_header',
-      });
+      if (trigger.closest('.header-cta')) {
+        ga4Implementaion({
+          event: 'book_free_site_visit',
+          click_text: btnTitle || ctaLink,
+          click_category: 'click_header',
+        });
+      }
     }
 
     const modalPath = trigger.dataset.modalPath || trigger.getAttribute('href') || EXIT_INTENT_PATH;
