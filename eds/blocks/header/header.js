@@ -3604,7 +3604,7 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
 
     const text = a.textContent.trim();
     link.dataset.siteSection = parentLabel;
-    link.dataset.subSection = subsectionNameParent || parentLabel;
+    link.dataset.subSection = subsectionNameParent;
     link.dataset.subSectionTwo = text;
 
     if (text === 'Textures For You' || text === 'Shade Cards') {
@@ -3648,7 +3648,10 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
     const itemsUl = colLi.querySelector(':scope > ul');
     if (itemsUl) {
       const itemLis = [...itemsUl.querySelectorAll(':scope > li')];
-      const subsectionNameParent = headingText || parentLabel;
+      // Column has no visible <h4> (dropdown-column-no-title) — leave
+      // subSection blank so click_header in the ga4 menu_interaction
+      // payload is empty rather than falling back to the parent label.
+      const subsectionNameParent = hasVisibleHeading ? headingText : '';
 
       if (itemLis.length >= 8) {
         column.classList.add('dropdown-column-wide');
@@ -5028,35 +5031,10 @@ function addInteractions(block) {
     });
   }
 
-  block.querySelectorAll('.header-cta .cta-btn').forEach((ctaBtn) => {
-    ctaBtn.addEventListener('click', (e) => {
-      const ctaLink = ctaBtn.getAttribute('href') || '';
-      const btnTitle = ctaBtn.textContent?.trim() || '';
-      trackEvent('Sticky Form CTA Click', {
-        cta_: btnTitle,
-        parentTitle: 'Header',
-        redirectionLink: ctaLink,
-      });
-
-      // GA4 -> Exit Intent Button Header
-      // Defer navigation so dataLayer.push is processed before page unload
-      if (ctaLink && !ctaBtn.classList.contains('trigger-book-free-site-visit-modal')) {
-        e.preventDefault();
-        ga4Implementaion({
-          event: 'book_free_site_visit',
-          click_text: btnTitle || ctaLink,
-          click_category: 'click_header',
-        });
-        setTimeout(() => { window.location.assign(ctaLink); }, 300);
-      } else {
-        ga4Implementaion({
-          event: 'book_free_site_visit',
-          click_text: btnTitle || ctaLink,
-          click_category: 'click_header',
-        });
-      }
-    });
-  });
+  // Note: the .header-cta .cta-btn click tracking (Sticky Form CTA Click /
+  // book_free_site_visit) now lives in scripts/delayed.js as a
+  // document-level delegated listener, so it isn't tied to this block's
+  // decorate() pass.
 
   block.querySelectorAll('.header-cta .cta-btn.trigger-book-free-site-visit-modal[data-modal-path]').forEach((ctaBtn) => {
     ctaBtn.addEventListener('click', async (e) => {
