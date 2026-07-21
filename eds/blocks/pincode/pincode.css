@@ -118,10 +118,6 @@ Variant: search (default) — Pincode (search)
     transform:scale(1.05);
 }
 
-.pincode .pincode-search-button svg{
-    display:none;
-}
-
 /* Mobile-only description -- hidden on desktop, shown on phone */
 .pincode-mobile-description{
     display:none;
