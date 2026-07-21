@@ -30,10 +30,37 @@ const DESKTOP_BREAKPOINT = 992;
 const CURRENT_ORIGIN = window.location.origin;
 const DEFAULT_API_BASE = 'https://www.asianpaints.com';
 const DEFAULT_KEYCLOAK_AUTH = 'https://auth.asianpaints.com';
+const DEFAULT_UNBXD_API_KEY = '9cec79cb1e6a986bf237d8d42d54456d';
+const DEFAULT_UNBXD_BASE = 'https://search.unbxd.io';
+
+const UNBXD_SITE_KEYS = Object.freeze({
+  [DOMAIN_ENV.BETA]: 'ss-unbxd-dev-asianpaints46541692795440',
+  [DOMAIN_ENV.PROD]: 'ss-unbxd-prod-asianpaints46541696944854',
+});
+
+const UNBXD_HOSTED_ASSETS = Object.freeze({
+  [DOMAIN_ENV.BETA]: {
+    css: 'https://sandbox.unbxd.io/ss-unbxd-dev-asianpaints46541692795440_autosuggest.css',
+    ua: 'https://libraries.unbxdapi.com/sdk-clients/ss-unbxd-dev-asianpaints46541692795440/ua-staging/ua.js',
+    autosuggest: 'https://sandbox.unbxd.io/ss-unbxd-dev-asianpaints46541692795440_autosuggest.js',
+  },
+  [DOMAIN_ENV.PROD]: {
+    css: 'https://libraries.unbxdapi.com/ss-unbxd-prod-asianpaints46541696944854_autosuggest.css',
+    ua: 'https://libraries.unbxdapi.com/sdk-clients/ss-unbxd-prod-asianpaints46541696944854/ua/ua.js',
+    autosuggest: 'https://libraries.unbxdapi.com/ss-unbxd-prod-asianpaints46541696944854_autosuggest.js',
+  },
+});
+
+function getDefaultUnbxdSiteKey() {
+  return UNBXD_SITE_KEYS[getDomainEnvironment()] || UNBXD_SITE_KEYS[DOMAIN_ENV.BETA];
+}
 
 const headerConfig = {
   apiBaseUrl: DEFAULT_API_BASE,
   keycloakAuthUrl: DEFAULT_KEYCLOAK_AUTH,
+  unbxdApiKey: DEFAULT_UNBXD_API_KEY,
+  unbxdSiteKey: getDefaultUnbxdSiteKey(),
+  unbxdBaseUrl: DEFAULT_UNBXD_BASE,
 };
 
 const HEADER_ICON_PATHS = {
@@ -48,9 +75,53 @@ const SIGNED_OUT_KEY = 'ap_signed_out';
 const AUTH_REDIRECTED_KEY = 'ap_auth_redirected';
 const POST_LOGIN_REDIRECT_FLAG_KEY = 'redirectPostLoginFlag';
 const POST_LOGIN_REDIRECT_PATH_KEY = 'redirectPostLoginPath';
+const LOGIN_SUCCESS_TRACKED_KEY = 'ap_login_success_tracked';
+
+function hasAuthCallbackHashParams() {
+  try {
+    const hash = window.location.hash;
+    if (!hash || hash.length <= 1) return false;
+    const params = new URLSearchParams(hash.slice(1));
+    return ['state', 'session_state', 'iss', 'code', 'id_token']
+      .some((key) => params.has(key));
+  } catch {
+    return false;
+  }
+}
+
+function wasLoginSuccessTracked() {
+  try {
+    return sessionStorage.getItem(LOGIN_SUCCESS_TRACKED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markLoginSuccessTracked() {
+  try {
+    sessionStorage.setItem(LOGIN_SUCCESS_TRACKED_KEY, '1');
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function clearLoginSuccessTrackedFlag() {
+  try {
+    sessionStorage.removeItem(LOGIN_SUCCESS_TRACKED_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function trackLoginSuccessfulOnce(loginFunction = 'login successful') {
+  if (wasLoginSuccessTracked()) return;
+  markLoginSuccessTracked();
+  trackLoginSuccessful(loginFunction);
+}
 
 function persistPostLoginRedirectPath() {
   const redirectUrl = window.location.href || `${window.location.origin}/`;
+  clearLoginSuccessTrackedFlag();
   try {
     localStorage.setItem(POST_LOGIN_REDIRECT_FLAG_KEY, 'true');
     localStorage.setItem(POST_LOGIN_REDIRECT_PATH_KEY, redirectUrl);
@@ -118,9 +189,15 @@ async function fetchHeaderConfig() {
     // Prefer env-prefixed keys; fall back to legacy unprefixed for safety during rollout.
     const apiBase = get(getEnvKey('api-base-url')) || get('api-base-url');
     const keycloak = get(getEnvKey('keycloak-auth-url')) || get('keycloak-auth-url');
+    const unbxdApiKey = get(getEnvKey('unbxd-api-key')) || get('unbxd-api-key');
+    const unbxdSiteKey = get(getEnvKey('unbxd-site-key')) || get('unbxd-site-key');
+    const unbxdBaseUrl = get(getEnvKey('unbxd-base-url')) || get('unbxd-base-url');
 
     if (apiBase) headerConfig.apiBaseUrl = apiBase.replace(/\/$/, '');
     if (keycloak) headerConfig.keycloakAuthUrl = keycloak.replace(/\/$/, '');
+    if (unbxdApiKey) headerConfig.unbxdApiKey = unbxdApiKey;
+    headerConfig.unbxdSiteKey = unbxdSiteKey || getDefaultUnbxdSiteKey();
+    if (unbxdBaseUrl) headerConfig.unbxdBaseUrl = unbxdBaseUrl.replace(/\/$/, '');
   } catch (e) {
     // use defaults
   }
@@ -196,9 +273,9 @@ function getApApi() {
     WISHLIST_PAGE: apUrl('/content/ap/en/home/my-wishlist.html'),
     SHOP_URL: apUrl('/paint-products.html'),
     VISUAL_SEARCH_UPLOAD: apUrl(AP_PATHS.VISUAL_SEARCH_UPLOAD),
-    UNBXD_API_KEY: '9cec79cb1e6a986bf237d8d42d54456d',
-    UNBXD_SITE_KEY: 'ss-unbxd-dev-asianpaints46541692795440',
-    UNBXD_BASE: 'https://search.unbxd.io',
+    UNBXD_API_KEY: headerConfig.unbxdApiKey || DEFAULT_UNBXD_API_KEY,
+    UNBXD_SITE_KEY: headerConfig.unbxdSiteKey || getDefaultUnbxdSiteKey(),
+    UNBXD_BASE: headerConfig.unbxdBaseUrl || DEFAULT_UNBXD_BASE,
   };
 }
 
@@ -508,6 +585,41 @@ function loadScript(src) {
   });
 }
 
+function loadStylesheet(href, parent = document.head) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`link[href="${href}"]`)) {
+      resolve();
+      return;
+    }
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.onload = resolve;
+    link.onerror = reject;
+    parent.appendChild(link);
+  });
+}
+
+let unbxdHostedAssetsPromise = null;
+
+function ensureUnbxdHostedAssetsLoaded() {
+  if (unbxdHostedAssetsPromise) return unbxdHostedAssetsPromise;
+
+  const environment = getDomainEnvironment();
+  const assets = UNBXD_HOSTED_ASSETS[environment] || UNBXD_HOSTED_ASSETS[DOMAIN_ENV.BETA];
+
+  unbxdHostedAssetsPromise = Promise.all([
+    loadStylesheet(assets.css),
+    loadScript(assets.ua),
+    loadScript(assets.autosuggest),
+  ]).catch((error) => {
+    unbxdHostedAssetsPromise = null;
+    throw error;
+  });
+
+  return unbxdHostedAssetsPromise;
+}
+
 const KEYCLOAK_ID_TOKEN_STORAGE = 'keycloak-id-token';
 
 function persistKeycloakTokens() {
@@ -760,7 +872,7 @@ async function initKeycloak(block) {
        * provides one) is stored for future page loads. */
       persistKeycloakTokens();
       if (returnedFromAuth) {
-        trackLoginSuccessful('login successful');
+        trackLoginSuccessfulOnce('login successful');
         try {
           localStorage.removeItem(SIGNED_OUT_KEY);
         } catch (err) { /* ignore */ }
@@ -2014,6 +2126,10 @@ async function openSearchDialog(block) {
   const overlay = block.querySelector('.search-dialog-overlay');
   if (!overlay) return;
 
+  ensureUnbxdHostedAssetsLoaded().catch(() => {
+    // The local search experience still works without the hosted legacy assets.
+  });
+
   overlay.classList.add('active');
   document.body.classList.add('search-dialog-open');
 
@@ -2168,6 +2284,7 @@ function clearUser() {
   try {
     localStorage.setItem(SIGNED_OUT_KEY, '1');
     clearKeycloakTokens();
+    clearLoginSuccessTrackedFlag();
   } catch (e) { /* ignore */ }
 }
 
@@ -5184,7 +5301,7 @@ export default async function decorate(block) {
   let authUser = getUserFromUrlHash();
   if (authUser) {
     setUser(authUser);
-    trackLoginSuccessful('login successful');
+    trackLoginSuccessfulOnce('login successful');
     const postLoginRedirectUrl = consumePostLoginRedirectPath();
     if (postLoginRedirectUrl && postLoginRedirectUrl !== window.location.href) {
       window.location.replace(postLoginRedirectUrl);
@@ -5198,7 +5315,9 @@ export default async function decorate(block) {
     authUser = getUserFromAuthCookie();
     if (authUser) {
       setUser(authUser);
-      trackLoginSuccessful('login successful');
+      // Avoid duplicate login_successful beacons on auth callback pages.
+      if (hasAuthCallbackHashParams()) trackLoginSuccessfulOnce('login successful');
+      else trackLoginSuccessful('login successful');
     }
   }
 
