@@ -62,12 +62,33 @@ function setupGlobalClickListener() {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
+    const ctaLink = trigger.getAttribute('href') || '';
+    const btnTitle = trigger.textContent.trim();
+
     // e278 - Sticky Form CTA Clicks (.trigger-book-free-site-visit-modal isn't
     // a .button-container child, so bindButtonContainerTracking misses it).
     if (e.isTrusted) {
       trackEvent('sticky_cta_click', {
-        cta_: trigger.textContent.trim(),
-        param1: trigger.getAttribute('href') || '',
+        cta_: btnTitle,
+        param1: ctaLink,
+      });
+    }
+
+    // Header CTA (.header-cta .cta-btn) always carries this same trigger
+    // class, so this capture-phase listener is the only one that ever sees
+    // its click (it wins the race against any bubble-phase handler, since
+    // it stops propagation above). Fire the header-specific analytics pair
+    // here rather than in a bubble listener that would never run.
+    if (trigger.closest('.header-cta')) {
+      trackEvent('Sticky Form CTA Click', {
+        cta_: btnTitle,
+        parentTitle: 'Header',
+        redirectionLink: ctaLink,
+      });
+      ga4Implementaion({
+        event: 'book_free_site_visit',
+        click_text: btnTitle || ctaLink,
+        click_category: 'click_header',
       });
     }
 
@@ -82,6 +103,13 @@ setupGlobalClickListener();
 // this works regardless of when/if the header block has finished decorating.
 // Moved here from header.js's decorate() so it isn't tied to the block's
 // local querySelectorAll pass.
+// NOTE: today's header CTA markup always also carries
+// .trigger-book-free-site-visit-modal, so setupGlobalClickListener's
+// capture-phase handler (above) intercepts and stops propagation before
+// this bubble-phase listener ever sees the click — the Sticky Form CTA
+// Click / book_free_site_visit tracking for that case lives there instead.
+// This listener only matters if a future .header-cta .cta-btn is ever
+// rendered WITHOUT the modal-trigger class.
 function setupHeaderCtaClickListener() {
   document.addEventListener('click', (e) => {
     const ctaBtn = e.target.closest('.header-cta .cta-btn');
