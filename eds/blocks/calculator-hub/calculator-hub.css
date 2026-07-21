@@ -42,7 +42,7 @@
     @media (min-width: 992px) {
         .calculator-hub .mini-pbc {
             display: flex;
-            padding: 30px 50px 30px 50px;
+            padding: 30px 50px 30px 100px;
             justify-content: center;
         }
     }
@@ -71,7 +71,7 @@
         font-weight: 300;
         line-height: 31.2px;
         margin-bottom: 10px;
-        width: 90%;
+        width: 85%;
     }
 
     @media (max-width: 991px) {
@@ -90,7 +90,7 @@
 
     .calculator-hub .tool-description .sub-heading {
         font-size: 48px;
-        font-weight: 700;
+        font-weight: 800;
         line-height: 55.4px;
         letter-spacing: -0.02em;
         text-align: left;
