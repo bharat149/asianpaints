@@ -452,7 +452,6 @@ body.testimonial-video-open {
     .testimonial-carousel-container {
         display: flex;
         align-items: flex-start;
-        margin-top: 75px;
     }
 
     .testimonial-carousel {
