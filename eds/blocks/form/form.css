@@ -1309,6 +1309,6 @@
 }
 }
 
-.royale-play-form:nth-of-type(1) .thank-you-active.popup-active {
+.royale-play-form:not(.royale-play-form ~ .royale-play-form) .thank-you-active.popup-active {
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, .1), 0 0 1px 0 rgba(0, 0, 0, .1);
 }
