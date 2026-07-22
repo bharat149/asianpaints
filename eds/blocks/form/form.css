@@ -1298,7 +1298,7 @@
 }
 .fitcontent.form-container .form.block .form-popup-overlay {
           width: calc(100% + 40px) !important;
-        margin-left: -20px;
+        margin-left: -20px !important;
 }
 .blue-form.form.block .form-popup-overlay {
   margin-top: -22px;
