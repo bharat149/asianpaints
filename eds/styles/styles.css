@@ -1088,10 +1088,66 @@ body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .
   display: none;
 }
 
-/* modal backdrop height and width fixes */
+/* modal backdrop - hand-picked from Bootstrap since bootstrap.css loads
+   after user interaction on the page */
 .modal-backdrop {
-  height: 100% !important;
-  width: 100% !important;
+  --bs-backdrop-zindex: 1050;
+  --bs-backdrop-bg: #000;
+  --bs-backdrop-opacity: 0.5;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--bs-backdrop-zindex);
+  width: 100%;
+  height: 100%;
+  background-color: var(--bs-backdrop-bg);
+}
+
+.modal-backdrop.fade {
+  opacity: 0;
+}
+
+.modal-backdrop.show {
+  opacity: var(--bs-backdrop-opacity);
+}
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: var(--bs-modal-width);
+        margin-right: auto;
+        margin-left: auto;
+    }
+}
+
+.modal-dialog {
+    --bs-modal-width: 500px;
+    --bs-modal-margin: 0.5rem;
+
+    position: relative;
+    width: auto;
+    margin: var(--bs-modal-margin);
+    pointer-events: none;
+}
+
+.modal-content {
+    --bs-modal-color: var(--text-color);
+    --bs-modal-bg: var(--background-color);
+    --bs-modal-border-width: 1px;
+    --bs-modal-border-color: rgb(0 0 0 / 17.5%);
+    --bs-modal-border-radius: 0.5rem;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: var(--bs-modal-color);
+    pointer-events: auto;
+    background-color: var(--bs-modal-bg);
+    background-clip: padding-box;
+    border: var(--bs-modal-border-width) solid var(--bs-modal-border-color);
+    border-radius: var(--bs-modal-border-radius);
+    outline: 0;
 }
 
 /* hideExitIntentCTA for inspiration page adde */
