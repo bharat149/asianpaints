@@ -1103,14 +1103,6 @@ body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .
   opacity: var(--bs-backdrop-opacity);
 }
 
-@media (min-width: 576px) {
-    .modal-dialog {
-        max-width: var(--bs-modal-width);
-        margin-right: auto;
-        margin-left: auto;
-    }
-}
-
 .modal-dialog {
     --bs-modal-width: 500px;
     --bs-modal-margin: 0.5rem;
@@ -1119,6 +1111,14 @@ body.hide-exit-intent-form-questions .modal.block .book-free-site-visit-dialog .
     width: auto;
     margin: var(--bs-modal-margin);
     pointer-events: none;
+}
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: var(--bs-modal-width);
+        margin-right: auto;
+        margin-left: auto;
+    }
 }
 
 .modal-content {
