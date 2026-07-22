@@ -1296,11 +1296,15 @@
 .fitcontent.form-container .form.block {
   padding:20px !important;
 }
+.fitcontent.form-container .form.block .form-popup-overlay {
+          width: calc(100% + 40px) !important;
+        margin-left: -20px;
+}
 .blue-form.form.block .form-popup-overlay {
   margin-top: -22px;
   margin-bottom: -22px;
 }
 .blue-form.form.block:has(.form-popup-overlay--success) {
-  border-radius: 20px;
+  border-radius: 20px !important;
 }
 }
