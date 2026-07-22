@@ -5031,11 +5031,18 @@ function addInteractions(block) {
     });
   }
 
-  // Note: the .header-cta .cta-btn click tracking (Sticky Form CTA Click /
-  // book_free_site_visit) now lives in scripts/delayed.js as a
-  // document-level delegated listener, so it isn't tied to this block's
-  // decorate() pass.
-
+  // The .header-cta .cta-btn click tracking (Sticky Form CTA Click /
+  // book_free_site_visit) also lives in scripts/delayed.js as a
+  // document-level capture-phase listener, but that script isn't imported
+  // until ~8s after the lazy phase completes (see loadDelayed in
+  // scripts.js). On a cold/guest-mode load, a click on this CTA before
+  // delayed.js has attached its listener used to fall through to this
+  // handler WITHOUT firing analytics (the modal still opened, so the miss
+  // went unnoticed until GA4 data was checked) — the event only fired on a
+  // second click once delayed.js's capture listener was live. Firing the
+  // same tracking here too closes that gap: once delayed.js's capture
+  // listener IS attached, it calls stopImmediatePropagation() and this
+  // bubble-phase handler never runs, so tracking still only ever fires once.
   block.querySelectorAll('.header-cta .cta-btn.trigger-book-free-site-visit-modal[data-modal-path]').forEach((ctaBtn) => {
     ctaBtn.addEventListener('click', async (e) => {
       const { modalPath } = ctaBtn.dataset;
@@ -5044,6 +5051,18 @@ function addInteractions(block) {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
+
+      const btnTitle = ctaBtn.textContent.trim();
+      trackEvent('Sticky Form CTA Click', {
+        cta_: btnTitle,
+        parentTitle: 'Header',
+        redirectionLink: ctaBtn.href,
+      });
+      ga4Implementaion({
+        event: 'book_free_site_visit',
+        click_text: btnTitle || ctaBtn.href,
+        click_category: 'click_header',
+      });
 
       ctaBtn.dataset.loading = 'true';
 
