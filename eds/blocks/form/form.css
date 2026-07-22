@@ -953,6 +953,8 @@
 
   .form.block .form-popup-overlay {
     border-radius: 16px;
+    width: calc(100% + 32px);
+    margin-left: -16px;
   }
 
   .form.block .form-popup-close {
@@ -1294,5 +1296,11 @@
 .fitcontent.form-container .form.block {
   padding:20px !important;
 }
-
+.blue-form.form.block .form-popup-overlay {
+  margin-top: -22px;
+  margin-bottom: -22px;
+}
+.blue-form.form.block:has(.form-popup-overlay--success) {
+  border-radius: 20px;
+}
 }
