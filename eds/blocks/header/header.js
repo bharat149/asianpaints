@@ -4778,6 +4778,10 @@ function bindSecondaryNavAnalytics(block) {
     const redirectionLink = toAbsoluteUrl(navLink.getAttribute('href'));
 
     trackSiteSectionClick(siteSection, redirectionLink);
+    ga4Implementaion({
+      event: 'menu_interaction',
+      click_text: siteSection,
+    });
   });
 }
 
