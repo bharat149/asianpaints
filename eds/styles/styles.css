@@ -870,6 +870,15 @@ main .section.contractors-rte-live>.default-content-wrapper p {
   margin: 0 0 18px;
 }
 
+main .section.contractors-rte-live>.default-content-wrapper a[href*="colour-catalogue"],
+main .section.contractors-rte-live>.default-content-wrapper a[href*="waterproofing-products"],
+main .section.contractors-rte-live>.default-content-wrapper a[href*="interior-textures"],
+main .section.contractors-rte-live>.default-content-wrapper a[href*="/home.html"],
+main .section.contractors-rte-live>.default-content-wrapper a[href*="asianpaints.com"] {
+  color: #0000EE !important;
+  text-decoration: underline !important;
+}
+
 main .section.contractors-rte-live>.default-content-wrapper ol,
 main .section.contractors-rte-live>.default-content-wrapper ul {
   padding-left: 24px;
@@ -1208,5 +1217,16 @@ img, svg {
 }
 
 #kaamyabi-ke-rang-colours-of-success{
-    margin-top: 0px;
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    color: #1a1a1a;
+    line-height: 35.2px;
+    font-family: var(--heading-font-family);
+
+    @media (max-width: 990px) {
+        font-size: 24px;
+        line-height: 28px;
+        font-weight: 800;
+    }
 }
