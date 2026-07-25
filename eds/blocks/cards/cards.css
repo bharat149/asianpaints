@@ -807,6 +807,11 @@
   object-fit: cover;
   /* border-radius: 8px; */
 }
+@media(min-width:992px) {
+  .cards.room .cards-card-image img {
+    aspect-ratio: unset;
+  }
+}
 
 .cards.room .cards-card-body {
   padding: 20px 0 0;
