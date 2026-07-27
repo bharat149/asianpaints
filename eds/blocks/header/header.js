@@ -3812,16 +3812,11 @@ function buildMegamenuPanel(submenuUl, parentLabel = '') {
 }
 
 function normalizeNavLabel(text) {
-  return text.trim().replace(/\u2026$/, '').replace(/\.\.\.$/, '');
+  return text.trim();
 }
 
 function getDisplayNavLabel(text) {
-  const trimmed = text.trim();
-  if (/^More(?:\u2026|\.{3})$/.test(trimmed)) {
-    return 'More...';
-  }
-
-  return normalizeNavLabel(trimmed);
+  return normalizeNavLabel(text);
 }
 
 function buildNavBar(navDiv, secondaryDiv) {
